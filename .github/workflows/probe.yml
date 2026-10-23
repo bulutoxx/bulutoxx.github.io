@@ -1,0 +1,19 @@
+name: probe
+on:
+  push:
+    branches: [probe]
+permissions:
+  contents: write
+jobs:
+  p:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install numpy==2.1.3
+      - run: python scripts/research90.py
+      - run: |
+          git config user.name bot; git config user.email bot@users.noreply.github.com
+          git add research/r90.json research/r90.log; git commit -qm "research out [skip ci]"; git push
