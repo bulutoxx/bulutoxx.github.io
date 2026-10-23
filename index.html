@@ -462,6 +462,34 @@ nav.tabs .badge{position:absolute;top:6px;left:calc(50% + 6px);min-width:16px;he
 .ghelp{margin-top:12px;border-top:1px solid var(--line);padding-top:10px}
 .ghelp summary{font-size:14px;color:var(--ink2)}
 .ghelp .note{margin:8px 0 10px}
+/* ---------- Kompakt yükleme rehberi ---------- */
+.coach{position:fixed;z-index:85;left:max(10px,env(safe-area-inset-left,0px));right:max(10px,env(safe-area-inset-right,0px));top:calc(62px + env(safe-area-inset-top,0px));
+  max-width:520px;margin:0 auto;padding:12px 14px 12px;border-radius:20px;background:rgba(16,26,48,.97);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border:1px solid rgba(120,170,255,.45);box-shadow:0 20px 50px -10px rgba(0,0,0,.7),0 0 0 4px rgba(47,123,255,.12);animation:tIn .35s var(--ease)}
+.ch-top{display:flex;align-items:center;gap:8px}
+.ch-n{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:var(--grad);font:800 14px var(--round)}
+.ch-of{flex:1;font-size:13px;color:var(--ink3);font-weight:600}
+.ch-x{width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.08);color:var(--ink2);font-size:14px}
+.ch-t{margin-top:8px;font-size:19px;font-weight:700;letter-spacing:-.015em;line-height:1.25}
+.ch-t b{color:var(--cyan)}
+.ch-s{margin-top:2px;font-size:13.5px;color:var(--ink3)}
+.ch-mock{margin-top:10px}
+.ch-mock .mk-bar,.ch-mock .mk-sheet,.ch-mock .mk-dlg,.ch-mock .mk-home{transform-origin:top left}
+.ch-mock>*{max-width:300px}
+.ch-mock .mk-sheet .mk-row.dim,.ch-mock .mk-apps{display:none}
+.ch-mock .mk-row{padding:10px 12px;font-size:15px}
+.ch-mock .mk-home{grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;padding:10px}
+.ch-mock .mk-home i:nth-child(n+6){display:none}
+.ch-mock{padding:10px;border-radius:14px;background:#E9EDF3;color:#111}
+.ch-mock svg{width:20px;height:20px;stroke:#111;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.ch-mock svg circle{fill:#111;stroke:none}
+.ch-nav{display:flex;gap:8px;margin-top:12px}
+.ch-b{flex:2;height:44px;border-radius:12px;background:var(--grad);color:#fff;font-weight:700;font-size:15.5px}
+.ch-b.ghost{flex:1;background:rgba(255,255,255,.08);border:1px solid var(--line2)}
+.ch-b:disabled{opacity:.35}
+.ch-help{margin-top:8px;font-size:12.5px;color:var(--ink3);text-align:center}
+.ch-help a{color:var(--cyan);font-weight:700;text-decoration:none}
+.iarrow.mid{right:auto;left:50%;margin-left:-13px}
 /* ---------- Karşılama ---------- */
 .splash{position:fixed;inset:0;z-index:100;display:grid;place-items:center;background:#03060D;transition:opacity .5s var(--ease),visibility .5s}
 .splash img{width:min(64vw,300px);animation:spl 1s var(--ease) both}
@@ -2223,36 +2251,31 @@ function installSlides(){
     {t:"<b>Ana ekrana ekle</b>'ye dokun", s:"Bazı telefonlarda adı “Uygulamayı yükle”", m:mock.androidMenu()},
     {t:"<b>Ekle</b>'ye bas", s:"", m:mock.androidDlg()}, done];
 }
+// Kompakt rehber: ekranın üstünde küçük bir kart; sayfayı ve Safari'nin alt çubuğunu kapatmaz
 function openInstallGuide(){
   const slides=installSlides(); let i=0;
-  const sh=$("sheet");
-  sh.innerHTML=`<div class="box guide" role="dialog" aria-modal="true" aria-label="Uygulamayı yükle"><div class="grab"></div>
-    <div class="ihead"><img src="icons/icon-192.png" alt=""><div><h2>BULUTOXX'i yükle</h2><p class="note">${slides.length-1} kolay adım · ücretsiz</p></div></div>
-    <div class="gstage" id="gStage"></div>
-    <div class="gdots" id="gDots">${slides.map((_,k)=>`<i data-k="${k}"></i>`).join("")}</div>
-    <div class="actions"><button class="btn ghost" type="button" id="gPrev">Geri</button><button class="btn" type="button" id="gNext">İleri</button></div>
-    ${IS_IOS?`<details class="ghelp"><summary>“Ana Ekrana Ekle” çıkmıyor mu?</summary>
-      <p class="note">Sayfa WhatsApp veya Instagram gibi bir uygulamanın içinde açılmış olabilir. Önce Safari'de aç, sonra adımları tekrarla.</p>
-      <div class="actions"><a class="btn sm" href="x-safari-https://bulutoxx.github.io/" style="text-align:center;text-decoration:none">Safari'de aç</a><button class="btn sm ghost" id="copyLink" type="button">Bağlantıyı kopyala</button></div></details>`:""}
-  </div>`;
-  sh.hidden=false;
-  const paint=()=>{ const s=slides[i];
-    $("gStage").innerHTML=`<div class="gslide"><div class="gnum">${i<slides.length-1?i+1:"✓"}</div><h3 class="gt">${s.t}</h3>${s.s?`<p class="gs">${s.s}</p>`:""}<div class="gmock">${s.m}</div></div>`;
-    $("gDots").querySelectorAll("i").forEach((d,k)=>d.classList.toggle("on",k===i));
-    $("gPrev").style.visibility=i?"visible":"hidden";
-    $("gNext").textContent = i===slides.length-2?"Ekledim":i===slides.length-1?"Tamam":"İleri";
-    if(PREFS.voiceMenu||PREFS.voice) Voice.say($("gStage").querySelector(".gt").textContent, true);
-    buzz(6); };
-  const close=()=>{ sh.hidden=true; sh.innerHTML=""; };
-  $("gNext").onclick=()=>{ if(i<slides.length-1){ i++; paint(); Sound.tap(); } else close(); };
-  $("gPrev").onclick=()=>{ if(i>0){ i--; paint(); Sound.tap(); } };
-  $("gDots").onclick=e=>{ const d=e.target.closest("i"); if(d){ i=+d.dataset.k; paint(); } };
-  let x0=null; const st=$("gStage");
-  st.addEventListener("touchstart",e=>{ x0=e.touches[0].clientX; },{passive:true});
-  st.addEventListener("touchend",e=>{ if(x0==null) return; const dx=e.changedTouches[0].clientX-x0; x0=null;
-    if(dx<-40) $("gNext").click(); else if(dx>40) $("gPrev").click(); });
-  sh.onclick=e=>{ if(e.target===sh) close(); };
-  const cp=$("copyLink"); if(cp) cp.onclick=async()=>{ try{ await navigator.clipboard.writeText("https://bulutoxx.github.io"); toast("Bağlantı kopyalandı"); }catch(e){ toast("bulutoxx.github.io"); } };
+  const old=$("coach"); if(old) old.remove();
+  const c=document.createElement("div"); c.id="coach"; c.className="coach"; c.setAttribute("role","dialog"); c.setAttribute("aria-label","Uygulamayı yükle");
+  document.body.appendChild(c);
+  let arrow=null;
+  const close=()=>{ c.remove(); if(arrow) arrow.remove(); };
+  const paint=()=>{
+    const s=slides[i], last=i===slides.length-1;
+    c.innerHTML=`<div class="ch-top"><span class="ch-n">${last?"✓":i+1}</span><span class="ch-of">${last?"Tamam":`Adım ${i+1} / ${slides.length-1}`}</span>
+        <button class="ch-x" type="button" aria-label="Kapat">✕</button></div>
+      <div class="ch-t">${s.t}</div>${s.s?`<div class="ch-s">${s.s}</div>`:""}
+      <div class="ch-mock">${s.m}</div>
+      <div class="ch-nav"><button class="ch-b ghost" type="button" data-a="p" ${i?"":"disabled"}>Geri</button>
+        <button class="ch-b" type="button" data-a="n">${last?"Kapat":i===slides.length-2?"Ekledim ✓":"Yaptım, sonraki"}</button></div>
+      ${i===0&&IS_IOS?`<div class="ch-help">Seçenek çıkmıyorsa: <a href="x-safari-https://bulutoxx.github.io/">Safari'de aç</a></div>`:""}`;
+    c.querySelector(".ch-x").onclick=close;
+    c.querySelector('[data-a="n"]').onclick=()=>{ if(last) close(); else { i++; paint(); Sound.tap(); buzz(6); } };
+    c.querySelector('[data-a="p"]').onclick=()=>{ if(i){ i--; paint(); Sound.tap(); } };
+    // İlk adımda sağ alttaki ••• (veya alttaki Paylaş) düğmesini gösteren ok
+    if(arrow){ arrow.remove(); arrow=null; }
+    if(i===0 && IS_IOS && !IOS_CHROME){ arrow=document.createElement("div"); arrow.className="iarrow"+(SAFARI_VER>=26?"":" mid"); document.body.appendChild(arrow); }
+    if(PREFS.voiceMenu||PREFS.voice) Voice.say(c.querySelector(".ch-t").textContent, true);
+  };
   paint();
 }
 // Yükle: Android/Chrome'da tek dokunuş, diğerlerinde resimli rehber
