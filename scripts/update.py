@@ -489,8 +489,8 @@ def main():
     P0 = {"decay": 0.004, "prior": 2.5, "rho": -0.06, "formW": 0.3}
     P0.update({k: v for k, v in model.get("params", {}).items() if k in P0})
     all_ms = {lg: d["matches"] for lg, d in season.items() if not d.get("cup")}
-    prev_n = (model.get("backtest") or {}).get("n", 0)
-    full = "--tune" in sys.argv or today.weekday() == 0 or "params" not in model or prev_n < 1000
+    # Ayarlar az veriyle seçildiyse (ilk kurulum) veya haftanın ilk günüyse tam öğrenme
+    full = "--tune" in sys.argv or today.weekday() == 0 or model.get("tuned_n", 0) < 1000
     if full:
         print("Ayar aranıyor (haftalık tam öğrenme)…", flush=True)
         P, bt = tune(all_ms, P0)
@@ -501,9 +501,14 @@ def main():
     mw, mstats = tune_market(bt) if bt else (0.6, None)
     P["marketW"] = mw
     cup = learn_strength(season, P, today)
-    now = datetime.now(timezone.utc).astimezone().strftime("%Y-%m-%d %H:%M")
+    try:
+        from zoneinfo import ZoneInfo
+        now = datetime.now(ZoneInfo("Europe/Istanbul")).strftime("%Y-%m-%d %H:%M")
+    except Exception:
+        now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
     mt = metrics(bt, P) if bt else {}
-    model = {"cup": cup, "updated": now, "tuned": now if full else model.get("tuned", now), "params": P, "backtest": mt, "market": mstats, "sources": log,
+    model = {"cup": cup, "updated": now, "tuned": now if full else model.get("tuned", now),
+             "tuned_n": (bt["n"] if bt else 0) if full else model.get("tuned_n", 0), "params": P, "backtest": mt, "market": mstats, "sources": log,
              "leagues": {lg: {"name": d.get("name", LEAGUES.get(lg, ("", "", lg))[2]), "asOf": d["asOf"],
                               "n": len([m for m in d["matches"] if m["season"] == d.get("season")]), "n_all": len(d["matches"]),
                               "avg": round(sum(sum(m["ft"]) for m in d["matches"] if m["season"] == d.get("season")) / max(1, len([m for m in d["matches"] if m["season"] == d.get("season")])), 2)}

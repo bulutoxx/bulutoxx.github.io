@@ -857,7 +857,7 @@ function renderKarne(){
       <div><span>Son otomatik güncelleme</span><span>${esc(MODEL?MODEL.updated:"–")}</span></div>
       <div><span>Bu sezon eğitimdeki maç</span><span>${curM||"–"}</span></div>
       <div><span>Toplam eğitim maçı (2 sezon)</span><span>${allM}</span></div>
-      <div><span>Güncelleme sıklığı</span><span>Her gün 08:17</span></div>
+      <div><span>Güncelleme sıklığı</span><span>Günde 3 kez</span></div>
     </div>
     <div class="tbl"><table><thead><tr><th>Lig</th><th class="r">Bu sezon</th><th class="r">Son maç</th></tr></thead><tbody>
       ${lgs.map(l=>{ const L=MODEL&&MODEL.leagues&&MODEL.leagues[l]; return `<tr><td>${esc(LEAGUES[l].n)}</td><td class="r">${L?L.n:"–"}</td><td class="r">${esc(SEASON[l].asOf||"")}</td></tr>`; }).join("")}
