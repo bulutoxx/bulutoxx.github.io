@@ -3568,17 +3568,17 @@ renderKarne=function(){ _rk5(); const t=document.querySelector("#bkKarne table")
 // =====================================================================
 const UPD={ at:Date.now() };
 function agoTxt(ms){ const m=Math.round(ms/60000); return m<1?"az önce":m<60?m+" dk önce":m<1440?Math.round(m/60)+" saat önce":Math.round(m/1440)+" gün önce"; }
-function nextRun(){ // motor: 08:17, 15:17, 23:47 İstanbul
-  const now=new Date(), slots=[[8,17],[15,17],[23,47]];
-  const ist=new Date(now.toLocaleString("en-US",{timeZone:"Europe/Istanbul"}));
-  for(const [h,m] of slots){ if(ist.getHours()<h||(ist.getHours()===h&&ist.getMinutes()<m)) return `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}`; }
-  return "08:17 (yarın)";
+function nextRun(){ // motor her saat :17'de kontrol eder
+  const ist=new Date(new Date().toLocaleString("en-US",{timeZone:"Europe/Istanbul"}));
+  let h=ist.getHours(); if(ist.getMinutes()>=17) h=(h+1)%24; return String(h).padStart(2,"0")+":17";
 }
-function modelAge(){ const u=MODEL&&MODEL.updated; if(!u) return null; const [d,t]=u.split(" "); return Date.now()-new Date(d+"T"+(t||"00:00")+":00+03:00").getTime(); }
+function ageOf(u){ if(!u) return null; const [d,t]=u.split(" "); return Date.now()-new Date(d+"T"+(t||"00:00")+":00+03:00").getTime(); }
+function modelAge(){ return ageOf(MODEL&&(MODEL.tuned||MODEL.updated)); }
 function paintUpd(){
   document.querySelectorAll(".upd-bar").forEach(b=>{
     const ma=modelAge();
-    b.querySelector(".upd-t").innerHTML=`<b>Model ${ma!=null?agoTxt(ma):"–"} eğitildi</b><small>Oran ve canlı skor ${agoTxt(Date.now()-UPD.at)} çekildi · sonraki eğitim ${nextRun()}</small>`;
+    const ca=ageOf(MODEL&&MODEL.updated);
+    b.querySelector(".upd-t").innerHTML=`<b>Model ${ma!=null?agoTxt(ma):"–"} eğitildi</b><small>Motor ${ca!=null?agoTxt(ca):"–"} kontrol etti · sonraki ${nextRun()} · canlı ${agoTxt(Date.now()-UPD.at)}</small>`;
   });
 }
 async function doRefresh(btn){

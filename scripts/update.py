@@ -806,32 +806,44 @@ def main():
     all_ms = {lg: d["matches"] for lg, d in season.items() if not d.get("cup")}
     # Ayarlar az veriyle seçildiyse (ilk kurulum) veya haftanın ilk günüyse tam öğrenme
     # Sürekli öğrenme: her çalıştırmada ayarlar yeni veriyle baştan aranır (yaklaşık 1-2 dakika, ücretsiz)
-    full = "--no-tune" not in sys.argv
-    if full:
-        print("Ayar aranıyor (tam öğrenme)…", flush=True)
+    # Akıllı nöbet: motor saatte bir uyanır; yeni maç sonucu yoksa yeniden eğitmez (aynı veri = aynı model),
+    # yalnızca oranları, fikstürü ve tahmin karnesini tazeler. Yeni sonuç gelince tam öğrenme yapar.
+    import hashlib
+    fp = hashlib.sha1(json.dumps(sorted((lg, len(ms), max((m["d"] for m in ms), default=""), sum(sum(m["ft"]) for m in ms))
+                                         for lg, ms in all_ms.items())).encode()).hexdigest()[:16]
+    quick = (model.get("fp") == fp and bool(model.get("backtest")) and "--force" not in sys.argv)
+    full = "--no-tune" not in sys.argv and not quick
+    if quick:
+        print("Yeni maç sonucu yok: eğitim atlandı, yalnızca oranlar ve fikstür tazeleniyor", flush=True)
+        P, bt = dict(model["params"]), None
+    elif full:
+        print("Yeni sonuç var: ayar aranıyor (tam öğrenme)…", flush=True)
         P, bt = tune(all_ms, P0)
     else:
         print("Günlük test (ayarlar korunuyor)…", flush=True)
         P, bt = dict(P0), backtest(all_ms, P0)
-    P["h1"] = h1_share(all_ms)
-    mw, mstats = tune_market(bt) if bt else (0.6, None)
-    P["marketW"] = mw
+    if not quick:
+        P["h1"] = h1_share(all_ms)
+        mw, mstats = tune_market(bt) if bt else (0.6, None)
+        P["marketW"] = mw
+    else:
+        mstats = model.get("market")
     cup = learn_strength(season, P, today)
     try:
         from zoneinfo import ZoneInfo
         now = datetime.now(ZoneInfo("Europe/Istanbul")).strftime("%Y-%m-%d %H:%M")
     except Exception:
         now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
-    mt = metrics(bt, P) if bt else {}
+    mt = metrics(bt, P) if bt else dict(model.get("backtest", {}))
     if GUARD: mt["dogrulama"] = GUARD
     try:
-        rk = risk_test(bt) if bt else None
+        rk = risk_test(bt) if bt else mt.get("risk")
         if rk: mt["risk"] = rk; P["risk"] = rk["kural"]
         print("Yüksek kazanç kuralı:", rk and rk["secilen"], flush=True)
     except Exception as e:
         print("risk testi atlandı:", e, flush=True)
     try:
-        hz = horizon_test(all_ms, P) if full else model.get("backtest", {}).get("uzun_vade")
+        hz = horizon_test(all_ms, P) if (full or not model.get("backtest", {}).get("uzun_vade")) and not quick else model.get("backtest", {}).get("uzun_vade")
         if hz: mt["uzun_vade"] = hz; P["decay90"] = hz.get("uzun_vade_decay", P["decay"])
         print("Uzun vade testi:", json.dumps(hz, ensure_ascii=False), flush=True)
     except Exception as e:
@@ -851,8 +863,9 @@ def main():
     json.dump(plog, open(plp, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
     live = live_report(plog, today)
     print("Canlı karne:", json.dumps(live, ensure_ascii=False), flush=True)
-    model = {"live": live, "cup": cup, "updated": now, "tuned": now if full else model.get("tuned", now),
-             "tuned_n": (bt["n"] if bt else 0) if full else model.get("tuned_n", 0), "params": P, "backtest": mt, "market": mstats, "sources": log,
+    model = {"live": live, "cup": cup, "updated": now, "tuned": now if not quick else model.get("tuned", now), "fp": fp,
+             "checks": (model.get("checks", 0) + 1), "trainings": model.get("trainings", 0) + (0 if quick else 1),
+             "tuned_n": (bt["n"] if bt else 0) if not quick else model.get("tuned_n", 0), "params": P, "backtest": mt, "market": mstats, "sources": log,
              "leagues": {lg: {"name": d.get("name", LEAGUES.get(lg, ("", "", lg))[2]), "asOf": d["asOf"],
                               "n": len([m for m in d["matches"] if m["season"] == d.get("season")]), "n_all": len(d["matches"]),
                               "avg": round(sum(sum(m["ft"]) for m in d["matches"] if m["season"] == d.get("season")) / max(1, len([m for m in d["matches"] if m["season"] == d.get("season")])), 2)}
@@ -860,7 +873,7 @@ def main():
     json.dump(model, open(mp, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     hp = os.path.join(DATA, "history.json")
     hist = json.load(open(hp, encoding="utf-8")) if os.path.exists(hp) else []
-    if mt:
+    if mt and not quick:
         hist.append({"t": now, "n": mt["n"], "logloss": mt["logloss"], "brier": mt["brier"], "r1x2": mt["r1x2"]})
         hist = hist[-200:]
     json.dump(hist, open(hp, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))

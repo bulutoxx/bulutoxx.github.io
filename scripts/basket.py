@@ -427,10 +427,17 @@ def main():
         print(lg, log.get(lg), len(store.get(lg, {}).get("g", [])), flush=True)
     json.dump(store, open(gp, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
 
+    # Akıllı nöbet: yeni maç sonucu yoksa yeniden eğitme, yalnızca fikstür ve canlı bilgiyi tazele
+    import hashlib
+    fp = hashlib.sha1(json.dumps(sorted((lg, len(st.get("g", [])), (st.get("g") or [{}])[-1].get("id", "")) for lg, st in store.items())).encode()).hexdigest()[:16]
+    quick = old.get("fp") == fp and bool(old.get("leagues")) and "--force" not in sys.argv
+    if quick: print("Basketbol: yeni sonuç yok, eğitim atlandı", flush=True)
     out_lg, fits, Ps, bt_all = {}, {}, {}, []
     for lg, (src, code, name, qlen) in LEAGUES.items():
         games = store.get(lg, {}).get("g", [])
         if len(games) < 40: continue
+        if quick and lg in old["leagues"]:
+            P = old["leagues"][lg]["params"]; fits[lg] = fit(games, today, P); Ps[lg] = P; out_lg[lg] = old["leagues"][lg]; continue
         t0 = time.time()
         P, guard, _ = tune(games, lg, (old.get("leagues", {}).get(lg) or {}).get("params"))
         mt = 200 if lg == "ncaa" else 80
@@ -467,13 +474,13 @@ def main():
         now = datetime.now(ZoneInfo("Europe/Istanbul")).strftime("%Y-%m-%d %H:%M")
     except Exception:
         now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
-    tot = None
+    tot = old.get("backtest") if quick else None
     if bt_all:
         tot = {"n": len(bt_all), "win": round(float(np.mean([((r[1] > r[2]) == (r[0]["hs"] > r[0]["as_"])) for r in bt_all])), 4),
                "mae_total": round(float(np.mean([abs((r[0]["hs"] + r[0]["as_"]) - (r[1] + r[2])) for r in bt_all])), 2),
                "mae_margin": round(float(np.mean([abs((r[0]["hs"] - r[0]["as_"]) - (r[1] - r[2])) for r in bt_all])), 2)}
     hist = old.get("history", [])
-    if tot: hist = (hist + [{"t": now, "win": tot["win"], "n": tot["n"], "mae_total": tot["mae_total"]}])[-60:]
+    if tot and not quick: hist = (hist + [{"t": now, "win": tot["win"], "n": tot["n"], "mae_total": tot["mae_total"]}])[-60:]
     fx_out = []
     for f in sorted(fixtures, key=lambda x: x["dt"]):
         if f["lg"] not in out_lg: continue
@@ -482,7 +489,7 @@ def main():
             if f.get(k): x[k] = f[k]
         if f.get("state") == "in": x["live"] = True; x["hs"] = f.get("hs"); x["as"] = f.get("as_")
         fx_out.append(x)
-    res = {"updated": now, "leagues": out_lg, "fixtures": fx_out, "backtest": tot, "history": hist,
+    res = {"updated": now, "tuned": old.get("tuned", now) if quick else now, "fp": fp, "leagues": out_lg, "fixtures": fx_out, "backtest": tot, "history": hist,
            "live": live_report(plog, today), "market": {"w": mw if mw is not None else 0.5, "n": mn, "learned": mw is not None}, "sources": log}
     json.dump(res, open(op, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
     print("Bitti:", json.dumps(tot, ensure_ascii=False), "fikstür", len(fx_out), flush=True)

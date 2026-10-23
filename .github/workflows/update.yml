@@ -2,9 +2,7 @@ name: BULUTOXX güncelle ve yayınla
 
 on:
   schedule:
-    - cron: "17 5 * * *"    # 08:17 İstanbul
-    - cron: "17 12 * * *"   # 15:17 İstanbul
-    - cron: "47 20 * * *"   # 23:47 İstanbul — akşam maçları işlenir
+    - cron: "17 * * * *"    # her saat başı +17 dk: akıllı nöbet. Yeni sonuç varsa tam öğrenme, yoksa yalnızca oran/fikstür tazeleme
   workflow_dispatch: {}     # Actions sekmesinden "Run workflow" ile elle çalıştırma
   push:
     branches: [main]
