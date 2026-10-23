@@ -750,6 +750,9 @@ body.ios-guide main,body.ios-guide .page{padding-bottom:40vh}
 .scn-s{background:linear-gradient(135deg,rgba(255,159,10,.12),rgba(255,69,58,.1));border-color:rgba(255,159,10,.3)}
 .sc-hf .v{color:#7EE2A8}
 @media (max-width:380px){.scn{grid-template-columns:repeat(2,1fr)}}
+.lg-h{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:6px 4px 8px}
+.lg-h h3{margin:0;font-size:15px}
+.lg-all{flex:none;font-size:13px;font-weight:700;color:var(--cyan);padding:6px 10px;border-radius:99px;background:rgba(34,211,255,.1)}
 </style>
 </head>
 <body>
@@ -1719,6 +1722,8 @@ const PREF_KEY="bulutoxx-prefs";
 const PREFS=Object.assign({sound:true, voice:false, voiceMenu:false, goals:true, vibrate:true, allLive:false,
   leagues:["tr1","en","es","it","de","fr","ucl","uel","uecl","nl","pt"]}, (()=>{ try{ return JSON.parse(localStorage.getItem(PREF_KEY)||"{}"); }catch(e){ return {}; } })());
 function savePrefs(){ try{ localStorage.setItem(PREF_KEY, JSON.stringify(PREFS)); }catch(e){} }
+const BK_NAMES={nba:"NBA",el:"EuroLeague",ec:"EuroCup",wnba:"WNBA",nbl:"NBL Avustralya",ncaa:"NCAA (Üniversite)"};
+if(!Array.isArray(PREFS.bkLeagues)){ PREFS.bkLeagues=Object.keys(BK_NAMES); savePrefs(); }
 
 // ---------- Ses (Web Audio ile sentezlenir, dosya gerekmez) ----------
 const Sound=(()=>{
@@ -1794,14 +1799,22 @@ function openSettings(){
       ${cell("vibrate","vib","#0A84FF","Titreşim","Destekleyen telefonlarda")}
       <div class="cell"><span class="ic" style="background:#FF375F"><svg viewBox="0 0 24 24">${IC.bell}</svg></span><span class="tx"><b>Bildirim izni</b><small id="notifState">${notifText()}</small></span><button class="btn sm ghost" id="notifBtn">İzin ver</button></div>
     </div>
-    <h3 style="margin:4px 4px 8px">Canlı takip edilen ligler</h3>
-    <div class="group"><div class="lgchips">${LV.map(l=>`<button data-l="${l}" aria-pressed="${PREFS.leagues.includes(l)}">${esc(LEAGUES[l].n)}</button>`).join("")}</div></div>
+    <div class="lg-h"><h3>⚽ Takip edilen futbol ligleri</h3><button type="button" class="lg-all" data-k="leagues">${PREFS.leagues.length>=LV.length?"Tümünü kaldır":"Tümünü seç"}</button></div>
+    <div class="group"><div class="lgchips" data-k="leagues">${LV.map(l=>`<button data-l="${l}" aria-pressed="${PREFS.leagues.includes(l)}">${FLAG[l]||""} ${esc(LEAGUES[l].n)}</button>`).join("")}</div></div>
+    <div class="lg-h"><h3>🏀 Takip edilen basketbol ligleri</h3><button type="button" class="lg-all" data-k="bkLeagues">${PREFS.bkLeagues.length>=Object.keys(BK_NAMES).length?"Tümünü kaldır":"Tümünü seç"}</button></div>
+    <div class="group"><div class="lgchips" data-k="bkLeagues">${Object.entries(BK_NAMES).map(([l,n])=>`<button data-l="${l}" aria-pressed="${PREFS.bkLeagues.includes(l)}">${(typeof BK_FLAG!=="undefined"&&BK_FLAG[l])||"🏀"} ${esc(n)}</button>`).join("")}</div></div>
+    <p class="note" style="margin:-4px 6px 12px">Seçili ligler bültende, canlı skorlarda ve gol uyarılarında gösterilir. İstediğin ligi dokunarak kaldırabilir, tekrar ekleyebilirsin.</p>
     <button class="btn" id="setDone">Tamam</button></div>`;
   sh.hidden=false; buzz(10);
   sh.querySelectorAll(".sw input").forEach(inp=>inp.addEventListener("change",()=>{ const k=inp.id.slice(2); PREFS[k]=inp.checked; savePrefs(); Sound.toggle(inp.checked); buzz(6);
     if(k==="voice"&&inp.checked) Voice.say("Sesli anlatım açık", true); }));
-  sh.querySelectorAll(".lgchips button").forEach(b=>b.addEventListener("click",()=>{ const l=b.dataset.l, on=b.getAttribute("aria-pressed")!=="true";
-    b.setAttribute("aria-pressed",on); PREFS.leagues=on?[...new Set([...PREFS.leagues,l])]:PREFS.leagues.filter(x=>x!==l); savePrefs(); Live.refresh(true); }));
+  const lgAfter=k=>{ savePrefs(); if(k==="leagues"){ Live.refresh(true); if(typeof BT!=="undefined"){ BT.cache.clear(); } }
+    const allN=k==="leagues"?LV.length:Object.keys(BK_NAMES).length, bt=sh.querySelector(`.lg-all[data-k="${k}"]`); if(bt) bt.textContent=PREFS[k].length>=allN?"Tümünü kaldır":"Tümünü seç";
+    try{ if(!$("v-bulten").hidden) renderBulten(); if(!$("v-basket").hidden) renderBasket(); }catch(e){} };
+  sh.querySelectorAll(".lgchips button").forEach(b=>b.addEventListener("click",()=>{ const k=b.parentElement.dataset.k||"leagues", l=b.dataset.l, on=b.getAttribute("aria-pressed")!=="true";
+    b.setAttribute("aria-pressed",on); PREFS[k]=on?[...new Set([...PREFS[k],l])]:PREFS[k].filter(x=>x!==l); buzz(6); lgAfter(k); }));
+  sh.querySelectorAll(".lg-all").forEach(b=>b.addEventListener("click",()=>{ const k=b.dataset.k, all=k==="leagues"?LV:Object.keys(BK_NAMES), on=PREFS[k].length<all.length;
+    PREFS[k]=on?[...all]:[]; sh.querySelectorAll(`.lgchips[data-k="${k}"] button`).forEach(x=>x.setAttribute("aria-pressed",on)); Sound.tap(); lgAfter(k); }));
   $("notifBtn").onclick=async()=>{ if(!("Notification" in window)){ toast("Bu tarayıcı bildirim desteklemiyor"); return; }
     try{ await Notification.requestPermission(); }catch(e){} $("notifState").textContent=notifText(); };
   const close=()=>{ sh.hidden=true; sh.innerHTML=""; paintMode(); };
@@ -1832,6 +1845,8 @@ paintMode();
 const ESPN={tr1:"tur.1",en:"eng.1",es:"esp.1",it:"ita.1",de:"ger.1",fr:"fra.1",ucl:"uefa.champions",uel:"uefa.europa",uecl:"uefa.europa.conf",
   nl:"ned.1",pt:"por.1",be:"bel.1",sc:"sco.1",gr:"gre.1",en2:"eng.2",de2:"ger.2",it2:"ita.2",es2:"esp.2",fr2:"fra.2",
   br:"bra.1",ar:"arg.1",us:"usa.1",mx:"mex.1",jp:"jpn.1",at:"aut.1",ch:"sui.1",dk:"den.1",no:"nor.1",se:"swe.1"};
+if(PREFS.lgv!==2){ PREFS.lgv=2; PREFS.leagues=Object.keys(ESPN); PREFS.bkLeagues=Object.keys(BK_NAMES); savePrefs(); }
+
 const CUP_NAMES={ucl:"Şampiyonlar Ligi",uel:"Avrupa Ligi",uecl:"Konferans Ligi"};
 for(const [k,n] of Object.entries(CUP_NAMES)) if(!LEAGUES[k]) LEAGUES[k]={n, g:2.95};
 const Live=(()=>{
@@ -3059,7 +3074,9 @@ const _rb=renderBulten;
 renderBulten=function(){
   // satır bilgisini oddBtn'e taşımak için Pick.list kayıtlarını eşle
   const origList=Pick.list; let map=new Map();
-  Pick.list=function(){ const L=origList.call(Pick); L.forEach(m=>map.set(cpKey(m),m)); return L; };
+  // takip edilmeyen futbol ligleri bültende gösterilmez (ayarlardan seçilir)
+  const fol=new Set(PREFS.leagues||[]), ctl=new Set(Object.keys(ESPN));
+  Pick.list=function(){ const L=origList.call(Pick).filter(m=>!ctl.has(m.lg)||fol.has(m.lg)); L.forEach(m=>map.set(cpKey(m),m)); return L; };
   try{ _rb(); } finally { Pick.list=origList; }
   $("btList").querySelectorAll(".br").forEach(r=>r.querySelectorAll(".ob[data-mk]").forEach(o=>o.dataset.k=r.dataset.ck));
   // favori filtresi
@@ -3239,8 +3256,9 @@ const fmtT=l=>String(l).replace(".",",");
 // Canlı skorlar: ESPN (NBA, WNBA, NBL, NCAA) her 30 sn
 async function bkLive(){
   const d=new Date(), ymd=istDay(d).replace(/-/g,""), y2=istDay(new Date(Date.now()-864e5)).replace(/-/g,"");
-  const fx=(BK.data&&BK.data.fixtures)||[]; const lgs=[...new Set(fx.map(f=>f.lg))].filter(l=>BK_ESPN[l]);
-  if(!lgs.includes("nba")) lgs.push("nba");
+  const fol=new Set(PREFS.bkLeagues||[]);
+  const fx=(BK.data&&BK.data.fixtures)||[]; const lgs=[...new Set(fx.map(f=>f.lg))].filter(l=>BK_ESPN[l]&&fol.has(l));
+  if(!lgs.includes("nba")&&fol.has("nba")) lgs.push("nba");
   await Promise.all(lgs.flatMap(lg=>[ymd,y2].map(async day=>{
     try{ const u=`https://site.api.espn.com/apis/site/v2/sports/basketball/${BK_ESPN[lg]}/scoreboard?dates=${day}`+(lg==="ncaa"?"&groups=50&limit=400":"");
       const r=await fetch(u); if(!r.ok) return; const j=await r.json();
@@ -3253,7 +3271,8 @@ async function bkLive(){
 function bkLiveOf(f){ return BK.live.get(f.lg+"|"+f.h+"|"+f.a)||(f.live?{state:"in",clock:f.clock||"Canlı",hs:f.hs,as:f.as}:null); }
 function bkList(){
   const D=BK.data; if(!D) return [];
-  const fx=(D.fixtures||[]).map(f=>Object.assign({},f,{t:new Date(f.dt)}));
+  const fol=new Set(PREFS.bkLeagues||Object.keys(BK_NAMES));
+  const fx=(D.fixtures||[]).filter(f=>fol.has(f.lg)).map(f=>Object.assign({},f,{t:new Date(f.dt)}));
   return fx.sort((a,b)=>a.t-b.t);
 }
 function bkDays(){
@@ -3295,7 +3314,7 @@ function renderBasket(){
   if(BK.f==="sure") L=L.filter(m=>{ const p=bkPredict(m); return p&&Math.max(p.pH,p.pA)>=.7; });
   const nLive=bkList().filter(m=>(bkLiveOf(m)||{}).state==="in").length;
   $("bkSub").textContent=`${L.length} maç${nLive?` · 🔴 ${nLive} canlı`:""} · ${Object.keys(D.leagues).length} lig · ${D.backtest?`test isabeti %${Math.round(D.backtest.win*100)}`:""}`;
-  if(!L.length){ list.innerHTML=`<div class="panel empty"><b>${BK.f==="live"?"Şu an canlı basketbol maçı yok":"Bu seçimde maç yok"}</b>Başka bir gün veya filtre seç. NBA sezonu ekimden hazirana, EuroLeague ekimden mayısa sürer.</div>`; return; }
+  if(!L.length){ list.innerHTML=`<div class="panel empty"><b>${BK.f==="live"?"Şu an canlı basketbol maçı yok":"Bu seçimde maç yok"}</b>${(PREFS.bkLeagues||[]).length?"Başka bir gün veya filtre seç. NBA sezonu ekimden hazirana, EuroLeague ekimden mayısa sürer.":"Hiç basketbol ligi takip etmiyorsun. Ayarlar'dan lig seç."}</div>`; return; }
   const by={}; L.forEach(m=>(by[m.lg]=by[m.lg]||[]).push(m));
   const lgs=Object.keys(by).sort((a,b)=>BK_ORDER.indexOf(a)-BK_ORDER.indexOf(b));
   const force=!!BK.q||BK.f!=="all"||lgs.length<=3;
