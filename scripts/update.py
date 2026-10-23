@@ -14,6 +14,7 @@ Sadece Python standart kütüphanesi ve numpy gerekir.
 """
 import csv, io, json, math, os, re, sys, unicodedata, urllib.request, difflib
 from datetime import datetime, date, timezone
+import collections
 import numpy as np
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -339,6 +340,28 @@ def tune_market(bt):
     mll = -np.log(mk[np.arange(len(idx)), res]).mean()
     return round(best[1], 2), {"n": len(idx), "model_market_logloss": round(best[0], 4), "market_logloss": round(float(mll), 4)}
 
+def pick_scores(g, p, pO):
+    """Tutarlı skor: tahmin edilen sonuç (1/X/2) ve 2.5 alt/üst yönüyle uyumlu en olası skor (düz mod hep 1-1 der)."""
+    n, K = g.shape[0], g.shape[1]; ii, jj = np.meshgrid(np.arange(K), np.arange(K), indexing="ij")
+    om = [(ii > jj), (ii == jj), (ii < jj)]; pr = p.argmax(1); out = []
+    for t in range(n):
+        gg = g[t] * (om[pr[t]] & (((ii + jj) > 2) if pO[t] >= .5 else ((ii + jj) <= 2)))
+        if gg.sum() == 0: gg = g[t] * om[pr[t]]
+        out.append(divmod(int(gg.argmax()), K))
+    return out
+
+def pick_ht(g1, p1, pr_ft, th=0.05):
+    """İlk yarı: sonuca koşullu mod; İY beraberlik zayıf öndeyse maç sonu favorisinin önde olduğu skoru seç."""
+    K = g1.shape[1]; ii, jj = np.meshgrid(np.arange(K), np.arange(K), indexing="ij"); om = [(ii > jj), (ii == jj), (ii < jj)]
+    out = []
+    for t in range(g1.shape[0]):
+        o = int(p1[t].argmax())
+        if o == 1 and pr_ft[t] != 1:
+            side = 0 if pr_ft[t] == 0 else 2
+            if p1[t][1] - p1[t][side] <= th: o = side
+        out.append(divmod(int((g1[t] * om[o]).argmax()), K))
+    return out
+
 def metrics(bt, P):
     rows, p, res = bt["rows"], bt["p"], bt["res"]
     n = len(rows)
@@ -360,6 +383,26 @@ def metrics(bt, P):
         out["nh"] = len(hts)
         out["ht_exact"] = round(float(np.mean([f1[j] // k1 == r[1]["ht"][0] and f1[j] % k1 == r[1]["ht"][1] for j, (_, r) in enumerate(hts)])), 4)
         out["h2_exact"] = round(float(np.mean([f2[j] // k1 == r[1]["ft"][0] - r[1]["ht"][0] and f2[j] % k1 == r[1]["ft"][1] - r[1]["ht"][1] for j, (_, r) in enumerate(hts)])), 4)
+        p1, _, _, _ = outcome_probs(lh * s, la * s, P["rho"])
+        HC = pick_ht(g1, p1, p.argmax(1)[[i for i, _ in hts]])
+        hres = [0 if r[1]["ht"][0] > r[1]["ht"][1] else 1 if r[1]["ht"][0] == r[1]["ht"][1] else 2 for _, r in hts]
+        out["ht_exact_c"] = round(float(np.mean([HC[j] == tuple(r[1]["ht"]) for j, (_, r) in enumerate(hts)])), 4)
+        out["ht_res_c"] = round(float(np.mean([(0 if a > b else 1 if a == b else 2) == hres[j] for j, (a, b) in enumerate(HC)])), 4)
+        out["ht_res_mode"] = round(float(np.mean([(0 if f1[j] // k1 > f1[j] % k1 else 1 if f1[j] // k1 == f1[j] % k1 else 2) == hres[j] for j in range(len(hts))])), 4)
+        out["ht_top_c"] = collections.Counter(f"{a}-{b}" for a, b in HC).most_common(5)
+    # Skor seçim testi: düz mod ile tutarlı seçimi aynı geçmiş maçlarda karşılaştır, iyi olanı kullan
+    C = pick_scores(g, p, bt["pO"]); act = [tuple(r[1]["ft"]) for r in rows]
+    A = [divmod(int(f), kk) for f in flat]
+    def ev(S):
+        return {"exact": round(float(np.mean([S[t] == act[t] for t in range(n)])), 4),
+                "res": round(float(np.mean([(0 if a > b else 1 if a == b else 2) == res[t] for t, (a, b) in enumerate(S)])), 4),
+                "ou": round(float(np.mean([((a + b) > 2) == (tot[t] > 2) for t, (a, b) in enumerate(S)])), 4),
+                "distinct": len(set(S)), "top": collections.Counter(f"{a}-{b}" for a, b in S).most_common(5)}
+    eA, eC = ev(A), ev(C)
+    # Kural: tutarlı seçim net skorda en fazla 2.5 puan kaybediyor ve sonuç + alt/üst uyumunda kazanıyorsa onu kullan
+    mode = "tutarli" if (eA["exact"] - eC["exact"] <= .025 and eC["res"] + eC["ou"] > eA["res"] + eA["ou"]) else "mod"
+    out["score_test"] = {"mod": eA, "tutarli": eC, "secilen": mode}
+    out["ft_exact_c"] = eC["exact"]
     by = {}
     for i, r in enumerate(rows):
         b = by.setdefault(r[0], [0, 0]); b[0] += 1; b[1] += int(p[i].argmax() == res[i])
@@ -544,9 +587,11 @@ def predict_fixtures(fx, all_ms, P, today):
     if not rows: return []
     lh = np.array([r[1] for r in rows]); la = np.array([r[2] for r in rows])
     p, pO, pB, g = outcome_probs(lh, la, P["rho"]); kk = g.shape[1]
+    CS = pick_scores(g, p, pO) if P.get("scoreMode", "tutarli") == "tutarli" else None
     out = []
     for i, (f, a, b) in enumerate(rows):
         k = int(g[i].reshape(-1).argmax())
+        if CS: k = CS[i][0] * kk + CS[i][1]
         e = {"id": f"{f['lg']}|{f['d']}|{f['h']}|{f['a']}", "d": f["d"], "lg": f["lg"], "h": f["h"], "a": f["a"],
              "p": [round(float(x), 4) for x in p[i]], "o": round(float(pO[i]), 4), "ft": f"{k // kk}-{k % kk}"}
         if f.get("odds"):
@@ -686,6 +731,7 @@ def main():
     except Exception:
         now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
     mt = metrics(bt, P) if bt else {}
+    if mt.get("score_test"): P["scoreMode"] = mt["score_test"]["secilen"]
     # Yaklaşan maçlar: oranları kaydet, tahminleri önceden arşivle, geçmiş tahminleri gerçek sonuçla puanla
     fxp = os.path.join(DATA, "fixtures.json"); plp = os.path.join(DATA, "predlog.json")
     fx = [] if offline else download_fixtures(season, today)

@@ -648,6 +648,30 @@ body.has-cp{padding-bottom:calc(170px + env(safe-area-inset-bottom,0px))}
 
 .chip,.brand,.sub,.livedot{display:none}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+/* ---------- v13 tek ekran yükleme kartı ---------- */
+.ez{position:fixed;z-index:86;left:max(10px,env(safe-area-inset-left,0px));right:max(10px,env(safe-area-inset-right,0px));top:calc(60px + env(safe-area-inset-top,0px));
+  max-width:460px;margin:0 auto;padding:14px;border-radius:22px;background:rgba(14,22,42,.98);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border:1px solid rgba(120,170,255,.45);box-shadow:0 22px 60px -10px rgba(0,0,0,.75);animation:tIn .3s var(--ease)}
+.ez-h{display:flex;align-items:center;gap:10px}
+.ez-h img{width:44px;height:44px;border-radius:11px}
+.ez-h div{flex:1;min-width:0}
+.ez-h b{display:block;font-size:17px;letter-spacing:-.01em}
+.ez-h small{display:block;font-size:12.5px;color:#7EE2A8;font-weight:600}
+.ez-x{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.08);color:var(--ink2);font-size:15px;flex:none}
+.ez-st{display:grid;gap:8px;margin-top:12px}
+.ez-r{display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:14px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.07);font-size:16px;line-height:1.25}
+.ez-r .n{flex:none;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:var(--grad);font:800 14px var(--round);color:#fff}
+.ez-r .t{flex:1}
+.ez-r .t b{color:var(--cyan)}
+.ez-r .k{flex:none;width:38px;height:38px;border-radius:10px;display:grid;place-items:center;background:#E9EDF3}
+.ez-r .k svg{width:22px;height:22px;stroke:#0A84FF;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.ez-r .k.dots svg{fill:#111;stroke:none}
+.ez-big{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:12px;padding:15px;border-radius:15px;background:var(--grad);color:#fff;font:700 17px var(--sf);text-decoration:none;border:0}
+.ez-big.alt{background:rgba(255,255,255,.08);color:var(--ink);font-weight:600;font-size:15px;padding:12px;margin-top:8px}
+.ez-safe{margin-top:10px;padding:10px 12px;border-radius:12px;background:rgba(52,199,89,.1);border:1px solid rgba(52,199,89,.3);font-size:13px;color:var(--ink2);line-height:1.4}
+.ez-safe b{color:#7EE2A8}
+.ez-f{margin-top:8px;font-size:12.5px;color:var(--ink3);text-align:center}
+.ez-f a{color:var(--cyan)}
 </style>
 </head>
 <body>
@@ -986,8 +1010,27 @@ function dist(lh, la, s, rho){
   const t1=[],t2=[]; for(let k=0;k<=2*MX;k++){t1[k]=0;t2[k]=0;}
   g1.forEach((r,i)=>r.forEach((v,j)=>t1[i+j]+=v)); g2.forEach((r,i)=>r.forEach((v,j)=>t2[i+j]+=v));
   let eq=0; for(let x=0;x<t1.length;x++) for(let y=0;y<t2.length;y++){ const p=t1[x]*t2[y]; if(x>y) more1+=p; else if(y>x) more2+=p; else eq+=p; }
+  // Tutarlı skor seçimi (10.000+ geçmiş maç testinde seçildi): düz "en olası skor" hep 1-1 / 0-0 der.
+  // Maç sonu: tahmin edilen sonuç (1/X/2) ve 2.5 alt/üst yönüyle uyumlu en olası skor.
+  // İlk yarı: İY sonucuna koşullu; beraberlik zayıf öndeyse maç sonu favorisinin önde olduğu skor. 2Y = MS − İY.
+  const mode=(typeof MODEL!=="undefined"&&MODEL&&MODEL.params&&MODEL.params.scoreMode)||"tutarli";
+  let tF=top(ft,6), tH1=top(g1,4), tH2=top(g2,4);
+  if(mode==="tutarli"){
+    const o=H>=D&&H>=A?0:A>=D?2:1, ov=o25>=.5, ok=(i,j)=>(o===0?i>j:o===1?i===j:i<j);
+    let bf=null; ft.forEach((r,i)=>r.forEach((v,j)=>{ if(ok(i,j)&&((i+j>2)===ov)&&(!bf||v>bf.p)) bf={s:i+"-"+j,p:v,i,j}; }));
+    if(!bf) ft.forEach((r,i)=>r.forEach((v,j)=>{ if(ok(i,j)&&(!bf||v>bf.p)) bf={s:i+"-"+j,p:v,i,j}; }));
+    let h1H=0,h1D=0,h1A=0; g1.forEach((r,i)=>r.forEach((v,j)=>{ if(i>j)h1H+=v; else if(i===j)h1D+=v; else h1A+=v; }));
+    let oh=h1H>=h1D&&h1H>=h1A?0:h1A>=h1D?2:1;
+    if(oh===1&&o!==1){ const sd=o===0?h1H:h1A; if(h1D-sd<=.05) oh=o; }
+    const okh=(i,j)=>(oh===0?i>j:oh===1?i===j:i<j);
+    let bh=null; g1.forEach((r,i)=>r.forEach((v,j)=>{ if(i<=bf.i&&j<=bf.j&&okh(i,j)&&(!bh||v>bh.p)) bh={s:i+"-"+j,p:v,i,j}; }));
+    if(!bh) g1.forEach((r,i)=>r.forEach((v,j)=>{ if(i<=bf.i&&j<=bf.j&&(!bh||v>bh.p)) bh={s:i+"-"+j,p:v,i,j}; }));
+    const i2=bf.i-bh.i, j2=bf.j-bh.j, b2={s:i2+"-"+j2,p:(g2[i2]||[])[j2]||0};
+    const lead=(b,L)=>[{s:b.s,p:b.p}].concat(L.filter(x=>x.s!==b.s)).slice(0,L.length);
+    tF=lead(bf,tF); tH1=lead(bh,tH1); tH2=lead(b2,tH2);
+  }
   return { lh, la, s, H, D, A, o15, o25, o35, btts, h1o05, h1o15, h1btts, more1, more2, eq,
-    topFT:top(ft,6), topH1:top(g1,4), topH2:top(g2,4), htft:Object.entries(htft).sort((a,b)=>b[1]-a[1]) };
+    topFT:tF, topH1:tH1, topH2:tH2, htft:Object.entries(htft).sort((a,b)=>b[1]-a[1]) };
 }
 
 const STRENGTH_PRIOR={en:0,es:-.05,it:-.08,de:-.1,fr:-.18,pt:-.25,nl:-.28,be:-.33,tr1:-.33,gr:-.38,at:-.4,ch:-.4,sc:-.42,dk:-.42,ru:-.4,no:-.45,se:-.5,pl:-.5,ro:-.55,en2:-.35,de2:-.45,it2:-.55,es2:-.5,fr2:-.6};
@@ -1461,6 +1504,10 @@ function renderKarne(){
       <div class="stat"><div class="k">Maç sonu net skor</div><div class="n">${b("ft_exact")}</div></div>
       <div class="stat"><div class="k">Log-loss (düşük iyi)</div><div class="n">${bt.logloss.toFixed(3)}</div></div>
     </div>
+    ${bt.score_test?(()=>{ const T=bt.score_test, A=T.mod, C=T.tutarli, row=(n,x)=>`<tr><td>${n}</td><td class="r">${pct(x.exact,1)}</td><td class="r">${pct(x.res,1)}</td><td class="r">${pct(x.ou,1)}</td><td>${x.top.slice(0,4).map(t=>esc(t[0])).join(", ")}</td></tr>`;
+      return `<h3 style="margin-top:14px">Skor sağlık testi · ${bt.n} geçmiş maç</h3>
+      <p class="note">Her maç hiç oynanmamış gibi tahmin edildi ve gerçek skorla eşleştirildi. Düz "en olası skor" neredeyse her maça 1-1 diyordu; BULUTOXX artık sonuç ve alt/üst tahminiyle uyumlu skoru kullanıyor. Seçilen: <b>${T.secilen==="tutarli"?"Tutarlı skor":"En olası skor"}</b>.</p>
+      <div class="tbl"><table><thead><tr><th>Yöntem</th><th class="r">Net skor</th><th class="r">Skor→1X2</th><th class="r">Skor→2.5</th><th>En sık</th></tr></thead><tbody>${row("En olası skor (eski)",A)}${row("Tutarlı skor (yeni)",C)}</tbody></table></div>`; })():""}
     ${MODEL.market?`<p class="note">Oran girildiğinde: geçmiş ${MODEL.market.n} maçta model+piyasa karışımı log-loss ${MODEL.market.model_market_logloss}, yalnız piyasa ${MODEL.market.market_logloss}. Öğrenilen piyasa ağırlığı %${Math.round((mp.marketW||0)*100)}.</p>`:""}
     <p class="note">Kıyas: rastgele 1X2 %33 tutar, Brier 0.667 verir. İyi modeller 1X2'de %48–55, Brier'de 0.58–0.60 civarındadır.</p>`
     :`<p class="note">İlk otomatik güncellemeden sonra test sonuçları burada görünür.</p>`}
@@ -2120,8 +2167,8 @@ async function shareApp(){
 // =====================================================================
 // BULUTOXX v5: Link gönder (WhatsApp, Telegram, SMS...), QR, maç bağlantıları, davet sayacı
 // =====================================================================
-const SITE="https://bulutoxx.github.io/";
 const MY_REF=(()=>{ let r=lsGet("bx-ref"); if(!r){ r=Math.random().toString(36).slice(2,9); lsSet("bx-ref",r); } return r; })();
+const SITE="https://bulutoxx.github.io/";
 function appLink(extra){ const u=new URL(SITE); u.searchParams.set("r",MY_REF); if(extra) for(const [k,v] of Object.entries(extra)) u.searchParams.set(k,v); return u.toString(); }
 function matchLink(home,away){ return appLink({m:home+"|"+away}); }
 
@@ -2928,6 +2975,81 @@ renderPrediction=function(inp,r){ _rp5(inp,r);
 paintCoupon();
 TAB_NAMES.kupon="Kupon"; TAB_NAMES.ligler="Ligler";
 
+
+// =====================================================================
+// BULUTOXX v13: Tek ekran yükleme. Samsung'da Chrome ile güvenli kurulum, iPhone'da 3 adım tek kartta
+// =====================================================================
+const SITE_URL="https://bulutoxx.github.io/";
+const IS_ANDROID=/Android/i.test(UA), IS_SAMSUNG=/SamsungBrowser/i.test(UA);
+const IS_ANDROID_CHROME=IS_ANDROID && /Chrome\//.test(UA) && !/SamsungBrowser|EdgA|OPR|Firefox|YaBrowser|MiuiBrowser|HuaweiBrowser|; wv\)/i.test(UA);
+const CHROME_INTENT="intent://bulutoxx.github.io/?kur=1#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url="+encodeURIComponent("https://play.google.com/store/apps/details?id=com.android.chrome")+";end";
+const EZI={
+  dots:'<svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="2.2"/><circle cx="12" cy="12" r="2.2"/><circle cx="19" cy="12" r="2.2"/></svg>',
+  kebab:'<svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="2.2"/><circle cx="12" cy="12" r="2.2"/><circle cx="12" cy="19" r="2.2"/></svg>',
+  share:'<svg viewBox="0 0 24 24"><path d="M12 3v12M8 7l4-4 4 4"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg>',
+  plus:'<svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5"/><path d="M12 8v8M8 12h8"/></svg>',
+  burger:'<svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg>',
+  ok:'<svg viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></svg>'
+};
+const SAFE_NOTE=`<div class="ez-safe">🛡️ <b>Güvenli:</b> BULUTOXX bir web uygulamasıdır, APK veya dosya indirilmez. Telefonuna yalnızca bir kısayol eklenir; kamera, rehber, konum gibi hiçbir izin istemez. İstediğin an simgeye basılı tutup kaldırabilirsin.</div>`;
+function ezRow(n,t,ic,cls){ return `<div class="ez-r"><span class="n">${n}</span><span class="t">${t}</span>${ic?`<span class="k ${cls||""}">${ic}</span>`:""}</div>`; }
+function ezCard(sub, body){
+  document.querySelectorAll("#coach,#ez,.iarrow").forEach(x=>x.remove()); const sh=$("sheet"); if(sh&&!sh.hidden&&/Uygulamayı yükle/.test(sh.innerHTML)){ sh.hidden=true; sh.innerHTML=""; }
+  const c=document.createElement("div"); c.id="ez"; c.className="ez"; c.setAttribute("role","dialog"); c.setAttribute("aria-label","BULUTOXX'i yükle");
+  c.innerHTML=`<div class="ez-h"><img src="icons/icon-192.png" alt=""><div><b>BULUTOXX'i ana ekrana ekle</b><small>${sub}</small></div><button class="ez-x" type="button" aria-label="Kapat">✕</button></div>${body}`;
+  document.body.appendChild(c);
+  c.querySelector(".ez-x").onclick=()=>{ c.remove(); document.querySelectorAll(".iarrow").forEach(x=>x.remove()); };
+  c.querySelectorAll("[data-copy]").forEach(b=>b.onclick=async(e)=>{ e.preventDefault(); try{ await navigator.clipboard.writeText(SITE_URL); toast("Bağlantı kopyalandı"); }catch(e){ toast("bulutoxx.github.io"); } });
+  if(PREFS.voiceMenu||PREFS.voice){ const t=[...c.querySelectorAll(".ez-r .t")].map(x=>x.textContent).join(". "); if(t) Voice.say(t,true); }
+  return c;
+}
+function ezIOS(){
+  let rows;
+  if(IOS_CHROME) rows=ezRow(1,"Adres çubuğundaki <b>Paylaş</b>'a dokun",EZI.share)+ezRow(2,"<b>Ana Ekrana Ekle</b>'yi seç",EZI.plus)+ezRow(3,"Sağ üstte <b>Ekle</b>'ye bas","");
+  else if(SAFARI_VER>=26) rows=ezRow(1,"Sağ alttaki <b>•••</b>'ye dokun",EZI.dots,"dots")+ezRow(2,"<b>Paylaş</b> → <b>Ana Ekrana Ekle</b>",EZI.plus)+ezRow(3,"Sağ üstte <b>Ekle</b>'ye bas","");
+  else rows=ezRow(1,"Alttaki <b>Paylaş</b> simgesine dokun",EZI.share)+ezRow(2,"<b>Ana Ekrana Ekle</b>'yi seç",EZI.plus)+ezRow(3,"Sağ üstte <b>Ekle</b>'ye bas","");
+  ezCard("3 dokunuş · ücretsiz · 1 MB", `<div class="ez-st">${rows}</div>${SAFE_NOTE}
+    <div class="ez-f">Seçenek yoksa sayfa başka uygulamada açılmıştır: <a href="x-safari-${SITE_URL}">Safari'de aç</a> · <a href="#" data-copy>bağlantıyı kopyala</a></div>`);
+  if(!IOS_CHROME){ const a=document.createElement("div"); a.className="iarrow"+(SAFARI_VER>=26?"":" mid"); document.body.appendChild(a); setTimeout(()=>a.remove(),12000); }
+}
+function ezAndroid(){
+  // Samsung İnternet ve diğer tarayıcılar kendi paketini üretir; Samsung/Play Protect bunu "bilinmeyen uygulama" diye uyarabiliyor.
+  // Chrome'un kurulumu Google tarafından imzalanır, uyarı çıkmaz. Bu yüzden önce Chrome'a yönlendir.
+  if(!IS_ANDROID_CHROME){
+    ezCard(IS_SAMSUNG?"Samsung için en sorunsuz yol":"En sorunsuz yol: Chrome",
+      `<a class="ez-big" href="${CHROME_INTENT}">Chrome'da aç ve tek dokunuşla yükle</a>
+       <div class="ez-st" style="margin-top:10px">${ezRow(1,"Yukarıdaki düğmeye bas, sayfa <b>Chrome</b>'da açılır","")}${ezRow(2,"Çıkan <b>Yükle</b> düğmesine dokun",EZI.ok)}</div>
+       ${SAFE_NOTE}
+       <button class="ez-big alt" type="button" id="ezHere">${IS_SAMSUNG?"Samsung İnternet ile devam et":"Bu tarayıcıyla devam et"}</button>`);
+    $("ezHere").onclick=()=>{
+      if(deferredPrompt){ $("ez").remove(); _inst(); return; }
+      ezCard(IS_SAMSUNG?"Samsung İnternet":"Elle ekleme", `<div class="ez-st">${IS_SAMSUNG
+        ? ezRow(1,"Sağ alttaki <b>≡</b> menüye dokun",EZI.burger)+ezRow(2,"<b>Sayfayı ekle</b> → <b>Ana ekran</b>",EZI.plus)+ezRow(3,"<b>Ekle</b>'ye bas","")
+        : ezRow(1,"Menüye (<b>⋮</b> veya <b>≡</b>) dokun",EZI.kebab,"dots")+ezRow(2,"<b>Ana ekrana ekle</b>'yi seç",EZI.plus)+ezRow(3,"<b>Ekle</b>'ye bas","")}</div>
+        <div class="ez-safe">Telefon <b>“bilinmeyen uygulama”</b> veya <b>Play Koruma</b> uyarısı gösterirse bu, tarayıcının kısayol paketinden kaynaklanır; virüs değildir. Hiç uyarı görmemek için <a href="${CHROME_INTENT}" style="color:var(--cyan)">Chrome ile yükle</a>.</div>`);
+    };
+    return;
+  }
+  // Chrome: tek dokunuş hazır değilse 3 adım
+  ezCard("Chrome · 3 dokunuş", `<div class="ez-st">${ezRow(1,"Sağ üstteki <b>⋮</b>'ye dokun",EZI.kebab,"dots")}${ezRow(2,"<b>Uygulamayı yükle</b> ya da <b>Ana ekrana ekle</b>",EZI.plus)}${ezRow(3,"<b>Yükle</b>'ye bas","")}</div>${SAFE_NOTE}`);
+}
+doInstall=async function(){
+  if(!termsAccepted()){ showTerms(true); return; }
+  buzz(10);
+  if(IN_APP && IS_ANDROID){ ezCard("Önce tarayıcıda aç", `<a class="ez-big" href="${CHROME_INTENT}">Chrome'da aç</a><div class="ez-f">Açılmazsa: <a href="#" data-copy>bağlantıyı kopyala</a>, Chrome'a yapıştır</div>${SAFE_NOTE}`); return; }
+  if(IN_APP) return _inst();
+  if(deferredPrompt && (IS_ANDROID_CHROME || !IS_ANDROID)) return _inst();   // Chrome/Edge masaüstü: gerçek tek dokunuş
+  if(IS_IOS) return ezIOS();
+  if(IS_ANDROID) return ezAndroid();
+  if(deferredPrompt) return _inst();
+  ezCard("Bilgisayar", `<div class="ez-st">${ezRow(1,"Adres çubuğunun sağındaki <b>yükle</b> simgesine tıkla",EZI.plus)}${ezRow(2,"<b>Yükle</b>'ye bas","")}</div>`);
+};
+["installBtn","installPill","rhInstall"].forEach(id=>{ const b=$(id); if(b) b.onclick=()=>doInstall(); });
+// Chrome'a "?kur=1" ile gelindiyse yükleme penceresini hemen hazırla
+if(new URLSearchParams(location.search).get("kur")==="1" && !IS_STANDALONE()){
+  const tryNow=()=>{ if(termsAccepted()) doInstall(); };
+  if(deferredPrompt) setTimeout(tryNow,600); else window.addEventListener("beforeinstallprompt",()=>setTimeout(tryNow,400),{once:true});
+}
 </script>
 
 </body>
