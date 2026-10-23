@@ -5,6 +5,18 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>BULUTOXX</title>
 <meta name="description" content="İlk yarı, ikinci yarı ve maç sonu net skor tahmini yapan, her gün kendini yeniden eğiten futbol tahmin uygulaması.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="BULUTOXX">
+<meta property="og:title" content="BULUTOXX · Futbol skor tahmini">
+<meta property="og:description" content="İlk yarı, ikinci yarı ve maç sonu skor tahmini. 38 lig, Avrupa kupaları, canlı skor ve gol bildirimi. Ücretsiz.">
+<meta property="og:url" content="https://bulutoxx.github.io/">
+<meta property="og:image" content="https://bulutoxx.github.io/icons/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="tr_TR">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://bulutoxx.github.io/icons/og.png">
+<link rel="canonical" href="https://bulutoxx.github.io/">
 <meta name="theme-color" content="#03060D">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -358,6 +370,24 @@ nav.tabs .badge{position:absolute;top:6px;left:calc(50% + 6px);min-width:16px;he
 .istep .ico svg{width:24px;height:24px;stroke:var(--cyan);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .iarrow{position:fixed;left:50%;bottom:calc(6px + env(safe-area-inset-bottom,0px));width:26px;height:26px;margin-left:-13px;z-index:75;border-right:4px solid var(--cyan);border-bottom:4px solid var(--cyan);transform:rotate(45deg);animation:bob 1s ease-in-out infinite;filter:drop-shadow(0 0 8px var(--cyan))}
 @keyframes bob{50%{transform:rotate(45deg) translate(6px,6px)}}
+
+/* ---------- Link gönder ---------- */
+.sharegrid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px 6px;margin:4px 0 16px}
+.sopt{display:flex;flex-direction:column;align-items:center;gap:7px;font-size:12px;font-weight:600;color:var(--ink2);text-decoration:none;transition:transform .15s var(--ease)}
+.sopt:active{transform:scale(.92)}
+.sopt span{width:56px;height:56px;border-radius:18px;display:grid;place-items:center;box-shadow:0 8px 20px -8px rgba(0,0,0,.6)}
+.sopt svg{width:28px;height:28px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.linkbox{display:flex;align-items:center;gap:8px;padding:6px 6px 6px 14px;border-radius:14px;background:rgba(255,255,255,.06);border:1px solid var(--line2);margin-bottom:14px}
+.linkbox span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600;color:var(--ink)}
+.linkbox button{height:36px;padding:0 14px;border-radius:10px;background:var(--grad);color:#fff;font-weight:700;font-size:14px}
+.qrwrap{display:flex;align-items:center;gap:14px;padding:12px;border-radius:16px;background:var(--surface2);border:1px solid var(--line);margin-bottom:12px}
+.qrwrap canvas{width:110px;height:110px;border-radius:12px;flex:none}
+.qrwrap b{display:block;font-size:15px;margin-bottom:4px}
+.invite{font-size:14px;color:var(--ink2);padding:2px 4px 14px}
+.invite b{color:var(--ink)}
+.ibtn.ghost2{background:rgba(255,255,255,.12);color:#fff;box-shadow:none;margin-right:6px;padding:0 14px}
+@media (max-width:400px){ .logo b{font-size:16px;letter-spacing:.04em} .topbar .in{gap:7px} .ipill{padding:0 10px} .iconbtn{width:36px;height:36px} }
+@media (max-width:360px){ .logo b{display:none} }
 /* ---------- Karşılama ---------- */
 .splash{position:fixed;inset:0;z-index:100;display:grid;place-items:center;background:#03060D;transition:opacity .5s var(--ease),visibility .5s}
 .splash img{width:min(64vw,300px);animation:spl 1s var(--ease) both}
@@ -1020,7 +1050,7 @@ function setupAC(id){
   inp.addEventListener("change",()=>{ if(findTeam(inp.value)) fillForm(id[0]); });
   const draw=()=>{ items=searchTeams(inp.value);
     if(!items.length){ close(); return; }
-    ul.innerHTML=items.map((t,i)=>`<li role="option" id="${id}-o${i}" aria-selected="${i===idx}"><span class="nm">${typeof logoFor==="function"&&logoFor(t.name)?`<img src="${esc(logoFor(t.name))}" alt="" loading="lazy">`:""}<b>${esc(t.name)}</b></span><span>${t.lg?esc(LEAGUES[t.lg].n):"Diğer lig"}</span></li>`).join("");
+    ul.innerHTML=items.map((t,i)=>`<li role="option" id="${id}-o${i}" aria-selected="${i===idx}"><span class="nm">${typeof logoFor==="function"&&logoFor(t.name)?`<img src="${esc(logoFor(t.name))}" alt="" loading="lazy" onerror="this.style.visibility='hidden'">`:""}<b>${esc(t.name)}</b></span><span>${t.lg?esc(LEAGUES[t.lg].n):"Diğer lig"}</span></li>`).join("");
     ul.hidden=false; inp.setAttribute("aria-expanded","true"); };
   inp.addEventListener("input",()=>{ idx=-1; draw(); ligManual=false; autoLeague(); });
   inp.addEventListener("focus",draw);
@@ -1388,8 +1418,8 @@ const Live=(()=>{
     return `<div class="fx ${live?"live":""}" data-id="${esc(e.id)}">
       <div class="time">${esc(tm(e))}</div>
       <div class="tm">
-        <div class="tr">${e.hl?`<img src="${esc(e.hl)}" alt="" loading="lazy">`:""}<span>${esc(e.h)}</span><b>${e.state==="pre"?"":sc(e.hs)}</b></div>
-        <div class="tr">${e.al?`<img src="${esc(e.al)}" alt="" loading="lazy">`:""}<span>${esc(e.a)}</span><b>${e.state==="pre"?"":sc(e.as)}</b></div>
+        <div class="tr">${e.hl?`<img src="${esc(e.hl)}" alt="" loading="lazy" onerror="this.style.visibility='hidden'">`:""}<span>${esc(e.h)}</span><b>${e.state==="pre"?"":sc(e.hs)}</b></div>
+        <div class="tr">${e.al?`<img src="${esc(e.al)}" alt="" loading="lazy" onerror="this.style.visibility='hidden'">`:""}<span>${esc(e.a)}</span><b>${e.state==="pre"?"":sc(e.as)}</b></div>
       </div>
       <div class="side"><button class="star" data-star="${esc(e.id)}" aria-pressed="${fav.has(e.id)}" aria-label="Takip et">${starSvg}</button>
         ${e.state!=="post"?`<button class="mini-btn" data-pred="${esc(e.id)}">Tahmin</button>`:""}</div></div>`;
@@ -1476,7 +1506,7 @@ const Goal={
     const el=$("goal");
     el.innerHTML=`<div class="card" role="alertdialog" aria-label="Gol">
       <div class="word">GOL!</div>
-      <div class="who">${logo?`<img src="${esc(logo)}" alt="">`:""}<span>${esc(team)}</span></div>
+      <div class="who">${logo?`<img src="${esc(logo)}" alt="" onerror="this.remove()">`:""}<span>${esc(team)}</span></div>
       <div class="sc2"><span>${esc(e.h)}</span><b>${e.hs} - ${e.as}</b><span>${esc(e.a)}</span></div>
       <div class="by">${esc(by)}</div>
       <button class="btn close" id="goalClose">Tamam</button></div>`;
@@ -1614,8 +1644,8 @@ function renderStrip(){
     const live=e.state==="in", tm=live?(e.clock||"Canlı"):new Date(e.date).toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit",timeZone:"Europe/Istanbul"});
     return `<button class="tcard ${live?"live":""}" type="button" data-pred="${esc(e.id)}">
       <span class="lg">${esc(LEAGUES[e.lg]?LEAGUES[e.lg].n:"")}</span>
-      <span class="r">${e.hl?`<img src="${esc(e.hl)}" alt="" loading="lazy">`:""}<span>${esc(e.h)}</span><b>${live?sc(e.hs):""}</b></span>
-      <span class="r">${e.al?`<img src="${esc(e.al)}" alt="" loading="lazy">`:""}<span>${esc(e.a)}</span><b>${live?sc(e.as):""}</b></span>
+      <span class="r">${e.hl?`<img src="${esc(e.hl)}" alt="" loading="lazy" onerror="this.style.visibility='hidden'">`:""}<span>${esc(e.h)}</span><b>${live?sc(e.hs):""}</b></span>
+      <span class="r">${e.al?`<img src="${esc(e.al)}" alt="" loading="lazy" onerror="this.style.visibility='hidden'">`:""}<span>${esc(e.a)}</span><b>${live?sc(e.as):""}</b></span>
       <span class="ft"><span>${esc(tm)}</span><em>Tahmin et</em></span></button>`; }).join("")}</div>`;
   box.querySelectorAll("[data-pred]").forEach(c=>c.onclick=()=>{ const ev=Live.events()[c.dataset.pred]; if(ev) predictFromLive(ev); });
   $("stripAll").onclick=()=>document.querySelector('nav.tabs button[data-v="canli"]').click();
@@ -1646,7 +1676,7 @@ renderPrediction=function(inp,r){
   if(board){
     const hl=logoFor(inp.home), al=logoFor(inp.away);
     if(hl||al){ const c=document.createElement("div"); c.className="crests";
-      c.innerHTML=`<span>${hl?`<img src="${esc(hl)}" alt="">`:""}</span><span>${al?`<img src="${esc(al)}" alt="">`:""}</span>`; board.prepend(c); }
+      c.innerHTML=`<span>${hl?`<img src="${esc(hl)}" alt="" onerror="this.remove()">`:""}</span><span>${al?`<img src="${esc(al)}" alt="" onerror="this.remove()">`:""}</span>`; board.prepend(c); }
   }
   const p=document.createElement("div"); p.className="panel";
   const hh=h2hFor(inp.home,inp.away);
@@ -1769,6 +1799,124 @@ async function shareApp(){
     rh.appendChild(x); rh.appendChild(b); $("rhInstall").onclick=doInstall; $("rhShare").onclick=shareApp; }
   paintInstall();
   setTimeout(()=>Count.load(), 1500);
+})();
+
+
+// =====================================================================
+// BULUTOXX v5: Link gönder (WhatsApp, Telegram, SMS...), QR, maç bağlantıları, davet sayacı
+// =====================================================================
+const SITE="https://bulutoxx.github.io/";
+const MY_REF=(()=>{ let r=lsGet("bx-ref"); if(!r){ r=Math.random().toString(36).slice(2,9); lsSet("bx-ref",r); } return r; })();
+function appLink(extra){ const u=new URL(SITE); u.searchParams.set("r",MY_REF); if(extra) for(const [k,v] of Object.entries(extra)) u.searchParams.set(k,v); return u.toString(); }
+function matchLink(home,away){ return appLink({m:home+"|"+away}); }
+
+// Davetle gelen: davet edenin sayacını bir kez artır
+(function trackRef(){
+  try{
+    const p=new URLSearchParams(location.search), r=p.get("r");
+    if(r && r!==MY_REF && /^[a-z0-9]{5,12}$/.test(r) && !lsGet("bx-refd")){ lsSet("bx-refd",r); fetch(`${CNT_URL}/hit/${CNT_NS}/ref-${r}`).catch(()=>{}); }
+  }catch(e){}
+})();
+async function myInvites(){ return Count.call("get","ref-"+MY_REF); }
+
+const SH_IC={
+  wa:'<svg viewBox="0 0 24 24"><path fill="#fff" stroke="none" d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm5.8 14.1c-.2.7-1.4 1.3-2 1.4-.5.1-1.2.1-1.9-.1a17 17 0 0 1-1.8-.7 13.6 13.6 0 0 1-5.2-4.6c-.4-.5-1-1.5-1-2.8s.7-2 .9-2.3c.3-.3.6-.3.8-.3h.6c.2 0 .4 0 .6.5l.9 2.1c.1.2.1.4 0 .5l-.4.6-.4.5c-.2.2-.3.4-.1.7.2.3.9 1.4 1.9 2.3 1.3 1.1 2.4 1.5 2.7 1.7.3.1.5.1.7-.1l1-1.2c.2-.3.4-.2.7-.1l2 1c.3.1.5.2.6.3.1.2.1.8-.1 1.5z"/></svg>',
+  tg:'<svg viewBox="0 0 24 24"><path fill="#fff" stroke="none" d="M21.9 4.3 18.7 19c-.2 1-.9 1.3-1.7.8l-4.8-3.5-2.3 2.2c-.3.3-.5.5-1 .5l.3-4.9 8.9-8c.4-.3-.1-.5-.6-.2L6.5 12.8 1.8 11.3c-1-.3-1-1 .2-1.5L20.6 2.7c.9-.3 1.6.2 1.3 1.6z"/></svg>',
+  sms:'<svg viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.7 7.1L3 21l1.9-6.3A8 8 0 1 1 21 12z"/></svg>',
+  x:'<svg viewBox="0 0 24 24"><path fill="#fff" stroke="none" d="M17.8 3h3.1l-6.8 7.8L22 21h-6.2l-4.9-6.4L5.3 21H2.2l7.3-8.3L2 3h6.4l4.4 5.8zm-1.1 16.2h1.7L7.4 4.7H5.6z"/></svg>',
+  fb:'<svg viewBox="0 0 24 24"><path fill="#fff" stroke="none" d="M14 8V6.3c0-.8.2-1.3 1.4-1.3H17V2.1c-.3 0-1.3-.1-2.4-.1-2.4 0-4 1.5-4 4.1V8H8v3.2h2.6V22H14V11.2h2.6L17 8z"/></svg>',
+  copy:'<svg viewBox="0 0 24 24"><rect x="9" y="9" width="12" height="12" rx="2.5"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>',
+  more:'<svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>',
+  qr:'<svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3M21 14v.01M14 21h7v-4"/></svg>'
+};
+function openShare(o){
+  // o: {title, text, url}
+  const enc=encodeURIComponent, full=o.text+"\n"+o.url;
+  const opts=[
+    ["wa","WhatsApp","#25D366",`https://wa.me/?text=${enc(full)}`],
+    ["tg","Telegram","#2AABEE",`https://t.me/share/url?url=${enc(o.url)}&text=${enc(o.text)}`],
+    ["sms","Mesaj","#34C759",`sms:${IS_IOS?"&":"?"}body=${enc(full)}`],
+    ["x","X","#000",`https://twitter.com/intent/tweet?text=${enc(full)}`],
+    ["fb","Facebook","#1877F2",`https://www.facebook.com/sharer/sharer.php?u=${enc(o.url)}`],
+    ["copy","Kopyala","#3A4660",null],
+  ];
+  if(navigator.share) opts.push(["more","Diğer","#3A4660",null]);
+  const sh=$("sheet");
+  sh.innerHTML=`<div class="box" role="dialog" aria-modal="true" aria-label="Link gönder"><div class="grab"></div>
+    <h2>${esc(o.title||"Link gönder")}</h2>
+    <div class="sharegrid">${opts.map(([k,n,c,u])=>u?`<a class="sopt" href="${esc(u)}" target="_blank" rel="noopener" data-k="${k}"><span style="background:${c}">${SH_IC[k]}</span>${n}</a>`
+      :`<button class="sopt" type="button" data-k="${k}"><span style="background:${c}">${SH_IC[k]}</span>${n}</button>`).join("")}</div>
+    <div class="linkbox"><span>bulutoxx.github.io</span><button type="button" id="lbCopy">Kopyala</button></div>
+    <div class="qrwrap"><canvas id="qr" width="240" height="240" aria-label="QR kod"></canvas><div><b>Yanındaki arkadaşına okut</b><p class="note">Kamerayı bu koda tutunca BULUTOXX açılır.</p></div></div>
+    <div class="invite" id="inviteRow" hidden></div>
+    <button class="btn ghost" type="button" id="shClose">Kapat</button></div>`;
+  sh.hidden=false; buzz(10);
+  const copy=async()=>{ try{ await navigator.clipboard.writeText(full); toast("Kopyalandı · istediğin yere yapıştır"); }catch(e){ toast(o.url); } buzz(8); };
+  sh.querySelectorAll(".sopt").forEach(b=>b.addEventListener("click",async ev=>{
+    const k=b.dataset.k; Count.call("hit","share-"+k);
+    if(k==="copy"){ ev.preventDefault(); copy(); }
+    if(k==="more"){ ev.preventDefault(); try{ await navigator.share({title:o.title,text:o.text,url:o.url}); }catch(e){} }
+  }));
+  $("lbCopy").onclick=copy;
+  drawQR($("qr"), o.url);
+  const close=()=>{ sh.hidden=true; sh.innerHTML=""; };
+  $("shClose").onclick=close; sh.onclick=e=>{ if(e.target===sh) close(); };
+  myInvites().then(n=>{ const r=$("inviteRow"); if(!r) return; r.hidden=false;
+    r.innerHTML=n?`<span class="cdot"></span>Senin davetinle <b>${fmtN(n)}</b> kişi BULUTOXX'e katıldı`:`<span class="cdot"></span>Davet ettiğin herkes burada sayılır`; });
+}
+function drawQR(canvas, text){
+  const go=()=>{ try{
+    const q=qrcode(0,"M"); q.addData(text); q.make();
+    const n=q.getModuleCount(), ctx=canvas.getContext("2d"), S=canvas.width, pad=14, cs=(S-pad*2)/n;
+    ctx.fillStyle="#fff"; ctx.beginPath(); ctx.roundRect?ctx.roundRect(0,0,S,S,18):ctx.rect(0,0,S,S); ctx.fill();
+    ctx.fillStyle="#0B1530";
+    for(let r=0;r<n;r++) for(let c=0;c<n;c++) if(q.isDark(r,c)) ctx.fillRect(pad+c*cs,pad+r*cs,Math.ceil(cs),Math.ceil(cs));
+    const img=new Image(); img.onload=()=>{ const L=S*.22; ctx.fillStyle="#fff"; ctx.fillRect((S-L)/2-4,(S-L)/2-4,L+8,L+8); ctx.drawImage(img,(S-L)/2,(S-L)/2,L,L); }; img.src="icons/icon-192.png";
+  }catch(e){ canvas.parentElement.hidden=true; } };
+  if(window.qrcode) go(); else { const s=document.createElement("script"); s.src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"; s.onload=go; s.onerror=()=>{ canvas.parentElement.hidden=true; }; document.head.appendChild(s); }
+}
+function predictionText(inp,r){
+  const best=markets(r,inp.odds).filter(x=>!/daha gollü/.test(x.n)).slice(0,2);
+  return `⚽ ${inp.home} – ${inp.away}\n🤖 BULUTOXX tahmini\n`+
+    `İY ${r.topH1[0].s} · 2Y ${r.topH2[0].s} · MS ${r.topFT[0].s}\n`+
+    `1 %${Math.round(r.H*100)} · X %${Math.round(r.D*100)} · 2 %${Math.round(r.A*100)}\n`+
+    best.map(b=>`✅ ${b.n} %${Math.round(b.p*100)}`).join("\n")+`\nSen de tahmin et 👇`;
+}
+const APP_TEXT="⚽ BULUTOXX: ilk yarı, ikinci yarı ve maç sonu skor tahmini. 38 lig + Avrupa kupaları, canlı skor ve gol bildirimi. Ücretsiz 👇";
+function shareAppSheet(){ openShare({title:"Link gönder", text:APP_TEXT, url:appLink()}); }
+
+// Üst bara paylaş düğmesi, rehberdeki düğmeyi yeni sayfaya bağla
+(function mountShare(){
+  const b=document.createElement("button"); b.className="iconbtn"; b.id="shareTop"; b.type="button"; b.setAttribute("aria-label","Link gönder");
+  b.innerHTML='<svg viewBox="0 0 24 24"><path d="M12 3v12M8 7l4-4 4 4"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg>';
+  $("modeBtn").before(b); b.onclick=shareAppSheet;
+  const rs=$("rhShare"); if(rs){ rs.onclick=shareAppSheet; rs.textContent="Link gönder"; }
+  // ana sayfadaki yükleme kartına da "Gönder" ekle
+  const ic=$("installCard");
+  if(ic){ const s=document.createElement("button"); s.className="ibtn ghost2"; s.type="button"; s.textContent="Gönder"; s.onclick=shareAppSheet; $("installBtn").before(s); }
+})();
+
+// Tahmin sonucunda: "Arkadaşına gönder" → maç bağlantılı mesaj
+const _rp3=renderPrediction;
+renderPrediction=function(inp,r){
+  _rp3(inp,r);
+  const old=$("shareBtn");
+  if(old){ old.textContent="Arkadaşına gönder"; old.onclick=()=>openShare({title:"Tahmini gönder", text:predictionText(inp,r), url:matchLink(inp.home,inp.away)}); }
+  const acts=$("out").querySelector(".actions");
+  if(acts && !$("imgBtn")){ const ib=document.createElement("button"); ib.className="btn ghost"; ib.type="button"; ib.id="imgBtn"; ib.textContent="Resim olarak paylaş";
+    ib.onclick=()=>shareCard(inp,r).catch(()=>toast("Paylaşım hazırlanamadı")); acts.appendChild(ib); }
+};
+
+// Bağlantıyla gelen maçı otomatik aç: ?m=Ev|Deplasman
+(function openFromLink(){
+  try{
+    const m=new URLSearchParams(location.search).get("m"); if(!m || !m.includes("|")) return;
+    const [h,a]=m.split("|").map(s=>s.trim()).filter(Boolean); if(!h||!a) return;
+    const tryRun=(n=0)=>{ if(!Object.keys(SEASON).length && n<20) return setTimeout(()=>tryRun(n+1),250);
+      $("hn").value=bestTeamName(h); $("an").value=bestTeamName(a); ligManual=false; autoLeague(); fillForm("h"); fillForm("a");
+      setTimeout(()=>$("f").requestSubmit(),200); };
+    setTimeout(tryRun,800);
+  }catch(e){}
 })();
 
 </script>
