@@ -13,7 +13,7 @@ Ağ yoksa veya kaynak cevap vermezse mevcut veriyle devam eder, hiçbir veriyi s
 Sadece Python standart kütüphanesi ve numpy gerekir.
 """
 import csv, io, json, math, os, re, sys, unicodedata, urllib.request, difflib
-from datetime import datetime, date, timezone
+from datetime import datetime, date, timezone, timedelta
 import collections
 import numpy as np
 
@@ -416,10 +416,15 @@ def tune(all_ms, P0):
             "formW": [0.0, 0.1, 0.2, 0.35], "rho": [-0.2, -0.15, -0.1, -0.06, -0.02, 0.0, 0.04]}
     P = dict(P0); cur = backtest(all_ms, P)
     if not cur: return P, None
+    split = sorted(r[1]["d"] for r in cur["rows"])[int(len(cur["rows"]) * .7)]
+    def part(bt, late):
+        idx = [i for i, r in enumerate(bt["rows"]) if (r[1]["d"] >= split) == late]
+        return float(-np.log(np.maximum(bt["p"][idx, bt["res"][idx]], 1e-9)).mean()) if idx else 9.0
+    base_late = part(cur, True)
     if cur["n"] < 300:
         print(f"  test örneği az ({cur['n']} maç), ayarlar korunuyor", flush=True)
         return P, cur
-    best = cur["logloss"]
+    best = part(cur, False)
     for _ in range(3):
         changed = False
         for key, vals in grid.items():
@@ -429,15 +434,58 @@ def tune(all_ms, P0):
                 bt = backtest(all_ms, Q) if key != "rho" else None
                 if key == "rho":
                     p, *_ = outcome_probs(np.array([r[2] for r in cur["rows"]]), np.array([r[3] for r in cur["rows"]]), v)
-                    ll = -np.log(np.maximum(p[np.arange(len(cur["rows"])), cur["res"]], 1e-9)).mean()
+                    ll = part({"rows": cur["rows"], "p": p, "res": cur["res"]}, False)
                 else:
-                    ll = bt["logloss"]
+                    ll = part(bt, False)
                 if ll < best - 1e-5:
                     best = ll; P = Q; changed = True
                     if bt: cur = bt
                     print(f"  {key}={v}  logloss={ll:.4f}", flush=True)
         if not changed: break
-    return P, backtest(all_ms, P)
+    fin = backtest(all_ms, P); late = part(fin, True)
+    global GUARD
+    GUARD = {"split": split, "eski_son30": round(base_late, 4), "yeni_son30": round(late, 4), "kabul": bool(late <= base_late + 1e-4)}
+    if not GUARD["kabul"]:
+        print(f"  ayar değişikliği doğrulamadan geçemedi ({late:.4f} > {base_late:.4f}), eski ayarlar korunuyor", flush=True)
+        return dict(P0), backtest(all_ms, P0)
+    print(f"  doğrulama: son %30 maçta {base_late:.4f} -> {late:.4f}", flush=True)
+    return P, fin
+
+GUARD = None
+NEW_TEAM = (0.95, 1.05)   # 3 ay önceden testte (3 sezon) en iyi çıkan: lige yeni gelen takım ortalamaya yakın, hafif zayıf
+
+def horizon_test(all_ms, P, H=90, decays=(None, 0.01)):
+    """Uzun vade sağlık testi: son 1 yıldaki her maçı, maçtan H gün önceki veriyle tahmin et."""
+    out = {}
+    end = max(m["d"] for ms in all_ms.values() for m in ms)
+    start = (date.fromisoformat(end) - timedelta(days=330)).isoformat()
+    for dc in decays:
+        Q = dict(P) if dc is None else dict(P, decay=dc)
+        rows = []; skipped = 0
+        for lg, ms in all_ms.items():
+            ms = sorted(ms, key=lambda m: m["d"]); test = [m for m in ms if m["d"] >= start]
+            if len(test) < 20: continue
+            weeks = {}
+            for m in test:
+                d = date.fromisoformat(m["d"]); weeks.setdefault(d - timedelta(days=d.weekday()), []).append(m)
+            for wk, tm in weeks.items():
+                cut = (wk - timedelta(days=H)).isoformat(); train = [m for m in ms if m["d"] < cut]
+                if len(train) < 40: skipped += len(tm); continue
+                f = fit(train, date.fromisoformat(cut), Q, iters=20)
+                for m in tm:
+                    h = f["t"].get(m["h"], NEW_TEAM); a = f["t"].get(m["a"], NEW_TEAM)
+                    rows.append((m, f["mu"] * f["gamma"] * h[0] * a[1], f["mu"] * a[0] * h[1]))
+        if not rows: continue
+        lh = np.array([r[1] for r in rows]); la = np.array([r[2] for r in rows])
+        p, pO, _, _ = outcome_probs(lh, la, Q["rho"])
+        res = np.array([0 if r[0]["ft"][0] > r[0]["ft"][1] else 1 if r[0]["ft"][0] == r[0]["ft"][1] else 2 for r in rows])
+        tot = np.array([sum(r[0]["ft"]) for r in rows])
+        out["mevcut" if dc is None else f"decay_{dc}"] = {"n": len(rows), "kapsam": round(len(rows) / (len(rows) + skipped), 3),
+            "r1x2": round(float((p.argmax(1) == res).mean()), 4), "logloss": round(float(-np.log(np.maximum(p[np.arange(len(rows)), res], 1e-9)).mean()), 4),
+            "ou25": round(float(((pO >= .5) == (tot > 2)).mean()), 4), "decay": Q["decay"]}
+    if out:
+        best = min(out.values(), key=lambda x: x["logloss"]); out["uzun_vade_decay"] = best["decay"]
+    return out
 
 def h1_share(all_ms):
     g1 = g = 0
@@ -581,8 +629,8 @@ def predict_fixtures(fx, all_ms, P, today):
     rows = []
     for f in fx:
         F = fits.get(f["lg"])
-        if not F or f["h"] not in F["t"] or f["a"] not in F["t"]: continue
-        (ah, dh), (aa, da) = F["t"][f["h"]], F["t"][f["a"]]
+        if not F: continue
+        (ah, dh), (aa, da) = F["t"].get(f["h"], NEW_TEAM), F["t"].get(f["a"], NEW_TEAM)
         rows.append((f, F["mu"] * F["gamma"] * ah * da, F["mu"] * aa * dh))
     if not rows: return []
     lh = np.array([r[1] for r in rows]); la = np.array([r[2] for r in rows])
@@ -731,6 +779,13 @@ def main():
     except Exception:
         now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
     mt = metrics(bt, P) if bt else {}
+    if GUARD: mt["dogrulama"] = GUARD
+    try:
+        hz = horizon_test(all_ms, P) if full else model.get("backtest", {}).get("uzun_vade")
+        if hz: mt["uzun_vade"] = hz; P["decay90"] = hz.get("uzun_vade_decay", P["decay"])
+        print("Uzun vade testi:", json.dumps(hz, ensure_ascii=False), flush=True)
+    except Exception as e:
+        print("uzun vade testi atlandı:", e, flush=True)
     if mt.get("score_test"): P["scoreMode"] = mt["score_test"]["secilen"]
     # Yaklaşan maçlar: oranları kaydet, tahminleri önceden arşivle, geçmiş tahminleri gerçek sonuçla puanla
     fxp = os.path.join(DATA, "fixtures.json"); plp = os.path.join(DATA, "predlog.json")

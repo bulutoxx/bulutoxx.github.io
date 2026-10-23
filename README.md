@@ -1,6 +1,6 @@
 # BULUTOXX
 
-İlk yarı, ikinci yarı ve maç sonu net skor tahmini yapan, her gün kendini yeniden eğiten futbol tahmin uygulaması. Telefona uygulama gibi kurulur, ücretsiz GitHub Pages üzerinde çalışır ve hiçbir yapay zekâ servisine bağlı değildir.
+İlk yarı, ikinci yarı ve maç sonu net skor tahmini yapan, her gün kendini yeniden eğiten futbol ve basketbol tahmin uygulaması. Telefona uygulama gibi kurulur, ücretsiz GitHub Pages üzerinde çalışır ve hiçbir yapay zekâ servisine bağlı değildir.
 
 ## Nasıl çalışır
 
@@ -10,6 +10,18 @@
   2. Her maçı yalnızca o haftadan önceki maçlarla tahmin ederek geriye dönük test yapar.
   3. Test sonucuna göre model ayarlarını kendisi seçer: zaman ağırlığı, ortalamaya çekme, düşük skor düzeltmesi, form ağırlığı ve piyasa ağırlığı.
   4. Sonuçları `data/` klasörüne yazar ve siteyi yeniden yayınlar.
+- **Basketbol motoru** (`scripts/basket.py`): NBA, EuroLeague, EuroCup, WNBA, NBL ve NCAA maçlarını çeyrek skorlarıyla indirir, her lig için hücum/savunma gücü modeli kurar, aynı kurallarla kendini test eder ve ayarlar.
+
+## Çalışma prensibi (öğrenme kuralları)
+
+Bu kurallar 2022-23'ten 2026-27'ye 53.000+ futbol ve 26.000+ basketbol maçıyla yapılan "3 ay önceden tahmin" deneyinden çıkarıldı:
+
+1. **Geleceği görmeden test:** Her maç, yalnızca maçtan önceki verilerle eğitilmiş modelle tahmin edilir ve gerçek sonuçla karşılaştırılır. Kısa vade (1 hafta önce) ve uzun vade (3 ay önce) ayrı ayrı ölçülür.
+2. **Ezber koruması:** Ayarlar maçların ilk %70'inde öğrenilir, son %30'unda doğrulanır. Son %30'da kötüleşen hiçbir değişiklik kabul edilmez; eski ayar korunur. (Deneyde 2024'te seçilen ayarların küçük liglerde 2025'te kötüleştiği görüldü, bu kural o yüzden var.)
+3. **Bir yeteneğin kalıcı olması için en az iki farklı sezonda kazanç göstermesi gerekir.** Denenip elenenler: yaz arası güç küçültmesi, lige özel beraberlik ayarı, Elo karışımı (kazanç < 0,0005 log-kayıp).
+4. **Kalıcı olanlar:** lige yeni gelen takım ön bilgisi (futbol: hücum 0,95 / savunma 1,05; tahmin kapsamı %90'dan %100'e), uzun vadede daha yavaş unutma (zaman ağırlığı 0,010; 3 sezonda da daha iyi), basketbolda lige göre öğrenilen yeni takım ön bilgisi.
+5. **Dürüst kıyas:** Model her zaman kapanış oranlarıyla (piyasa) karşılaştırılır. Uzun vadede piyasa hâlâ daha iyidir; oran girildiğinde uygulama ikisini birleştirir.
+
 - **Öğrenme geçmişi** (`data/history.json`): Her güncellemenin isabet oranları burada tutulur. Uygulamadaki Motor sekmesi bunları öğrenme eğrisi olarak gösterir.
 
 ## Kurulum (bir kez, yaklaşık 5 dakika)

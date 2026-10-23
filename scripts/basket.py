@@ -207,12 +207,18 @@ def fit(games, ref, P):
     off, dfn = x[:n], x[n:]
     return {"teams": teams, "ix": ix, "off": off, "def": dfn, "mu": mu, "hca": hca}
 
-def pred_means(F, h, a, neutral=False):
-    if F is None or h not in F["ix"] or a not in F["ix"]: return None
-    i, j = F["ix"][h], F["ix"][a]; hh = 0 if neutral else F["hca"] / 2
-    return F["mu"] + hh + F["off"][i] + F["def"][j], F["mu"] - hh + F["off"][j] + F["def"][i]
+def pred_means(F, h, a, neutral=False, newp=None):
+    """Lige yeni gelen takım: öğrenilmiş ön bilgi (hücum, savunma) kullanılır; yoksa tahmin yapılmaz."""
+    if F is None: return None
+    def rt(t):
+        if t in F["ix"]: i = F["ix"][t]; return F["off"][i], F["def"][i]
+        return tuple(newp) if newp is not None else None
+    rh, ra = rt(h), rt(a)
+    if rh is None or ra is None: return None
+    hh = 0 if neutral else F["hca"] / 2
+    return F["mu"] + hh + rh[0] + ra[1], F["mu"] - hh + ra[0] + rh[1]
 
-def backtest(games, P, min_train=120):
+def backtest(games, P, min_train=120, H=0):
     """Hafta hafta: o haftaya kadarki maçlarla eğit, o haftanın maçlarını tahmin et."""
     if len(games) < min_train + 30: return []
     rows = []
@@ -223,33 +229,47 @@ def backtest(games, P, min_train=120):
     dts = [datetime.fromisoformat(g["dt"].replace("Z", "+00:00")).date() for g in games]
     while wk <= last:
         nxt = wk + timedelta(days=7)
-        train = [g for g, d in zip(games, dts) if d < wk and (wk - d).days <= 400]
+        cut = wk - timedelta(days=H)
+        train = [g for g, d in zip(games, dts) if d < cut and (cut - d).days <= 400]
         test = [g for g, d in zip(games, dts) if wk <= d < nxt]
         if test and len(train) >= min_train:
-            F = fit(train, wk, P)
+            F = fit(train, cut, P)
             for g in test:
-                pm = pred_means(F, g["h"], g["a"], g.get("neutral", False))
+                pm = pred_means(F, g["h"], g["a"], g.get("neutral", False), P.get("newp"))
                 if pm: rows.append((g, pm[0], pm[1]))
         wk = nxt
     return rows
 
-def score_rows(rows):
+def score_rows(rows, late=None, split=None):
+    if split is not None: rows = [r for r in rows if (r[0]["dt"] >= split) == late]
     if not rows: return None
     eh = np.array([r[0]["hs"] - r[1] for r in rows]); ea = np.array([r[0]["as_"] - r[2] for r in rows])
     return float(np.mean(eh ** 2 + ea ** 2))
 
-def tune(games, lg):
+def tune(games, lg, prev=None):
+    """Ayarları ilk %70 maçta öğren, son %30 maçta doğrula. Doğrulamada kötüleşen değişiklik kabul edilmez (ezber koruması)."""
     grid_d = [0.0, 0.004, 0.008, 0.015, 0.03]; grid_l = [1.0, 3.0, 8.0, 20.0, 50.0]
-    P = {"decay": 0.008, "lam": 8.0}
+    grid_n = [None, [0.0, 0.0], [-3.0, 3.0], [-6.0, 6.0]]
+    P0 = {"decay": 0.008, "lam": 8.0, "newp": None}
+    if prev: P0.update({k: v for k, v in prev.items() if k in P0})
     mt = 200 if lg == "ncaa" else 80
-    best = score_rows(backtest(games, P, mt))
-    if best is None: return P, None
+    rows0 = backtest(games, P0, mt)
+    if not rows0: return P0, None, None
+    split = sorted(r[0]["dt"] for r in rows0)[int(len(rows0) * .7)]
+    P = dict(P0); best = score_rows(rows0, False, split)
     for _ in range(2):
-        for k, grid in (("decay", grid_d), ("lam", grid_l)):
+        for k, grid in (("decay", grid_d), ("lam", grid_l), ("newp", grid_n)):
             for v in grid:
-                Q = dict(P, **{k: v}); s = score_rows(backtest(games, Q, mt))
+                if v == P.get(k): continue
+                Q = dict(P, **{k: v}); s = score_rows(backtest(games, Q, mt), False, split)
                 if s is not None and s < best - 1e-9: best, P = s, Q
-    return P, best
+    # doğrulama: yalnızca eski ayarın da tahmin ettiği maçlarda karşılaştır (adil kıyas)
+    ids0 = {r[0]["id"] for r in rows0}
+    late0 = score_rows(rows0, True, split); rows1 = backtest(games, P, mt)
+    late1 = score_rows([r for r in rows1 if r[0]["id"] in ids0], True, split)
+    ok = late1 is not None and late0 is not None and late1 <= late0 + 1e-6
+    guard = {"son30_eski": round(late0, 2) if late0 else None, "son30_yeni": round(late1, 2) if late1 else None, "kabul": bool(ok)}
+    return (P if ok else P0), guard, split
 
 def reg_quarters(q, halves):
     """Normal süre periyotlarını 4 çeyreğe çevir (NCAA iki devre oynar: her devre ikiye bölünür)."""
@@ -343,7 +363,7 @@ def lock_and_grade(plog, fixtures, fits, Ps, store_games, today):
     have = {e["id"] for e in plog}
     for f in fixtures:
         if f["id"] in have or f.get("state") == "in": continue
-        F = fits.get(f["lg"]); pm = pred_means(F, f["h"], f["a"], f.get("neutral", False)) if F else None
+        F = fits.get(f["lg"]); pm = pred_means(F, f["h"], f["a"], f.get("neutral", False), Ps.get(f["lg"], {}).get("newp")) if F else None
         if not pm: continue
         e = {"id": f["id"], "lg": f["lg"], "d": f["dt"][:10], "h": f["h"], "a": f["a"], "ph": round(pm[0], 1), "pa": round(pm[1], 1)}
         if f.get("odds"): e["odds"] = f["odds"]
@@ -412,7 +432,7 @@ def main():
         games = store.get(lg, {}).get("g", [])
         if len(games) < 40: continue
         t0 = time.time()
-        P, mse = tune(games, lg)
+        P, guard, _ = tune(games, lg, (old.get("leagues", {}).get(lg) or {}).get("params"))
         mt = 200 if lg == "ncaa" else 80
         rows = backtest(games, P, mt)
         if rows:
@@ -422,6 +442,8 @@ def main():
             sm, stt = 12.0, 18.0
         halves = qlen == 20
         shares = quarter_shares(games[-1500:], halves)
+        try: hz = metrics(backtest(games, P, mt, H=90), sm, stt, shares, halves)    # uzun vade: 3 ay önceden tahmin
+        except Exception: hz = None
         F = fit(games, today, P); fits[lg] = F; Ps[lg] = P
         logos = {}
         for g in games:
@@ -432,7 +454,7 @@ def main():
         bt_all += rows
         out_lg[lg] = {"name": name, "qlen": qlen, "halves": halves, "n": len(games), "n_cur": len(cur), "asOf": store[lg].get("asOf", ""),
                       "mu": round(F["mu"], 2), "hca": round(F["hca"], 2), "sm": round(sm, 2), "st": round(stt, 2), "shares": shares,
-                      "params": P, "backtest": m, "teams": team_table(games, cur, F, logos),
+                      "params": P, "backtest": m, "dogrulama": guard, "uzun_vade": hz, "newp": P.get("newp"), "teams": team_table(games, cur, F, logos),
                       "recent": [{"dt": g["dt"], "h": g["h"], "a": g["a"], "s": [g["hs"], g["as_"]], "hq": g.get("hq"), "aq": g.get("aq")} for g in games[-60:]][::-1]}
         print(f"{lg}: {len(games)} maç, ayar {P}, test {m}, {time.time()-t0:.0f} sn", flush=True)
 

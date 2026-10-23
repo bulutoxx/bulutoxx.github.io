@@ -3223,7 +3223,8 @@ function bkTeam(L,n){ return L&&L.teams?L.teams[n]:null; }
 // Bir maçın tam tahmini
 function bkPredict(f){
   const D=BK.data; const L=D&&D.leagues[f.lg]; if(!L) return null;
-  const H=bkTeam(L,f.h), A=bkTeam(L,f.a); if(!H||!A) return null;
+  const NP=L.newp?{off:L.newp[0],def:L.newp[1],w:0,l:0,ppg:null,form:[],logo:""}:null;
+  const H=bkTeam(L,f.h)||NP, A=bkTeam(L,f.a)||NP; if(!H||!A) return null;
   const hh=f.neutral?0:L.hca/2;
   let mh=L.mu+hh+H.off+A.def, ma=L.mu-hh+A.off+H.def, mkt=false;
   const od=f.odds;
@@ -3481,6 +3482,45 @@ renderKarne=function(){ _rk3(); const k=$("karne"); if(!k) return;
     </tbody></table></div>
     <p class="note">Canlı karne (maçtan önce kilitlenen tahminler): ${lv?`${lv.n} maç, kazanan %${Math.round(lv.win*100)}`:`${(D.live&&D.live.pending)||0} tahmin sonucunu bekliyor`}.</p>`;
   k.appendChild(el);
+};
+
+// =====================================================================
+// BULUTOXX v15: Öğrenme laboratuvarı raporu, uzun vade testi, ezber koruması
+// =====================================================================
+let LAB=null;
+fetch("data/lab_report.json",{cache:"no-cache"}).then(r=>r.ok?r.json():null).then(d=>{ LAB=d; if(!$("v-karne").hidden) renderKarne(); }).catch(()=>{});
+const _rk4=renderKarne;
+renderKarne=function(){ _rk4(); const k=$("karne"); if(!k) return;
+  const old=$("labPanel"); if(old) old.remove();
+  const bt=MODEL&&MODEL.backtest||{}, uv=bt.uzun_vade, dg=bt.dogrulama;
+  const pc=x=>x==null?"–":"%"+(x*100).toFixed(1);
+  const el=document.createElement("div"); el.className="panel"; el.id="labPanel";
+  let h=`<h2>🧪 Öğrenme laboratuvarı</h2>
+    <p class="note">BULUTOXX her güncellemede iki sınav verir: maçı <b>1 hafta önceden</b> ve <b>3 ay önceden</b> tahmin etmek. Ayarlar maçların ilk %70'inde öğrenilir, son %30'unda doğrulanır; doğrulamada kötüleşen değişiklik kabul edilmez.</p>`;
+  if(uv&&uv.mevcut){ h+=`<div class="stats">
+      <div class="stat"><div class="k">3 ay önceden 1X2 · ${uv.mevcut.n} maç</div><div class="n">${pc(uv.mevcut.r1x2)}</div></div>
+      <div class="stat"><div class="k">1 hafta önceden 1X2</div><div class="n">${pc(bt.r1x2)}</div></div></div>`; }
+  if(dg) h+=`<p class="note">Son ayar denemesi: ${dg.kabul?"✅ doğrulamadan geçti":"🛡️ doğrulamada kötüleşti, eski ayar korundu"} (son %30 maçta log-kayıp ${dg.eski_son30} → ${dg.yeni_son30}).</p>`;
+  if(LAB){
+    const F=LAB.futbol.filter(x=>x.ufuk==="3 ay");
+    h+=`<h3 style="margin-top:6px">Büyük deney: ${LAB.veri.futbol_mac.toLocaleString("tr-TR")} futbol + ${LAB.veri.basketbol_mac.toLocaleString("tr-TR")} basketbol maçı (${esc(LAB.veri.sezonlar)})</h3>
+    <p class="note">Her maç, maçtan 3 ay önceki veriyle hiç oynanmamış gibi tahmin edildi, sonuçla karşılaştırıldı, hatalar incelendi, yeni yetenekler eklenip test tekrarlandı ve başka sezonlarda doğrulandı.</p>
+    <div class="tbl"><table class="bk-tb"><thead><tr><th>Sezon (3 ay önce)</th><th>Kapsam</th><th>1X2 eski</th><th>1X2 yeni</th><th>Log-kayıp</th></tr></thead><tbody>
+    ${F.map(x=>`<tr><td>${x.sezon}-${String(+x.sezon+1).slice(2)}</td><td>${pc(x.eski.kapsam)} → <b>${pc(x.yeni_tum.kapsam)}</b></td><td>${pc(x.eski["1x2"])}</td><td class="hi">${pc(x.yeni["1x2"])}</td><td>${x.eski.logloss} → <b>${x.yeni.logloss}</b></td></tr>`).join("")}
+    </tbody></table></div>
+    <div class="list">${LAB.denenen.map(x=>`<div><span>${x.sonuc==="kabul"?"✅":"✖️"} <b>${esc(x.ad)}</b><br><small class="note">${esc(x.not)}</small></span><span>${x.sonuc==="kabul"?"Motora eklendi":"Elendi"}</span></div>`).join("")}</div>
+    <p class="note">Dürüst kıyas: aynı maçlarda bahis piyasasının kapanış oranları log-kayıp ${F.length?F[F.length-1].yeni.piyasa_ll:"–"} ile hâlâ daha iyi; oran girdiğinde BULUTOXX ikisini birleştirir.</p>`;
+  }
+  el.innerHTML=h;
+  const bk=$("bkKarne"); if(bk) k.insertBefore(el,bk); else k.appendChild(el);
+};
+// Basketbol karnesine 3 ay önceden ve doğrulama sütunları
+const _rk5=renderKarne;
+renderKarne=function(){ _rk5(); const t=document.querySelector("#bkKarne table"); const D=BK.data; if(!t||!D) return;
+  const lgs=BK_ORDER.filter(l=>D.leagues[l]&&D.leagues[l].backtest);
+  const hr=t.querySelector("thead tr"); if(hr&&!hr.querySelector(".uv")){ hr.insertAdjacentHTML("beforeend",`<th class="uv">3 ay önce</th><th>Koruma</th>`);
+    t.querySelectorAll("tbody tr").forEach((tr,i)=>{ const L=D.leagues[lgs[i]]; if(!L) return; const u=L.uzun_vade, g=L.dogrulama;
+      tr.insertAdjacentHTML("beforeend",`<td>${u&&u.win!=null?"%"+Math.round(u.win*100):"–"}</td><td>${g?(g.kabul?"✅":"🛡️"):"–"}</td>`); }); }
 };
 </script>
 
