@@ -403,6 +403,47 @@ def h1_share(all_ms):
             if m.get("ht"): g1 += sum(m["ht"]); g += sum(m["ft"])
     return round(min(max((g1 + 0.44 * 40) / (g + 40), 0.36), 0.52), 4)
 
+ESPN = {"tr1":"tur.1","en":"eng.1","es":"esp.1","it":"ita.1","de":"ger.1","fr":"fra.1","nl":"ned.1","pt":"por.1","be":"bel.1",
+  "sc":"sco.1","gr":"gre.1","en2":"eng.2","en3":"eng.3","en4":"eng.4","de2":"ger.2","it2":"ita.2","es2":"esp.2","fr2":"fra.2",
+  "br":"bra.1","ar":"arg.1","us":"usa.1","mx":"mex.1","jp":"jpn.1","at":"aut.1","ch":"sui.1","dk":"den.1","no":"nor.1","se":"swe.1",
+  "pl":"pol.1","ro":"rou.1","ie":"irl.1","fi":"fin.1","cn":"chn.1","ru":"rus.1",
+  "ucl":"uefa.champions","uel":"uefa.europa","uecl":"uefa.europa.conf"}
+
+def fetch_logos(season):
+    """Her ligin takım logolarını ESPN'den indir ve uygulamadaki takım adlarıyla eşle."""
+    lp = os.path.join(DATA, "logos.json")
+    logos = json.load(open(lp, encoding="utf-8")) if os.path.exists(lp) else {}
+    got = 0
+    for lg, d in season.items():
+        code = ESPN.get(lg)
+        if not code: continue
+        names = sorted({m["h"] for m in d["matches"]} | {m["a"] for m in d["matches"]})
+        if all(n in logos for n in names): continue
+        try:
+            j = json.loads(fetch(f"https://site.api.espn.com/apis/site/v2/sports/soccer/{code}/teams"))
+            teams = [t["team"] for t in j["sports"][0]["leagues"][0]["teams"]]
+        except Exception as e:
+            print(f"  logo {lg}: {e.__class__.__name__}", flush=True); continue
+        idx = {}
+        for t in teams:
+            href = (t.get("logos") or [{}])[0].get("href")
+            if not href: continue
+            for k in ("displayName", "shortDisplayName", "name", "nickname", "location"):
+                if t.get(k): idx.setdefault(norm(t[k]), href)
+        keys = list(idx)
+        for n in names:
+            if n in logos: continue
+            q = norm(n); url = idx.get(q)
+            if not url:
+                for k in keys:
+                    if k and (k.startswith(q) or q.startswith(k) or (len(q) > 4 and q in k) or (len(k) > 4 and k in q)): url = idx[k]; break
+            if not url:
+                b = difflib.get_close_matches(q, keys, n=1, cutoff=0.72)
+                if b: url = idx[b[0]]
+            if url: logos[n] = url; got += 1
+    json.dump(logos, open(lp, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
+    print(f"Logolar: {len(logos)} takım ({got} yeni)", flush=True)
+
 def learn_strength(season, P, today):
     """Lig gücü katsayılarını ve kupa takım güçlerini Avrupa kupası sonuçlarından öğren."""
     dom = {}
@@ -515,6 +556,10 @@ def main():
             season[ck] = {"name": cname, "cup": True, "asOf": ms[-1]["d"], "season": max(m["season"] for m in ms), "matches": ms}
     print("Kupalar:", {k: log.get(k) for k in CUPS}, flush=True)
     json.dump(season, open(sp, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
+
+    if not offline:
+        try: fetch_logos(season)
+        except Exception as e: print("Logo hatası:", e, flush=True)
 
     mp = os.path.join(DATA, "model.json")
     model = json.load(open(mp, encoding="utf-8")) if os.path.exists(mp) else {}

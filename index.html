@@ -277,6 +277,60 @@ nav.tabs .badge{position:absolute;top:6px;left:calc(50% + 6px);min-width:16px;he
   font-size:14px;font-weight:600;box-shadow:0 16px 40px -10px rgba(0,0,0,.6);animation:tIn .35s var(--ease)}
 @keyframes tIn{from{opacity:0;transform:translate(-50%,10px)}}
 
+
+/* ---------- Karşılaşma başlığı ---------- */
+.matchup{display:grid;grid-template-columns:1fr auto 1fr;align-items:start;gap:8px}
+.matchup .side{display:flex;flex-direction:column;align-items:center;gap:8px;min-width:0;text-align:center}
+.matchup .tag{font-size:11px;font-weight:700;letter-spacing:.08em;color:var(--cyan)}
+.matchup .side[data-s="a"] .tag{color:#7FA8FF}
+.matchup input{text-align:center;font-weight:700;font-size:16px;padding:11px 8px}
+.matchup .formrow{justify-content:center;gap:4px}
+.matchup .formrow .hint{display:none}
+.matchup .fm{width:22px;height:22px;font-size:11px;border-radius:7px}
+.matchup .ac{width:100%}
+.matchup .side[data-s="a"] .sug{left:auto;right:0}
+.matchup .sug{width:min(300px,86vw)}
+.vs{align-self:center;margin-top:-38px;font:800 13px var(--round);color:var(--ink3);letter-spacing:.06em;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.06);border:1px solid var(--line)}
+.crest{width:72px;height:72px;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle at 50% 35%,rgba(255,255,255,.12),rgba(255,255,255,.03));border:1px solid var(--line2);
+  box-shadow:0 10px 30px -12px rgba(47,123,255,.6);overflow:hidden;font:800 22px var(--round);color:var(--ink2);transition:transform .35s var(--ease)}
+.crest img{width:78%;height:78%;object-fit:contain;filter:drop-shadow(0 4px 10px rgba(0,0,0,.4))}
+.crest.pop{animation:crestPop .45s var(--ease)}
+@keyframes crestPop{0%{transform:scale(.8)}60%{transform:scale(1.08)}100%{transform:none}}
+.adv summary{font-size:14.5px;color:var(--ink2)}
+.sug li .nm{display:flex;align-items:center;gap:9px;min-width:0}
+.sug li .nm img{width:20px;height:20px;object-fit:contain;flex:none}
+.sug li .nm b{font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* güncelle */
+.refresh{display:inline-flex;align-items:center;gap:7px;height:38px;padding:0 14px;border-radius:99px;font-weight:700;font-size:14px;color:#fff;background:var(--grad);box-shadow:0 8px 22px -10px rgba(47,123,255,.8);flex:none}
+.refresh svg{width:17px;height:17px;stroke:#fff;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.refresh.spin svg{animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* bugünün maçları şeridi */
+#todayStrip:empty{display:none}
+.strip-h{display:flex;justify-content:space-between;align-items:baseline;margin:4px 2px 8px}
+.strip-h a{color:var(--cyan);font-size:14px;font-weight:600;text-decoration:none;cursor:pointer}
+.strip{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:6px;margin:0 -16px 14px;padding-left:16px;padding-right:16px;scrollbar-width:none}
+.strip::-webkit-scrollbar{display:none}
+.tcard{flex:none;width:168px;scroll-snap-align:start;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:12px;display:flex;flex-direction:column;gap:8px;text-align:left;transition:transform .2s var(--ease)}
+.tcard:active{transform:scale(.97)}
+.tcard .lg{font-size:11px;color:var(--ink3);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tcard .r{display:flex;align-items:center;gap:8px;min-width:0}
+.tcard .r img{width:22px;height:22px;object-fit:contain;flex:none}
+.tcard .r span{flex:1;min-width:0;font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tcard .r b{font:800 15px var(--round)}
+.tcard .ft{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--ink3)}
+.tcard .ft em{font-style:normal;color:var(--cyan);font-weight:700}
+.tcard.live{border-color:rgba(255,77,94,.4)} .tcard.live .ft span{color:#FF7D8A;font-weight:700}
+/* skorbord logoları ve H2H */
+.board .crests{display:flex;justify-content:space-between;align-items:center;position:relative}
+.board .crests img{width:46px;height:46px;object-fit:contain;filter:drop-shadow(0 6px 14px rgba(0,0,0,.5))}
+.h2h{display:flex;flex-direction:column}
+.h2h div{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line);font-size:14.5px}
+.h2h div:last-child{border-bottom:0}
+.h2h time{color:var(--ink3);font-size:12.5px;font-variant-numeric:tabular-nums}
+.h2h b{font:800 15px var(--round);font-variant-numeric:tabular-nums}
+.forms{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.forms .formrow{gap:4px}
 /* ---------- Karşılama ---------- */
 .splash{position:fixed;inset:0;z-index:100;display:grid;place-items:center;background:#03060D;transition:opacity .5s var(--ease),visibility .5s}
 .splash img{width:min(64vw,300px);animation:spl 1s var(--ease) both}
@@ -301,9 +355,26 @@ nav.tabs .badge{position:absolute;top:6px;left:calc(50% + 6px);min-width:16px;he
 <main class="page">
   <!-- TAHMİN -->
   <section class="view" id="v-tahmin">
-    <div class="ltitle"><div><h1>Tahmin</h1><p>İlk yarı · İkinci yarı · Maç sonu</p></div></div>
+    <div class="ltitle"><div><h1>Tahmin</h1><p id="dataAge">İlk yarı · İkinci yarı · Maç sonu</p></div>
+      <button class="refresh" id="refreshBtn" type="button" aria-label="Son verilerle güncelle"><svg viewBox="0 0 24 24"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7"/></svg><span>Güncelle</span></button></div>
+    <div id="todayStrip"></div>
     <div class="wrap">
       <form class="panel" id="f">
+        <div class="matchup">
+    <div class="side" data-s="h">
+      <div class="crest" id="hc" aria-hidden="true"></div>
+      <div class="tag">EV SAHİBİ</div>
+      <span class="ac"><input id="hn" autocomplete="off" autocapitalize="words" spellcheck="false" required role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="hn-l" placeholder="Ev sahibi" aria-label="Ev Sahi̇bi̇ takımı"><ul class="sug" id="hn-l" role="listbox" hidden></ul></span>
+      <div class="formrow" id="hfi"></div>
+    </div>
+    <div class="vs">VS</div>
+    <div class="side" data-s="a">
+      <div class="crest" id="ac" aria-hidden="true"></div>
+      <div class="tag">DEPLASMAN</div>
+      <span class="ac"><input id="an" autocomplete="off" autocapitalize="words" spellcheck="false" required role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="an-l" placeholder="Deplasman" aria-label="Deplasman takımı"><ul class="sug" id="an-l" role="listbox" hidden></ul></span>
+      <div class="formrow" id="afi"></div>
+    </div>
+        </div>
         <div class="row">
           <label>Lig
             <select id="lig">
@@ -323,13 +394,13 @@ nav.tabs .badge{position:absolute;top:6px;left:calc(50% + 6px);min-width:16px;he
           </label>
           <label>Maç tarihi <input id="tarih" type="date"></label>
         </div>
+        <details class="adv">
+          <summary>Kadro ve form detayları</summary>
         <div class="teams">
           <div class="team">
             <div class="tag">EV SAHİBİ</div>
-            <label>Takım <span class="ac"><input id="hn" autocomplete="off" autocapitalize="words" spellcheck="false" required role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="hn-l" placeholder="Takım adı yaz"><ul class="sug" id="hn-l" role="listbox" hidden></ul></span></label>
             <label>Son 5 maç skoru <span class="hint">Takımın attığı-yediği, en yeni başta</span>
               <input id="hf" placeholder="2-1 1-1 0-2 3-0 1-0" inputmode="text"></label>
-            <div class="formrow" id="hfi"></div>
             <div class="row">
               <label>Eksik hücumcu <select id="hma"><option>0</option><option>1</option><option>2</option><option>3</option></select></label>
               <label>Eksik defansçı <select id="hmd"><option>0</option><option>1</option><option>2</option><option>3</option></select></label>
@@ -342,10 +413,8 @@ nav.tabs .badge{position:absolute;top:6px;left:calc(50% + 6px);min-width:16px;he
           </div>
           <div class="team">
             <div class="tag">DEPLASMAN</div>
-            <label>Takım <span class="ac"><input id="an" autocomplete="off" autocapitalize="words" spellcheck="false" required role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="an-l" placeholder="Takım adı yaz"><ul class="sug" id="an-l" role="listbox" hidden></ul></span></label>
             <label>Son 5 maç skoru <span class="hint">Takımın attığı-yediği, en yeni başta</span>
               <input id="af" placeholder="1-0 2-2 0-1 1-3 2-0" inputmode="text"></label>
-            <div class="formrow" id="afi"></div>
             <div class="row">
               <label>Eksik hücumcu <select id="ama"><option>0</option><option>1</option><option>2</option><option>3</option></select></label>
               <label>Eksik defansçı <select id="amd"><option>0</option><option>1</option><option>2</option><option>3</option></select></label>
@@ -357,6 +426,7 @@ nav.tabs .badge{position:absolute;top:6px;left:calc(50% + 6px);min-width:16px;he
             </div>
           </div>
         </div>
+        </details>
         <details id="oddsBox">
           <summary>Bahis oranlarını ekle (isteğe bağlı, isabeti artırır)</summary>
           <div class="row3">
@@ -866,17 +936,22 @@ function buildSeason(){
     sel.value = [...sel.options].some(o=>o.value===keep) ? keep : (top[0]||"xx");
   }
 }
-async function loadData(){
-  const get=async (u)=>{ try{ const r=await fetch(u,{cache:"no-cache"}); return r.ok? await r.json() : null; }catch(e){ return null; } };
-  const [s,m,h]=await Promise.all([get("data/season.json"), get("data/model.json"), get("data/history.json")]);
-  SEASON=s||{}; MODEL=m; HISTORY=Array.isArray(h)?h:[];
+let LOGOS={};
+async function loadData(fresh){
+  const q=fresh?("?t="+Date.now()):"";
+  const get=async (u)=>{ try{ const r=await fetch(u+q,{cache:fresh?"no-store":"no-cache"}); return r.ok? await r.json() : null; }catch(e){ return null; } };
+  const [s,m,h,l]=await Promise.all([get("data/season.json"), get("data/model.json"), get("data/history.json"), get("data/logos.json")]);
+  if(fresh && !s) return false;
+  SEASON=s||{}; MODEL=m; HISTORY=Array.isArray(h)?h:[]; LOGOS=l||LOGOS||{};
   if(MODEL && MODEL.params){ S.params.rho = MODEL.params.rho; }
   buildSeason();
+  return true;
 }
 function formFor(name){ const t=findTeam(name); return t ? FORM.get(slug(t.name)) || null : null; }
 function fillForm(side){
   const inp=$(side==="h"?"hn":"an"), box=$(side==="h"?"hf":"af"), info=$(side==="h"?"hfi":"afi");
   const f=formFor(inp.value);
+  if(typeof updateCrest==="function") updateCrest(side);
   if(!f){ info.innerHTML=""; return; }
   box.value=f.list.map(m=>m.s).join(" ");
   info.innerHTML=f.list.map(m=>{ const [a,b]=m.s.split("-").map(Number); const r=a>b?"G":a===b?"B":"M";
@@ -918,7 +993,7 @@ function setupAC(id){
   inp.addEventListener("change",()=>{ if(findTeam(inp.value)) fillForm(id[0]); });
   const draw=()=>{ items=searchTeams(inp.value);
     if(!items.length){ close(); return; }
-    ul.innerHTML=items.map((t,i)=>`<li role="option" id="${id}-o${i}" aria-selected="${i===idx}">${esc(t.name)}<span>${t.lg?esc(LEAGUES[t.lg].n):"Diğer lig"}</span></li>`).join("");
+    ul.innerHTML=items.map((t,i)=>`<li role="option" id="${id}-o${i}" aria-selected="${i===idx}"><span class="nm">${typeof logoFor==="function"&&logoFor(t.name)?`<img src="${esc(logoFor(t.name))}" alt="" loading="lazy">`:""}<b>${esc(t.name)}</b></span><span>${t.lg?esc(LEAGUES[t.lg].n):"Diğer lig"}</span></li>`).join("");
     ul.hidden=false; inp.setAttribute("aria-expanded","true"); };
   inp.addEventListener("input",()=>{ idx=-1; draw(); ligManual=false; autoLeague(); });
   inp.addEventListener("focus",draw);
@@ -1106,7 +1181,7 @@ $("hn").value="Galatasaray"; $("hf").value="3-1 2-0 1-1 2-1 0-1";
 $("an").value="Fenerbahçe"; $("af").value="2-1 1-1 3-0 0-2 2-2";
 (async()=>{ await initStore(); renderAll(); await loadData(); autoLeague(); fillForm("h"); fillForm("a");
 if(FORM.size) $("sampleNote").textContent="Son 5 maç skorları takımı seçince otomatik dolar. Eksik ve cezalı oyuncuları kendin işaretle.";
-renderAll(); autoGrade(); })();
+renderAll(); autoGrade(); if(typeof paintAge==="function"){ paintAge(); updateCrest("h"); updateCrest("a"); } })();
 if("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(()=>{});
 
 // =====================================================================
@@ -1262,6 +1337,7 @@ const Live=(()=>{
       r.value.forEach(e=>{ detect(e); events[e.id]=e; }); });
     failed = ok ? 0 : failed+1;
     firstLoad=false; loading=false; render(); badge();
+    if(typeof window.onLiveUpdate==="function") try{ window.onLiveUpdate(events); }catch(e){}
   }
   function detect(e){
     if(dayOff!==0) return;
@@ -1443,6 +1519,123 @@ renderPrediction=function(inp,r){
   if(h && document.querySelector(`nav.tabs button[data-v="${h}"]`)) setTimeout(()=>document.querySelector(`nav.tabs button[data-v="${h}"]`).click(),50);
   Live.start();
 })();
+
+
+// =====================================================================
+// BULUTOXX v3: kulüp logoları, karşılaşma başlığı, güncelle, bugünün maçları, H2H
+// =====================================================================
+const LIVE_LOGOS=new Map(); // ESPN canlı verisinden gelen logolar (yedek kaynak)
+function logoFor(name){
+  if(!name) return null;
+  const t=findTeam(name), key=t?t.name:name;
+  if(LOGOS[key]) return LOGOS[key];
+  const n=norm(key);
+  if(LIVE_LOGOS.has(n)) return LIVE_LOGOS.get(n);
+  for(const [k,v] of LIVE_LOGOS){ if(k.includes(n)||n.includes(k)) return v; }
+  return null;
+}
+const initials=n=>(n||"").replace(/[^A-Za-zÇĞİÖŞÜçğıöşü0-9 ]/g,"").split(" ").filter(Boolean).slice(0,2).map(w=>w[0]).join("").toLocaleUpperCase("tr")||"?";
+function updateCrest(side){
+  const name=$(side==="h"?"hn":"an").value.trim(), el=$(side+"c"); if(!el) return;
+  const url=logoFor(name), key=url||("i:"+initials(name));
+  if(el.dataset.k===key) return; el.dataset.k=key;
+  el.innerHTML = url ? `<img src="${esc(url)}" alt="" onerror="this.remove()">` : (name?esc(initials(name)):"");
+  el.classList.remove("pop"); void el.offsetWidth; el.classList.add("pop");
+}
+["hn","an"].forEach(id=>{ let t; $(id).addEventListener("input",()=>{ clearTimeout(t); t=setTimeout(()=>updateCrest(id[0]),250); }); });
+
+// ---------- Güncelle: en son verileri yükle ve tahmini yeniden yap ----------
+function paintAge(){
+  const u=MODEL&&MODEL.updated; if(!u) return;
+  const [d,t]=u.split(" "); const dt=new Date(d+"T"+(t||"00:00")+":00+03:00");
+  const mins=Math.round((Date.now()-dt.getTime())/60000);
+  const ago= mins<2?"az önce": mins<60?mins+" dk önce": mins<1440?Math.round(mins/60)+" saat önce": Math.round(mins/1440)+" gün önce";
+  $("dataAge").textContent="Veriler güncellendi: "+ago+" · "+(t||"");
+}
+$("refreshBtn").addEventListener("click",async()=>{
+  const b=$("refreshBtn"); if(b.classList.contains("spin")) return;
+  b.classList.add("spin"); buzz(10);
+  const before=MODEL&&MODEL.updated;
+  const ok=await loadData(true);
+  await Live.refresh(true);
+  b.classList.remove("spin");
+  if(!ok){ toast("Bağlantı yok, kayıtlı verilerle devam ediliyor"); return; }
+  autoLeague(); fillForm("h"); fillForm("a"); paintAge(); renderAll(); renderStrip();
+  const same=before && MODEL && MODEL.updated===before;
+  toast(same?"Veriler zaten güncel · sonraki otomatik güncelleme bugün içinde":"En son veriler yüklendi");
+  Sound.ready();
+  if(last && $("hn").value && $("an").value) $("f").requestSubmit();
+});
+// Uygulama uzun süre arka planda kaldıysa geri gelince verileri sessizce tazele
+let lastFresh=Date.now();
+document.addEventListener("visibilitychange",async()=>{
+  if(document.hidden || Date.now()-lastFresh<30*60e3) return;
+  lastFresh=Date.now(); if(await loadData(true)){ fillForm("h"); fillForm("a"); paintAge(); renderAll(); }
+});
+
+// ---------- Bugünün maçları şeridi ----------
+const TOP_ORDER=["ucl","uel","uecl","tr1","en","es","it","de","fr","pt","nl"];
+function renderStrip(){
+  const box=$("todayStrip"); if(!box) return;
+  const evs=Object.values(Live.events()).filter(e=>e.state!=="post");
+  const today=new Date().toLocaleDateString("sv-SE",{timeZone:"Europe/Istanbul"});
+  const list=evs.filter(e=>new Date(e.date).toLocaleDateString("sv-SE",{timeZone:"Europe/Istanbul"})===today)
+    .sort((a,b)=>(a.state==="in"?0:1)-(b.state==="in"?0:1) || (TOP_ORDER.indexOf(a.lg)+99)%99-(TOP_ORDER.indexOf(b.lg)+99)%99 || a.date.localeCompare(b.date)).slice(0,14);
+  if(!list.length){ box.innerHTML=""; return; }
+  const sc=v=>v==null?"":v;
+  box.innerHTML=`<div class="strip-h"><h3>Bugünün maçları</h3><a id="stripAll">Tümü</a></div><div class="strip">${list.map(e=>{
+    const live=e.state==="in", tm=live?(e.clock||"Canlı"):new Date(e.date).toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit",timeZone:"Europe/Istanbul"});
+    return `<button class="tcard ${live?"live":""}" type="button" data-pred="${esc(e.id)}">
+      <span class="lg">${esc(LEAGUES[e.lg]?LEAGUES[e.lg].n:"")}</span>
+      <span class="r">${e.hl?`<img src="${esc(e.hl)}" alt="" loading="lazy">`:""}<span>${esc(e.h)}</span><b>${live?sc(e.hs):""}</b></span>
+      <span class="r">${e.al?`<img src="${esc(e.al)}" alt="" loading="lazy">`:""}<span>${esc(e.a)}</span><b>${live?sc(e.as):""}</b></span>
+      <span class="ft"><span>${esc(tm)}</span><em>Tahmin et</em></span></button>`; }).join("")}</div>`;
+  box.querySelectorAll("[data-pred]").forEach(c=>c.onclick=()=>{ const ev=Live.events()[c.dataset.pred]; if(ev) predictFromLive(ev); });
+  $("stripAll").onclick=()=>document.querySelector('nav.tabs button[data-v="canli"]').click();
+}
+window.onLiveUpdate=(evs)=>{
+  for(const e of Object.values(evs)){ if(e.hl) LIVE_LOGOS.set(norm(e.h),e.hl); if(e.al) LIVE_LOGOS.set(norm(e.a),e.al); }
+  renderStrip(); updateCrest("h"); updateCrest("a");
+};
+
+// ---------- Tahmin sonucuna logolar, iki takımın formu ve aralarındaki maçlar ----------
+function h2hFor(home,away){
+  const H=findTeam(home), A=findTeam(away); if(!H||!A) return [];
+  const out=[];
+  for(const d of Object.values(SEASON)) for(const m of d.matches||[]){
+    if((m.h===H.name&&m.a===A.name)||(m.h===A.name&&m.a===H.name)) out.push(m);
+  }
+  return out.sort((a,b)=>b.d.localeCompare(a.d)).slice(0,6);
+}
+function formBadges(name){
+  const f=formFor(name); if(!f) return '<span class="hint">Veri yok</span>';
+  return f.list.map(m=>{ const [a,b]=m.s.split("-").map(Number); const r=a>b?"G":a===b?"B":"M";
+    return `<span class="fm ${r}" title="${esc(m.opp+" "+m.s)}">${r}</span>`; }).join("");
+}
+const _rp2=renderPrediction;
+renderPrediction=function(inp,r){
+  _rp2(inp,r);
+  const board=$("out").querySelector(".board");
+  if(board){
+    const hl=logoFor(inp.home), al=logoFor(inp.away);
+    if(hl||al){ const c=document.createElement("div"); c.className="crests";
+      c.innerHTML=`<span>${hl?`<img src="${esc(hl)}" alt="">`:""}</span><span>${al?`<img src="${esc(al)}" alt="">`:""}</span>`; board.prepend(c); }
+  }
+  const p=document.createElement("div"); p.className="panel";
+  const hh=h2hFor(inp.home,inp.away);
+  p.innerHTML=`<h3>Son 5 maç formu</h3>
+    <div class="forms"><div><div class="note" style="margin-bottom:6px">${esc(inp.home)}</div><div class="formrow">${formBadges(inp.home)}</div></div>
+    <div><div class="note" style="margin-bottom:6px">${esc(inp.away)}</div><div class="formrow">${formBadges(inp.away)}</div></div></div>
+    <h3>Aralarındaki son maçlar</h3>
+    ${hh.length?`<div class="h2h">${hh.map(m=>`<div><time>${esc(new Date(m.d).toLocaleDateString("tr-TR",{day:"numeric",month:"short",year:"2-digit"}))}</time><span>${esc(m.h)} – ${esc(m.a)}</span><b>${m.ft[0]}-${m.ft[1]}${m.ht?` <small style="color:var(--ink3);font-weight:600">(${m.ht[0]}-${m.ht[1]})</small>`:""}</b></div>`).join("")}</div>`
+      :`<p class="note">Son iki sezonda bu iki takım resmi maçta karşılaşmamış.</p>`}`;
+  const acts=$("out").querySelector(".actions");
+  (acts||board||$("out").firstChild).after(p);
+};
+
+// İlk boyama
+setTimeout(()=>{ paintAge(); updateCrest("h"); updateCrest("a"); renderStrip(); }, 900);
+setInterval(paintAge, 60000);
 
 </script>
 
