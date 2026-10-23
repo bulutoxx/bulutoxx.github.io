@@ -392,6 +392,27 @@ nav.tabs .badge{position:absolute;top:6px;left:calc(50% + 6px);min-width:16px;he
 
 .ohint{font-size:13px;color:var(--ink2);padding:2px 2px 0}
 .ohint b{color:var(--ink)}
+/* ---------- Koşullar ---------- */
+.gate{position:fixed;inset:0;z-index:95;display:flex;align-items:center;justify-content:center;padding:max(16px,env(safe-area-inset-top,0px)) 16px max(16px,env(safe-area-inset-bottom,0px));
+  background:rgba(3,6,13,.82);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);animation:gIn .3s var(--ease);transition:opacity .35s}
+.gate.out{opacity:0}
+.gbox{width:min(460px,100%);max-height:100%;overflow-y:auto;background:var(--surface);border:1px solid var(--line2);border-radius:26px;padding:20px 18px;display:flex;flex-direction:column;gap:14px;box-shadow:0 40px 80px -20px rgba(0,0,0,.8);animation:pop .5s var(--ease)}
+.glogo{width:150px;align-self:center;mix-blend-mode:screen}
+.gbox h2{text-align:center;font-size:22px}
+.gsum{display:flex;flex-direction:column;gap:10px}
+.gsum div{display:flex;gap:12px;align-items:flex-start;padding:11px 12px;border-radius:14px;background:var(--surface2);border:1px solid var(--line)}
+.gsum span{font-size:20px;line-height:1.2}
+.gsum p{font-size:14.5px;color:var(--ink2);line-height:1.4}
+.gsum b{color:var(--ink)}
+.gfull{border-top:0;padding-top:0}
+.gfull summary{font-size:14.5px;color:var(--cyan)}
+.terms{display:flex;flex-direction:column;gap:6px;font-size:14px;color:var(--ink2);line-height:1.5}
+.terms h3{margin-top:10px;color:var(--ink);text-transform:none;letter-spacing:-.01em;font-size:15px}
+.terms b{color:var(--ink)}
+.gchk{flex-direction:row;align-items:flex-start;gap:12px;font-size:15px;font-weight:500;color:var(--ink);cursor:pointer}
+.gchk input{width:24px;height:24px;flex:none;padding:0;margin-top:1px;accent-color:var(--blue);-webkit-appearance:auto;appearance:auto}
+.disc{font-size:12px;color:var(--ink3);text-align:center;line-height:1.45;padding:0 8px}
+.disc a{color:var(--cyan);text-decoration:none;font-weight:600}
 /* ---------- Karşılama ---------- */
 .splash{position:fixed;inset:0;z-index:100;display:grid;place-items:center;background:#03060D;transition:opacity .5s var(--ease),visibility .5s}
 .splash img{width:min(64vw,300px);animation:spl 1s var(--ease) both}
@@ -2000,6 +2021,96 @@ renderKarne=function(){
 // Güncelle düğmesi fikstürleri de tazelesin
 $("refreshBtn").addEventListener("click",()=>loadFixtures(true).then(()=>{ applyFixtureOdds(); renderStrip(); }));
 loadFixtures().then(()=>{ applyFixtureOdds(); renderStrip(); renderKarne(); });
+
+
+// =====================================================================
+// BULUTOXX v7: Kullanım koşulları, sorumluluk reddi ve ilk açılışta onay
+// =====================================================================
+const TERMS_VER="1.0", TERMS_DATE="23 Ekim 2026";
+const TERMS_HTML=`
+<h3>1. Hizmetin niteliği</h3>
+<p>BULUTOXX, geçmiş maç sonuçları ve bahis piyasası verilerinden istatistiksel model ile olasılık hesaplayan, <b>bilgilendirme ve eğlence amaçlı</b> ücretsiz bir uygulamadır. Gösterilen skorlar ve yüzdeler bir tahmindir; <b>kesinlik, garanti veya bahis tavsiyesi değildir</b>.</p>
+<h3>2. Garanti yoktur</h3>
+<p>Futbolda sonuçlar belirsizdir. En iyi modeller ve bahis şirketleri dahil hiçbir sistem maç sonuçlarını kesin olarak bilemez. Uygulamada gösterilen geçmiş isabet oranları gelecekteki sonuçları garanti etmez. Veriler üçüncü taraf kaynaklardan otomatik alınır; eksik, gecikmeli veya hatalı olabilir.</p>
+<h3>3. Sorumluluk reddi</h3>
+<p>Uygulamadaki bilgilere dayanarak verdiğin her karar, bahis ve harcama <b>tamamen senin sorumluluğundadır</b>. BULUTOXX ve geliştiricileri; tahminlerin doğruluğundan, veri hatalarından, kesintilerden veya uygulamanın kullanımından doğabilecek doğrudan ya da dolaylı hiçbir maddi veya manevi kayıptan sorumlu tutulamaz.</p>
+<h3>4. Yaş sınırı</h3>
+<p>Uygulama <b>18 yaşından küçükler için değildir</b>. 18 yaşından küçüksen uygulamayı kullanma.</p>
+<h3>5. Yasal bahis</h3>
+<p>BULUTOXX bahis almaz, para kabul etmez ve hiçbir bahis sitesine yönlendirmez. Bahis oynayacaksan yalnızca bulunduğun ülkede yasal ve lisanslı kanalları kullan. Türkiye'de yasa dışı bahis oynamak ve oynatmak 7258 sayılı Kanun kapsamında suçtur.</p>
+<h3>6. Sorumlu oyun</h3>
+<p>Kaybetmeyi göze alamayacağın parayla oynama, kayıplarını kovalamaya çalışma, borç alarak bahis yapma. Bahis isteğini kontrol etmekte zorlanıyorsan ücretsiz ve gizli destek alabilirsin: <b>Yeşilay Danışmanlık Merkezi (YEDAM) 115</b>.</p>
+<h3>7. Dolandırıcılık uyarısı</h3>
+<p>"Kesin maç", "şike bilgisi", "garantili kupon" satan hesaplar neredeyse her zaman dolandırıcılıktır. BULUTOXX hiçbir zaman para, kupon ücreti veya kişisel bilgi istemez.</p>
+<h3>8. Gizlilik</h3>
+<p>Üyelik yoktur; ad, telefon veya e-posta toplanmaz. Kaydettiğin tahminler ve ayarların yalnızca kendi cihazında saklanır. Kullanıcı ve yükleme sayıları kimliksiz bir sayaçla tutulur; seni tanımlayan bir bilgi içermez. Canlı skorlar, logolar ve oranlar üçüncü taraf servislerden yüklenir.</p>
+<h3>9. Marka ve logolar</h3>
+<p>Kulüp, lig ve turnuva adları ile logoları sahiplerine aittir ve yalnızca maçları tanıtmak amacıyla gösterilir. BULUTOXX hiçbir kulüp, federasyon, lig veya bahis şirketiyle bağlantılı değildir; onlar tarafından desteklenmez.</p>
+<h3>10. Değişiklikler</h3>
+<p>Bu koşullar güncellenebilir. Önemli bir değişiklik olduğunda uygulama yeniden onayını ister. Sürüm ${TERMS_VER} · ${TERMS_DATE}</p>`;
+
+function termsAccepted(){ try{ const t=JSON.parse(localStorage.getItem("bx-terms")||"null"); return t && t.v===TERMS_VER; }catch(e){ return false; } }
+function showTerms(gate){
+  const el=document.createElement("div"); el.className="gate"; el.id="gate";
+  el.innerHTML=`<div class="gbox" role="dialog" aria-modal="true" aria-labelledby="gT">
+    <img class="glogo" src="icons/logo-full.png" alt="BULUTOXX">
+    <h2 id="gT">${gate?"Başlamadan önce":"Kullanım koşulları"}</h2>
+    <div class="gsum">
+      <div><span>📊</span><p>Tahminler istatistiksel olasılıktır, <b>kesin sonuç veya bahis tavsiyesi değildir</b>.</p></div>
+      <div><span>⚖️</span><p>Verdiğin kararlar ve olası kayıplar <b>senin sorumluluğundadır</b>.</p></div>
+      <div><span>🔞</span><p><b>18 yaş</b> ve üzeri içindir. Yalnızca yasal bahis kanallarını kullan.</p></div>
+      <div><span>💙</span><p>Kontrolü kaybettiğini hissedersen: <b>YEDAM 115</b> (ücretsiz, gizli).</p></div>
+    </div>
+    <details class="gfull"><summary>Koşulların tamamını oku</summary><div class="terms">${TERMS_HTML}</div></details>
+    ${gate?`<label class="gchk"><input type="checkbox" id="g18"><span>18 yaşından büyüğüm</span></label>
+    <label class="gchk"><input type="checkbox" id="gOk"><span>Kullanım koşullarını ve sorumluluk reddini okudum, kabul ediyorum</span></label>
+    <button class="btn" id="gGo" type="button" disabled>Kabul et ve devam et</button>
+    <p class="note" style="text-align:center">Kabul etmezsen uygulama kullanılamaz.</p>`
+    :`<p class="note">Kabul tarihi: ${(()=>{ try{ const t=JSON.parse(localStorage.getItem("bx-terms")); return new Date(t.at).toLocaleString("tr-TR"); }catch(e){ return "–"; } })()}</p>
+    <button class="btn" id="gGo" type="button">Kapat</button>`}
+  </div>`;
+  document.body.appendChild(el);
+  const go=$("gGo");
+  if(gate){
+    const upd=()=>{ go.disabled=!($("g18").checked && $("gOk").checked); };
+    $("g18").onchange=upd; $("gOk").onchange=upd;
+    go.onclick=()=>{ try{ localStorage.setItem("bx-terms",JSON.stringify({v:TERMS_VER, at:Date.now()})); }catch(e){}
+      Count.call("hit","accept"); buzz(10); Sound.ready(); el.classList.add("out"); setTimeout(()=>el.remove(),400); };
+  } else {
+    go.onclick=()=>{ el.classList.add("out"); setTimeout(()=>el.remove(),300); };
+  }
+}
+// İlk açılışta (veya koşullar değişince) onay zorunlu
+if(!termsAccepted()) setTimeout(()=>showTerms(true), 900);
+
+// Yükleme öncesi de onay kontrolü
+const _doInstall=doInstall;
+doInstall=function(){ if(!termsAccepted()){ showTerms(true); return; } return _doInstall(); };
+document.querySelectorAll("#installBtn,#installPill,#rhInstall").forEach(b=>b&&(b.onclick=()=>doInstall()));
+
+// Rehber'e "Kullanım koşulları" bölümü
+(function mountLegal(){
+  const wrap=document.querySelector("#v-rehber .wrap"); if(!wrap) return;
+  const p=document.createElement("div"); p.className="panel"; p.id="legal";
+  p.innerHTML=`<h2>Kullanım koşulları ve sorumluluk reddi</h2>
+    <p class="note">Sürüm ${TERMS_VER} · ${TERMS_DATE}</p>
+    <div class="terms">${TERMS_HTML}</div>`;
+  wrap.appendChild(p);
+})();
+
+// Her tahmin sonucunun altında kısa uyarı
+const _rp4=renderPrediction;
+renderPrediction=function(inp,r){
+  _rp4(inp,r);
+  const d=document.createElement("p"); d.className="disc";
+  d.innerHTML=`Bu bir istatistiksel tahmindir; kesin sonuç veya bahis tavsiyesi değildir. Kararlar ve olası kayıplar kullanıcıya aittir · 18+ · <a href="#rehber" id="discLink">Koşullar</a>`;
+  $("out").appendChild(d);
+  $("discLink").onclick=e=>{ e.preventDefault(); showTerms(false); };
+};
+// Ayarlar sayfasına da bağlantı (asıl açma dinleyicisinden sonra çalışır)
+$("setBtn").addEventListener("click",()=>{ const box=document.querySelector("#sheet .box"); if(!box||$("termsBtn")) return;
+  const b=document.createElement("button"); b.className="btn ghost"; b.type="button"; b.id="termsBtn"; b.style.marginBottom="10px"; b.textContent="Kullanım koşulları ve sorumluluk reddi";
+  b.onclick=()=>{ $("sheet").hidden=true; $("sheet").innerHTML=""; showTerms(false); }; $("setDone").before(b); });
 
 </script>
 
