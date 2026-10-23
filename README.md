@@ -20,7 +20,8 @@ Bu kurallar 2022-23'ten 2026-27'ye 53.000+ futbol ve 26.000+ basketbol maçıyla
 2. **Ezber koruması:** Ayarlar maçların ilk %70'inde öğrenilir, son %30'unda doğrulanır. Son %30'da kötüleşen hiçbir değişiklik kabul edilmez; eski ayar korunur. (Deneyde 2024'te seçilen ayarların küçük liglerde 2025'te kötüleştiği görüldü, bu kural o yüzden var.)
 3. **Bir yeteneğin kalıcı olması için en az iki farklı sezonda kazanç göstermesi gerekir.** Denenip elenenler: yaz arası güç küçültmesi, lige özel beraberlik ayarı, Elo karışımı (kazanç < 0,0005 log-kayıp).
 4. **Kalıcı olanlar:** lige yeni gelen takım ön bilgisi (futbol: hücum 0,95 / savunma 1,05; tahmin kapsamı %90'dan %100'e), uzun vadede daha yavaş unutma (zaman ağırlığı 0,010; 3 sezonda da daha iyi), basketbolda lige göre öğrenilen yeni takım ön bilgisi.
-5. **Dürüst kıyas:** Model her zaman kapanış oranlarıyla (piyasa) karşılaştırılır. Uzun vadede piyasa hâlâ daha iyidir; oran girildiğinde uygulama ikisini birleştirir.
+5. **Yüksek oran kutusu:** Dört kural (en yüksek oran, akıllı sürpriz, geniş akıllı sürpriz, beraberlik avcısı) her güncellemede gerçek kapanış oranlarıyla yarışır; ilk %70'te seçilir, son %30'da doğrulanır. 2024-25'ten bugüne üç sezonda da hiçbir kural piyasayı yenmedi; en az kaybettiren beraberlik avcısıydı (%26 tutma, -%6/-%8), en yüksek oran kuralı -%12 kaybettirdi.
+6. **Dürüst kıyas:** Model her zaman kapanış oranlarıyla (piyasa) karşılaştırılır. Uzun vadede piyasa hâlâ daha iyidir; oran girildiğinde uygulama ikisini birleştirir.
 
 - **Öğrenme geçmişi** (`data/history.json`): Her güncellemenin isabet oranları burada tutulur. Uygulamadaki Motor sekmesi bunları öğrenme eğrisi olarak gösterir.
 

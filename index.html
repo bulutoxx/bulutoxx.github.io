@@ -156,7 +156,7 @@ details[open] summary{margin-bottom:12px}
 .board .teamsline span:last-child{text-align:right}
 .scores{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;position:relative}
 .sc{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:12px 6px;text-align:center}
-.sc:last-child{background:rgba(47,123,255,.18);border-color:rgba(120,170,255,.4)}
+.sc:nth-child(2){background:rgba(47,123,255,.18);border-color:rgba(120,170,255,.4)}
 .sc .lb{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:rgba(255,255,255,.65)}
 .sc .v{font:800 44px/1 var(--round);letter-spacing:-.02em;margin:8px 0 6px;font-variant-numeric:tabular-nums;text-shadow:0 0 24px rgba(34,211,255,.45)}
 .sc .p{font-size:12px;color:var(--cyan);font-variant-numeric:tabular-nums;font-weight:600}
@@ -753,6 +753,11 @@ body.ios-guide main,body.ios-guide .page{padding-bottom:40vh}
 .lg-h{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:6px 4px 8px}
 .lg-h h3{margin:0;font-size:15px}
 .lg-all{flex:none;font-size:13px;font-weight:700;color:var(--cyan);padding:6px 10px;border-radius:99px;background:rgba(34,211,255,.1)}
+.sc.sc-risk{background:linear-gradient(160deg,rgba(255,69,58,.28),rgba(255,55,95,.14));border-color:rgba(255,99,88,.6);box-shadow:0 0 22px -6px rgba(255,69,58,.55)}
+.sc.sc-risk .v{color:#FFD1CC;text-shadow:0 0 22px rgba(255,69,58,.6)}
+.sc.sc-risk .p{color:#FF8A80}
+.riskn{margin-top:10px;padding:9px 12px;border-radius:12px;background:rgba(255,69,58,.09);border:1px solid rgba(255,69,58,.25);font-size:12.5px;line-height:1.4;color:var(--ink2)}
+.riskn b{color:#FF8A80}
 </style>
 </head>
 <body>
@@ -1276,7 +1281,24 @@ function scenario(inp, r){
   const b01=pois(0)+pois(1), b23=pois(2)+pois(3), b4=Math.max(0,1-b01-b23);
   const bands=[["0-1 gol",b01],["2-3 gol",b23],["4+ gol",b4]].sort((x,y)=>y[1]-x[1]);
   const sur=r.topFT.find(x=>R(x.s)!==R(fF.s) && x.s!==fF.s);
-  return {hf, hfp, first, firstP, p00, min, band:bands[0][0], bandP:bands[0][1], sur, more1:r.more1, more2:r.more2};
+  return {hf, hfp, first, firstP, p00, min, band:bands[0][0], bandP:bands[0][1], sur, more1:r.more1, more2:r.more2, risk:riskPick(inp, r)};
+}
+// Yüksek oran kutusu: motorun geçmiş kapanış oranlarıyla test edip seçtiği kural (model.params.risk)
+function riskPick(inp, r){
+  const P=MODEL&&MODEL.params||{}, R=P.risk||{id:"beraberlik",ad:"Beraberlik avcısı",omin:2.8,omax:5,only:["X"],pick:"likely"};
+  const st=(MODEL&&MODEL.backtest&&MODEL.backtest.risk&&MODEL.backtest.risk.kurallar||[]).find(x=>x.id===R.id);
+  const o=inp.odds||{}; const has=o.o1&&o.ox&&o.o2;
+  const NM={"1":"Ev sahibi kazanır (1)","X":"Beraberlik (X)","2":"Deplasman kazanır (2)","Ü2.5":"2.5 Üst","A2.5":"2.5 Alt"};
+  let sel;
+  if(has){ const inv=[1/o.o1,1/o.ox,1/o.o2], s=inv[0]+inv[1]+inv[2];
+    sel=[["1",o.o1,inv[0]/s],["X",o.ox,inv[1]/s],["2",o.o2,inv[2]/s]];
+    if(o.oo&&o.ou){ const a=1/o.oo,b=1/o.ou; sel.push(["Ü2.5",o.oo,a/(a+b)],["A2.5",o.ou,b/(a+b)]); } }
+  else sel=[["1",1/r.H,r.H],["X",1/r.D,r.D],["2",1/r.A,r.A],["Ü2.5",1/r.o25,r.o25],["A2.5",1/(1-r.o25),1-r.o25]];
+  const c=sel.filter(x=>R.only.includes(x[0])&&x[1]>=R.omin&&x[1]<=R.omax);
+  if(!c.length) return null;
+  const b=R.pick==="maxodds"?c.reduce((a,x)=>x[1]>a[1]?x:a):c.reduce((a,x)=>x[2]>a[2]?x:a);
+  const pm=b[0]==="1"?r.H:b[0]==="X"?r.D:b[0]==="2"?r.A:b[0]==="Ü2.5"?r.o25:1-r.o25;
+  return {k:b[0], o:b[1], p:pm, name:R.ad, label:NM[b[0]], fair:!has, st:st&&st.son30};
 }
 function renderPrediction(inp, r){
   const fH=r.topH1[0], f2=r.topH2[0], fF=r.topFT[0];
@@ -1290,16 +1312,19 @@ function renderPrediction(inp, r){
     <div class="teamsline"><span>${esc(inp.home)}</span><span>${esc(inp.away)}</span></div>
     <div class="scores">
       <div class="sc"><div class="lb">İlk yarı</div><div class="v">${fH.s}</div><div class="p">olasılık ${pct(fH.p)}</div></div>
-      <div class="sc sc-hf"><div class="lb">İY / MS</div><div class="v">${SC.hf}</div><div class="p">olasılık ${pct(SC.hfp)}</div></div>
       <div class="sc"><div class="lb">Maç sonu</div><div class="v">${fF.s}</div><div class="p">olasılık ${pct(fF.p)}</div></div>
+      ${SC.risk?`<div class="sc sc-risk"><div class="lb">🔥 Yüksek oran</div><div class="v">${esc(SC.risk.k)}</div><div class="p">oran ${SC.risk.o.toFixed(2)} · %${Math.round(SC.risk.p*100)}</div></div>`
+        :`<div class="sc sc-hf"><div class="lb">İY / MS</div><div class="v">${SC.hf}</div><div class="p">olasılık ${pct(SC.hfp)}</div></div>`}
     </div>
+    ${SC.risk?`<div class="riskn">🔥 <b>${esc(SC.risk.name)}</b>: ${esc(SC.risk.label)}${SC.risk.fair?" (adil oran, bahis oranı girilmedi)":""}.${SC.risk.st?` Geçmiş ${SC.risk.st.n.toLocaleString("tr-TR")} maçta %${Math.round(SC.risk.st.tutma*100)} tuttu, ort. oran ${SC.risk.st.ort_oran}; uzun vadede getiri %${Math.round(SC.risk.st.getiri*100)}.`:""} Yüksek risk, eğlence amaçlı.</div>`:""}
     <div class="scn">
       <div class="scn-i"><span class="scn-k">2. yarı</span><b>${f2.s}</b><small>${SC.more2>=SC.more1?`2Y daha gollü %${Math.round(SC.more2*100)}`:`İY daha gollü %${Math.round(SC.more1*100)}`}</small></div>
       <div class="scn-i"><span class="scn-k">İlk golü</span><b class="tm">${esc(SC.first)}</b><small>%${Math.round(SC.firstP*100)} · gol yok %${Math.round(SC.p00*100)}</small></div>
       <div class="scn-i"><span class="scn-k">İlk gol dk</span><b>~${SC.min}'</b><small>%50 bu dakikadan önce</small></div>
       <div class="scn-i"><span class="scn-k">Gol aralığı</span><b>${SC.band}</b><small>%${Math.round(SC.bandP*100)} · ort. ${(r.lh+r.la).toFixed(1)} gol</small></div>
       <div class="scn-i scn-s"><span class="scn-k">💎 Sürpriz</span><b>${SC.sur?SC.sur.s:"–"}</b><small>${SC.sur?`%${(SC.sur.p*100).toFixed(1)} · adil oran ${(1/SC.sur.p).toFixed(1)}`:""}</small></div>
-      <div class="scn-i"><span class="scn-k">İY gol</span><b>${r.h1o05>=.5?"Var":"Yok"}</b><small>İY 0.5 Üst %${Math.round(r.h1o05*100)}</small></div>
+      ${SC.risk?`<div class="scn-i"><span class="scn-k">İY / MS</span><b>${SC.hf}</b><small>olasılık %${Math.round(SC.hfp*100)}</small></div>`
+        :`<div class="scn-i"><span class="scn-k">İY gol</span><b>${r.h1o05>=.5?"Var":"Yok"}</b><small>İY 0.5 Üst %${Math.round(r.h1o05*100)}</small></div>`}
     </div>
     <div class="xg">Beklenen gol ${r.lh.toFixed(2)} – ${r.la.toFixed(2)} · İY payı ${pct(r.s)}${r.market?" · oranlarla birleştirildi":""}<br>${({season:"Lig sezonu verisiyle eğitildi",cup:"Avrupa kupası: lig gücü katsayılarıyla",cross:"Farklı ligler: lig gücü katsayılarıyla",form:"Yalnızca son 5 maç formu"})[r.source]||""}</div>
   </div>
@@ -3511,6 +3536,11 @@ renderKarne=function(){ _rk4(); const k=$("karne"); if(!k) return;
     <div class="list">${LAB.denenen.map(x=>`<div><span>${x.sonuc==="kabul"?"✅":"✖️"} <b>${esc(x.ad)}</b><br><small class="note">${esc(x.not)}</small></span><span>${x.sonuc==="kabul"?"Motora eklendi":"Elendi"}</span></div>`).join("")}</div>
     <p class="note">Dürüst kıyas: aynı maçlarda bahis piyasasının kapanış oranları log-kayıp ${F.length?F[F.length-1].yeni.piyasa_ll:"–"} ile hâlâ daha iyi; oran girdiğinde BULUTOXX ikisini birleştirir.</p>`;
   }
+  if(bt.risk&&bt.risk.kurallar){ h+=`<h3 style="margin-top:8px">🔥 Yüksek oran kutusu: kural yarışması</h3>
+    <p class="note">Her güncellemede dört kural gerçek kapanış oranlarıyla yarışır: ilk %70'te seçilir, son %30'da doğrulanır. Hiçbiri piyasayı yenmez; seçilen, en az kaybettiren ve tutarlı olandır.</p>
+    <div class="tbl"><table class="bk-tb"><thead><tr><th>Kural</th><th>Tutma</th><th>Ort. oran</th><th>Getiri</th></tr></thead><tbody>
+    ${bt.risk.kurallar.map(x=>`<tr class="${x.id===bt.risk.secilen?"me":""}"><td>${x.id===bt.risk.secilen?"✅ ":""}${esc(x.ad)}</td><td>%${(x.son30.tutma*100).toFixed(1)}</td><td>${x.son30.ort_oran}</td><td class="${x.id===bt.risk.secilen?"hi":""}">%${(x.son30.getiri*100).toFixed(1)}</td></tr>`).join("")}
+    </tbody></table></div>`; }
   el.innerHTML=h;
   const bk=$("bkKarne"); if(bk) k.insertBefore(el,bk); else k.appendChild(el);
 };

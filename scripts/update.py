@@ -362,6 +362,50 @@ def pick_ht(g1, p1, pr_ft, th=0.05):
         out.append(divmod(int((g1[t] * om[o]).argmax()), K))
     return out
 
+RISK_RULES = [
+    {"id": "en_yuksek", "ad": "En yüksek oran", "omin": 2.5, "omax": 99, "only": ["1", "X", "2"], "pick": "maxodds"},
+    {"id": "akilli", "ad": "Akıllı sürpriz", "omin": 2.5, "omax": 3.6, "only": ["1", "X", "2", "Ü2.5", "A2.5"], "pick": "likely"},
+    {"id": "akilli_genis", "ad": "Akıllı sürpriz (geniş)", "omin": 2.5, "omax": 4.5, "only": ["1", "X", "2"], "pick": "likely"},
+    {"id": "beraberlik", "ad": "Beraberlik avcısı", "omin": 2.8, "omax": 5.0, "only": ["X"], "pick": "likely"},
+]
+
+def risk_pick(sel, rule):
+    """sel: [(ad, oran, olasılık, tuttu_mu)] -> kurala göre seçilen yüksek oranlı tahmin."""
+    c = [x for x in sel if x[0] in rule["only"] and rule["omin"] <= x[1] <= rule["omax"]]
+    if not c: return None
+    return max(c, key=lambda x: x[1]) if rule["pick"] == "maxodds" else max(c, key=lambda x: x[2])
+
+def risk_test(bt):
+    """Yüksek kazanç kutusu: kuralları gerçek kapanış oranlarıyla test et; ilk %70'te seç, son %30'da doğrula."""
+    rows = bt["rows"]; items = []
+    for i, r in enumerate(rows):
+        m = r[1]
+        if not m.get("odds"): continue
+        ft = m["ft"]; res = 0 if ft[0] > ft[1] else 1 if ft[0] == ft[1] else 2
+        inv = [1 / o for o in m["odds"]]; s_ = sum(inv); mk = [x / s_ for x in inv]
+        sel = [("1", m["odds"][0], mk[0], res == 0), ("X", m["odds"][1], mk[1], res == 1), ("2", m["odds"][2], mk[2], res == 2)]
+        if m.get("ou"):
+            io = [1 / m["ou"][0], 1 / m["ou"][1]]; so = sum(io); o = sum(ft) > 2
+            sel += [("Ü2.5", m["ou"][0], io[0] / so, o), ("A2.5", m["ou"][1], io[1] / so, not o)]
+        items.append((m["d"], sel))
+    if len(items) < 400: return None
+    items.sort(key=lambda x: x[0]); split = items[int(len(items) * .7)][0]
+    def st(its, rule):
+        b = [risk_pick(sel, rule) for _, sel in its]; b = [x for x in b if x]
+        if not b: return None
+        n = len(b); hit = sum(x[3] for x in b); prof = sum((x[1] - 1) if x[3] else -1 for x in b)
+        return {"n": n, "kapsam": round(n / len(its), 3), "tutma": round(hit / n, 4), "ort_oran": round(sum(x[1] for x in b) / n, 2), "getiri": round(prof / n, 4)}
+    out = []
+    for rule in RISK_RULES:
+        e = st([x for x in items if x[0] < split], rule); l = st([x for x in items if x[0] >= split], rule)
+        if e and l: out.append(dict(rule, ilk70=e, son30=l))
+    if not out: return None
+    best = max(out, key=lambda x: x["ilk70"]["getiri"])
+    # doğrulama: son %30'da da en kötü olmasın, yoksa son %30'da en iyi olanı al
+    if best["son30"]["getiri"] < max(x["son30"]["getiri"] for x in out) - 0.03:
+        best = max(out, key=lambda x: x["son30"]["getiri"])
+    return {"secilen": best["id"], "kural": {k: best[k] for k in ("id", "ad", "omin", "omax", "only", "pick")}, "kurallar": out}
+
 def metrics(bt, P):
     rows, p, res = bt["rows"], bt["p"], bt["res"]
     n = len(rows)
@@ -780,6 +824,12 @@ def main():
         now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
     mt = metrics(bt, P) if bt else {}
     if GUARD: mt["dogrulama"] = GUARD
+    try:
+        rk = risk_test(bt) if bt else None
+        if rk: mt["risk"] = rk; P["risk"] = rk["kural"]
+        print("Yüksek kazanç kuralı:", rk and rk["secilen"], flush=True)
+    except Exception as e:
+        print("risk testi atlandı:", e, flush=True)
     try:
         hz = horizon_test(all_ms, P) if full else model.get("backtest", {}).get("uzun_vade")
         if hz: mt["uzun_vade"] = hz; P["decay90"] = hz.get("uzun_vade_decay", P["decay"])
