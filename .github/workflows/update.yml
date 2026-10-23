@@ -1,0 +1,55 @@
+name: BULUTOXX güncelle ve yayınla
+
+on:
+  schedule:
+    - cron: "17 5 * * *"   # her gün 08:17 (İstanbul) — sonuçları indir, modeli yeniden eğit
+  workflow_dispatch: {}     # Actions sekmesinden "Run workflow" ile elle çalıştırma
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: bulutoxx
+  cancel-in-progress: false
+
+jobs:
+  update:
+    if: github.event_name != 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install numpy==2.1.3
+      - name: Verileri indir ve modeli eğit
+        run: python scripts/update.py
+      - name: Değişiklikleri kaydet
+        run: |
+          git config user.name "bulutoxx-bot"
+          git config user.email "bulutoxx-bot@users.noreply.github.com"
+          git add data
+          git diff --cached --quiet || git commit -m "Veri ve model güncellemesi $(date -u +%F)"
+          git push
+
+  deploy:
+    needs: [update]
+    if: always() && (needs.update.result == 'success' || needs.update.result == 'skipped')
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+      - id: deployment
+        uses: actions/deploy-pages@v4
