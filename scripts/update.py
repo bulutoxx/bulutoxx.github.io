@@ -151,8 +151,18 @@ def download(lg, code, start_year, known):
             continue
     return out
 
+TSDB_KEYS = ["123", "3"]  # ücretsiz anahtarlar (biri değişirse diğeri denenir)
 def tsdb(path):
-    return json.loads(fetch("https://www.thesportsdb.com/api/v1/json/3/" + path))
+    last = None
+    for k in TSDB_KEYS:
+        try:
+            d = json.loads(fetch(f"https://www.thesportsdb.com/api/v1/json/{k}/" + path))
+            if d and any(v for v in d.values()): return d
+            last = d
+        except Exception as e:
+            last = e
+    if isinstance(last, Exception): raise last
+    return last or {}
 
 def download_cup(cid, cy):
     """Bir kupanın bu ve geçen sezon maçlarını birkaç uç noktadan topla (ücretsiz anahtar sınırlı sonuç döndürür)."""
@@ -169,7 +179,8 @@ def download_cup(cid, cy):
             try: add(tsdb(f"eventsround.php?id={cid}&r={r}&s={sname}").get("events"))
             except Exception: pass
     try: add(tsdb(f"eventspastleague.php?id={cid}").get("events"))
-    except Exception: pass
+    except Exception as e: print(f"  kupa {cid} son maçlar: {e.__class__.__name__}", flush=True)
+    print(f"  kupa {cid}: {len(evs)} maç bulundu", flush=True)
     return list(evs.values())
 
 def season_of(d):
@@ -478,7 +489,8 @@ def main():
     P0 = {"decay": 0.004, "prior": 2.5, "rho": -0.06, "formW": 0.3}
     P0.update({k: v for k, v in model.get("params", {}).items() if k in P0})
     all_ms = {lg: d["matches"] for lg, d in season.items() if not d.get("cup")}
-    full = "--tune" in sys.argv or today.weekday() == 0 or "params" not in model
+    prev_n = (model.get("backtest") or {}).get("n", 0)
+    full = "--tune" in sys.argv or today.weekday() == 0 or "params" not in model or prev_n < 1000
     if full:
         print("Ayar aranıyor (haftalık tam öğrenme)…", flush=True)
         P, bt = tune(all_ms, P0)

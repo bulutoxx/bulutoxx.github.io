@@ -18,7 +18,7 @@ concurrency:
 
 jobs:
   update:
-    if: github.event_name != 'push'
+    if: github.event_name != 'push' || contains(github.event.head_commit.message, '[guncelle]')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
