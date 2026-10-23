@@ -30,6 +30,8 @@ jobs:
       - run: pip install numpy==2.1.3
       - name: Verileri indir ve modeli eğit
         run: python scripts/update.py
+      - name: Basketbol verilerini indir ve modeli eğit
+        run: python scripts/basket.py || echo "Basketbol güncellemesi bu sefer atlandı"
       - name: Değişiklikleri kaydet
         run: |
           git config user.name "bulutoxx-bot"

@@ -1,0 +1,469 @@
+#!/usr/bin/env python3
+"""BULUTOXX Basketbol motoru.
+
+Her çalıştırmada:
+  1. NBA, WNBA, NCAA, NBL (ESPN) ve EuroLeague, EuroCup (resmî EuroLeague akışı) maçlarını ve çeyrek skorlarını indirir.
+  2. Her lig için hücum/savunma gücü modelini (ağırlıklı ridge regresyon) kurar.
+  3. Geçmiş maçları hafta hafta, hiç oynanmamış gibi tahmin edip gerçek skorla karşılaştırır (geriye dönük test)
+     ve ayarlarını (zaman ağırlığı, düzenleme gücü) bu testte en az hatayı verecek şekilde kendisi seçer.
+  4. Yaklaşan maçların tahminini maçtan önce kilitler, sonuçlanınca puanlar (gerçek ileriye dönük karne).
+Çıktı: data/basket.json (uygulama), data/bk_games.json (geçmiş), data/bk_predlog.json (kilitli tahminler).
+Ücretsiz kaynaklar, anahtar gerekmez. Claude'a bağlı değildir.
+"""
+import gzip, json, math, os, sys, time, urllib.request
+from datetime import date, datetime, timedelta, timezone
+import numpy as np
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+DATA = os.path.join(ROOT, "data")
+UA = "Mozilla/5.0 (BULUTOXX; +https://bulutoxx.github.io)"
+
+# lig anahtarı: (kaynak, kod, görünen ad, çeyrek süresi dk, aylar)
+LEAGUES = {
+    "nba":  ("espn", "nba", "NBA", 12),
+    "el":   ("euro", "E", "EuroLeague", 10),
+    "ec":   ("euro", "U", "EuroCup", 10),
+    "wnba": ("espn", "wnba", "WNBA", 10),
+    "nbl":  ("espn", "nbl", "NBL Avustralya", 10),
+    "ncaa": ("espn", "mens-college-basketball", "NCAA (ABD Üniversite)", 20),
+}
+HIST_DAYS = 560          # yaklaşık iki sezon
+FIX_DAYS = 8
+STORE_V = 2              # veri biçimi sürümü             # kaç gün sonrasına kadar fikstür
+
+def fetch(url, tries=3):
+    last = None
+    for i in range(tries):
+        try:
+            req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept": "application/json", "Accept-Encoding": "gzip"})
+            with urllib.request.urlopen(req, timeout=30) as r:
+                b = r.read()
+                if r.headers.get("Content-Encoding") == "gzip" or b[:2] == b"\x1f\x8b": b = gzip.decompress(b)
+                return json.loads(b.decode("utf-8"))
+        except Exception as e:
+            last = e; time.sleep(1.5 * (i + 1))
+    raise last
+
+# ---------------------------------------------------------------- indirme
+def parse_espn_event(e, lg):
+    c = e["competitions"][0]
+    st = e.get("status", {}).get("type", {})
+    stype = (e.get("season") or {}).get("type")
+    if stype is not None and stype not in (2, 3): return None      # hazırlık, All-Star vb. maçlar sayılmaz
+    cs = {t["homeAway"]: t for t in c["competitors"]}
+    if "home" not in cs or "away" not in cs: return None
+    def side(t):
+        tm = t["team"]
+        q = [float(x.get("value", 0) or 0) for x in (t.get("linescores") or [])]
+        return {"n": tm.get("displayName") or tm.get("name"), "ab": tm.get("abbreviation", ""), "logo": tm.get("logo", ""),
+                "s": int(float(t.get("score") or 0)), "q": [int(x) for x in q]}
+    h, a = side(cs["home"]), side(cs["away"])
+    g = {"id": "e" + str(e["id"]), "lg": lg, "dt": e["date"], "h": h["n"], "a": a["n"], "neutral": bool(c.get("neutralSite")),
+         "state": st.get("state", "pre"), "hl": h["logo"], "al": a["logo"], "hab": h["ab"], "aab": a["ab"]}
+    if g["state"] == "post" and st.get("completed", True):
+        if h["s"] + a["s"] == 0: return None
+        g.update(hs=h["s"], as_=a["s"], hq=h["q"], aq=a["q"])
+    elif g["state"] == "in":
+        g.update(hs=h["s"], as_=a["s"], hq=h["q"], aq=a["q"], clock=e.get("status", {}).get("type", {}).get("shortDetail", ""))
+    od = (c.get("odds") or [None])[0]
+    if od:
+        try:
+            sp = od.get("spread"); ou = od.get("overUnder")
+            g["odds"] = {"spread": float(sp) if sp is not None else None, "ou": float(ou) if ou is not None else None, "det": od.get("details", "")}
+        except Exception: pass
+    return g
+
+def espn_month(slug, ym, lg):
+    url = f"https://site.api.espn.com/apis/site/v2/sports/basketball/{slug}/scoreboard?dates={ym}&limit=1000"
+    if slug == "mens-college-basketball": url += "&groups=50"
+    d = fetch(url)
+    return [g for g in (parse_espn_event(e, lg) for e in d.get("events", [])) if g]
+
+def espn_day(slug, ymd, lg):
+    url = f"https://site.api.espn.com/apis/site/v2/sports/basketball/{slug}/scoreboard?dates={ymd}&limit=500"
+    if slug == "mens-college-basketball": url += "&groups=50"
+    d = fetch(url)
+    return [g for g in (parse_espn_event(e, lg) for e in d.get("events", [])) if g]
+
+def euro_season(comp, code, lg):
+    d = fetch(f"https://api-live.euroleague.net/v2/competitions/{comp}/seasons/{code}/games")
+    out = []
+    for x in d.get("data", []):
+        try:
+            L, R = x["local"], x["road"]
+            if L["club"].get("isVirtual") or R["club"].get("isVirtual"): continue
+            dt = x.get("utcDate") or x.get("date")
+            if dt and not dt.endswith("Z"): dt = dt + "Z"
+            g = {"id": "u" + x["identifier"], "lg": lg, "dt": dt, "h": L["club"]["name"], "a": R["club"]["name"],
+                 "hl": (L["club"].get("images") or {}).get("crest", ""), "al": (R["club"].get("images") or {}).get("crest", ""),
+                 "hab": L["club"].get("code", ""), "aab": R["club"].get("code", ""),
+                 "neutral": bool(x.get("isNeutralVenue")), "state": "post" if x.get("played") else "pre",
+                 "phase": (x.get("phaseType") or {}).get("name", ""), "round": x.get("roundName", "")}
+            if x.get("played"):
+                pq = lambda p: [int(p.get(f"partials{i}") or 0) for i in range(1, 5)] + [int(v or 0) for v in (p.get("extraPeriods") or {}).values()]
+                g.update(hs=int(L["score"]), as_=int(R["score"]), hq=pq(L.get("partials") or {}), aq=pq(R.get("partials") or {}))
+                if g["hs"] + g["as_"] == 0: continue
+            out.append(g)
+        except Exception:
+            continue
+    return out
+
+def season_year(today):
+    return today.year if today.month >= 7 else today.year - 1
+
+def months_between(a, b):
+    y, m = a.year, a.month
+    while (y, m) <= (b.year, b.month):
+        yield f"{y}{m:02d}"
+        m += 1
+        if m == 13: y, m = y + 1, 1
+
+def download(lg, store, today, log):
+    src, code, name, qlen = LEAGUES[lg]
+    if store.get("v") != STORE_V: store = {}                         # veri biçimi değişti: baştan indir
+    games = {g["id"]: g for g in store.get("g", [])}
+    fixtures, live = [], []
+    done = set(store.get("done", []))
+    if src == "espn":
+        start = today - timedelta(days=HIST_DAYS)
+        n_new = 0
+        for ym in months_between(start, today):
+            y, m = int(ym[:4]), int(ym[4:])
+            month_end = date(y + (m == 12), m % 12 + 1, 1) - timedelta(days=1)
+            if ym in done: continue
+            try:
+                if code == "mens-college-basketball":
+                    # NCAA çok kalabalık: ayı haftalık parçalar yerine gün gün çek (yalnızca sezon ayları)
+                    if m in (5, 6, 7, 8, 9, 10): done.add(ym); continue
+                    got = []
+                    d0 = date(y, m, 1)
+                    while d0 <= min(month_end, today):
+                        try: got += espn_day(code, d0.strftime("%Y%m%d"), lg)
+                        except Exception: pass
+                        d0 += timedelta(days=1)
+                else:
+                    got = espn_month(code, ym, lg)
+            except Exception as e:
+                log[f"{lg}-{ym}"] = f"hata: {e}"; continue
+            for g in got:
+                if g["state"] == "post" and "hs" in g: games[g["id"]] = g; n_new += 1
+            if (today - month_end).days > 4: done.add(ym)
+        log[lg] = n_new
+        for k in range(0, FIX_DAYS):
+            dd = today + timedelta(days=k)
+            try:
+                for g in espn_day(code, dd.strftime("%Y%m%d"), lg):
+                    if g["state"] == "post" and "hs" in g: games[g["id"]] = g
+                    elif g["state"] == "in": live.append(g); fixtures.append(g)
+                    else: fixtures.append(g)
+            except Exception as e:
+                log[f"{lg}-fx{k}"] = f"hata: {e}"
+    else:
+        sy = season_year(today)
+        n_new = 0
+        for yy in (sy - 1, sy):
+            sc = f"{code}{yy}"
+            if sc in done: continue
+            try: got = euro_season(code, sc, lg)
+            except Exception as e:
+                log[f"{lg}-{sc}"] = f"hata: {e}"; continue
+            for g in got:
+                if g["state"] == "post": games[g["id"]] = g; n_new += 1
+                else:
+                    t = datetime.fromisoformat(g["dt"].replace("Z", "+00:00")).date()
+                    if today - timedelta(days=1) <= t <= today + timedelta(days=FIX_DAYS): fixtures.append(g)
+            if yy < sy and got and all(g["state"] == "post" for g in got): done.add(sc)
+        log[lg] = n_new
+    cut = (today - timedelta(days=HIST_DAYS)).isoformat()
+    gl = sorted((g for g in games.values() if g["dt"][:10] >= cut), key=lambda g: g["dt"])
+    for g in gl:
+        for k in ("state", "clock", "odds"): g.pop(k, None)
+    return {"v": STORE_V, "g": gl, "done": sorted(done), "asOf": gl[-1]["dt"][:10] if gl else ""}, fixtures
+
+# ---------------------------------------------------------------- model
+def days(g, ref):
+    return (ref - datetime.fromisoformat(g["dt"].replace("Z", "+00:00")).date()).days
+
+def fit(games, ref, P):
+    """Ağırlıklı ridge: ev sayısı = mu + hca + hücum(ev) + savunma(dep), dep sayısı = mu + hücum(dep) + savunma(ev)."""
+    if len(games) < 20: return None
+    teams = sorted({g["h"] for g in games} | {g["a"] for g in games}); ix = {t: i for i, t in enumerate(teams)}; n = len(teams)
+    w = np.array([math.exp(-P["decay"] * max(0, days(g, ref))) for g in games])
+    hs = np.array([g["hs"] for g in games], float); as_ = np.array([g["as_"] for g in games], float)
+    neu = np.array([g.get("neutral", False) for g in games])
+    hca = float(np.sum(w[~neu] * (hs - as_)[~neu]) / max(1e-9, np.sum(w[~neu]))) if (~neu).any() else 0.0
+    mu = float(np.sum(w * (hs + as_)) / (2 * np.sum(w)))
+    hcaH = np.where(neu, 0, hca / 2); hcaA = np.where(neu, 0, -hca / 2)
+    yh = hs - mu - hcaH; ya = as_ - mu - hcaA
+    hi = np.array([ix[g["h"]] for g in games]); ai = np.array([ix[g["a"]] for g in games])
+    M = np.zeros((2 * n, 2 * n)); b = np.zeros(2 * n)
+    # ev denklemi: off[h] + def[a]
+    for (o, d, y) in ((hi, ai, yh), (ai, hi, ya)):
+        oi, di = o, n + d
+        np.add.at(M, (oi, oi), w); np.add.at(M, (di, di), w); np.add.at(M, (oi, di), w); np.add.at(M, (di, oi), w)
+        np.add.at(b, oi, w * y); np.add.at(b, di, w * y)
+    M[np.diag_indices(2 * n)] += P["lam"]
+    x = np.linalg.solve(M, b)
+    off, dfn = x[:n], x[n:]
+    return {"teams": teams, "ix": ix, "off": off, "def": dfn, "mu": mu, "hca": hca}
+
+def pred_means(F, h, a, neutral=False):
+    if F is None or h not in F["ix"] or a not in F["ix"]: return None
+    i, j = F["ix"][h], F["ix"][a]; hh = 0 if neutral else F["hca"] / 2
+    return F["mu"] + hh + F["off"][i] + F["def"][j], F["mu"] - hh + F["off"][j] + F["def"][i]
+
+def backtest(games, P, min_train=120):
+    """Hafta hafta: o haftaya kadarki maçlarla eğit, o haftanın maçlarını tahmin et."""
+    if len(games) < min_train + 30: return []
+    rows = []
+    d0 = datetime.fromisoformat(games[min_train]["dt"].replace("Z", "+00:00")).date()
+    last = datetime.fromisoformat(games[-1]["dt"].replace("Z", "+00:00")).date()
+    wk = d0
+    gi = 0
+    dts = [datetime.fromisoformat(g["dt"].replace("Z", "+00:00")).date() for g in games]
+    while wk <= last:
+        nxt = wk + timedelta(days=7)
+        train = [g for g, d in zip(games, dts) if d < wk and (wk - d).days <= 400]
+        test = [g for g, d in zip(games, dts) if wk <= d < nxt]
+        if test and len(train) >= min_train:
+            F = fit(train, wk, P)
+            for g in test:
+                pm = pred_means(F, g["h"], g["a"], g.get("neutral", False))
+                if pm: rows.append((g, pm[0], pm[1]))
+        wk = nxt
+    return rows
+
+def score_rows(rows):
+    if not rows: return None
+    eh = np.array([r[0]["hs"] - r[1] for r in rows]); ea = np.array([r[0]["as_"] - r[2] for r in rows])
+    return float(np.mean(eh ** 2 + ea ** 2))
+
+def tune(games, lg):
+    grid_d = [0.0, 0.004, 0.008, 0.015, 0.03]; grid_l = [1.0, 3.0, 8.0, 20.0, 50.0]
+    P = {"decay": 0.008, "lam": 8.0}
+    mt = 200 if lg == "ncaa" else 80
+    best = score_rows(backtest(games, P, mt))
+    if best is None: return P, None
+    for _ in range(2):
+        for k, grid in (("decay", grid_d), ("lam", grid_l)):
+            for v in grid:
+                Q = dict(P, **{k: v}); s = score_rows(backtest(games, Q, mt))
+                if s is not None and s < best - 1e-9: best, P = s, Q
+    return P, best
+
+def reg_quarters(q, halves):
+    """Normal süre periyotlarını 4 çeyreğe çevir (NCAA iki devre oynar: her devre ikiye bölünür)."""
+    q = q or []
+    if halves:
+        if len(q) < 2: return None
+        return [q[0] / 2, q[0] / 2, q[1] / 2, q[1] / 2]
+    return [float(x) for x in q[:4]] if len(q) >= 4 else None
+
+def quarter_shares(games, halves=False):
+    sh = np.zeros(4); n = 0
+    for g in games:
+        for q in (reg_quarters(g.get("hq"), halves), reg_quarters(g.get("aq"), halves)):
+            if q and sum(q) > 0:
+                sh += np.array(q, float) / sum(q); n += 1
+    return [round(float(x), 4) for x in (sh / n if n else np.array([.25, .25, .25, .25]))]
+
+def phi(x): return 0.5 * (1 + math.erf(x / math.sqrt(2)))
+
+def metrics(rows, sm, st, shares, halves=False):
+    if not rows: return None
+    n = len(rows)
+    win = np.mean([((r[1] > r[2]) == (r[0]["hs"] > r[0]["as_"])) for r in rows])
+    mar = np.array([(r[0]["hs"] - r[0]["as_"]) - (r[1] - r[2]) for r in rows])
+    tot = np.array([(r[0]["hs"] + r[0]["as_"]) - (r[1] + r[2]) for r in rows])
+    home = np.mean([r[0]["hs"] > r[0]["as_"] for r in rows])
+    # olasılık kalibrasyonu (log-loss): kazanma olasılığı Φ(fark/σ)
+    ll = np.mean([-math.log(max(1e-6, phi((r[1] - r[2]) / sm) if r[0]["hs"] > r[0]["as_"] else 1 - phi((r[1] - r[2]) / sm))) for r in rows])
+    h1 = []
+    for r in rows:
+        qh, qa = reg_quarters(r[0].get("hq"), halves), reg_quarters(r[0].get("aq"), halves)
+        if qh and qa: h1.append((r, qh[0] + qh[1], qa[0] + qa[1]))
+    s2 = shares[0] + shares[1]
+    hv = [((r[1] - r[2]) * s2 > 0) == (hh > aa) for r, hh, aa in h1 if hh != aa]
+    h1w = np.mean(hv) if hv else None
+    conf = [r for r in rows if abs(phi((r[1] - r[2]) / sm) - .5) >= .25]
+    return {"n": n, "win": round(float(win), 4), "home_base": round(float(home), 4), "logloss": round(float(ll), 4),
+            "mae_margin": round(float(np.mean(np.abs(mar))), 2), "mae_total": round(float(np.mean(np.abs(tot))), 2),
+            "tot10": round(float(np.mean(np.abs(tot) <= 10)), 4), "mar5": round(float(np.mean(np.abs(mar) <= 5)), 4),
+            "h1_win": round(float(h1w), 4) if h1w is not None else None,
+            "conf_n": len(conf), "conf_win": round(float(np.mean([((r[1] > r[2]) == (r[0]["hs"] > r[0]["as_"])) for r in conf])), 4) if conf else None}
+
+# ---------------------------------------------------------------- yardımcılar
+def current_season(games, today):
+    """Bu sezon: son 60+ günlük aradan sonraki maçlar."""
+    if not games: return []
+    dts = [datetime.fromisoformat(g["dt"].replace("Z", "+00:00")).date() for g in games]
+    start = dts[0]
+    for i in range(1, len(dts)):
+        if (dts[i] - dts[i - 1]).days >= 45: start = dts[i]
+    return [g for g, d in zip(games, dts) if d >= start]
+
+def team_table(games, cur, F, logos):
+    tb = {}
+    for g in cur:
+        for t, s, o, w in ((g["h"], g["hs"], g["as_"], g["hs"] > g["as_"]), (g["a"], g["as_"], g["hs"], g["as_"] > g["hs"])):
+            r = tb.setdefault(t, {"w": 0, "l": 0, "pf": 0, "pa": 0})
+            r["w" if w else "l"] += 1; r["pf"] += s; r["pa"] += o
+    out = {}
+    for t in (F["teams"] if F else sorted(tb)):
+        i = F["ix"][t] if F else None
+        form = []
+        for g in reversed(games):
+            if g["h"] == t or g["a"] == t:
+                me, op = (g["hs"], g["as_"]) if g["h"] == t else (g["as_"], g["hs"])
+                form.append({"d": g["dt"][:10], "o": g["a"] if g["h"] == t else g["h"], "s": f"{me}-{op}", "r": "G" if me > op else "M", "ev": g["h"] == t})
+                if len(form) == 5: break
+        r = tb.get(t, {"w": 0, "l": 0, "pf": 0, "pa": 0}); gp = r["w"] + r["l"]
+        out[t] = {"w": r["w"], "l": r["l"], "ppg": round(r["pf"] / gp, 1) if gp else None, "oppg": round(r["pa"] / gp, 1) if gp else None,
+                  "off": round(float(F["off"][i]), 2) if F else 0, "def": round(float(F["def"][i]), 2) if F else 0,
+                  "logo": logos.get(t, {}).get("l", ""), "ab": logos.get(t, {}).get("ab", ""), "form": form}
+    return out
+
+def pick_score(mh, ma, shares):
+    """Tutarlı tahmini skor: MS, İY, 2Y ve çeyrekler birbirine eşit toplanır; beraberlik olmaz."""
+    H, A = int(round(mh)), int(round(ma))
+    if H == A:
+        if mh >= ma: H += 1
+        else: A += 1
+    s1 = shares[0] + shares[1]
+    h1, a1 = int(round(mh * s1)), int(round(ma * s1))
+    if h1 == a1:
+        if mh >= ma: h1 += 1
+        else: a1 += 1
+    q1h, q1a = int(round(mh * shares[0])), int(round(ma * shares[0]))
+    q3h, q3a = int(round(mh * shares[2])), int(round(ma * shares[2]))
+    return {"ms": [H, A], "iy": [h1, a1], "y2": [H - h1, A - a1], "q": [[q1h, q1a], [h1 - q1h, a1 - q1a], [q3h, q3a], [H - h1 - q3h, A - a1 - q3a]]}
+
+# ---------------------------------------------------------------- tahmin günlüğü
+def lock_and_grade(plog, fixtures, fits, Ps, store_games, today):
+    have = {e["id"] for e in plog}
+    for f in fixtures:
+        if f["id"] in have or f.get("state") == "in": continue
+        F = fits.get(f["lg"]); pm = pred_means(F, f["h"], f["a"], f.get("neutral", False)) if F else None
+        if not pm: continue
+        e = {"id": f["id"], "lg": f["lg"], "d": f["dt"][:10], "h": f["h"], "a": f["a"], "ph": round(pm[0], 1), "pa": round(pm[1], 1)}
+        if f.get("odds"): e["odds"] = f["odds"]
+        plog.append(e)
+    res = {}
+    for lg, st in store_games.items():
+        for g in st["g"]: res[g["id"]] = g
+    for e in plog:
+        if e.get("r") is None and e["id"] in res:
+            g = res[e["id"]]; e["r"] = [g["hs"], g["as_"]]
+    cut = (today - timedelta(days=200)).isoformat()
+    return [e for e in plog if e["d"] >= cut]
+
+def live_report(plog, today):
+    def st(es):
+        es = [e for e in es if e.get("r")]
+        if not es: return None
+        win = np.mean([((e["ph"] > e["pa"]) == (e["r"][0] > e["r"][1])) for e in es])
+        mt = np.mean([abs((e["r"][0] + e["r"][1]) - (e["ph"] + e["pa"])) for e in es])
+        out = {"n": len(es), "win": round(float(win), 4), "mae_total": round(float(mt), 2)}
+        oo = [e for e in es if e.get("odds") and e["odds"].get("ou")]
+        if oo:
+            out["ou_n"] = len(oo)
+            out["ou"] = round(float(np.mean([((e["ph"] + e["pa"]) > e["odds"]["ou"]) == ((e["r"][0] + e["r"][1]) > e["odds"]["ou"]) for e in oo if (e["r"][0] + e["r"][1]) != e["odds"]["ou"]])), 4)
+        return out
+    cut = (today - timedelta(days=30)).isoformat()
+    return {"all": st(plog), "d30": st([e for e in plog if e["d"] >= cut]), "pending": sum(1 for e in plog if e.get("r") is None)}
+
+def learn_market(plog):
+    """Oranı olan geçmiş maçlarda model ile piyasa çizgisinin en iyi karışımını öğren (yeterli veri olunca)."""
+    es = [e for e in plog if e.get("r") and e.get("odds") and e["odds"].get("spread") is not None and e["odds"].get("ou")]
+    if len(es) < 60: return None, len(es)
+    best, bw = None, 0.5
+    for w in (0, .25, .5, .75, 1):
+        err = 0
+        for e in es:
+            mm = e["ph"] - e["pa"]; tm = e["ph"] + e["pa"]
+            mk_m = -e["odds"]["spread"]; mk_t = e["odds"]["ou"]
+            pmar = (1 - w) * mm + w * mk_m; ptot = (1 - w) * tm + w * mk_t
+            err += ((e["r"][0] - e["r"][1]) - pmar) ** 2 + ((e["r"][0] + e["r"][1]) - ptot) ** 2
+        if best is None or err < best: best, bw = err, w
+    return bw, len(es)
+
+# ---------------------------------------------------------------- ana akış
+def main():
+    offline = "--offline" in sys.argv
+    today = date.today()
+    gp = os.path.join(DATA, "bk_games.json"); op = os.path.join(DATA, "basket.json"); pp = os.path.join(DATA, "bk_predlog.json")
+    store = json.load(open(gp, encoding="utf-8")) if os.path.exists(gp) else {}
+    old = json.load(open(op, encoding="utf-8")) if os.path.exists(op) else {}
+    log, fixtures = {}, []
+    for lg in LEAGUES:
+        if offline:
+            fixtures += [f for f in old.get("fixtures", []) if f["lg"] == lg]; continue
+        try:
+            st, fx = download(lg, store.get(lg, {}), today, log)
+            store[lg] = st; fixtures += fx
+        except Exception as e:
+            log[lg] = f"hata: {e}"
+            fixtures += [f for f in old.get("fixtures", []) if f["lg"] == lg and f["dt"][:10] >= today.isoformat()]
+        print(lg, log.get(lg), len(store.get(lg, {}).get("g", [])), flush=True)
+    json.dump(store, open(gp, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
+
+    out_lg, fits, Ps, bt_all = {}, {}, {}, []
+    for lg, (src, code, name, qlen) in LEAGUES.items():
+        games = store.get(lg, {}).get("g", [])
+        if len(games) < 40: continue
+        t0 = time.time()
+        P, mse = tune(games, lg)
+        mt = 200 if lg == "ncaa" else 80
+        rows = backtest(games, P, mt)
+        if rows:
+            sm = float(np.std([(r[0]["hs"] - r[0]["as_"]) - (r[1] - r[2]) for r in rows]))
+            stt = float(np.std([(r[0]["hs"] + r[0]["as_"]) - (r[1] + r[2]) for r in rows]))
+        else:
+            sm, stt = 12.0, 18.0
+        halves = qlen == 20
+        shares = quarter_shares(games[-1500:], halves)
+        F = fit(games, today, P); fits[lg] = F; Ps[lg] = P
+        logos = {}
+        for g in games:
+            if g.get("hl"): logos[g["h"]] = {"l": g["hl"], "ab": g.get("hab", "")}
+            if g.get("al"): logos[g["a"]] = {"l": g["al"], "ab": g.get("aab", "")}
+        cur = current_season(games, today)
+        m = metrics(rows, sm, stt, shares, halves)
+        bt_all += rows
+        out_lg[lg] = {"name": name, "qlen": qlen, "halves": halves, "n": len(games), "n_cur": len(cur), "asOf": store[lg].get("asOf", ""),
+                      "mu": round(F["mu"], 2), "hca": round(F["hca"], 2), "sm": round(sm, 2), "st": round(stt, 2), "shares": shares,
+                      "params": P, "backtest": m, "teams": team_table(games, cur, F, logos),
+                      "recent": [{"dt": g["dt"], "h": g["h"], "a": g["a"], "s": [g["hs"], g["as_"]], "hq": g.get("hq"), "aq": g.get("aq")} for g in games[-60:]][::-1]}
+        print(f"{lg}: {len(games)} maç, ayar {P}, test {m}, {time.time()-t0:.0f} sn", flush=True)
+
+    plog = json.load(open(pp, encoding="utf-8")) if os.path.exists(pp) else []
+    plog = lock_and_grade(plog, fixtures, fits, Ps, store, today)
+    json.dump(plog, open(pp, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
+    mw, mn = learn_market(plog)
+    try:
+        from zoneinfo import ZoneInfo
+        now = datetime.now(ZoneInfo("Europe/Istanbul")).strftime("%Y-%m-%d %H:%M")
+    except Exception:
+        now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+    tot = None
+    if bt_all:
+        tot = {"n": len(bt_all), "win": round(float(np.mean([((r[1] > r[2]) == (r[0]["hs"] > r[0]["as_"])) for r in bt_all])), 4),
+               "mae_total": round(float(np.mean([abs((r[0]["hs"] + r[0]["as_"]) - (r[1] + r[2])) for r in bt_all])), 2),
+               "mae_margin": round(float(np.mean([abs((r[0]["hs"] - r[0]["as_"]) - (r[1] - r[2])) for r in bt_all])), 2)}
+    hist = old.get("history", [])
+    if tot: hist = (hist + [{"t": now, "win": tot["win"], "n": tot["n"], "mae_total": tot["mae_total"]}])[-60:]
+    fx_out = []
+    for f in sorted(fixtures, key=lambda x: x["dt"]):
+        if f["lg"] not in out_lg: continue
+        x = {k: f[k] for k in ("id", "lg", "dt", "h", "a", "hl", "al", "neutral") if k in f}
+        for k in ("odds", "phase", "round", "clock"):
+            if f.get(k): x[k] = f[k]
+        if f.get("state") == "in": x["live"] = True; x["hs"] = f.get("hs"); x["as"] = f.get("as_")
+        fx_out.append(x)
+    res = {"updated": now, "leagues": out_lg, "fixtures": fx_out, "backtest": tot, "history": hist,
+           "live": live_report(plog, today), "market": {"w": mw if mw is not None else 0.5, "n": mn, "learned": mw is not None}, "sources": log}
+    json.dump(res, open(op, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
+    print("Bitti:", json.dumps(tot, ensure_ascii=False), "fikstür", len(fx_out), flush=True)
+
+if __name__ == "__main__":
+    main()
