@@ -9,43 +9,43 @@
   "gamma": 1.322,
   "n": 244,
   "strength": {
-   "de2": -0.45,
-   "de": -0.164,
-   "es2": -0.5,
-   "mx": -0.5,
-   "us": -0.5,
-   "nl": -0.595,
-   "es": -0.247,
-   "it2": -0.55,
-   "br": -0.5,
-   "fr": -0.172,
-   "en5": -0.5,
-   "en4": -0.5,
-   "en": 0.185,
-   "it": -0.248,
    "be": -0.47,
-   "sc2": -0.75,
-   "fr2": -0.6,
-   "ch": -0.4,
-   "dk": -0.637,
-   "sc": -0.717,
+   "no": -0.419,
+   "br": -0.5,
+   "es": -0.247,
+   "ro": -0.55,
    "pl": -0.657,
-   "sc3": -0.5,
+   "es2": -0.5,
+   "de": -0.164,
+   "tr1": -0.307,
+   "ch": -0.4,
+   "en4": -0.5,
+   "ar": -0.5,
+   "fr": -0.172,
+   "sc2": -0.75,
+   "en": 0.185,
+   "en3": -0.5,
+   "it": -0.248,
+   "dk": -0.637,
+   "us": -0.5,
+   "pt": -0.567,
    "jp": -0.5,
    "gr": -0.537,
-   "cn": -0.5,
-   "en3": -0.5,
-   "ar": -0.5,
-   "tr1": -0.307,
-   "fi": -0.652,
-   "sc4": -0.5,
-   "ro": -0.55,
-   "pt": -0.567,
-   "se": -0.5,
-   "en2": 0.196,
-   "at": -0.433,
-   "no": -0.419,
    "ie": -0.683,
+   "sc4": -0.5,
+   "se": -0.5,
+   "fr2": -0.6,
+   "sc3": -0.5,
+   "it2": -0.55,
+   "sc": -0.717,
+   "en5": -0.5,
+   "nl": -0.595,
+   "fi": -0.652,
+   "en2": 0.196,
+   "mx": -0.5,
+   "cn": -0.5,
+   "de2": -0.45,
+   "at": -0.433,
    "ru": -0.4
   },
   "unknown": -0.5,
@@ -627,8 +627,8 @@
    ]
   }
  },
- "updated": "2026-10-24 02:23",
- "tuned": "2026-10-24 02:23",
+ "updated": "2026-10-24 02:45",
+ "tuned": "2026-10-24 02:45",
  "tuned_n": 11893,
  "params": {
   "decay": 0.018,
@@ -638,6 +638,16 @@
   "mkt": 0.85,
   "h1": 0.4428,
   "marketW": 1.0,
+  "risk": {
+   "id": "beraberlik",
+   "ad": "Beraberlik avcısı",
+   "omin": 2.8,
+   "omax": 5.0,
+   "only": [
+    "X"
+   ],
+   "pick": "likely"
+  },
   "decay90": 0.01,
   "scoreMode": "tutarli"
  },
@@ -888,6 +898,125 @@
    "eski_son30": 1.0135,
    "yeni_son30": 1.0138,
    "kabul": false
+  },
+  "risk": {
+   "secilen": "beraberlik",
+   "kural": {
+    "id": "beraberlik",
+    "ad": "Beraberlik avcısı",
+    "omin": 2.8,
+    "omax": 5.0,
+    "only": [
+     "X"
+    ],
+    "pick": "likely"
+   },
+   "kurallar": [
+    {
+     "id": "en_yuksek",
+     "ad": "En yüksek oran",
+     "omin": 2.5,
+     "omax": 99,
+     "only": [
+      "1",
+      "X",
+      "2"
+     ],
+     "pick": "maxodds",
+     "ilk70": {
+      "n": 8317,
+      "kapsam": 1.0,
+      "tutma": 0.2253,
+      "ort_oran": 4.45,
+      "getiri": -0.1241
+     },
+     "son30": {
+      "n": 3576,
+      "kapsam": 1.0,
+      "tutma": 0.2248,
+      "ort_oran": 4.45,
+      "getiri": -0.1097
+     }
+    },
+    {
+     "id": "akilli",
+     "ad": "Akıllı sürpriz",
+     "omin": 2.5,
+     "omax": 3.6,
+     "only": [
+      "1",
+      "X",
+      "2",
+      "Ü2.5",
+      "A2.5"
+     ],
+     "pick": "likely",
+     "ilk70": {
+      "n": 5993,
+      "kapsam": 0.721,
+      "tutma": 0.303,
+      "ort_oran": 3.03,
+      "getiri": -0.093
+     },
+     "son30": {
+      "n": 2418,
+      "kapsam": 0.676,
+      "tutma": 0.2916,
+      "ort_oran": 3.01,
+      "getiri": -0.13
+     }
+    },
+    {
+     "id": "akilli_genis",
+     "ad": "Akıllı sürpriz (geniş)",
+     "omin": 2.5,
+     "omax": 4.5,
+     "only": [
+      "1",
+      "X",
+      "2"
+     ],
+     "pick": "likely",
+     "ilk70": {
+      "n": 7528,
+      "kapsam": 0.905,
+      "tutma": 0.2816,
+      "ort_oran": 3.27,
+      "getiri": -0.0985
+     },
+     "son30": {
+      "n": 3154,
+      "kapsam": 0.882,
+      "tutma": 0.2705,
+      "ort_oran": 3.3,
+      "getiri": -0.1255
+     }
+    },
+    {
+     "id": "beraberlik",
+     "ad": "Beraberlik avcısı",
+     "omin": 2.8,
+     "omax": 5.0,
+     "only": [
+      "X"
+     ],
+     "pick": "likely",
+     "ilk70": {
+      "n": 7751,
+      "kapsam": 0.932,
+      "tutma": 0.2658,
+      "ort_oran": 3.54,
+      "getiri": -0.0751
+     },
+     "son30": {
+      "n": 3308,
+      "kapsam": 0.925,
+      "tutma": 0.2567,
+      "ort_oran": 3.64,
+      "getiri": -0.08
+     }
+    }
+   ]
   },
   "uzun_vade": {
    "mevcut": {
