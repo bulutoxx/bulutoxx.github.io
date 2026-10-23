@@ -1,0 +1,836 @@
+{
+ "protocol": "Her maç, yalnızca maç tarihinden 90 gün önceye kadar oynanmış maçlarla eğitilen modelle tahmin edildi.",
+ "horizon": 90,
+ "base_last": {
+  "n": 11199,
+  "logloss": 1.0233,
+  "ll_ou": 0.6803,
+  "brier": 0.6135,
+  "r1x2": 0.492,
+  "ou25": 0.5644,
+  "btts": 0.5515,
+  "exact": 0.1195
+ },
+ "market_last": {
+  "n": 11187,
+  "logloss": 1.0013,
+  "r1x2": 0.5091
+ },
+ "analysis_base": {
+  "tümü": {
+   "n": 11199,
+   "logloss": 1.0233,
+   "r1x2": 0.492,
+   "draw_pred": 0.2627,
+   "draw_real": 0.2607,
+   "goals_pred": 2.676,
+   "goals_real": 2.722,
+   "home_pred": 0.4334,
+   "home_real": 0.4375
+  },
+  "iki takım da biliniyor": {
+   "n": 10301,
+   "logloss": 1.0199,
+   "r1x2": 0.4942,
+   "draw_pred": 0.2619,
+   "draw_real": 0.2594,
+   "goals_pred": 2.68,
+   "goals_real": 2.737,
+   "home_pred": 0.4339,
+   "home_real": 0.4377
+  },
+  "yükselen/yeni takım var": {
+   "n": 898,
+   "logloss": 1.0624,
+   "r1x2": 0.4666,
+   "draw_pred": 0.272,
+   "draw_real": 0.2762,
+   "goals_pred": 2.627,
+   "goals_real": 2.551,
+   "home_pred": 0.4269,
+   "home_real": 0.4354
+  },
+  "sezonun ilk 6 haftası": {
+   "n": 1734,
+   "logloss": 1.0256,
+   "r1x2": 0.4885,
+   "draw_pred": 0.2639,
+   "draw_real": 0.267,
+   "goals_pred": 2.669,
+   "goals_real": 2.669,
+   "home_pred": 0.4391,
+   "home_real": 0.4279
+  },
+  "sezonun geri kalanı": {
+   "n": 9465,
+   "logloss": 1.0229,
+   "r1x2": 0.4927,
+   "draw_pred": 0.2624,
+   "draw_real": 0.2596,
+   "goals_pred": 2.677,
+   "goals_real": 2.732,
+   "home_pred": 0.4323,
+   "home_real": 0.4393
+  },
+  "favori %0-45": {
+   "n": 5397,
+   "tahmin": 0.4031,
+   "gerçek": 0.4163
+  },
+  "favori %45-55": {
+   "n": 3638,
+   "tahmin": 0.4935,
+   "gerçek": 0.4986
+  },
+  "favori %55-65": {
+   "n": 1456,
+   "tahmin": 0.5917,
+   "gerçek": 0.6264
+  },
+  "favori %65-75": {
+   "n": 533,
+   "tahmin": 0.692,
+   "gerçek": 0.7373
+  },
+  "favori %75-100": {
+   "n": 175,
+   "tahmin": 0.7957,
+   "gerçek": 0.8229
+  },
+  "ligler": {
+   "tr1": {
+    "n": 306,
+    "r1x2": 0.5065,
+    "logloss": 1.0004,
+    "goal_bias": 0.194,
+    "draw_bias": -0.0428
+   },
+   "en": {
+    "n": 380,
+    "r1x2": 0.4684,
+    "logloss": 1.0282,
+    "goal_bias": 0.113,
+    "draw_bias": -0.0267
+   },
+   "es": {
+    "n": 380,
+    "r1x2": 0.5316,
+    "logloss": 0.9787,
+    "goal_bias": -0.071,
+    "draw_bias": 0.0162
+   },
+   "it": {
+    "n": 380,
+    "r1x2": 0.5289,
+    "logloss": 0.9926,
+    "goal_bias": 0.092,
+    "draw_bias": 0.0039
+   },
+   "de": {
+    "n": 306,
+    "r1x2": 0.5425,
+    "logloss": 0.9694,
+    "goal_bias": -0.124,
+    "draw_bias": -0.0114
+   },
+   "fr": {
+    "n": 273,
+    "r1x2": 0.5018,
+    "logloss": 1.0053,
+    "goal_bias": 0.095,
+    "draw_bias": -0.007
+   },
+   "nl": {
+    "n": 306,
+    "r1x2": 0.5196,
+    "logloss": 0.9839,
+    "goal_bias": -0.077,
+    "draw_bias": -0.0307
+   },
+   "pt": {
+    "n": 306,
+    "r1x2": 0.5327,
+    "logloss": 0.9343,
+    "goal_bias": -0.074,
+    "draw_bias": -0.0197
+   },
+   "be": {
+    "n": 240,
+    "r1x2": 0.5208,
+    "logloss": 1.0084,
+    "goal_bias": 0.084,
+    "draw_bias": 0.0054
+   },
+   "gr": {
+    "n": 157,
+    "r1x2": 0.6178,
+    "logloss": 0.887,
+    "goal_bias": -0.157,
+    "draw_bias": 0.0168
+   },
+   "sc": {
+    "n": 111,
+    "r1x2": 0.5495,
+    "logloss": 0.957,
+    "goal_bias": -0.125,
+    "draw_bias": 0.0519
+   },
+   "en2": {
+    "n": 507,
+    "r1x2": 0.4221,
+    "logloss": 1.0728,
+    "goal_bias": -0.072,
+    "draw_bias": 0.0064
+   },
+   "en3": {
+    "n": 552,
+    "r1x2": 0.4837,
+    "logloss": 1.0453,
+    "goal_bias": -0.03,
+    "draw_bias": 0.0201
+   },
+   "en4": {
+    "n": 507,
+    "r1x2": 0.4793,
+    "logloss": 1.0468,
+    "goal_bias": 0.016,
+    "draw_bias": 0.0198
+   },
+   "en5": {
+    "n": 552,
+    "r1x2": 0.5127,
+    "logloss": 1.0051,
+    "goal_bias": -0.169,
+    "draw_bias": 0.0269
+   },
+   "sc2": {
+    "n": 90,
+    "r1x2": 0.4556,
+    "logloss": 1.073,
+    "goal_bias": 0.139,
+    "draw_bias": -0.0564
+   },
+   "sc3": {
+    "n": 90,
+    "r1x2": 0.4111,
+    "logloss": 1.081,
+    "goal_bias": 0.032,
+    "draw_bias": -0.0796
+   },
+   "sc4": {
+    "n": 90,
+    "r1x2": 0.4889,
+    "logloss": 1.0593,
+    "goal_bias": -0.186,
+    "draw_bias": -0.0166
+   },
+   "de2": {
+    "n": 306,
+    "r1x2": 0.4608,
+    "logloss": 1.0452,
+    "goal_bias": 0.051,
+    "draw_bias": 0.0097
+   },
+   "it2": {
+    "n": 380,
+    "r1x2": 0.45,
+    "logloss": 1.0548,
+    "goal_bias": -0.128,
+    "draw_bias": -0.0273
+   },
+   "es2": {
+    "n": 462,
+    "r1x2": 0.4675,
+    "logloss": 1.0569,
+    "goal_bias": -0.119,
+    "draw_bias": 0.0279
+   },
+   "fr2": {
+    "n": 305,
+    "r1x2": 0.4098,
+    "logloss": 1.0848,
+    "goal_bias": 0.028,
+    "draw_bias": -0.0307
+   },
+   "ar": {
+    "n": 499,
+    "r1x2": 0.4008,
+    "logloss": 1.0921,
+    "goal_bias": 0.108,
+    "draw_bias": -0.0086
+   },
+   "at": {
+    "n": 132,
+    "r1x2": 0.447,
+    "logloss": 1.0735,
+    "goal_bias": -0.104,
+    "draw_bias": -0.0067
+   },
+   "br": {
+    "n": 380,
+    "r1x2": 0.5158,
+    "logloss": 1.0088,
+    "goal_bias": -0.187,
+    "draw_bias": 0.0198
+   },
+   "cn": {
+    "n": 240,
+    "r1x2": 0.5708,
+    "logloss": 0.9611,
+    "goal_bias": -0.169,
+    "draw_bias": -0.0247
+   },
+   "dk": {
+    "n": 132,
+    "r1x2": 0.5606,
+    "logloss": 1.021,
+    "goal_bias": -0.178,
+    "draw_bias": 0.0314
+   },
+   "fi": {
+    "n": 132,
+    "r1x2": 0.4848,
+    "logloss": 1.0046,
+    "goal_bias": -0.409,
+    "draw_bias": 0.0389
+   },
+   "ie": {
+    "n": 90,
+    "r1x2": 0.4333,
+    "logloss": 1.0513,
+    "goal_bias": 0.219,
+    "draw_bias": -0.0393
+   },
+   "jp": {
+    "n": 380,
+    "r1x2": 0.5079,
+    "logloss": 1.0502,
+    "goal_bias": 0.042,
+    "draw_bias": 0.0298
+   },
+   "mx": {
+    "n": 306,
+    "r1x2": 0.5556,
+    "logloss": 0.9856,
+    "goal_bias": -0.075,
+    "draw_bias": 0.0048
+   },
+   "no": {
+    "n": 240,
+    "r1x2": 0.5833,
+    "logloss": 0.943,
+    "goal_bias": -0.26,
+    "draw_bias": 0.0505
+   },
+   "pl": {
+    "n": 306,
+    "r1x2": 0.4412,
+    "logloss": 1.0715,
+    "goal_bias": -0.043,
+    "draw_bias": -0.0133
+   },
+   "ro": {
+    "n": 253,
+    "r1x2": 0.4704,
+    "logloss": 1.0399,
+    "goal_bias": -0.112,
+    "draw_bias": 0.004
+   },
+   "ru": {
+    "n": 240,
+    "r1x2": 0.5583,
+    "logloss": 0.9641,
+    "goal_bias": 0.131,
+    "draw_bias": -0.0236
+   },
+   "se": {
+    "n": 240,
+    "r1x2": 0.4917,
+    "logloss": 1.0365,
+    "goal_bias": -0.099,
+    "draw_bias": 0.036
+   },
+   "ch": {
+    "n": 132,
+    "r1x2": 0.4697,
+    "logloss": 1.0374,
+    "goal_bias": -0.322,
+    "draw_bias": 0.005
+   },
+   "us": {
+    "n": 511,
+    "r1x2": 0.4775,
+    "logloss": 1.0476,
+    "goal_bias": -0.114,
+    "draw_bias": -0.002
+   }
+  }
+ },
+ "new_params": {
+  "fit": {
+   "decay": 0.008,
+   "prior": 0.3
+  },
+  "Q": {
+   "shrink": 1.0,
+   "pa": 0.9,
+   "pd": 1.05,
+   "lower": 0.0,
+   "rho": -0.06,
+   "temp": 1.1,
+   "draw": 0.03
+  }
+ },
+ "new_last": {
+  "n": 11199,
+  "logloss": 1.0212,
+  "ll_ou": 0.6793,
+  "brier": 0.6121,
+  "r1x2": 0.4911,
+  "ou25": 0.5666,
+  "btts": 0.555,
+  "exact": 0.1188
+ },
+ "analysis_new": {
+  "tümü": {
+   "n": 11199,
+   "logloss": 1.0212,
+   "r1x2": 0.4911,
+   "draw_pred": 0.2602,
+   "draw_real": 0.2607,
+   "goals_pred": 2.672,
+   "goals_real": 2.722,
+   "home_pred": 0.4405,
+   "home_real": 0.4375
+  },
+  "iki takım da biliniyor": {
+   "n": 10301,
+   "logloss": 1.0183,
+   "r1x2": 0.4942,
+   "draw_pred": 0.259,
+   "draw_real": 0.2594,
+   "goals_pred": 2.682,
+   "goals_real": 2.737,
+   "home_pred": 0.4413,
+   "home_real": 0.4377
+  },
+  "yükselen/yeni takım var": {
+   "n": 898,
+   "logloss": 1.0534,
+   "r1x2": 0.4555,
+   "draw_pred": 0.2735,
+   "draw_real": 0.2762,
+   "goals_pred": 2.556,
+   "goals_real": 2.551,
+   "home_pred": 0.4302,
+   "home_real": 0.4354
+  },
+  "sezonun ilk 6 haftası": {
+   "n": 1734,
+   "logloss": 1.0154,
+   "r1x2": 0.4908,
+   "draw_pred": 0.2612,
+   "draw_real": 0.267,
+   "goals_pred": 2.657,
+   "goals_real": 2.669,
+   "home_pred": 0.4458,
+   "home_real": 0.4279
+  },
+  "sezonun geri kalanı": {
+   "n": 9465,
+   "logloss": 1.0222,
+   "r1x2": 0.4912,
+   "draw_pred": 0.26,
+   "draw_real": 0.2596,
+   "goals_pred": 2.675,
+   "goals_real": 2.732,
+   "home_pred": 0.4395,
+   "home_real": 0.4393
+  },
+  "favori %0-45": {
+   "n": 4919,
+   "tahmin": 0.4027,
+   "gerçek": 0.4109
+  },
+  "favori %45-55": {
+   "n": 3509,
+   "tahmin": 0.4945,
+   "gerçek": 0.4805
+  },
+  "favori %55-65": {
+   "n": 1755,
+   "tahmin": 0.5924,
+   "gerçek": 0.5897
+  },
+  "favori %65-75": {
+   "n": 704,
+   "tahmin": 0.6933,
+   "gerçek": 0.7259
+  },
+  "favori %75-100": {
+   "n": 312,
+   "tahmin": 0.8034,
+   "gerçek": 0.7917
+  },
+  "ligler": {
+   "tr1": {
+    "n": 306,
+    "r1x2": 0.5163,
+    "logloss": 0.9921,
+    "goal_bias": 0.183,
+    "draw_bias": -0.0465
+   },
+   "en": {
+    "n": 380,
+    "r1x2": 0.4658,
+    "logloss": 1.0258,
+    "goal_bias": 0.149,
+    "draw_bias": -0.0332
+   },
+   "es": {
+    "n": 380,
+    "r1x2": 0.5342,
+    "logloss": 0.9714,
+    "goal_bias": -0.092,
+    "draw_bias": 0.0148
+   },
+   "it": {
+    "n": 380,
+    "r1x2": 0.5237,
+    "logloss": 0.9902,
+    "goal_bias": 0.117,
+    "draw_bias": -0.0012
+   },
+   "de": {
+    "n": 306,
+    "r1x2": 0.5425,
+    "logloss": 0.9646,
+    "goal_bias": -0.149,
+    "draw_bias": -0.0155
+   },
+   "fr": {
+    "n": 273,
+    "r1x2": 0.4982,
+    "logloss": 1.0063,
+    "goal_bias": 0.091,
+    "draw_bias": -0.0124
+   },
+   "nl": {
+    "n": 306,
+    "r1x2": 0.5359,
+    "logloss": 0.9802,
+    "goal_bias": -0.079,
+    "draw_bias": -0.0391
+   },
+   "pt": {
+    "n": 306,
+    "r1x2": 0.5425,
+    "logloss": 0.9235,
+    "goal_bias": -0.081,
+    "draw_bias": -0.0232
+   },
+   "be": {
+    "n": 240,
+    "r1x2": 0.4917,
+    "logloss": 1.0078,
+    "goal_bias": 0.087,
+    "draw_bias": 0.0001
+   },
+   "gr": {
+    "n": 157,
+    "r1x2": 0.6115,
+    "logloss": 0.8694,
+    "goal_bias": -0.134,
+    "draw_bias": 0.0073
+   },
+   "sc": {
+    "n": 111,
+    "r1x2": 0.5856,
+    "logloss": 0.9305,
+    "goal_bias": -0.094,
+    "draw_bias": 0.04
+   },
+   "en2": {
+    "n": 507,
+    "r1x2": 0.428,
+    "logloss": 1.0824,
+    "goal_bias": -0.048,
+    "draw_bias": 0.0033
+   },
+   "en3": {
+    "n": 552,
+    "r1x2": 0.4746,
+    "logloss": 1.0462,
+    "goal_bias": -0.04,
+    "draw_bias": 0.0197
+   },
+   "en4": {
+    "n": 507,
+    "r1x2": 0.4734,
+    "logloss": 1.0476,
+    "goal_bias": 0.02,
+    "draw_bias": 0.0197
+   },
+   "en5": {
+    "n": 552,
+    "r1x2": 0.5127,
+    "logloss": 1.0077,
+    "goal_bias": -0.189,
+    "draw_bias": 0.0267
+   },
+   "sc2": {
+    "n": 90,
+    "r1x2": 0.3889,
+    "logloss": 1.0934,
+    "goal_bias": 0.135,
+    "draw_bias": -0.0587
+   },
+   "sc3": {
+    "n": 90,
+    "r1x2": 0.4111,
+    "logloss": 1.0641,
+    "goal_bias": 0.007,
+    "draw_bias": -0.0818
+   },
+   "sc4": {
+    "n": 90,
+    "r1x2": 0.4556,
+    "logloss": 1.0557,
+    "goal_bias": -0.239,
+    "draw_bias": -0.0137
+   },
+   "de2": {
+    "n": 306,
+    "r1x2": 0.4673,
+    "logloss": 1.0403,
+    "goal_bias": 0.06,
+    "draw_bias": 0.007
+   },
+   "it2": {
+    "n": 380,
+    "r1x2": 0.4526,
+    "logloss": 1.0496,
+    "goal_bias": -0.146,
+    "draw_bias": -0.0252
+   },
+   "es2": {
+    "n": 462,
+    "r1x2": 0.4654,
+    "logloss": 1.0615,
+    "goal_bias": -0.156,
+    "draw_bias": 0.0303
+   },
+   "fr2": {
+    "n": 305,
+    "r1x2": 0.3869,
+    "logloss": 1.0856,
+    "goal_bias": -0.011,
+    "draw_bias": -0.0282
+   },
+   "ar": {
+    "n": 499,
+    "r1x2": 0.4088,
+    "logloss": 1.0924,
+    "goal_bias": 0.112,
+    "draw_bias": -0.0066
+   },
+   "at": {
+    "n": 132,
+    "r1x2": 0.4394,
+    "logloss": 1.0747,
+    "goal_bias": -0.084,
+    "draw_bias": -0.0122
+   },
+   "br": {
+    "n": 380,
+    "r1x2": 0.5079,
+    "logloss": 1.001,
+    "goal_bias": -0.188,
+    "draw_bias": 0.0201
+   },
+   "cn": {
+    "n": 240,
+    "r1x2": 0.5792,
+    "logloss": 0.9501,
+    "goal_bias": -0.194,
+    "draw_bias": -0.0305
+   },
+   "dk": {
+    "n": 132,
+    "r1x2": 0.5455,
+    "logloss": 1.018,
+    "goal_bias": -0.181,
+    "draw_bias": 0.0246
+   },
+   "fi": {
+    "n": 132,
+    "r1x2": 0.4924,
+    "logloss": 0.987,
+    "goal_bias": -0.453,
+    "draw_bias": 0.0358
+   },
+   "ie": {
+    "n": 90,
+    "r1x2": 0.4667,
+    "logloss": 1.0435,
+    "goal_bias": 0.232,
+    "draw_bias": -0.0464
+   },
+   "jp": {
+    "n": 380,
+    "r1x2": 0.5053,
+    "logloss": 1.0497,
+    "goal_bias": 0.044,
+    "draw_bias": 0.0299
+   },
+   "mx": {
+    "n": 306,
+    "r1x2": 0.5392,
+    "logloss": 0.9842,
+    "goal_bias": -0.087,
+    "draw_bias": 0.0013
+   },
+   "no": {
+    "n": 240,
+    "r1x2": 0.5792,
+    "logloss": 0.9473,
+    "goal_bias": -0.258,
+    "draw_bias": 0.0461
+   },
+   "pl": {
+    "n": 306,
+    "r1x2": 0.4542,
+    "logloss": 1.0684,
+    "goal_bias": -0.063,
+    "draw_bias": -0.0143
+   },
+   "ro": {
+    "n": 253,
+    "r1x2": 0.4941,
+    "logloss": 1.0329,
+    "goal_bias": -0.115,
+    "draw_bias": 0.0019
+   },
+   "ru": {
+    "n": 240,
+    "r1x2": 0.5625,
+    "logloss": 0.9559,
+    "goal_bias": 0.141,
+    "draw_bias": -0.0284
+   },
+   "se": {
+    "n": 240,
+    "r1x2": 0.5,
+    "logloss": 1.0364,
+    "goal_bias": -0.073,
+    "draw_bias": 0.0305
+   },
+   "ch": {
+    "n": 132,
+    "r1x2": 0.447,
+    "logloss": 1.0439,
+    "goal_bias": -0.36,
+    "draw_bias": 0.0031
+   },
+   "us": {
+    "n": 511,
+    "r1x2": 0.4736,
+    "logloss": 1.0488,
+    "goal_bias": -0.107,
+    "draw_bias": -0.0064
+   }
+  }
+ },
+ "ablation": {
+  "shrink": 0.0,
+  "pa": 0.0001,
+  "pd": 0.0,
+  "lower": 0.0,
+  "rho": 0.0,
+  "temp": 0.0004,
+  "draw": 0.0001,
+  "decay/prior": 0.0011
+ },
+ "base_this": {
+  "n": 4411,
+  "logloss": 1.0284,
+  "ll_ou": 0.6738,
+  "brier": 0.6173,
+  "r1x2": 0.484,
+  "ou25": 0.5833,
+  "btts": 0.5665,
+  "exact": 0.1036
+ },
+ "new_this": {
+  "n": 4411,
+  "logloss": 1.0271,
+  "ll_ou": 0.6757,
+  "brier": 0.6164,
+  "r1x2": 0.484,
+  "ou25": 0.5756,
+  "btts": 0.5613,
+  "exact": 0.1032
+ },
+ "market_this": {
+  "n": 4411,
+  "logloss": 1.0016,
+  "r1x2": 0.5053
+ },
+ "short_base": {
+  "n": 4411,
+  "logloss": 1.0157,
+  "ll_ou": 0.6728,
+  "brier": 0.6082,
+  "r1x2": 0.4976,
+  "ou25": 0.5758,
+  "btts": 0.567,
+  "exact": 0.1025
+ },
+ "short_new": {
+  "n": 4411,
+  "logloss": 1.0156,
+  "ll_ou": 0.6732,
+  "brier": 0.6082,
+  "r1x2": 0.4965,
+  "ou25": 0.5806,
+  "btts": 0.5636,
+  "exact": 0.1045
+ },
+ "short_mixed": {
+  "n": 4411,
+  "logloss": 1.0143,
+  "ll_ou": 0.6728,
+  "brier": 0.6072,
+  "r1x2": 0.4988,
+  "ou25": 0.577,
+  "btts": 0.5656,
+  "exact": 0.102
+ },
+ "decision": {
+  "long_horizon_improves_this_season": true,
+  "short_choice": "mixed",
+  "long_params": {
+   "decay": 0.008,
+   "prior": 0.3,
+   "shrink": 1.0,
+   "pa": 0.9,
+   "pd": 1.05,
+   "lower": 0.0,
+   "rho": -0.06,
+   "temp": 1.1,
+   "draw": 0.03
+  },
+  "short_params": {
+   "decay": 0.018,
+   "prior": 0.3,
+   "shrink": 1.0,
+   "pa": 0.9,
+   "pd": 1.05,
+   "lower": 0.0,
+   "rho": -0.06,
+   "temp": 1.1,
+   "draw": 0.03
+  }
+ },
+ "seconds": 197
+}

@@ -1,0 +1,75 @@
+tr1: 1442 maç, sezonlar [2022, 2023, 2024, 2025, 2026]
+en: 1590 maç, sezonlar [2022, 2023, 2024, 2025, 2026]
+es: 1609 maç, sezonlar [2022, 2023, 2024, 2025, 2026]
+it: 1590 maç, sezonlar [2022, 2023, 2024, 2025, 2026]
+de: 1278 maç, sezonlar [2022, 2023, 2024, 2025, 2026]
+fr: 1327 maç, sezonlar [2022, 2023, 2024, 2025, 2026]
+nl: 1305 maç, sezonlar [2022, 2023, 2024, 2025, 2026]
+pt: 1296 maç, sezonlar [2022, 2023, 2024, 2025, 2026]
+be: 1098 maç, sezonlar [2022, 2023, 2024, 2025, 2026]
+gr: 751 maç, sezonlar [2022, 2023, 2024, 2025, 2026]
+sc: 537 maç, sezonlar [2022, 2023, 2024, 2025, 2026]
+en2: 2250 maç, sezonlar [2022, 2023, 2024, 2025, 2026]
+en3: 2334 maç, sezonlar [2022, 2023, 2024, 2025, 2026]
+en4: 2211 maç, sezonlar [2022, 2023, 2024, 2025, 2026]
+en5: 2363 maç, sezonlar [2022, 2023, 2024, 2025, 2026]
+sc2: 414 maç, sezonlar [2022, 2023, 2024, 2025, 2026]
+sc3: 414 maç, sezonlar [2022, 2023, 2024, 2025, 2026]
+sc4: 415 maç, sezonlar [2022, 2023, 2024, 2025, 2026]
+de2: 1296 maç, sezonlar [2022, 2023, 2024, 2025, 2026]
+it2: 1553 maç, sezonlar [2022, 2023, 2024, 2025, 2026]
+es2: 1958 maç, sezonlar [2022, 2023, 2024, 2025, 2026]
+fr2: 1451 maç, sezonlar [2022, 2023, 2024, 2025, 2026]
+ar: 2403 maç, sezonlar [2022, 2023, 2024, 2025, 2026]
+at: 657 maç, sezonlar [2021, 2022, 2023, 2024, 2025, 2026]
+br: 1829 maç, sezonlar [2022, 2023, 2024, 2025, 2026]
+cn: 1266 maç, sezonlar [2021, 2022, 2023, 2024, 2025, 2026]
+dk: 669 maç, sezonlar [2021, 2022, 2023, 2024, 2025, 2026]
+fi: 666 maç, sezonlar [2022, 2023, 2024, 2025, 2026]
+ie: 453 maç, sezonlar [2022, 2023, 2024, 2025, 2026]
+jp: 1486 maç, sezonlar [2022, 2023, 2024, 2025, 2026]
+mx: 1500 maç, sezonlar [2021, 2022, 2023, 2024, 2025, 2026]
+no: 1150 maç, sezonlar [2022, 2023, 2024, 2025, 2026]
+pl: 1457 maç, sezonlar [2021, 2022, 2023, 2024, 2025, 2026]
+ro: 1207 maç, sezonlar [2021, 2022, 2023, 2024, 2025, 2026]
+ru: 1084 maç, sezonlar [2021, 2022, 2023, 2024, 2025, 2026]
+se: 1156 maç, sezonlar [2022, 2023, 2024, 2025, 2026]
+ch: 641 maç, sezonlar [2021, 2022, 2023, 2024, 2025, 2026]
+us: 2404 maç, sezonlar [2022, 2023, 2024, 2025, 2026]
+Mevcut motor ayarları: {'decay': 0.018, 'prior': 0.3, 'rho': -0.06, 'formW': 0.0, 'mkt': 0.85, 'h1': 0.4428, 'marketW': 1.0, 'scoreMode': 'tutarli'}
+
+=== 1) TABAN: geçen sezon (2025) 90 gün önceden, mevcut motor ===
+Taban: {'n': 11199, 'logloss': 1.0233, 'll_ou': 0.6803, 'brier': 0.6135, 'r1x2': 0.492, 'ou25': 0.5644, 'btts': 0.5515, 'exact': 0.1195}
+Piyasa (maç günü kapanış oranı, üst sınır): {'n': 11187, 'logloss': 1.0013, 'r1x2': 0.5091}
+
+=== 2) HATA ANALİZİ ===
+  tümü: {'n': 11199, 'logloss': 1.0233, 'r1x2': 0.492, 'draw_pred': 0.2627, 'draw_real': 0.2607, 'goals_pred': 2.676, 'goals_real': 2.722, 'home_pred': 0.4334, 'home_real': 0.4375}
+  iki takım da biliniyor: {'n': 10301, 'logloss': 1.0199, 'r1x2': 0.4942, 'draw_pred': 0.2619, 'draw_real': 0.2594, 'goals_pred': 2.68, 'goals_real': 2.737, 'home_pred': 0.4339, 'home_real': 0.4377}
+  yükselen/yeni takım var: {'n': 898, 'logloss': 1.0624, 'r1x2': 0.4666, 'draw_pred': 0.272, 'draw_real': 0.2762, 'goals_pred': 2.627, 'goals_real': 2.551, 'home_pred': 0.4269, 'home_real': 0.4354}
+  sezonun ilk 6 haftası: {'n': 1734, 'logloss': 1.0256, 'r1x2': 0.4885, 'draw_pred': 0.2639, 'draw_real': 0.267, 'goals_pred': 2.669, 'goals_real': 2.669, 'home_pred': 0.4391, 'home_real': 0.4279}
+  sezonun geri kalanı: {'n': 9465, 'logloss': 1.0229, 'r1x2': 0.4927, 'draw_pred': 0.2624, 'draw_real': 0.2596, 'goals_pred': 2.677, 'goals_real': 2.732, 'home_pred': 0.4323, 'home_real': 0.4393}
+  favori %0-45: {'n': 5397, 'tahmin': 0.4031, 'gerçek': 0.4163}
+  favori %45-55: {'n': 3638, 'tahmin': 0.4935, 'gerçek': 0.4986}
+  favori %55-65: {'n': 1456, 'tahmin': 0.5917, 'gerçek': 0.6264}
+  favori %65-75: {'n': 533, 'tahmin': 0.692, 'gerçek': 0.7373}
+  favori %75-100: {'n': 175, 'tahmin': 0.7957, 'gerçek': 0.8229}
+  En zor ligler: [('ar', {'n': 499, 'r1x2': 0.4008, 'logloss': 1.0921, 'goal_bias': 0.108, 'draw_bias': -0.0086}), ('fr2', {'n': 305, 'r1x2': 0.4098, 'logloss': 1.0848, 'goal_bias': 0.028, 'draw_bias': -0.0307}), ('sc3', {'n': 90, 'r1x2': 0.4111, 'logloss': 1.081, 'goal_bias': 0.032, 'draw_bias': -0.0796}), ('at', {'n': 132, 'r1x2': 0.447, 'logloss': 1.0735, 'goal_bias': -0.104, 'draw_bias': -0.0067}), ('sc2', {'n': 90, 'r1x2': 0.4556, 'logloss': 1.073, 'goal_bias': 0.139, 'draw_bias': -0.0564}), ('en2', {'n': 507, 'r1x2': 0.4221, 'logloss': 1.0728, 'goal_bias': -0.072, 'draw_bias': 0.0064})]
+
+=== 3) YENİ YETENEKLER: ayar arama (yalnız geçen sezonda) ===
+  tur 1: puan 1.3609, fit decay=0.008,prior=0.3, ayar {'shrink': 1.0, 'pa': 0.9, 'pd': 1.05, 'lower': 0.0, 'rho': -0.06, 'temp': 1.1, 'draw': 0.03}
+  tur 2: puan 1.3609, fit decay=0.008,prior=0.3, ayar {'shrink': 1.0, 'pa': 0.9, 'pd': 1.05, 'lower': 0.0, 'rho': -0.06, 'temp': 1.1, 'draw': 0.03}
+Yeni (geçen sezon): {'n': 11199, 'logloss': 1.0212, 'll_ou': 0.6793, 'brier': 0.6121, 'r1x2': 0.4911, 'ou25': 0.5666, 'btts': 0.555, 'exact': 0.1188}
+Yetenek çıkarılınca log-loss artışı (büyük = önemli): {'shrink': 0.0, 'pa': 0.0001, 'pd': 0.0, 'lower': 0.0, 'rho': 0.0, 'temp': 0.0004, 'draw': 0.0001, 'decay/prior': 0.0011}
+
+=== 4) DOĞRULAMA: bu sezon (2026), ayar değiştirmeden ===
+Taban (bu sezon): {'n': 4411, 'logloss': 1.0284, 'll_ou': 0.6738, 'brier': 0.6173, 'r1x2': 0.484, 'ou25': 0.5833, 'btts': 0.5665, 'exact': 0.1036}
+Yeni (bu sezon): {'n': 4411, 'logloss': 1.0271, 'll_ou': 0.6757, 'brier': 0.6164, 'r1x2': 0.484, 'ou25': 0.5756, 'btts': 0.5613, 'exact': 0.1032}
+Piyasa: {'n': 4411, 'logloss': 1.0016, 'r1x2': 0.5053}
+
+=== 5) KISA VADE (7 gün) kontrolü, bu sezon ===
+7 gün taban: {'n': 4411, 'logloss': 1.0157, 'll_ou': 0.6728, 'brier': 0.6082, 'r1x2': 0.4976, 'ou25': 0.5758, 'btts': 0.567, 'exact': 0.1025}
+7 gün yeni (tüm yetenekler): {'n': 4411, 'logloss': 1.0156, 'll_ou': 0.6732, 'brier': 0.6082, 'r1x2': 0.4965, 'ou25': 0.5806, 'btts': 0.5636, 'exact': 0.1045}
+7 gün karma (çekme yok, eski zaman ağırlığı): {'n': 4411, 'logloss': 1.0143, 'll_ou': 0.6728, 'brier': 0.6072, 'r1x2': 0.4988, 'ou25': 0.577, 'btts': 0.5656, 'exact': 0.102}
+
+KARAR: {'long_horizon_improves_this_season': True, 'short_choice': 'mixed', 'long_params': {'decay': 0.008, 'prior': 0.3, 'shrink': 1.0, 'pa': 0.9, 'pd': 1.05, 'lower': 0.0, 'rho': -0.06, 'temp': 1.1, 'draw': 0.03}, 'short_params': {'decay': 0.018, 'prior': 0.3, 'shrink': 1.0, 'pa': 0.9, 'pd': 1.05, 'lower': 0.0, 'rho': -0.06, 'temp': 1.1, 'draw': 0.03}}
+Bitti, 197 sn
