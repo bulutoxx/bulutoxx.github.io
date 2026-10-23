@@ -1415,7 +1415,7 @@ async function shareCard(inp,r){
   x.font=`700 40px ${F}`; x.fillStyle="#fff"; x.fillText(`1  %${Math.round(r.H*100)}     X  %${Math.round(r.D*100)}     2  %${Math.round(r.A*100)}`,W/2,940);
   const best=markets(r,inp.odds).filter(m=>!/daha gollü/.test(m.n)).slice(0,3);
   x.font=`600 36px ${F}`; x.fillStyle="#AAB5CA"; best.forEach((m,i)=>x.fillText(`${m.n}  ·  %${Math.round(m.p*100)}`,W/2,1030+i*58));
-  x.font=`600 30px ${F}`; x.fillStyle="#6F7B93"; x.fillText("bulutoxx.github.io/bulutoxx",W/2,H-70);
+  x.font=`600 30px ${F}`; x.fillStyle="#6F7B93"; x.fillText("bulutoxx.github.io",W/2,H-70);
   const blob=await new Promise(res=>c.toBlob(res,"image/png"));
   const file=new File([blob],`bulutoxx-${slug(inp.home)}-${slug(inp.away)}.png`,{type:"image/png"});
   try{ if(navigator.canShare && navigator.canShare({files:[file]})){ await navigator.share({files:[file], title:"BULUTOXX tahmini"}); return; } }catch(e){ if(e&&e.name==="AbortError") return; }

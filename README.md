@@ -15,12 +15,12 @@
 ## Kurulum (bir kez, yaklaşık 5 dakika)
 
 1. github.com'da ücretsiz hesap aç.
-2. Yeni bir **public** depo oluştur, adı `bulutoxx` olsun.
+2. Yeni bir **public** depo oluştur, adı `KULLANICIADIN.github.io` olsun (böylece adres kısa olur).
 3. Bu klasördeki her şeyi depoya yükle. Gizli `.github` klasörü de yüklenmeli.
 4. Depoda **Settings → Pages → Build and deployment → Source: GitHub Actions** seç.
 5. **Actions** sekmesinde "BULUTOXX güncelle ve yayınla" iş akışını aç ve **Run workflow** ile ilk çalıştırmayı başlat.
 
-Birkaç dakika sonra uygulama `https://KULLANICIADIN.github.io/bulutoxx/` adresinde yayında olur.
+Birkaç dakika sonra uygulama `https://KULLANICIADIN.github.io` adresinde yayında olur. BULUTOXX'in adresi: **https://bulutoxx.github.io**
 
 ## Telefona kurma
 
