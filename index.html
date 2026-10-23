@@ -385,9 +385,13 @@ nav.tabs .badge{position:absolute;top:6px;left:calc(50% + 6px);min-width:16px;he
 .qrwrap b{display:block;font-size:15px;margin-bottom:4px}
 .invite{font-size:14px;color:var(--ink2);padding:2px 4px 14px}
 .invite b{color:var(--ink)}
+.ilink{align-self:flex-start;margin-top:3px;font-size:13px;font-weight:700;color:var(--cyan);padding:0}
 .ibtn.ghost2{background:rgba(255,255,255,.12);color:#fff;box-shadow:none;margin-right:6px;padding:0 14px}
 @media (max-width:400px){ .logo b{font-size:16px;letter-spacing:.04em} .topbar .in{gap:7px} .ipill{padding:0 10px} .iconbtn{width:36px;height:36px} }
 @media (max-width:360px){ .logo b{display:none} }
+
+.ohint{font-size:13px;color:var(--ink2);padding:2px 2px 0}
+.ohint b{color:var(--ink)}
 /* ---------- Karşılama ---------- */
 .splash{position:fixed;inset:0;z-index:100;display:grid;place-items:center;background:#03060D;transition:opacity .5s var(--ease),visibility .5s}
 .splash img{width:min(64vw,300px);animation:spl 1s var(--ease) both}
@@ -567,7 +571,7 @@ nav.tabs .badge{position:absolute;top:6px;left:calc(50% + 6px);min-width:16px;he
           <li>Ev avantajı, lig gol ortalaması, eksik oyuncular, kaleci, motivasyon ve yorgunluk beklenen gole çevrilir.</li>
           <li>Oran girildiyse piyasanın beklentisi modelle birleştirilir.</li>
           <li>İlk yarı ve ikinci yarı ayrı ayrı Poisson (Dixon-Coles) modeliyle hesaplanır. Maç sonu ve İY/MS bu iki yarının birleşiminden çıkar, böylece hepsi birbiriyle tutarlıdır.</li>
-          <li>Her sabah yeni sonuçlar ve bahis oranları otomatik indirilir, model iki sezonluk veriyle kendini yeniden eğitir ve ayarlarını kendisi seçer.</li>
+          <li>Günde 3 kez yeni sonuçlar, yaklaşan maçlar ve bahis oranları otomatik indirilir; model iki sezonluk veriyle kendini yeniden eğitir ve her seferinde ayarlarını baştan seçer. Yaklaşan maçların oranları tahmine otomatik eklenir.</li>
           <li>Her güncellemede model kendi kendini test eder: sezonun her maçını o maçtan önceki verilerle tahmin edip gerçekle karşılaştırır. Kaydettiğin tahminler de sonuç gelince otomatik değerlendirilir.</li>
         </ol>
       </div>
@@ -1893,7 +1897,7 @@ function shareAppSheet(){ openShare({title:"Link gönder", text:APP_TEXT, url:ap
   const rs=$("rhShare"); if(rs){ rs.onclick=shareAppSheet; rs.textContent="Link gönder"; }
   // ana sayfadaki yükleme kartına da "Gönder" ekle
   const ic=$("installCard");
-  if(ic){ const s=document.createElement("button"); s.className="ibtn ghost2"; s.type="button"; s.textContent="Gönder"; s.onclick=shareAppSheet; $("installBtn").before(s); }
+  if(ic){ const s=document.createElement("button"); s.className="ilink"; s.type="button"; s.textContent="Arkadaşına link gönder →"; s.onclick=shareAppSheet; ic.querySelector(".tx").appendChild(s); }
 })();
 
 // Tahmin sonucunda: "Arkadaşına gönder" → maç bağlantılı mesaj
@@ -1918,6 +1922,84 @@ renderPrediction=function(inp,r){
     setTimeout(tryRun,800);
   }catch(e){}
 })();
+
+
+// =====================================================================
+// BULUTOXX v6: yaklaşan maçların piyasa oranları otomatik, canlı (ileriye dönük) karne
+// =====================================================================
+let FIXTURES=[];
+async function loadFixtures(fresh){
+  try{ const r=await fetch("data/fixtures.json"+(fresh?"?t="+Date.now():""),{cache:fresh?"no-store":"no-cache"}); if(r.ok) FIXTURES=await r.json(); }catch(e){}
+}
+function fixtureFor(home,away){
+  const H=findTeam(home), A=findTeam(away); if(!H||!A) return null;
+  return FIXTURES.find(f=>f.h===H.name&&f.a===A.name) || null;
+}
+let autoOdds=false;
+function applyFixtureOdds(){
+  const f=fixtureFor($("hn").value,$("an").value), hint=$("oddsHint");
+  const ids=["o1","ox","o2","oo","ou"];
+  if(f && f.odds){
+    const vals=[...f.odds, ...(f.ou||["",""])];
+    const userTyped=ids.some(id=>$(id).value && !$(id).dataset.auto);
+    if(!userTyped){ ids.forEach((id,i)=>{ $(id).value=vals[i]||""; $(id).dataset.auto="1"; }); autoOdds=true; }
+    if(f.d) $("tarih").value=f.d;
+    if(hint){ hint.hidden=false; hint.innerHTML=`<span class="cdot"></span>Piyasa oranları otomatik eklendi · ${esc(new Date(f.d+"T12:00").toLocaleDateString("tr-TR",{day:"numeric",month:"long"}))}${f.t?" "+esc(f.t):""}`; }
+  } else {
+    if(autoOdds){ ids.forEach(id=>{ if($(id).dataset.auto){ $(id).value=""; delete $(id).dataset.auto; } }); autoOdds=false; }
+    if(hint) hint.hidden=true;
+  }
+}
+["o1","ox","o2","oo","ou"].forEach(id=>$(id).addEventListener("input",()=>{ delete $(id).dataset.auto; }));
+(function mountOddsHint(){
+  const box=$("oddsBox"); if(!box) return;
+  const h=document.createElement("div"); h.id="oddsHint"; h.className="ohint"; h.hidden=true;
+  box.before(h);
+})();
+const _ff=fillForm;
+fillForm=function(side){ _ff(side); applyFixtureOdds(); };
+
+// Bugün şeridi: canlı skor servisi boşsa oranlı fikstürlerden doldur
+const _rs=renderStrip;
+renderStrip=function(){
+  _rs();
+  const box=$("todayStrip"); if(!box || box.innerHTML) return;
+  const today=new Date().toLocaleDateString("sv-SE",{timeZone:"Europe/Istanbul"});
+  const order=["tr1","en","es","it","de","fr","pt","nl"];
+  const list=FIXTURES.filter(f=>f.d===today||f.d===new Date(Date.now()+864e5).toLocaleDateString("sv-SE",{timeZone:"Europe/Istanbul"}))
+    .sort((a,b)=>a.d.localeCompare(b.d)||((order.indexOf(a.lg)+99)%99-(order.indexOf(b.lg)+99)%99)||a.t.localeCompare(b.t)).slice(0,14);
+  if(!list.length) return;
+  const img=n=>{ const u=logoFor(n); return u?`<img src="${esc(u)}" alt="" loading="lazy" onerror="this.style.visibility='hidden'">`:""; };
+  box.innerHTML=`<div class="strip-h"><h3>Yaklaşan maçlar</h3></div><div class="strip">${list.map((f,i)=>`
+    <button class="tcard" type="button" data-fx="${i}"><span class="lg">${esc(LEAGUES[f.lg]?LEAGUES[f.lg].n:"")}</span>
+      <span class="r">${img(f.h)}<span>${esc(f.h)}</span></span><span class="r">${img(f.a)}<span>${esc(f.a)}</span></span>
+      <span class="ft"><span>${f.d===today?"Bugün":"Yarın"} ${esc(f.t||"")}</span><em>Tahmin et</em></span></button>`).join("")}</div>`;
+  box.querySelectorAll("[data-fx]").forEach(b=>b.onclick=()=>{ const f=list[+b.dataset.fx];
+    $("hn").value=f.h; $("an").value=f.a; ligManual=false; autoLeague(); fillForm("h"); fillForm("a"); Sound.tap(); setTimeout(()=>$("f").requestSubmit(),150); });
+};
+
+// Motor: canlı karne (maçtan ÖNCE kilitlenen tahminlerin gerçek sonuçlarla karşılaştırması)
+const _rk=renderKarne;
+renderKarne=function(){
+  _rk();
+  const L=MODEL&&MODEL.live; const k=$("karne"); if(!k) return;
+  const p=document.createElement("div"); p.className="panel";
+  const st=(L&&(L.d30||L.all))||null;
+  p.innerHTML=`<h2>Canlı karne</h2>
+    <p class="note">Her güncellemede BULUTOXX yaklaşan maçların tahminini maç başlamadan önce kilitler. Maç bitince gerçek sonuçla karşılaştırılır; bu, geçmişe dönük testten bağımsız, en dürüst ölçümdür.</p>
+    ${st?`<div class="stats">
+      <div class="stat"><div class="k">1X2 doğru · ${st.n} maç</div><div class="n">${pct(st.r1x2)}</div></div>
+      <div class="stat"><div class="k">Bahis şirketleri</div><div class="n">${st.market_r1x2!=null?pct(st.market_r1x2):"–"}</div></div>
+      <div class="stat"><div class="k">2.5 Alt/Üst doğru</div><div class="n">${pct(st.ou25)}</div></div>
+      <div class="stat"><div class="k">Maç sonu net skor</div><div class="n">${pct(st.ft_exact)}</div></div>
+    </div><p class="note">${L.d30?"Son 30 gün.":"Tüm kayıtlar."} Sonucu beklenen ${L.pending||0} tahmin var.</p>`
+    :`<p class="note">${L&&L.pending?`${L.pending} maçın tahmini kilitlendi; maçlar oynandıkça sonuçlar burada görünecek.`:"İlk kilitli tahminler bir sonraki otomatik güncellemede oluşturulacak."}</p>`}`;
+  k.prepend(p);
+};
+
+// Güncelle düğmesi fikstürleri de tazelesin
+$("refreshBtn").addEventListener("click",()=>loadFixtures(true).then(()=>{ applyFixtureOdds(); renderStrip(); }));
+loadFixtures().then(()=>{ applyFixtureOdds(); renderStrip(); renderKarne(); });
 
 </script>
 

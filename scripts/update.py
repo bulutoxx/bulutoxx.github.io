@@ -490,6 +490,104 @@ def learn_strength(season, P, today):
         a, de = rating(t); cup_teams[t] = [round(math.exp(a), 3), round(math.exp(de), 3), dom[t][0] if t in dom else None]
     return {"mu": round(mu, 3), "gamma": round(gam, 3), "n": len(cm), "strength": base, "unknown": UNKNOWN_PRIOR, "teams": cup_teams}
 
+# ------------------------------------------------------------------ gelecek maçlar + canlı karne
+NEW_COUNTRY = {"Argentina":"ar","Austria":"at","Brazil":"br","China":"cn","Denmark":"dk","Finland":"fi","Ireland":"ie","Japan":"jp",
+               "Mexico":"mx","Norway":"no","Poland":"pl","Romania":"ro","Russia":"ru","Sweden":"se","Switzerland":"ch","USA":"us"}
+def _odds(row, sets):
+    for ks in sets:
+        o = [fnum(row.get(k)) for k in ks]
+        if all(o): return [round(x, 2) for x in o]
+    return None
+def download_fixtures(season, today):
+    """football-data.co.uk yaklaşan maçlar ve ortalama bahis oranları."""
+    code2lg = {v[1]: k for k, v in LEAGUES.items() if v[0] == "main"}
+    known = {lg: sorted({m["h"] for m in d["matches"]} | {m["a"] for m in d["matches"]}) for lg, d in season.items() if not d.get("cup")}
+    out = []
+    for url, kind in (("https://www.football-data.co.uk/fixtures.csv", "main"), ("https://www.football-data.co.uk/new_league_fixtures.csv", "new")):
+        try: text = fetch(url)
+        except Exception as e: print(f"  fikstür {kind}: {e.__class__.__name__}", flush=True); continue
+        for row in csv.DictReader(io.StringIO(text)):
+            try:
+                lg = code2lg.get((row.get("Div") or "").strip()) if kind == "main" else NEW_COUNTRY.get((row.get("Country") or "").strip())
+                if not lg: continue
+                d = parse_date(row.get("Date", ""))
+                if not d or d < today.isoformat(): continue
+                h = (row.get("HomeTeam") or row.get("Home") or "").strip(); a = (row.get("AwayTeam") or row.get("Away") or "").strip()
+                if not h or not a: continue
+                kn = known.get(lg, [])
+                f = {"d": d, "t": (row.get("Time") or "").strip(), "lg": lg, "h": resolve(h, kn), "a": resolve(a, kn)}
+                o = _odds(row, [("AvgH","AvgD","AvgA"),("B365H","B365D","B365A"),("PSH","PSD","PSA"),("AvgCH","AvgCD","AvgCA"),("MaxH","MaxD","MaxA")])
+                if o: f["odds"] = o
+                ou = _odds(row, [("Avg>2.5","Avg<2.5"),("B365>2.5","B365<2.5"),("P>2.5","P<2.5")])
+                if ou: f["ou"] = ou
+                out.append(f)
+            except Exception:
+                continue
+    out.sort(key=lambda f: (f["d"], f["t"]))
+    print(f"Yaklaşan maç: {len(out)} ({sum(1 for f in out if f.get('odds'))} oranlı)", flush=True)
+    return out
+
+def predict_fixtures(fx, all_ms, P, today):
+    """Her yaklaşan maç için model ve piyasa tahminini önceden kaydet (gerçek ileriye dönük test için)."""
+    fits = {}
+    for lg, ms in all_ms.items():
+        if len(ms) >= 40:
+            try: fits[lg] = fit(ms, today, P)
+            except Exception: pass
+    market_xg(fx)
+    rows = []
+    for f in fx:
+        F = fits.get(f["lg"])
+        if not F or f["h"] not in F["t"] or f["a"] not in F["t"]: continue
+        (ah, dh), (aa, da) = F["t"][f["h"]], F["t"][f["a"]]
+        rows.append((f, F["mu"] * F["gamma"] * ah * da, F["mu"] * aa * dh))
+    if not rows: return []
+    lh = np.array([r[1] for r in rows]); la = np.array([r[2] for r in rows])
+    p, pO, pB, g = outcome_probs(lh, la, P["rho"]); kk = g.shape[1]
+    out = []
+    for i, (f, a, b) in enumerate(rows):
+        k = int(g[i].reshape(-1).argmax())
+        e = {"id": f"{f['lg']}|{f['d']}|{f['h']}|{f['a']}", "d": f["d"], "lg": f["lg"], "h": f["h"], "a": f["a"],
+             "p": [round(float(x), 4) for x in p[i]], "o": round(float(pO[i]), 4), "ft": f"{k // kk}-{k % kk}"}
+        if f.get("odds"):
+            inv = [1 / x for x in f["odds"]]; s_ = sum(inv); e["mp"] = [round(x / s_, 4) for x in inv]
+        out.append(e)
+    return out
+
+def grade_predlog(log, all_ms, today):
+    idx = {}
+    for lg, ms in all_ms.items():
+        for m in ms: idx.setdefault((lg, m["h"], m["a"]), []).append(m)
+    for e in log:
+        if e.get("r") is not None or e["d"] >= today.isoformat(): continue
+        cands = [m for m in idx.get((e["lg"], e["h"], e["a"]), []) if abs((date.fromisoformat(m["d"]) - date.fromisoformat(e["d"])).days) <= 3]
+        if cands:
+            m = cands[0]; e["r"] = m["ft"]
+        elif (today - date.fromisoformat(e["d"])).days > 10:
+            e["r"] = False   # ertelendi / bulunamadı
+    keep = [e for e in log if (today - date.fromisoformat(e["d"])).days <= 120]
+    return keep
+
+def live_report(log, today):
+    def stats(es):
+        es = [e for e in es if e.get("r")]
+        if not es: return None
+        res = [0 if e["r"][0] > e["r"][1] else 1 if e["r"][0] == e["r"][1] else 2 for e in es]
+        hit = sum(int(np.argmax(e["p"]) == r) for e, r in zip(es, res))
+        ll = -np.mean([math.log(max(e["p"][r], 1e-9)) for e, r in zip(es, res)])
+        ou = sum(int((e["o"] >= .5) == (sum(e["r"]) > 2)) for e in es)
+        ex = sum(int(e["ft"] == f"{e['r'][0]}-{e['r'][1]}") for e in es)
+        mk = [(e, r) for e, r in zip(es, res) if e.get("mp")]
+        out = {"n": len(es), "r1x2": round(hit / len(es), 4), "logloss": round(float(ll), 4), "ou25": round(ou / len(es), 4), "ft_exact": round(ex / len(es), 4)}
+        if mk:
+            out["market_r1x2"] = round(sum(int(np.argmax(e["mp"]) == r) for e, r in mk) / len(mk), 4)
+            out["market_logloss"] = round(float(-np.mean([math.log(max(e["mp"][r], 1e-9)) for e, r in mk])), 4)
+            out["market_n"] = len(mk)
+        return out
+    cut = (today.toordinal() - 30)
+    return {"all": stats(log), "d30": stats([e for e in log if date.fromisoformat(e["d"]).toordinal() >= cut]),
+            "pending": sum(1 for e in log if e.get("r") is None)}
+
 def main():
     offline = "--offline" in sys.argv
     sp = os.path.join(DATA, "season.json")
@@ -570,10 +668,10 @@ def main():
     json.dump(season, open(sp, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
     all_ms = {lg: d["matches"] for lg, d in season.items() if not d.get("cup")}
     # Ayarlar az veriyle seçildiyse (ilk kurulum) veya haftanın ilk günüyse tam öğrenme
-    full = ("--tune" in sys.argv or today.weekday() == 0 or model.get("tuned_n", 0) < 1000
-            or "mkt" not in model.get("params", {}))
+    # Sürekli öğrenme: her çalıştırmada ayarlar yeni veriyle baştan aranır (yaklaşık 1-2 dakika, ücretsiz)
+    full = "--no-tune" not in sys.argv
     if full:
-        print("Ayar aranıyor (haftalık tam öğrenme)…", flush=True)
+        print("Ayar aranıyor (tam öğrenme)…", flush=True)
         P, bt = tune(all_ms, P0)
     else:
         print("Günlük test (ayarlar korunuyor)…", flush=True)
@@ -588,7 +686,21 @@ def main():
     except Exception:
         now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
     mt = metrics(bt, P) if bt else {}
-    model = {"cup": cup, "updated": now, "tuned": now if full else model.get("tuned", now),
+    # Yaklaşan maçlar: oranları kaydet, tahminleri önceden arşivle, geçmiş tahminleri gerçek sonuçla puanla
+    fxp = os.path.join(DATA, "fixtures.json"); plp = os.path.join(DATA, "predlog.json")
+    fx = [] if offline else download_fixtures(season, today)
+    if not fx and os.path.exists(fxp):
+        fx = [f for f in json.load(open(fxp, encoding="utf-8")) if f["d"] >= today.isoformat()]
+    json.dump([{k: v for k, v in f.items() if k != "xg"} for f in fx], open(fxp, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
+    plog = json.load(open(plp, encoding="utf-8")) if os.path.exists(plp) else []
+    have = {e["id"] for e in plog}
+    for e in predict_fixtures(fx, all_ms, P, today):
+        if e["id"] not in have: plog.append(e)          # maçtan önceki ilk tahmin kilitlenir, sonradan değiştirilmez
+    plog = grade_predlog(plog, all_ms, today)
+    json.dump(plog, open(plp, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
+    live = live_report(plog, today)
+    print("Canlı karne:", json.dumps(live, ensure_ascii=False), flush=True)
+    model = {"live": live, "cup": cup, "updated": now, "tuned": now if full else model.get("tuned", now),
              "tuned_n": (bt["n"] if bt else 0) if full else model.get("tuned_n", 0), "params": P, "backtest": mt, "market": mstats, "sources": log,
              "leagues": {lg: {"name": d.get("name", LEAGUES.get(lg, ("", "", lg))[2]), "asOf": d["asOf"],
                               "n": len([m for m in d["matches"] if m["season"] == d.get("season")]), "n_all": len(d["matches"]),
