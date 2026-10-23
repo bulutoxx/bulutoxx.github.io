@@ -758,6 +758,16 @@ body.ios-guide main,body.ios-guide .page{padding-bottom:40vh}
 .sc.sc-risk .p{color:#FF8A80}
 .riskn{margin-top:10px;padding:9px 12px;border-radius:12px;background:rgba(255,69,58,.09);border:1px solid rgba(255,69,58,.25);font-size:12.5px;line-height:1.4;color:var(--ink2)}
 .riskn b{color:#FF8A80}
+.upd-bar{display:flex;align-items:center;gap:10px;margin:6px 0 4px;padding:8px 8px 8px 12px;border-radius:16px;background:linear-gradient(135deg,rgba(34,211,255,.12),rgba(47,123,255,.12));border:1px solid rgba(34,211,255,.35)}
+.upd-t{flex:1;min-width:0;line-height:1.25}
+.upd-t b{display:block;font-size:13.5px}
+.upd-t small{display:block;font-size:11.5px;color:var(--ink3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.upd-go{flex:none;display:flex;align-items:center;gap:6px;padding:10px 14px;border-radius:12px;background:var(--grad);color:#fff;font:700 15px var(--sf);box-shadow:0 6px 16px -6px rgba(47,123,255,.7)}
+.upd-go svg,#hdrRefresh svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.upd-go.spin svg,#hdrRefresh.spin svg{animation:spin360 .8s linear infinite}
+@keyframes spin360{to{transform:rotate(360deg)}}
+@media (max-width:360px){.upd-t small{display:none}}
+@media (max-width:440px){#installPill:not([hidden]) ~ #hdrRefresh{display:none}}
 </style>
 </head>
 <body>
@@ -3552,6 +3562,51 @@ renderKarne=function(){ _rk5(); const t=document.querySelector("#bkKarne table")
     t.querySelectorAll("tbody tr").forEach((tr,i)=>{ const L=D.leagues[lgs[i]]; if(!L) return; const u=L.uzun_vade, g=L.dogrulama;
       tr.insertAdjacentHTML("beforeend",`<td>${u&&u.win!=null?"%"+Math.round(u.win*100):"–"}</td><td>${g?(g.kabul?"✅":"🛡️"):"–"}</td>`); }); }
 };
+
+// =====================================================================
+// BULUTOXX v16: Ana sayfada belirgin Güncelle şeridi + üst çubukta güncelle simgesi
+// =====================================================================
+const UPD={ at:Date.now() };
+function agoTxt(ms){ const m=Math.round(ms/60000); return m<1?"az önce":m<60?m+" dk önce":m<1440?Math.round(m/60)+" saat önce":Math.round(m/1440)+" gün önce"; }
+function nextRun(){ // motor: 08:17, 15:17, 23:47 İstanbul
+  const now=new Date(), slots=[[8,17],[15,17],[23,47]];
+  const ist=new Date(now.toLocaleString("en-US",{timeZone:"Europe/Istanbul"}));
+  for(const [h,m] of slots){ if(ist.getHours()<h||(ist.getHours()===h&&ist.getMinutes()<m)) return `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}`; }
+  return "08:17 (yarın)";
+}
+function modelAge(){ const u=MODEL&&MODEL.updated; if(!u) return null; const [d,t]=u.split(" "); return Date.now()-new Date(d+"T"+(t||"00:00")+":00+03:00").getTime(); }
+function paintUpd(){
+  document.querySelectorAll(".upd-bar").forEach(b=>{
+    const ma=modelAge();
+    b.querySelector(".upd-t").innerHTML=`<b>Model ${ma!=null?agoTxt(ma):"–"} eğitildi</b><small>Oran ve canlı skor ${agoTxt(Date.now()-UPD.at)} çekildi · sonraki eğitim ${nextRun()}</small>`;
+  });
+}
+async function doRefresh(btn){
+  const all=document.querySelectorAll(".upd-go,#hdrRefresh"); if([...all].some(x=>x.classList.contains("spin"))) return;
+  all.forEach(x=>x.classList.add("spin")); buzz(10); Sound.tap();
+  try{
+    $("refreshBtn").click();                                   // model, form, oranlar, futbol canlı, basketbol
+    await Promise.all([ (typeof Pick!=="undefined"&&Pick.loadEspn)?Pick.loadEspn().catch(()=>{}):null, bkLoad(true).then(()=>bkLive()).catch(()=>{}) ]);
+    await new Promise(r=>setTimeout(r,1600));
+    UPD.at=Date.now(); BT.cache.clear();
+    if(!$("v-bulten").hidden) renderBulten(); if(!$("v-basket").hidden) renderBasket();
+  } finally { all.forEach(x=>x.classList.remove("spin")); paintUpd(); }
+}
+(function mountUpd(){
+  const IC='<svg viewBox="0 0 24 24"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7"/></svg>';
+  ["#v-bulten .bt-head","#v-basket .bt-head"].forEach(sel=>{ const h=document.querySelector(sel); if(!h||h.querySelector(".upd-bar")) return;
+    const bar=document.createElement("div"); bar.className="upd-bar";
+    bar.innerHTML=`<span class="upd-t"></span><button class="upd-go" type="button" aria-label="Verileri güncelle">${IC}<span>Güncelle</span></button>`;
+    const days=h.querySelector(".bt-days"); h.insertBefore(bar, days);
+    bar.querySelector(".upd-go").onclick=()=>doRefresh(); });
+  // Üst çubuk: her sayfada görünen güncelle simgesi
+  if(!$("hdrRefresh")){ const b=document.createElement("button"); b.className="iconbtn"; b.id="hdrRefresh"; b.type="button"; b.setAttribute("aria-label","Güncelle"); b.innerHTML=IC;
+    b.onclick=()=>doRefresh(); $("modeBtn").before(b); }
+  paintUpd(); setTimeout(paintUpd,1500); setTimeout(paintUpd,4000); setInterval(paintUpd,30000);
+  window.addEventListener("focus",paintUpd);
+  // Uygulama 10 dk'dan uzun arka planda kaldıysa açılınca kendiliğinden güncelle
+  document.addEventListener("visibilitychange",()=>{ if(!document.hidden && Date.now()-UPD.at>10*60e3) doRefresh(); });
+})();
 </script>
 
 </body>
