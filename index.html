@@ -250,7 +250,7 @@ ol{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:8px;color:v
 
 /* ---------- Ayarlar sayfası ---------- */
 .sheet{position:fixed;inset:0;z-index:70;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.45);animation:gIn .25s}
-.sheet .box{width:100%;max-width:680px;max-height:88vh;overflow-y:auto;background:rgba(14,21,37,.96);backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px);
+.sheet .box{width:100%;max-width:680px;max-height:84vh;margin-bottom:calc(44px + env(safe-area-inset-bottom,0px));border-radius:26px;overflow-y:auto;background:rgba(14,21,37,.96);backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px);
   border:1px solid var(--line2);border-bottom:0;border-radius:26px 26px 0 0;padding:10px 16px calc(24px + env(safe-area-inset-bottom,0px));animation:up .38s var(--ease)}
 @keyframes up{from{transform:translateY(100%)}}
 .sheet .grab{width:38px;height:5px;border-radius:9px;background:rgba(255,255,255,.25);margin:4px auto 12px}
@@ -368,7 +368,7 @@ nav.tabs .badge{position:absolute;top:6px;left:calc(50% + 6px);min-width:16px;he
 .istep .n{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:var(--grad);font:800 14px var(--round);flex:none}
 .istep>span:nth-child(2){flex:1}
 .istep .ico svg{width:24px;height:24px;stroke:var(--cyan);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-.iarrow{position:fixed;left:50%;bottom:calc(6px + env(safe-area-inset-bottom,0px));width:26px;height:26px;margin-left:-13px;z-index:75;border-right:4px solid var(--cyan);border-bottom:4px solid var(--cyan);transform:rotate(45deg);animation:bob 1s ease-in-out infinite;filter:drop-shadow(0 0 8px var(--cyan))}
+.iarrow{position:fixed;right:calc(34px + env(safe-area-inset-right,0px));bottom:calc(8px + env(safe-area-inset-bottom,0px));width:26px;height:26px;z-index:75;border-right:4px solid var(--cyan);border-bottom:4px solid var(--cyan);transform:rotate(45deg);animation:bob 1s ease-in-out infinite;filter:drop-shadow(0 0 8px var(--cyan))}
 @keyframes bob{50%{transform:rotate(45deg) translate(6px,6px)}}
 
 /* ---------- Link gönder ---------- */
@@ -1776,13 +1776,23 @@ async function doInstall(){
       <div class="istep"><span class="n">3</span><span>Açılan sayfada <b>Uygulamayı Yükle</b>'ye tekrar bas</span></div></div>
       <button class="btn" id="copyLink" type="button">Bağlantıyı kopyala</button>`;
   } else if(IS_IOS){
-    body=`<p class="note" style="margin:0 4px 14px">iPhone'da Apple yüklemeyi tek tuşla yapmaya izin vermiyor; 3 dokunuşla oluyor:</p>
+    const chrome=/CriOS|FxiOS|EdgiOS/.test(UA);
+    const DOTS='<svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg>';
+    body= chrome ? `<p class="note" style="margin:0 4px 14px">iPhone'da Apple, uygulamanın kendini tek tuşla yüklemesine izin vermiyor. 3 dokunuşla oluyor:</p>
       <div class="group">
-        <div class="istep"><span class="n">1</span><span>Alttaki <b>Paylaş</b> simgesine dokun</span><span class="ico">${SHARE_IC}</span></div>
-        <div class="istep"><span class="n">2</span><span>Aşağı kaydırıp <b>Ana Ekrana Ekle</b>'yi seç</span><span class="ico">${PLUS_IC}</span></div>
+        <div class="istep"><span class="n">1</span><span>Adres çubuğundaki <b>Paylaş</b> simgesine dokun</span><span class="ico">${SHARE_IC}</span></div>
+        <div class="istep"><span class="n">2</span><span><b>Ana Ekrana Ekle</b>'yi seç</span><span class="ico">${PLUS_IC}</span></div>
         <div class="istep"><span class="n">3</span><span>Sağ üstteki <b>Ekle</b>'ye bas</span></div>
-      </div>
-      <p class="note" style="margin:0 4px">BULUTOXX logosuyla ana ekranına gelir ve tam ekran uygulama gibi açılır.</p>`;
+      </div>`
+    : `<p class="note" style="margin:0 4px 14px">iPhone'da Apple, uygulamanın kendini tek tuşla yüklemesine izin vermiyor. Safari'de şöyle ekleniyor:</p>
+      <div class="group">
+        <div class="istep"><span class="n">1</span><span>Sağ alttaki <b>•••</b> simgesine dokun<br><small class="note">Eski iPhone'larda doğrudan alttaki Paylaş simgesine dokun</small></span><span class="ico">${DOTS}</span></div>
+        <div class="istep"><span class="n">2</span><span><b>Paylaş</b>'a dokun</span><span class="ico">${SHARE_IC}</span></div>
+        <div class="istep"><span class="n">3</span><span>Listeyi aşağı kaydır, <b>Ana Ekrana Ekle</b>'yi seç</span><span class="ico">${PLUS_IC}</span></div>
+        <div class="istep"><span class="n">4</span><span>Sağ üstteki <b>Ekle</b>'ye bas</span></div>
+      </div>`;
+    body+=`<p class="note" style="margin:12px 4px 10px">"Ana Ekrana Ekle" listede yoksa sayfa başka bir uygulamanın içinde açılmıştır. Safari'de aç ve tekrar dene:</p>
+      <div class="actions"><a class="btn sm" href="x-safari-https://bulutoxx.github.io/" style="text-align:center;text-decoration:none">Safari'de aç</a><button class="btn sm ghost" id="copyLink" type="button">Bağlantıyı kopyala</button></div>`;
   } else {
     body=`<p class="note" style="margin:0 4px 14px">Tarayıcın tek tuşla yüklemeyi şu an sunmuyor. Elle eklemek için:</p>
       <div class="group"><div class="istep"><span class="n">1</span><span>Sağ üstteki <b>⋮</b> menüsüne dokun</span></div>
@@ -1791,7 +1801,7 @@ async function doInstall(){
   sh.innerHTML=`<div class="box" role="dialog" aria-modal="true" aria-label="Uygulamayı yükle"><div class="grab"></div>
     <div class="ihead"><img src="icons/icon-192.png" alt=""><div><h2>BULUTOXX'i yükle</h2><p class="note">Ücretsiz · reklamsız · 1 MB'tan küçük</p></div></div>
     ${body}<button class="btn ghost" id="instClose" type="button" style="margin-top:12px">Kapat</button></div>
-    ${IS_IOS&&!IN_APP?'<div class="iarrow" aria-hidden="true"></div>':""}`;
+    ${IS_IOS&&!IN_APP&&!/CriOS|FxiOS|EdgiOS/.test(UA)?'<div class="iarrow" aria-hidden="true"></div>':""}`;
   sh.hidden=false;
   const close=()=>{ sh.hidden=true; sh.innerHTML=""; };
   $("instClose").onclick=close; sh.onclick=e=>{ if(e.target===sh) close(); };
