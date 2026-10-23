@@ -670,6 +670,8 @@ body.has-cp{padding-bottom:calc(170px + env(safe-area-inset-bottom,0px))}
 .ez-big.alt{background:rgba(255,255,255,.08);color:var(--ink);font-weight:600;font-size:15px;padding:12px;margin-top:8px}
 .ez-safe{margin-top:10px;padding:10px 12px;border-radius:12px;background:rgba(52,199,89,.1);border:1px solid rgba(52,199,89,.3);font-size:13px;color:var(--ink2);line-height:1.4}
 .ez-safe b{color:#7EE2A8}
+.pulse{animation:bxPulse 1.2s ease-in-out 4}
+@keyframes bxPulse{0%,100%{box-shadow:0 0 0 0 rgba(34,211,255,.7)}50%{box-shadow:0 0 0 10px rgba(34,211,255,0)}}
 .ez-f{margin-top:8px;font-size:12.5px;color:var(--ink3);text-align:center}
 .ez-f a{color:var(--cyan)}
 /* ---------- v14 Basketbol ---------- */
@@ -2486,7 +2488,8 @@ function showTerms(gate){
     const upd=()=>{ go.disabled=!($("g18").checked && $("gOk").checked); };
     $("g18").onchange=upd; $("gOk").onchange=upd;
     go.onclick=()=>{ try{ localStorage.setItem("bx-terms",JSON.stringify({v:TERMS_VER, at:Date.now()})); }catch(e){}
-      Count.call("hit","accept"); buzz(10); Sound.ready(); el.classList.add("out"); setTimeout(()=>el.remove(),400); };
+      Count.call("hit","accept"); buzz(10); Sound.ready(); el.classList.add("out"); setTimeout(()=>el.remove(),400);
+      if(window._pendInst){ window._pendInst=false; setTimeout(()=>doInstall(),420); } };
   } else {
     go.onclick=()=>{ el.classList.add("out"); setTimeout(()=>el.remove(),300); };
   }
@@ -3065,7 +3068,7 @@ const EZI={
   burger:'<svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg>',
   ok:'<svg viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></svg>'
 };
-const SAFE_NOTE=`<div class="ez-safe">🛡️ <b>Güvenli:</b> BULUTOXX bir web uygulamasıdır, APK veya dosya indirilmez. Telefonuna yalnızca bir kısayol eklenir; kamera, rehber, konum gibi hiçbir izin istemez. İstediğin an simgeye basılı tutup kaldırabilirsin.</div>`;
+const SAFE_NOTE=`<div class="ez-safe">🛡️ <b>Güvenli:</b> BULUTOXX bir web uygulamasıdır, APK veya dosya indirilmez. Telefonuna yalnızca BULUTOXX simgesi eklenir; kamera, rehber, konum gibi hiçbir izin istemez. İstediğin an simgeye basılı tutup kaldırabilirsin.</div>`;
 function ezRow(n,t,ic,cls){ return `<div class="ez-r"><span class="n">${n}</span><span class="t">${t}</span>${ic?`<span class="k ${cls||""}">${ic}</span>`:""}</div>`; }
 function ezCard(sub, body){
   document.querySelectorAll("#coach,#ez,.iarrow").forEach(x=>x.remove()); const sh=$("sheet"); if(sh&&!sh.hidden&&/Uygulamayı yükle/.test(sh.innerHTML)){ sh.hidden=true; sh.innerHTML=""; }
@@ -3078,13 +3081,18 @@ function ezCard(sub, body){
   return c;
 }
 function ezIOS(){
-  let rows;
-  if(IOS_CHROME) rows=ezRow(1,"Adres çubuğundaki <b>Paylaş</b>'a dokun",EZI.share)+ezRow(2,"<b>Ana Ekrana Ekle</b>'yi seç",EZI.plus)+ezRow(3,"Sağ üstte <b>Ekle</b>'ye bas","");
-  else if(SAFARI_VER>=26) rows=ezRow(1,"Sağ alttaki <b>•••</b>'ye dokun",EZI.dots,"dots")+ezRow(2,"<b>Paylaş</b> → <b>Ana Ekrana Ekle</b>",EZI.plus)+ezRow(3,"Sağ üstte <b>Ekle</b>'ye bas","");
-  else rows=ezRow(1,"Alttaki <b>Paylaş</b> simgesine dokun",EZI.share)+ezRow(2,"<b>Ana Ekrana Ekle</b>'yi seç",EZI.plus)+ezRow(3,"Sağ üstte <b>Ekle</b>'ye bas","");
-  ezCard("3 dokunuş · ücretsiz · 1 MB", `<div class="ez-st">${rows}</div>${SAFE_NOTE}
-    <div class="ez-f">Seçenek yoksa sayfa başka uygulamada açılmıştır: <a href="x-safari-${SITE_URL}">Safari'de aç</a> · <a href="#" data-copy>bağlantıyı kopyala</a></div>`);
-  if(!IOS_CHROME){ const a=document.createElement("div"); a.className="iarrow"+(SAFARI_VER>=26?"":" mid"); document.body.appendChild(a); setTimeout(()=>a.remove(),12000); }
+  const SAF=`<a class="ez-big" href="x-safari-${SITE_URL}">🧭 Safari'de aç</a>`;
+  if(IOS_CHROME){
+    ezCard("Chrome · 3 dokunuş", `<div class="ez-st">${ezRow(1,"Adres çubuğunun sağındaki <b>Paylaş</b> simgesine dokun",EZI.share)}${ezRow(2,"Listeyi kaydır, <b>Ana Ekrana Ekle</b>",EZI.plus)}${ezRow(3,"Sağ üstte <b>Ekle</b>","")}</div>
+      <div class="ez-safe">Listede <b>Ana Ekrana Ekle</b> yoksa sayfayı Safari'de aç:</div>${SAF}`); return;
+  }
+  ezCard("Safari · 3 dokunuş", `<div class="ez-st">
+      ${ezRow(1,"<b>Paylaş</b> simgesine dokun<br><small style='color:var(--ink3)'>Altta ortada ya da sağ altta <b>•••</b> içinde. Çubuğu görmüyorsan ekranın en altına bir kez dokun.</small>",EZI.share)}
+      ${ezRow(2,"Listeyi yukarı kaydır, <b>Ana Ekrana Ekle</b>",EZI.plus)}
+      ${ezRow(3,"Sağ üstte <b>Ekle</b>","")}</div>
+    <div class="ez-safe">Paylaş listesinde <b>Ana Ekrana Ekle</b> yoksa sayfa WhatsApp, Instagram gibi bir uygulamanın içinde açılmıştır. Önce Safari'de aç:</div>
+    ${SAF}<button class="ez-big alt" type="button" data-copy>Bağlantıyı kopyala (Safari'ye yapıştır)</button>`);
+  const a=document.createElement("div"); a.className="iarrow"+(SAFARI_VER>=26?"":" mid"); document.body.appendChild(a); setTimeout(()=>a.remove(),12000);
 }
 function ezAndroid(){
   // Samsung İnternet ve diğer tarayıcılar kendi paketini üretir; Samsung/Play Protect bunu "bilinmeyen uygulama" diye uyarabiliyor.
@@ -3098,17 +3106,19 @@ function ezAndroid(){
     $("ezHere").onclick=()=>{
       if(deferredPrompt){ $("ez").remove(); _inst(); return; }
       ezCard(IS_SAMSUNG?"Samsung İnternet":"Elle ekleme", `<div class="ez-st">${IS_SAMSUNG
-        ? ezRow(1,"Sağ alttaki <b>≡</b> menüye dokun",EZI.burger)+ezRow(2,"<b>Sayfayı ekle</b> → <b>Ana ekran</b>",EZI.plus)+ezRow(3,"<b>Ekle</b>'ye bas","")
+        ? ezRow(1,"Sağ alttaki <b>≡</b> menüye dokun",EZI.burger)+ezRow(2,"<b>Sayfayı şuraya ekle</b> → <b>Ana ekran</b>",EZI.plus)+ezRow(3,"<b>Ekle</b>'ye bas","")
         : ezRow(1,"Menüye (<b>⋮</b> veya <b>≡</b>) dokun",EZI.kebab,"dots")+ezRow(2,"<b>Ana ekrana ekle</b>'yi seç",EZI.plus)+ezRow(3,"<b>Ekle</b>'ye bas","")}</div>
         <div class="ez-safe">Telefon <b>“bilinmeyen uygulama”</b> veya <b>Play Koruma</b> uyarısı gösterirse bu, tarayıcının kısayol paketinden kaynaklanır; virüs değildir. Hiç uyarı görmemek için <a href="${CHROME_INTENT}" style="color:var(--cyan)">Chrome ile yükle</a>.</div>`);
     };
     return;
   }
   // Chrome: tek dokunuş hazır değilse 3 adım
-  ezCard("Chrome · 3 dokunuş", `<div class="ez-st">${ezRow(1,"Sağ üstteki <b>⋮</b>'ye dokun",EZI.kebab,"dots")}${ezRow(2,"<b>Uygulamayı yükle</b> ya da <b>Ana ekrana ekle</b>",EZI.plus)}${ezRow(3,"<b>Yükle</b>'ye bas","")}</div>${SAFE_NOTE}`);
+  ezCard("Chrome · 3 dokunuş", `<div class="ez-st">${ezRow(1,"Sağ üstteki <b>⋮</b>'ye dokun",EZI.kebab,"dots")}${ezRow(2,"<b>Ana ekrana ekle</b> (veya <b>Uygulamayı yükle</b>)",EZI.plus)}${ezRow(3,"Çıkan pencerede <b>Yükle</b>'yi seç, <b>Kısayol</b>'u değil","")}</div>
+    <div class="ez-safe">Kurulunca BULUTOXX <b>uygulamalar listesinde</b> ve ana ekranda görünür. ${SAFE_NOTE.replace(/<\/?div[^>]*>/g,"")}</div>`);
+  window.addEventListener("beforeinstallprompt",()=>{ const c=$("ez"); if(c){ c.remove(); toast("Tek dokunuşla yükleme hazır"); setTimeout(()=>{ const b=$("installPill")||$("installBtn"); if(b) b.classList.add("pulse"); },100); } },{once:true});
 }
 doInstall=async function(){
-  if(!termsAccepted()){ showTerms(true); return; }
+  if(!termsAccepted()){ window._pendInst=true; showTerms(true); return; }
   buzz(10);
   if(IN_APP && IS_ANDROID){ ezCard("Önce tarayıcıda aç", `<a class="ez-big" href="${CHROME_INTENT}">Chrome'da aç</a><div class="ez-f">Açılmazsa: <a href="#" data-copy>bağlantıyı kopyala</a>, Chrome'a yapıştır</div>${SAFE_NOTE}`); return; }
   if(IN_APP) return _inst();
@@ -3121,7 +3131,10 @@ doInstall=async function(){
 ["installBtn","installPill","rhInstall"].forEach(id=>{ const b=$(id); if(b) b.onclick=()=>doInstall(); });
 // Chrome'a "?kur=1" ile gelindiyse yükleme penceresini hemen hazırla
 if(new URLSearchParams(location.search).get("kur")==="1" && !IS_STANDALONE()){
-  const tryNow=()=>{ if(termsAccepted()) doInstall(); };
+  // Tarayıcı, yükleme penceresini yalnızca bir dokunuştan sonra açar: büyük "Yükle" düğmesi göster
+  const tryNow=()=>{ if(IS_STANDALONE()) return;
+    ezCard("Chrome hazır · tek dokunuş", `<button class="ez-big" type="button" id="ezGo">BULUTOXX'i yükle</button>${SAFE_NOTE}`);
+    $("ezGo").onclick=()=>{ const c=$("ez"); if(c) c.remove(); doInstall(); }; };
   if(deferredPrompt) setTimeout(tryNow,600); else window.addEventListener("beforeinstallprompt",()=>setTimeout(tryNow,400),{once:true});
 }
 
