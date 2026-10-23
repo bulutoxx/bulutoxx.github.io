@@ -48,12 +48,15 @@ button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
 .topbar .in{max-width:680px;margin:0 auto;height:56px;display:flex;align-items:center;gap:10px;
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
 .logo{display:flex;align-items:center;gap:9px;min-width:0}
-.logo img{height:34px;width:auto;mix-blend-mode:screen;filter:drop-shadow(0 0 10px rgba(34,211,255,.35))}
+.logo img{height:34px;width:auto;filter:drop-shadow(0 0 10px rgba(34,211,255,.35))}
 .logo b{font-weight:800;font-size:19px;letter-spacing:.06em}
 .logo b span{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
 .topbar .sp{flex:1}
 .iconbtn{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.06);border:1px solid var(--line);transition:transform .2s var(--ease),background .2s}
 .iconbtn:active{transform:scale(.92)}
+#modeBtn[data-m="vib"]{background:rgba(10,132,255,.18);border-color:rgba(10,132,255,.4)}
+#modeBtn[data-m="mute"]{background:rgba(255,69,58,.16);border-color:rgba(255,69,58,.4)}
+#modeBtn[data-m="mute"] svg{stroke:#FF8A80}
 .iconbtn svg{width:20px;height:20px;stroke:var(--ink);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .livechip{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 10px;border-radius:99px;font-size:12px;font-weight:700;letter-spacing:.04em;
   background:rgba(255,77,94,.14);color:#FF8A95;border:1px solid rgba(255,77,94,.35)}
@@ -291,6 +294,7 @@ nav.tabs .badge{position:absolute;top:6px;left:calc(50% + 6px);min-width:16px;he
   <div class="logo"><img src="icons/mark.png" alt="" width="48" height="34"><b>BULUT<span>OXX</span></b></div>
   <div class="sp"></div>
   <span class="livechip" id="liveChip" hidden><i></i><span id="liveCount">0</span> CANLI</span>
+  <button class="iconbtn" id="modeBtn" aria-label="Ses modu"><svg viewBox="0 0 24 24" id="modeIc"></svg></button>
   <button class="iconbtn" id="setBtn" aria-label="Ayarlar"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
 </div></header>
 
@@ -633,7 +637,9 @@ function fitLeague(ms, beforeDate){
   const W = use.map(m=>Math.exp(-MP("decay",0.004)*days(m.d)));
   const names=[...new Set(use.flatMap(m=>[m.h,m.a]))];
   const att={}, def={}; names.forEach(n=>{att[n]=1;def[n]=1;});
-  let sw=0, sh=0, sa=0; use.forEach((m,i)=>{ sw+=W[i]; sh+=W[i]*m.ft[0]; sa+=W[i]*m.ft[1]; });
+  // Eğitim hedefi: gerçek gol + kapanış oranlarından çıkan piyasa beklentisi (oranı motor öğrenir)
+  const MK=MP("mkt",0), T=use.map(m=>m.xg?[(1-MK)*m.ft[0]+MK*m.xg[0],(1-MK)*m.ft[1]+MK*m.xg[1]]:m.ft);
+  let sw=0, sh=0, sa=0; use.forEach((m,i)=>{ sw+=W[i]; sh+=W[i]*T[i][0]; sa+=W[i]*T[i][1]; });
   let gamma=clamp(sh/Math.max(sa,0.1),1.0,1.6), mu=sa/sw;
   const K=MP("prior",2.5); // her takıma lig ortalamasında hayali maç (az veride aşırı tepkiyi önler)
   for(let it=0; it<40; it++){
@@ -641,14 +647,14 @@ function fitLeague(ms, beforeDate){
     names.forEach(n=>{gs[n]=0;es[n]=0;gc[n]=0;ec[n]=0;});
     use.forEach((m,i)=>{ const w=W[i];
       const eh=mu*gamma*att[m.h]*def[m.a], ea=mu*att[m.a]*def[m.h];
-      gs[m.h]+=w*m.ft[0]; es[m.h]+=w*eh/att[m.h]; gc[m.a]+=w*m.ft[0]; ec[m.a]+=w*eh/def[m.a];
-      gs[m.a]+=w*m.ft[1]; es[m.a]+=w*ea/att[m.a]; gc[m.h]+=w*m.ft[1]; ec[m.h]+=w*ea/def[m.h]; });
+      gs[m.h]+=w*T[i][0]; es[m.h]+=w*eh/att[m.h]; gc[m.a]+=w*T[i][0]; ec[m.a]+=w*eh/def[m.a];
+      gs[m.a]+=w*T[i][1]; es[m.a]+=w*ea/att[m.a]; gc[m.h]+=w*T[i][1]; ec[m.h]+=w*ea/def[m.h]; });
     const base=mu*Math.sqrt(gamma);
     names.forEach(n=>{ att[n]=(gs[n]+K*base)/(es[n]+K*base/1); def[n]=(gc[n]+K*base)/(ec[n]+K*base/1); });
     const ga=Math.exp(names.reduce((s,n)=>s+Math.log(att[n]),0)/names.length), gd=Math.exp(names.reduce((s,n)=>s+Math.log(def[n]),0)/names.length);
     names.forEach(n=>{ att[n]/=ga; def[n]/=gd; });
     let nh=0,dh=0,na=0,da=0;
-    use.forEach((m,i)=>{ const w=W[i]; nh+=w*m.ft[0]; dh+=w*att[m.h]*def[m.a]; na+=w*m.ft[1]; da+=w*att[m.a]*def[m.h]; });
+    use.forEach((m,i)=>{ const w=W[i]; nh+=w*T[i][0]; dh+=w*att[m.h]*def[m.a]; na+=w*T[i][1]; da+=w*att[m.a]*def[m.h]; });
     mu=na/da; gamma=clamp((nh/dh)/mu,1.0,1.6);
   }
   let g1=0,g=0; use.forEach(m=>{ if(m.ht){ g1+=m.ht[0]+m.ht[1]; g+=m.ft[0]+m.ft[1]; } });
@@ -1142,7 +1148,7 @@ function buzz(p){ if(PREFS.vibrate && navigator.vibrate){ try{ navigator.vibrate
 const Voice={
   voice:null,
   pick(){ try{ const vs=speechSynthesis.getVoices(); this.voice=vs.find(v=>/^tr/i.test(v.lang)&&/Yelda|Enhanced|Premium|Google/i.test(v.name))||vs.find(v=>/^tr/i.test(v.lang))||null; }catch(e){} },
-  say(text, force){ if(!("speechSynthesis" in window)) return false; if(!force && !PREFS.voice) return false;
+  say(text, force){ if(!("speechSynthesis" in window)) return false; if(!force && (!PREFS.voice || (!PREFS.sound && !PREFS.vibrate))) return false;
     try{ speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(text); u.lang="tr-TR"; if(!this.voice) this.pick(); if(this.voice) u.voice=this.voice; u.rate=1.02; u.pitch=1; speechSynthesis.speak(u); return true; }catch(e){ return false; } }
 };
 if("speechSynthesis" in window){ try{ speechSynthesis.onvoiceschanged=()=>Voice.pick(); Voice.pick(); }catch(e){} }
@@ -1195,12 +1201,29 @@ function openSettings(){
     b.setAttribute("aria-pressed",on); PREFS.leagues=on?[...new Set([...PREFS.leagues,l])]:PREFS.leagues.filter(x=>x!==l); savePrefs(); Live.refresh(true); }));
   $("notifBtn").onclick=async()=>{ if(!("Notification" in window)){ toast("Bu tarayıcı bildirim desteklemiyor"); return; }
     try{ await Notification.requestPermission(); }catch(e){} $("notifState").textContent=notifText(); };
-  const close=()=>{ sh.hidden=true; sh.innerHTML=""; };
+  const close=()=>{ sh.hidden=true; sh.innerHTML=""; paintMode(); };
   $("setDone").onclick=close; sh.onclick=e=>{ if(e.target===sh) close(); };
 }
 function notifText(){ if(!("Notification" in window)) return "Bu cihazda desteklenmiyor (iPhone'da ana ekrana ekleyince açılır)";
   return Notification.permission==="granted"?"Açık · uygulama arka plandayken de bildirir":Notification.permission==="denied"?"Kapalı · telefon ayarlarından açılabilir":"Gol olduğunda bildirim gönderilsin mi?"; }
 $("setBtn").addEventListener("click",openSettings);
+
+// ---------- Ses modu: ses + titreşim → sadece titreşim → sessiz ----------
+const MODES={
+  full:{n:"Ses ve titreşim açık", ic:'<path d="M11 5 6 9H2v6h4l5 4V5zM15.5 8.5a5 5 0 0 1 0 7M19 5a10 10 0 0 1 0 14"/>'},
+  vib:{n:"Sadece titreşim", ic:'<rect x="8" y="3" width="8" height="18" rx="2"/><path d="M4 8v8M20 8v8"/>'},
+  mute:{n:"Sessiz mod", ic:'<path d="M11 5 6 9H2v6h4l5 4V5zM22 9l-6 6M16 9l6 6"/>'}
+};
+function curMode(){ return PREFS.sound ? "full" : PREFS.vibrate ? "vib" : "mute"; }
+function paintMode(){ const m=curMode(); $("modeIc").innerHTML=MODES[m].ic; $("modeBtn").dataset.m=m; $("modeBtn").setAttribute("aria-label","Ses modu: "+MODES[m].n); }
+$("modeBtn").addEventListener("click",()=>{
+  const next={full:"vib",vib:"mute",mute:"full"}[curMode()];
+  PREFS.sound = next==="full"; PREFS.vibrate = next!=="mute";
+  if(next==="mute" && "speechSynthesis" in window){ try{ speechSynthesis.cancel(); }catch(e){} }
+  savePrefs(); paintMode(); toast(MODES[next].n);
+  if(next==="full") Sound.toggle(true); if(next!=="mute") buzz(next==="vib"?[30,40,30]:15);
+});
+paintMode();
 
 // ---------- Canlı skor (ESPN herkese açık skor servisi) ----------
 const ESPN={tr1:"tur.1",en:"eng.1",es:"esp.1",it:"ita.1",de:"ger.1",fr:"fra.1",ucl:"uefa.champions",uel:"uefa.europa",uecl:"uefa.europa.conf",

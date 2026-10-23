@@ -222,12 +222,42 @@ def outcome_probs(lh, la, rho):
     pB = g[:, 1:, 1:].sum(axis=(1, 2))
     return np.stack([pH, pD, pA], 1), pO, pB, g
 
+_TABLE = None
+def market_xg(matches):
+    """Kapanış oranlarından maç başına piyasa beklenen golü (xg) çıkar; bir kez hesaplanır, saklanır."""
+    global _TABLE
+    todo = [m for m in matches if m.get("odds") and "xg" not in m]
+    if not todo: return 0
+    if _TABLE is None:
+        lam = np.arange(0.15, 4.01, 0.05)
+        LH, LA = np.meshgrid(lam, lam, indexing="ij"); LH = LH.ravel(); LA = LA.ravel()
+        p, pO, _, _ = outcome_probs(LH, LA, -0.06)
+        _TABLE = (LH, LA, p[:, 0], p[:, 2], pO)
+    LH, LA, TH, TA, TO = _TABLE
+    for i in range(0, len(todo), 1500):
+        ch = todo[i:i + 1500]
+        inv = np.array([[1 / o for o in m["odds"]] for m in ch]); inv /= inv.sum(1, keepdims=True)
+        ou = np.array([(1 / m["ou"][0]) / (1 / m["ou"][0] + 1 / m["ou"][1]) if m.get("ou") else np.nan for m in ch])
+        d = (TH[None, :] - inv[:, :1]) ** 2 + (TA[None, :] - inv[:, 2:3]) ** 2
+        has = ~np.isnan(ou)
+        if has.any(): d[has] += (TO[None, :] - ou[has, None]) ** 2
+        k = d.argmin(1)
+        for m, j in zip(ch, k): m["xg"] = [round(float(LH[j]), 2), round(float(LA[j]), 2)]
+    return len(todo)
+
+def targets(ms, P):
+    """Eğitim hedefi: gerçek gol ile piyasa beklentisinin karışımı (mkt=0 yalnız gol, 1 yalnız piyasa)."""
+    w = P.get("mkt", 0.0)
+    hg = np.array([(1 - w) * m["ft"][0] + w * m["xg"][0] if m.get("xg") else m["ft"][0] for m in ms], float)
+    ag = np.array([(1 - w) * m["ft"][1] + w * m["xg"][1] if m.get("xg") else m["ft"][1] for m in ms], float)
+    return hg, ag
+
 def fit(ms, ref_day, P, init=None, iters=25):
     """Ağırlıklı Poisson (Maher) modeli; uygulamadaki fitLeague ile aynı matematik."""
     teams = sorted({m["h"] for m in ms} | {m["a"] for m in ms})
     ti = {t: i for i, t in enumerate(teams)}
     hi = np.array([ti[m["h"]] for m in ms]); ai = np.array([ti[m["a"]] for m in ms])
-    hg = np.array([m["ft"][0] for m in ms], float); ag = np.array([m["ft"][1] for m in ms], float)
+    hg, ag = targets(ms, P)
     days = np.array([(ref_day - date.fromisoformat(m["d"])).days for m in ms], float)
     w = np.exp(-P["decay"] * days)
     n = len(teams)
@@ -338,15 +368,16 @@ def metrics(bt, P):
 
 def tune(all_ms, P0):
     """Koordinat iniş: her ayarı sırayla dene, geriye dönük log-loss'u düşüreni tut."""
-    grid = {"decay": [0.001, 0.002, 0.004, 0.007, 0.012], "prior": [1.0, 2.5, 4.0, 6.0],
-            "rho": [-0.15, -0.1, -0.06, -0.02, 0.0], "formW": [0.0, 0.15, 0.3, 0.45]}
+    grid = {"mkt": [0.0, 0.3, 0.5, 0.7, 0.85, 1.0],
+            "decay": [0.001, 0.002, 0.004, 0.007, 0.012, 0.018, 0.026, 0.035], "prior": [0.3, 0.6, 1.0, 2.5, 4.0, 6.0, 9.0],
+            "formW": [0.0, 0.1, 0.2, 0.35], "rho": [-0.2, -0.15, -0.1, -0.06, -0.02, 0.0, 0.04]}
     P = dict(P0); cur = backtest(all_ms, P)
     if not cur: return P, None
     if cur["n"] < 300:
         print(f"  test örneği az ({cur['n']} maç), ayarlar korunuyor", flush=True)
         return P, cur
     best = cur["logloss"]
-    for _ in range(2):
+    for _ in range(3):
         changed = False
         for key, vals in grid.items():
             for v in vals:
@@ -360,6 +391,7 @@ def tune(all_ms, P0):
                     ll = bt["logloss"]
                 if ll < best - 1e-5:
                     best = ll; P = Q; changed = True
+                    if bt: cur = bt
                     print(f"  {key}={v}  logloss={ll:.4f}", flush=True)
         if not changed: break
     return P, backtest(all_ms, P)
@@ -486,11 +518,15 @@ def main():
 
     mp = os.path.join(DATA, "model.json")
     model = json.load(open(mp, encoding="utf-8")) if os.path.exists(mp) else {}
-    P0 = {"decay": 0.004, "prior": 2.5, "rho": -0.06, "formW": 0.3}
+    P0 = {"decay": 0.004, "prior": 2.5, "rho": -0.06, "formW": 0.3, "mkt": 0.5}
     P0.update({k: v for k, v in model.get("params", {}).items() if k in P0})
+    nx = sum(market_xg(d["matches"]) for d in season.values() if not d.get("cup"))
+    print(f"Piyasa beklenen golü hesaplanan yeni maç: {nx}", flush=True)
+    json.dump(season, open(sp, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
     all_ms = {lg: d["matches"] for lg, d in season.items() if not d.get("cup")}
     # Ayarlar az veriyle seçildiyse (ilk kurulum) veya haftanın ilk günüyse tam öğrenme
-    full = "--tune" in sys.argv or today.weekday() == 0 or model.get("tuned_n", 0) < 1000
+    full = ("--tune" in sys.argv or today.weekday() == 0 or model.get("tuned_n", 0) < 1000
+            or "mkt" not in model.get("params", {}))
     if full:
         print("Ayar aranıyor (haftalık tam öğrenme)…", flush=True)
         P, bt = tune(all_ms, P0)
