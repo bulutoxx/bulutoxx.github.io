@@ -387,6 +387,7 @@ nav.tabs .badge{position:absolute;top:6px;left:calc(50% + 6px);min-width:16px;he
 .invite b{color:var(--ink)}
 .ilink{align-self:flex-start;margin-top:3px;font-size:13px;font-weight:700;color:var(--cyan);padding:0}
 .ibtn.ghost2{background:rgba(255,255,255,.12);color:#fff;box-shadow:none;margin-right:6px;padding:0 14px}
+@media (max-width:560px){ .livechip{display:none!important} }
 @media (max-width:400px){ .logo b{font-size:16px;letter-spacing:.04em} .topbar .in{gap:7px} .ipill{padding:0 10px} .iconbtn{width:36px;height:36px} }
 @media (max-width:360px){ .logo b{display:none} }
 
@@ -490,6 +491,38 @@ nav.tabs .badge{position:absolute;top:6px;left:calc(50% + 6px);min-width:16px;he
 .ch-help{margin-top:8px;font-size:12.5px;color:var(--ink3);text-align:center}
 .ch-help a{color:var(--cyan);font-weight:700;text-decoration:none}
 .iarrow.mid{right:auto;left:50%;margin-left:-13px}
+/* ---------- Maç seç ---------- */
+.pickbtn{display:flex;align-items:center;gap:12px;width:100%;padding:14px;margin-bottom:14px;border-radius:20px;text-align:left;
+  background:linear-gradient(120deg,rgba(34,211,255,.14),rgba(47,123,255,.2));border:1px solid rgba(120,170,255,.4);box-shadow:0 14px 30px -18px rgba(47,123,255,.9);transition:transform .15s var(--ease)}
+.pickbtn:active{transform:scale(.98)}
+.pk-ic{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;background:var(--grad);flex:none}
+.pk-ic svg{width:22px;height:22px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.pk-tx{flex:1;min-width:0;display:flex;flex-direction:column}
+.pk-tx b{font-size:17px}
+.pk-tx small{font-size:13px;color:var(--ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pk-ar{font-size:28px;color:var(--cyan);line-height:1}
+.picker{display:flex;flex-direction:column;max-height:90vh}
+.pk-h{display:flex;justify-content:space-between;align-items:center}
+.pk-h h2{margin:0}
+.picker #pkQ{margin:10px 0}
+.pk-seg{overflow-x:auto;scrollbar-width:none;flex:none}
+.pk-seg::-webkit-scrollbar{display:none}
+.pk-seg button{white-space:nowrap;flex:1 0 auto;padding:8px 10px}
+.pk-list{overflow-y:auto;margin-top:6px;padding-bottom:10px;-webkit-overflow-scrolling:touch}
+.pk-g{margin:14px 2px 8px}
+.pk-m{display:grid;grid-template-columns:62px 1fr auto;align-items:center;gap:10px;width:100%;padding:11px 12px;margin-bottom:8px;border-radius:16px;background:var(--surface2);border:1px solid var(--line);text-align:left;transition:transform .15s var(--ease),background .15s}
+.pk-m:active{transform:scale(.98);background:rgba(47,123,255,.18)}
+.pk-m.live{border-color:rgba(255,77,94,.4)}
+.pk-t{display:flex;flex-direction:column;gap:3px;font:700 14px var(--round);font-variant-numeric:tabular-nums;color:var(--ink)}
+.pk-t small{font:500 10.5px var(--font);color:var(--ink3);line-height:1.2;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.pk-m.live .pk-t b{color:#FF7D8A}
+.pk-teams{display:flex;flex-direction:column;gap:7px;min-width:0}
+.pk-teams>span{display:flex;align-items:center;gap:8px;min-width:0}
+.pk-teams img,.pk-in{width:20px;height:20px;object-fit:contain;flex:none}
+.pk-in{border-radius:50%;background:rgba(255,255,255,.1);font:700 9px/20px var(--round);text-align:center;color:var(--ink2)}
+.pk-teams em{flex:1;min-width:0;font-style:normal;font-weight:600;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pk-teams b{font:800 16px var(--round)}
+.pk-go{font-size:11.5px;font-weight:700;color:var(--cyan);text-align:right;line-height:1.25}
 /* ---------- Karşılama ---------- */
 .splash{position:fixed;inset:0;z-index:100;display:grid;place-items:center;background:#03060D;transition:opacity .5s var(--ease),visibility .5s}
 .splash img{width:min(64vw,300px);animation:spl 1s var(--ease) both}
@@ -2287,6 +2320,144 @@ doInstall=async function(){
   openInstallGuide();
 };
 ["installBtn","installPill","rhInstall"].forEach(id=>{ const b=$(id); if(b) b.onclick=()=>doInstall(); });
+
+
+// =====================================================================
+// BULUTOXX v9: Maç seç menüsü (canlı + sıradaki maçlar, tüm ligler, arama)
+// =====================================================================
+// football-data saatleri İngiltere saatidir; İstanbul saatine çevir
+function lastSunday(y,m){ const d=new Date(Date.UTC(y,m+1,0)); d.setUTCDate(d.getUTCDate()-d.getUTCDay()); return d; }
+function ukToDate(d,t){
+  const [y,mo,da]=d.split("-").map(Number), [hh,mm]=(t||"12:00").split(":").map(Number);
+  const utcGuess=Date.UTC(y,mo-1,da,hh,mm);
+  const s=lastSunday(y,2).getTime()+3600e3, e=lastSunday(y,9).getTime()+3600e3; // BST: Mart son pazar 01:00 UTC – Ekim son pazar 01:00 UTC
+  const bst=utcGuess-3600e3>=s && utcGuess-3600e3<e;
+  return new Date(utcGuess-(bst?3600e3:0));
+}
+const ist=(dt,o)=>dt.toLocaleString("tr-TR",Object.assign({timeZone:"Europe/Istanbul"},o));
+const istDay=dt=>dt.toLocaleDateString("sv-SE",{timeZone:"Europe/Istanbul"});
+
+// Sıradaki maçlar için ESPN'den bugün + yarın
+const Pick={ extra:{}, loaded:false,
+  async loadEspn(){
+    const lgs=Object.keys(ESPN).filter(l=>PREFS.leagues.includes(l)||["tr1","en","es","it","de","fr","ucl","uel","uecl"].includes(l));
+    const days=[0,1].map(o=>new Date(Date.now()+o*864e5).toLocaleDateString("sv-SE",{timeZone:"Europe/Istanbul"}).replace(/-/g,""));
+    const jobs=[]; for(const lg of lgs) for(const d of days) jobs.push(fetch(`https://site.api.espn.com/apis/site/v2/sports/soccer/${ESPN[lg]}/scoreboard?dates=${d}`,{cache:"no-store"})
+      .then(r=>r.ok?r.json():null).then(j=>({lg,j})).catch(()=>null));
+    const res=await Promise.all(jobs);
+    for(const x of res){ if(!x||!x.j) continue; for(const ev of x.j.events||[]){
+      const c=ev.competitions&&ev.competitions[0]; if(!c) continue;
+      const H=c.competitors.find(z=>z.homeAway==="home"), A=c.competitors.find(z=>z.homeAway==="away"); if(!H||!A) continue;
+      const st=ev.status&&ev.status.type||{};
+      this.extra[ev.id]={id:ev.id, lg:x.lg, date:ev.date, state:st.state||"pre", clock:(ev.status&&ev.status.displayClock)||"", detail:st.shortDetail||"",
+        h:H.team.displayName, a:A.team.displayName, hl:H.team.logo||"", al:A.team.logo||"", hs:H.score===""?null:+H.score, as:A.score===""?null:+A.score};
+      if(H.team.logo) LIVE_LOGOS.set(norm(H.team.displayName),H.team.logo); if(A.team.logo) LIVE_LOGOS.set(norm(A.team.displayName),A.team.logo);
+    } }
+    this.loaded=true;
+  },
+  list(){
+    const now=Date.now(), out=[], seen=new Set();
+    const key=(lg,h,a)=>lg+"|"+norm(bestTeamName(h))+"|"+norm(bestTeamName(a));
+    const espn={...this.extra, ...Live.events()};
+    for(const e of Object.values(espn)){
+      const dt=new Date(e.date); if(e.state==="post" || dt.getTime()>now+3*864e5) continue;
+      const k=key(e.lg,e.h,e.a); if(seen.has(k)) continue; seen.add(k);
+      out.push({src:"espn", id:e.id, lg:e.lg, dt, live:e.state==="in", clock:e.clock, h:e.h, a:e.a, hl:e.hl, al:e.al, hs:e.hs, as:e.as});
+    }
+    for(const f of FIXTURES){
+      const dt=ukToDate(f.d,f.t); if(dt.getTime()<now-2*3600e3) continue;   // başlamış ve muhtemelen bitmiş maçları gösterme
+      const k=key(f.lg,f.h,f.a); if(seen.has(k)) continue; seen.add(k);
+      out.push({src:"fx", lg:f.lg, dt, live:false, h:f.h, a:f.a, odds:!!f.odds, started:dt.getTime()<now});
+    }
+    return out.sort((x,y)=>(y.live-x.live) || (x.dt-y.dt));
+  }
+};
+const TOPL=["ucl","uel","uecl","tr1","en","es","it","de","fr","pt","nl","be","tr2"];
+function openPicker(){
+  const sh=$("sheet");
+  sh.innerHTML=`<div class="box picker" role="dialog" aria-modal="true" aria-label="Maç seç"><div class="grab"></div>
+    <div class="pk-h"><h2>Maç seç</h2><button class="ch-x" type="button" id="pkX" aria-label="Kapat">✕</button></div>
+    <input id="pkQ" type="search" placeholder="Takım veya lig ara" autocomplete="off" aria-label="Maç ara">
+    <div class="seg pk-seg" role="group"><button data-f="all" aria-pressed="true">Tümü</button><button data-f="live" aria-pressed="false">Canlı</button><button data-f="today" aria-pressed="false">Bugün</button><button data-f="tom" aria-pressed="false">Yarın</button><button data-f="top" aria-pressed="false">Büyük ligler</button></div>
+    <div id="pkList" class="pk-list"><div class="skel"></div><div class="skel"></div><div class="skel"></div></div></div>`;
+  sh.hidden=false;
+  let f="all", q="";
+  const close=()=>{ sh.hidden=true; sh.innerHTML=""; };
+  $("pkX").onclick=close; sh.onclick=e=>{ if(e.target===sh) close(); };
+  const today=istDay(new Date()), tom=istDay(new Date(Date.now()+864e5));
+  const draw=()=>{
+    const box=$("pkList"); if(!box) return;
+    let L=Pick.list();
+    if(f==="live") L=L.filter(m=>m.live);
+    if(f==="today") L=L.filter(m=>istDay(m.dt)===today);
+    if(f==="tom") L=L.filter(m=>istDay(m.dt)===tom);
+    if(f==="top") L=L.filter(m=>TOPL.includes(m.lg));
+    if(q){ const n=norm(q); L=L.filter(m=>norm(m.h).includes(n)||norm(m.a).includes(n)||norm(LEAGUES[m.lg]?LEAGUES[m.lg].n:"").includes(n)); }
+    if(!L.length){ box.innerHTML=`<div class="empty"><b>${Pick.loaded?"Maç bulunamadı":"Maçlar yükleniyor…"}</b>${Pick.loaded?"Filtreyi değiştir ya da farklı bir arama yap.":""}</div>`; return; }
+    const groups=[]; const gi={};
+    for(const m of L){ const g=m.live?"🔴 Şimdi canlı":istDay(m.dt)===today?"Bugün":istDay(m.dt)===tom?"Yarın":ist(m.dt,{weekday:"long",day:"numeric",month:"long"});
+      if(!(g in gi)){ gi[g]=groups.length; groups.push({g,items:[]}); } groups[gi[g]].items.push(m); }
+    const lg=m=>esc(LEAGUES[m.lg]?LEAGUES[m.lg].n:"");
+    const im=(u,n)=>{ const url=u||logoFor(n); return url?`<img src="${esc(url)}" alt="" loading="lazy" onerror="this.style.visibility='hidden'">`:`<span class="pk-in">${esc(initials(n))}</span>`; };
+    box.innerHTML=groups.map(G=>`<h3 class="pk-g">${esc(G.g)}</h3>`+G.items.slice(0,120).map((m,k)=>`
+      <button class="pk-m ${m.live?"live":""}" type="button" data-i="${L.indexOf(m)}">
+        <span class="pk-t">${m.live?`<b>${esc(m.clock||"Canlı")}</b>`:m.started?"Başladı":esc(ist(m.dt,{hour:"2-digit",minute:"2-digit"}))}<small>${lg(m)}</small></span>
+        <span class="pk-teams"><span>${im(m.hl,m.h)}<em>${esc(m.h)}</em>${m.live?`<b>${m.hs??""}</b>`:""}</span><span>${im(m.al,m.a)}<em>${esc(m.a)}</em>${m.live?`<b>${m.as??""}</b>`:""}</span></span>
+        <span class="pk-go">Tahmin<br>et ›</span></button>`).join("")).join("");
+    box.querySelectorAll(".pk-m").forEach(b=>b.onclick=()=>{ const m=L[+b.dataset.i]; close(); Sound.tap(); buzz(8); pickMatch(m); });
+  };
+  sh.querySelectorAll(".pk-seg button").forEach(b=>b.onclick=()=>{ f=b.dataset.f; sh.querySelectorAll(".pk-seg button").forEach(x=>x.setAttribute("aria-pressed",x===b)); draw(); });
+  $("pkQ").oninput=e=>{ q=e.target.value.trim(); draw(); };
+  draw();
+  if(!Pick.loaded || Date.now()-(Pick.at||0)>120e3){ Pick.at=Date.now(); Pick.loadEspn().then(draw); }
+}
+function pickMatch(m){
+  $("hn").value=bestTeamName(m.h); $("an").value=bestTeamName(m.a);
+  $("tarih").value=istDay(m.dt);
+  ["hma","hmd","ama","amd"].forEach(id=>$(id).value="0"); ["hgk","agk","hfa","afa"].forEach(id=>$(id).checked=false);
+  ["o1","ox","o2","oo","ou"].forEach(id=>{ $(id).value=""; delete $(id).dataset.auto; });
+  ligManual=false; autoLeague(); fillForm("h"); fillForm("a");
+  if(CUP_NAMES[m.lg] && [...$("lig").options].some(o=>o.value===m.lg)){ $("lig").value=m.lg; ligManual=true; }
+  const tb=document.querySelector('nav.tabs button[data-v="tahmin"]'); if(tb.getAttribute("aria-current")!=="page") tb.click();
+  window.scrollTo({top:0,behavior:"smooth"});
+  setTimeout(()=>$("f").requestSubmit(),250);
+}
+// Tahmin sayfasına büyük "Maç seç" düğmesi
+(function mountPicker(){
+  const form=$("f"); if(!form) return;
+  const b=document.createElement("button"); b.type="button"; b.id="pickBtn"; b.className="pickbtn";
+  b.innerHTML=`<span class="pk-ic"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="3"/><path d="M3 9h18M8 2v4M16 2v4"/></svg></span>
+    <span class="pk-tx"><b>Maç seç</b><small id="pickSub">Canlı ve sıradaki maçlar · tüm ligler</small></span><span class="pk-ar">›</span>`;
+  form.parentNode.insertBefore(b, form);
+  b.onclick=openPicker;
+  const upd=()=>{ const L=Pick.list(); const live=L.filter(m=>m.live).length; $("pickSub").textContent=(live?`🔴 ${live} canlı · `:"")+`${L.length} maç · tüm ligler`; };
+  setTimeout(upd,1500); setInterval(upd,30000);
+  Pick.loadEspn().then(upd);
+})();
+// Bugün şeridi: başlamış/bitmiş fikstürleri gösterme, saatleri İstanbul'a çevir
+renderStrip=function(){
+  const box=$("todayStrip"); if(!box) return;
+  const L=Pick.list().filter(m=>m.live || (m.dt.getTime()>Date.now()-15*60e3 && m.dt.getTime()<Date.now()+36*3600e3))
+    .sort((x,y)=>(y.live-x.live)||((TOPL.indexOf(x.lg)+99)%99-(TOPL.indexOf(y.lg)+99)%99)||(x.dt-y.dt)).slice(0,14);
+  if(!L.length){ box.innerHTML=""; return; }
+  const im=(u,n)=>{ const url=u||logoFor(n); return url?`<img src="${esc(url)}" alt="" loading="lazy" onerror="this.style.visibility='hidden'">`:""; };
+  const today=istDay(new Date());
+  box.innerHTML=`<div class="strip-h"><h3>${L.some(m=>m.live)?"Canlı ve sıradaki":"Sıradaki maçlar"}</h3><a id="stripAll">Tümü ›</a></div><div class="strip">${L.map((m,i)=>`
+    <button class="tcard ${m.live?"live":""}" type="button" data-k="${i}"><span class="lg">${esc(LEAGUES[m.lg]?LEAGUES[m.lg].n:"")}</span>
+      <span class="r">${im(m.hl,m.h)}<span>${esc(m.h)}</span><b>${m.live?(m.hs??""):""}</b></span><span class="r">${im(m.al,m.a)}<span>${esc(m.a)}</span><b>${m.live?(m.as??""):""}</b></span>
+      <span class="ft"><span>${m.live?esc(m.clock||"Canlı"):(istDay(m.dt)===today?"Bugün ":"Yarın ")+esc(ist(m.dt,{hour:"2-digit",minute:"2-digit"}))}</span><em>Tahmin et</em></span></button>`).join("")}</div>`;
+  box.querySelectorAll("[data-k]").forEach(c=>c.onclick=()=>pickMatch(L[+c.dataset.k]));
+  $("stripAll").onclick=openPicker;
+};
+// Canlı sekmesi: canlı skor servisi boşsa sıradaki maçları göster
+const _origShow=Live.show;
+Live.show=function(){ _origShow.call(Live); setTimeout(()=>{ const box=$("liveList"); if(!box) return;
+  if(/ulaşılamadı|Bu gün maç yok/.test(box.textContent)){
+    const L=Pick.list().slice(0,60);
+    if(L.length){ box.innerHTML=`<div class="panel"><p class="note">Canlı skor servisi şu an cevap vermiyor. Sıradaki maçlar:</p><button class="btn" type="button" id="lvPick">Maç seç (${L.length})</button></div>`; $("lvPick").onclick=openPicker; }
+  } },2500); };
+setTimeout(()=>{ renderStrip(); },1200);
+setInterval(()=>{ if(!document.hidden) renderStrip(); },60000);
 
 </script>
 
