@@ -848,6 +848,39 @@ def download_fixtures(season, today):
     print(f"Yaklaşan maç: {len(out)} ({sum(1 for f in out if f.get('odds'))} oranlı)", flush=True)
     return out
 
+def pick_calib(season, rho):
+    """Öneri kalibrasyonu: her maçta en yüksek olasılıklı seçenek (MS 1/X/2, 2,5 Alt/Üst; oran ≥1.15) geçmişte ne sıklıkla tuttu?
+    Olasılık dilimlerine göre gerçek isabet; bir önceki sezonda öğrenilip son sezonda doğrulanır."""
+    ms = [m for lg, d in season.items() if not d.get("cup") and d.get("src") != "espn" for m in d["matches"] if m.get("odds") and m.get("ou")]
+    if len(ms) < 2000: return None
+    market_xg(ms)
+    lh = np.array([m["xg"][0] for m in ms]); la = np.array([m["xg"][1] for m in ms])
+    p, pO, _, _ = outcome_probs(lh, la, rho)
+    rows = []
+    for i, m in enumerate(ms):
+        a, b = m["ft"]; r = 0 if a > b else 1 if a == b else 2; ov = a + b > 2
+        c = [(p[i, 0], m["odds"][0], r == 0), (p[i, 1], m["odds"][1], r == 1), (p[i, 2], m["odds"][2], r == 2), (pO[i], m["ou"][0], ov), (1 - pO[i], m["ou"][1], not ov)]
+        c = [x for x in c if x[1] >= 1.15]
+        if c: bb = max(c, key=lambda x: x[0]); rows.append((m["season"], float(bb[0]), bool(bb[2])))
+    edges = [0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 1.01]
+    def tab(rs):
+        out = []
+        for lo, hi in zip(edges[:-1], edges[1:]):
+            s_ = [r for r in rs if lo <= r[1] < hi]
+            out.append([lo, hi, len(s_), round(float(np.mean([r[2] for r in s_])), 4) if s_ else None, round(float(np.mean([r[1] for r in s_])), 4) if s_ else None])
+        return out
+    last = max(r[0] for r in rows)
+    tr, te = tab([r for r in rows if r[0] < last]), tab([r for r in rows if r[0] == last])
+    def brier(rs, T):
+        def cal(pp):
+            for lo, hi, n, h, e in T:
+                if lo <= pp < hi and n and h is not None: return (h * n + pp * 50) / (n + 50)
+            return pp
+        return float(np.mean([(r[1] - r[2]) ** 2 for r in rs])), float(np.mean([(cal(r[1]) - r[2]) ** 2 for r in rs]))
+    b0, b1 = brier([r for r in rows if r[0] == last], tr)
+    return {"bins": tab(rows), "min_odd": 1.15, "n": len(rows), "hit": round(float(np.mean([r[2] for r in rows])), 4),
+            "dogrulama": {"sezon": last, "ogrenme": tr, "test": te, "brier_ham": round(b0, 4), "brier_kalibre": round(b1, 4), "kabul": b1 <= b0}}
+
 def merge_iddaa(fx, season, today):
     """Resmi iddaa bülteni: Bilyoner'deki maçların tamamı. Bizdeki maçlara iddaa oranı eklenir,
     bizde olmayanlar ayrı lig başlığıyla bültene girer. Her maç için piyasa gol beklentisi (lh, la) data/iddaa.json'a yazılır."""
@@ -1182,7 +1215,12 @@ def main():
     json.dump(plog, open(plp, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
     live = live_report(plog, today)
     print("Canlı karne:", json.dumps(live, ensure_ascii=False), flush=True)
-    model = {"live": live, "cup": cup, "updated": now, "tuned": now if not quick else model.get("tuned", now), "fp": fp, "engine": ENGINE_V, "data_v": DATA_V,
+    try:
+        oneri = pick_calib(season, P["rho"]) if not quick or not model.get("oneri") else model.get("oneri")
+        print("Öneri kalibrasyonu:", json.dumps(oneri and oneri["dogrulama"], ensure_ascii=False)[:600], flush=True)
+    except Exception as e:
+        print("öneri kalibrasyonu atlandı:", e, flush=True); oneri = model.get("oneri")
+    model = {"oneri": oneri, "live": live, "cup": cup, "updated": now, "tuned": now if not quick else model.get("tuned", now), "fp": fp, "engine": ENGINE_V, "data_v": DATA_V,
              "checks": (model.get("checks", 0) + 1), "trainings": model.get("trainings", 0) + (0 if quick else 1),
              "tuned_n": (bt["n"] if bt else 0) if not quick else model.get("tuned_n", 0), "params": P, "backtest": mt, "market": mstats, "sources": log,
              "leagues": {lg: {"name": d.get("name", LEAGUES.get(lg, ("", "", lg))[2]), "asOf": d["asOf"],
