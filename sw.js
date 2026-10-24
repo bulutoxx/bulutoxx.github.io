@@ -1,5 +1,5 @@
 // BULUTOXX çevrimdışı önbellek: uygulama dosyaları önbellekten, sayfa ve veriler önce ağdan
-const C = "bulutoxx-v28";
+const C = "bulutoxx-v29";
 const SHELL = ["./", "index.html", "manifest.webmanifest", "icons/icon-192.png", "icons/icon-512.png", "icons/mark.png", "icons/logo-full.png"];
 self.addEventListener("install", e => { e.waitUntil(caches.open(C).then(c => c.addAll(SHELL)).then(() => self.skipWaiting())); });
 self.addEventListener("activate", e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== C).map(k => caches.delete(k)))).then(() => self.clients.claim())); });
