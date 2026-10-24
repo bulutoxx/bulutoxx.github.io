@@ -2033,6 +2033,7 @@ function bestTeamName(n){
   return bs>=2 ? best.name : n;
 }
 function predictFromLive(ev){
+  try{ LIVECTX = ev && ev.state==="in" ? {h:bestTeamName(ev.h), a:bestTeamName(ev.a), id:ev.id, lg:ev.lg} : null; }catch(e){}
   $("hn").value=bestTeamName(ev.h); $("an").value=bestTeamName(ev.a);
   $("tarih").value=new Date(ev.date).toLocaleDateString("sv-SE",{timeZone:"Europe/Istanbul"});
   ["hma","hmd","ama","amd"].forEach(id=>$(id).value="0"); ["hgk","agk","hfa","afa"].forEach(id=>$(id).checked=false);
@@ -2174,10 +2175,7 @@ $("refreshBtn").addEventListener("click",async()=>{
 });
 // Uygulama uzun süre arka planda kaldıysa geri gelince verileri sessizce tazele
 let lastFresh=Date.now();
-document.addEventListener("visibilitychange",async()=>{
-  if(document.hidden || Date.now()-lastFresh<30*60e3) return;
-  lastFresh=Date.now(); if(await loadData(true)){ fillForm("h"); fillForm("a"); paintAge(); renderAll(); }
-});
+// (arka plandan dönüş yenilemesi v20 silentRefresh'e taşındı)
 
 // ---------- Bugünün maçları şeridi ----------
 const TOP_ORDER=["ucl","uel","uecl","tr1","en","es","it","de","fr","pt","nl"];
@@ -2750,8 +2748,9 @@ function ukToDate(d,t){
   const bst=utcGuess-3600e3>=s && utcGuess-3600e3<e;
   return new Date(utcGuess-(bst?3600e3:0));
 }
-const ist=(dt,o)=>dt.toLocaleString("tr-TR",Object.assign({timeZone:"Europe/Istanbul"},o));
-const istDay=dt=>dt.toLocaleDateString("sv-SE",{timeZone:"Europe/Istanbul"});
+const IST_F=new Map(), IST_D=new Intl.DateTimeFormat("sv-SE",{timeZone:"Europe/Istanbul"});
+const ist=(dt,o)=>{ const k=JSON.stringify(o||{}); let f=IST_F.get(k); if(!f){ f=new Intl.DateTimeFormat("tr-TR",Object.assign({timeZone:"Europe/Istanbul"},o)); IST_F.set(k,f); } return f.format(dt); };
+const istDay=dt=>IST_D.format(dt);
 
 // Sıradaki maçlar için ESPN'den bugün + yarın
 const Pick={ extra:{}, loaded:false,
@@ -2760,7 +2759,10 @@ const Pick={ extra:{}, loaded:false,
     const soon=new Set((typeof FIXTURES!=="undefined"?FIXTURES:[]).filter(f=>{ const dd=Date.parse(f.d)-Date.now(); return dd>-2*864e5&&dd<3*864e5; }).map(f=>f.lg));
     const lgs=Object.keys(ESPN).filter(l=>(PREFS.leagues.includes(l)||["tr1","en","es","it","de","fr","ucl","uel","uecl"].includes(l)) && (soon.has(l)||["ucl","uel","uecl","us","br","ar","mx","jp"].includes(l)||!soon.size));
     const days=[0,1].map(o=>new Date(Date.now()+o*864e5).toLocaleDateString("sv-SE",{timeZone:"Europe/Istanbul"}).replace(/-/g,""));
-    const jobs=[]; for(const lg of lgs) for(const d of days) jobs.push(fetch(`https://site.api.espn.com/apis/site/v2/sports/soccer/${ESPN[lg]}/scoreboard?dates=${d}`,{cache:"no-store"})
+    // Amerika ligleri: ESPN günü ABD saatine göre; İstanbul gecesindeki maçlar bir önceki ABD gününde
+    const AMER=new Set(["us","br","ar","mx","col","mx2","nwsl","chi","per","ecu","uru","par","ven","bol","ar2","br2","usl","hon","crc","gua","slv","mxw"]);
+    const yday=new Date(Date.now()-864e5).toLocaleDateString("sv-SE",{timeZone:"Europe/Istanbul"}).replace(/-/g,"");
+    const jobs=[]; for(const lg of lgs) for(const d of (AMER.has(lg)?[yday,...days]:days)) jobs.push(fetch(`https://site.api.espn.com/apis/site/v2/sports/soccer/${ESPN[lg]}/scoreboard?dates=${d}`,{cache:"no-store"})
       .then(r=>r.ok?r.json():null).then(j=>({lg,j})).catch(()=>null));
     const res=await Promise.all(jobs);
     for(const x of res){ if(!x||!x.j) continue; for(const ev of x.j.events||[]){
@@ -2776,7 +2778,8 @@ const Pick={ extra:{}, loaded:false,
   list(){
     const now=Date.now(), out=[], seen=new Set();
     const key=(lg,h,a)=>lg+"|"+norm(bestTeamName(h))+"|"+norm(bestTeamName(a));
-    const espn={...this.extra, ...Live.events()};
+    const RK={pre:0,in:1,post:2}, LE=Live.events(), espn={...LE};
+    for(const [id,e] of Object.entries(this.extra)){ const o=LE[id]; if(!o || (RK[e.state]||0)>=(RK[o.state]||0)) espn[id]=e; }
     for(const e of Object.values(espn)){
       const dt=new Date(e.date); if(e.state==="post" || dt.getTime()>now+3*864e5) continue;
       const k=key(e.lg,e.h,e.a); if(seen.has(k)) continue; seen.add(k);
@@ -2955,7 +2958,7 @@ function renderBulten(){
     let pre=""; if(!nowPut && lg!=="zlive"){ pre=nowLine; nowPut=true; }
     const head=!timeMode?`<span class="fl">${FLAG[lg]||"⚽"}</span><b>${esc(LEAGUES[lg]?LEAGUES[lg].n:lg)}</b>`
       : lg==="zlive"?`<span class="fl">🔴</span><b>Şimdi oynanıyor</b>` : lg==="zdone"?`<span class="fl">✔︎</span><b>Başlamış / biten</b>`
-      : `<span class="fl">🕒</span><b class="tslot">${lg.slice(1,3)}:${lg.slice(3)}</b><small class="tleft">${(()=>{ const t0=items[0].m.dt-now; return t0>0&&t0<12*3600e3?(t0<3600e3?Math.round(t0/60e3)+" dk sonra":Math.floor(t0/3600e3)+" sa "+Math.round(t0%3600e3/60e3)+" dk sonra"):""; })()}</small>`;
+      : `<span class="fl">🕒</span><b class="tslot">${lg.slice(1,3)}:${lg.slice(3)}</b><small class="tleft">${(()=>{ const t0=items[0].m.dt-now; return t0>0&&t0<12*3600e3?((m_=>m_<60?m_+" dk sonra":Math.floor(m_/60)+" sa "+(m_%60)+" dk sonra")(Math.round(t0/60e3))):""; })()}</small>`;
     return pre+`<div class="bl ${open?"open":""} ${timeMode?"tl":""}" data-lg="${lg}">
       <button class="bl-h" type="button" data-lg="${lg}">${head}<span class="cnt">${items.length}</span><span class="chev"></span></button>
       <div class="bl-b">${items.map((x,i)=>{ const {m,f,p}=x, o=f&&f.odds?f.odds:null, ou=f&&f.ou?f.ou:null;
@@ -3406,7 +3409,7 @@ function renderBasket(){
     const bt=!timeMode&&D.leagues[lg]&&D.leagues[lg].backtest;
     let pre=""; if(!nowPut&&lg!=="zlive"){ pre=`<div class="nowline"><span>⏱ Şu an ${ist(new Date(),{hour:"2-digit",minute:"2-digit"})}</span></div>`; nowPut=true; }
     const head=!timeMode?`<span class="fl">${BK_FLAG[lg]||"🏀"}</span><b>${esc(bkLg(lg))}</b>`:lg==="zlive"?`<span class="fl">🔴</span><b>Şimdi oynanıyor</b>`:lg==="zdone"?`<span class="fl">✔︎</span><b>Başlamış / biten</b>`
-      :`<span class="fl">🕒</span><b class="tslot">${lg.slice(1,3)}:${lg.slice(3)}</b><small class="tleft">${(()=>{ const t0=items[0].t-now; return t0>0&&t0<12*3600e3?(t0<3600e3?Math.round(t0/60e3)+" dk sonra":Math.floor(t0/3600e3)+" sa "+Math.round(t0%3600e3/60e3)+" dk sonra"):""; })()}</small>`;
+      :`<span class="fl">🕒</span><b class="tslot">${lg.slice(1,3)}:${lg.slice(3)}</b><small class="tleft">${(()=>{ const t0=items[0].t-now; return t0>0&&t0<12*3600e3?((m_=>m_<60?m_+" dk sonra":Math.floor(m_/60)+" sa "+(m_%60)+" dk sonra")(Math.round(t0/60e3))):""; })()}</small>`;
     return pre+`<div class="bl ${open?"open":""} ${timeMode?"tl":""}"><button class="bl-h" type="button" data-lg="${lg}">${head}${bt?`<span class="cnt" title="Geçmiş test isabeti">%${Math.round(bt.win*100)}</span>`:""}<span class="cnt">${items.length}</span><span class="chev"></span></button>
       <div class="bl-b">${items.map(m=>{ BK.rows.push(m); return bkRow(m,BK.rows.length-1,timeMode); }).join("")}</div></div>`; }).join("");
   list.querySelectorAll(".bl-h").forEach(h=>h.onclick=()=>{ const lg=h.dataset.lg, box=h.parentElement; box.classList.toggle("open"); box.classList.contains("open")?BK.open.add(lg):BK.open.delete(lg); Sound.tap(); });
@@ -3636,7 +3639,7 @@ async function doRefresh(btn){
   all.forEach(x=>x.classList.add("spin")); buzz(10); Sound.tap();
   try{
     $("refreshBtn").click();                                   // model, form, oranlar, futbol canlı, basketbol
-    await Promise.all([ (typeof Pick!=="undefined"&&Pick.loadEspn)?Pick.loadEspn().catch(()=>{}):null, bkLoad(true).then(()=>bkLive()).catch(()=>{}) ]);
+    await Promise.all([ (typeof Pick!=="undefined"&&Pick.loadEspn)?Pick.loadEspn().catch(()=>{}):null ]);
     await new Promise(r=>setTimeout(r,1600));
     UPD.at=Date.now(); BT.cache.clear();
     if(!$("v-bulten").hidden) renderBulten(); if(!$("v-basket").hidden) renderBasket();
@@ -3686,10 +3689,12 @@ function fbMinute(clock, detail){
   if(/\bHT\b|Halftime|Devre/i.test(c)) return 45;
   if(/\bFT\b|Full/i.test(c)) return 90;
   const m=String(clock||"").match(/(\d+)(?:'?\s*\+\s*(\d+))?/); if(!m) return null;
-  return Math.min(98, +m[1]+(+m[2]||0));
+  if(m[2]) return +m[1];                       // 45'+2' ilk yarı uzatması, 90'+3' maç sonu uzatması
+  return Math.min(120, +m[1]);
 }
 function fbRemShare(t){ const h1=(MODEL&&MODEL.params&&MODEL.params.h1)||.4428;
-  if(t<45) return (45-t)/45*h1+(1-h1); return Math.max(.012,(90-t)/45*(1-h1)); }
+  if(t<45) return (45-t)/45*h1+(1-h1); if(t<=90) return Math.max(.012,(90-t)/45*(1-h1));
+  return Math.max(.012,(120-t)/45*(1-h1)); }                 // uzatma devreleri (2x15 dk)
 function poisV(l,K){ const o=[]; let p=Math.exp(-l); for(let k=0;k<=K;k++){ o.push(p); p*=l/(k+1); } return o; }
 function fbLive(lh, la, hs, as, t){
   if(lh==null||la==null||t==null) return null;
@@ -3708,7 +3713,7 @@ function bkParseClock(clock, L){
   const c=String(clock||""); const ql=(L&&L.qlen)||12, halves=L&&L.halves, per=halves?2:4, plen=halves?20:ql, total=per*plen;
   if(/half\s*time|halftime|devre/i.test(c)) return {rem:.5};
   if(/final|end of 4th|FT/i.test(c)) return {rem:0};
-  let q=null; const mq=c.match(/(\d)(?:st|nd|rd|th)?\s*(?:Qtr|Quarter|Half|Ç)/i)||c.match(/Q(\d)/i); if(mq) q=+mq[1];
+  let q=null; const mq=c.match(/(\d)(?:st|nd|rd|th)\b/i)||c.match(/Q(\d)/i); if(mq) q=+mq[1];
   const mt=c.match(/(\d{1,2}):(\d{2})/); const left=mt?(+mt[1]+(+mt[2])/60):null;
   if(/end of (\d)/i.test(c)){ const e=+c.match(/end of (\d)/i)[1]; return {rem:Math.max(0,(per-e)*plen/total)}; }
   if(/OT/i.test(c)) return {rem:Math.max(.01,(left||2.5)/total)};
@@ -3753,7 +3758,7 @@ bkRow=function(f,i,showLg){ let h=_bkRow(f,i,showLg); try{ const lv=bkLiveOf(f),
   if(L){ const fav=L.pH>=.5?f.h:f.a; h=h.replace(/<div class="bk-p">[\s\S]*?<\/div><\/div>$/,`<div class="bk-p"><i class="x">🔴 Canlı: ${esc(shortName(fav))} kazanır %${Math.round(Math.max(L.pH,L.pA)*100)}</i><i>Tahmini son skor ${L.fh}-${L.fa}</i></div></div>`); } }catch(e){} return h; };
 
 // v19: Canlı maç detayında anlık tahmin paneli
-let LIVECTX=null;
+var LIVECTX=null;
 const _pm=pickMatch;
 pickMatch=function(m){ LIVECTX=m&&m.live?{h:bestTeamName(m.h),a:bestTeamName(m.a),id:m.id,lg:m.lg}:null; return _pm(m); };
 const _rpL=renderPrediction;
@@ -3787,6 +3792,7 @@ renderPrediction=function(inp,r){ _rpL(inp,r);
   // Pick.list: kısa süreli önbellek (aynı çizim turunda tekrar hesaplanmasın)
   const _pl=Pick.list.bind(Pick); let plT=0, plC=null;
   Pick.list=function(){ const now=Date.now(); if(plC&&now-plT<1500) return plC.map(x=>Object.assign({},x)); plC=_pl(); plT=now; return plC.map(x=>Object.assign({},x)); };
+  window.PL_RESET=()=>{ plC=null; };
   // geç gelen veriden sonra çubuk ve bülten tazelensin
   const _ld=loadData; loadData=async function(f){ const r=await _ld(f); try{ paintUpd(); if(!$("v-bulten").hidden){ BT.cache.clear(); renderBulten(); } }catch(e){} return r; };
   if(typeof loadFixtures==="function"){ const _lf=loadFixtures; loadFixtures=async function(f){ const r=await _lf(f); try{ BT.cache.clear(); if(!$("v-bulten").hidden) renderBulten(); }catch(e){} return r; }; }
@@ -3804,7 +3810,7 @@ async function silentRefresh(){ try{ await Promise.all([loadData(true), Pick.loa
     if(QP.pend.size) QP.timer=setTimeout(fill,30); else { try{ if(!$("v-bulten").hidden) renderBulten(); }catch(e){} } }
   quickPred=function(m,f){ const k=key(m); if(BT.cache.has(k)) return _q(m,f);
     const now=performance.now(); if(now-QP.t0>800){ QP.t0=now; QP.spent=0; }
-    if(QP.spent>250){ QP.pend.set(k,[m,f]); if(!QP.timer) QP.timer=setTimeout(fill,40); return null; }
+    if(QP.spent>250 && !window.QP_FORCE){ QP.pend.set(k,[m,f]); if(!QP.timer) QP.timer=setTimeout(fill,40); return null; }
     const a=performance.now(); const r=_q(m,f); QP.spent+=performance.now()-a; return r; };
 })();
 
@@ -3860,7 +3866,7 @@ function icsFor(inp){
   const z=d=>d.toISOString().replace(/[-:]/g,"").replace(/\.\d{3}/,"");
   const en=new Date(st.getTime()+115*60e3);
   return ["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//BULUTOXX//TR","BEGIN:VEVENT",`UID:${z(st)}-${slug(inp.home)}@bulutoxx`,`DTSTAMP:${z(new Date())}`,`DTSTART:${z(st)}`,`DTEND:${z(en)}`,
-    `SUMMARY:⚽ ${inp.home} - ${inp.away}`,`DESCRIPTION:BULUTOXX tahmini için: https://bulutoxx.github.io`,"BEGIN:VALARM","TRIGGER:-PT15M","ACTION:DISPLAY","DESCRIPTION:Maç 15 dk sonra","END:VALARM","END:VEVENT","END:VCALENDAR"].join("\r\n");
+    `SUMMARY:⚽ ${(inp.home+" - "+inp.away).replace(/([,;\\])/g,"\\$1")}`,`DESCRIPTION:BULUTOXX tahmini için: https://bulutoxx.github.io`,"BEGIN:VALARM","TRIGGER:-PT15M","ACTION:DISPLAY","DESCRIPTION:Maç 15 dk sonra","END:VALARM","END:VEVENT","END:VCALENDAR"].join("\r\n");
 }
 const _rpX=renderPrediction;
 renderPrediction=function(inp,r){ _rpX(inp,r); try{
@@ -3887,6 +3893,20 @@ renderPrediction=function(inp,r){ _rpX(inp,r); try{
       <p class="note">Takım bazlı model; geçmiş testte korner 9,5 çizgisinde ${esc(CK.test["korner_9.5"])}, kart 3,5 çizgisinde ${esc(CK.test["kart_3.5"])} isabet. Kartlar hakeme çok bağlıdır, temkinli kullan.</p>`;
     const w=$("whyPanel"); out.insertBefore(p, w?w.nextSibling:null); });
 }catch(e){} };
+
+// v24: 2. tur denetim düzeltmeleri
+(function(){
+  // 10) taze ESPN/canlı veriden sonra Pick.list önbelleği sıfırlansın
+  const _le=Pick.loadEspn.bind(Pick); Pick.loadEspn=function(){ return _le().then(r=>{ window.PL_RESET&&PL_RESET(); return r; }); };
+  if(Live&&Live.refresh){ const _lr=Live.refresh.bind(Live); Live.refresh=function(){ const r=_lr.apply(Live,arguments); Promise.resolve(r).then(()=>{ window.PL_RESET&&PL_RESET(); }); return r; }; }
+  // 6-7) kupon ve günün kuponu: tahmin arka planda bekliyorsa hemen hesapla
+  const _cp=cpToggle; cpToggle=function(m,mk,odd,p){ if(p==null){ window.QP_FORCE=true; try{ const q=quickPred(m,fxOdds(m)); if(q) p={"1":q.p[0],"X":q.p[1],"2":q.p[2],"U":q.o25,"A":1-q.o25}[mk]; }catch(e){} window.QP_FORCE=false; } return _cp(m,mk,odd,p); };
+  const _sc=suggestCoupon; suggestCoupon=function(){ window.QP_FORCE=true; try{ return _sc.apply(this,arguments); } finally{ window.QP_FORCE=false; } };
+  // 8) yeni basketbol ligleri de bir kez otomatik takibe
+  try{ const seen=new Set(PREFS.bkSeen||["nba","el","ec","wnba","nbl","ncaa"]); let ch=!PREFS.bkSeen;
+    for(const l of Object.keys(BK_NAMES)) if(!seen.has(l)){ seen.add(l); if(!PREFS.bkLeagues.includes(l)) PREFS.bkLeagues.push(l); ch=true; }
+    if(ch){ PREFS.bkSeen=[...seen]; savePrefs(); } }catch(e){}
+})();
 </script>
 
 </body>
