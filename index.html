@@ -896,6 +896,31 @@ nav.tabs #liveBadge{background:#1FBF5B}
 .bt-q .q-go{flex:none;display:flex;align-items:center;gap:6px;padding:0 16px!important;border-radius:12px;background:var(--grad);color:#fff!important;font-weight:700;font-size:15px}
 .bt-q .q-go svg{width:17px;height:17px;stroke:#fff;fill:none;stroke-width:2.4;stroke-linecap:round}
 .bt-q .q-go:disabled{opacity:.45}
+/* v31: sıkı canlı ve bülten satırları */
+.lv-c{padding:7px 10px;gap:5px}
+.lv-top{gap:7px}
+.lv-top .ib-st{width:24px;height:24px;font-size:16px}
+.lv-ko{min-width:34px;font-size:11.5px}
+.lv-tm{font-size:13.5px;gap:0;line-height:1.25}
+.lv-sc{min-width:54px;padding:3px 5px;border-radius:8px}
+.lv-sc b{font-size:15px}.lv-sc i{font-size:10.5px}
+.lv-od{gap:4px}
+.lv-od span,.ib-od span{padding:3px 2px;font-size:13px;border-radius:7px;line-height:1.1}
+.lv-od span u,.ib-od span u{font-size:9.5px}
+.lv-od span.lk{opacity:.45}
+.lv-pr{font-size:11.5px;line-height:1.35;display:flex;flex-wrap:wrap;align-items:center;gap:3px 6px}
+.lv-pr .pp{color:var(--ink3)}
+.lv-pr .hit,.lv-pr .mid{margin:0;padding:1px 7px;border-radius:6px}
+.lv-pr small{color:var(--ink3);font-size:10.5px}
+.idl-gh{padding:6px 10px;font-size:12.5px}
+.idl{gap:8px}
+.ib-r{padding:7px 10px 8px;gap:5px}
+.ib-top{gap:6px}.ib-st{width:24px;height:24px;font-size:16px}
+.ib-t{font-size:12px;min-width:36px}.ib-tm{font-size:13.5px}
+.ib-od{gap:4px}.ib-od span small{font-size:9px;display:inline;margin-left:3px}
+.ib-p{font-size:11.5px}
+.ib-od span{white-space:nowrap;overflow:hidden}.ib-od span.val small{color:var(--cyan)}
+.ib-h{padding:6px 10px;font-size:12.5px}
 </style>
 </head>
 <body>
@@ -4075,6 +4100,7 @@ function idlOdds(e, sp){
     const lock=m.s!==1;
     if(sp===1){
       if(!o.ms && v["1"]&&v["0"]&&v["2"] && (m.st===4||m.st===1)) o.ms={v:[v["1"],v["0"],v["2"]],lock};
+      if(!o.ng && m.st===34 && v["1"]&&v["Olmaz"]&&v["2"]) o.ng={v:[v["1"],v["Olmaz"],v["2"]],n:m.sov,lock};
       if(v["Alt"]&&v["Üst"]&&m.sov&&(m.st===14||m.st===101)) ous.push({l:+m.sov,alt:v["Alt"],ust:v["Üst"],lock});
     } else {
       if(!o.ms && v["1"]&&v["2"]&&!v["0"]&&!m.sov) o.ms={v:[v["1"],v["2"]],lock};
@@ -4120,9 +4146,10 @@ function idlPred(m){
   return Object.assign(P,{line, pOver, src});
 }
 function idlPick(m,P){
-  if(!P) return null; const od=m.odds||{}, ms=od.ms&&!od.ms.lock?od.ms.v:null, ou=od.ou&&!od.ou.lock?od.ou:null;
+  if(!P) return null; const od=m.odds||{}, ms=od.ms&&!od.ms.lock?od.ms.v:null, ou=od.ou&&!od.ou.lock?od.ou:null, ng=od.ng&&!od.ng.lock?od.ng.v:null;
   const c=[{k:"1",n:"MS 1",p:P.H,o:ms&&ms[0]},{k:"X",n:"MS X",p:P.D,o:ms&&ms[1]},{k:"2",n:"MS 2",p:P.A,o:ms&&ms[2]},
-           {k:"A",n:`${lnF(P.line)} Alt`,p:1-P.pOver,o:ou&&ou.alt},{k:"U",n:`${lnF(P.line)} Üst`,p:P.pOver,o:ou&&ou.ust}];
+           {k:"A",n:`${lnF(P.line)} Alt`,p:1-P.pOver,o:ou&&ou.alt},{k:"U",n:`${lnF(P.line)} Üst`,p:P.pOver,o:ou&&ou.ust},
+           {k:"G1",n:"Sıradaki gol ev",p:P.nextH,o:ng&&ng[0]},{k:"G0",n:"Başka gol olmaz",p:P.none,o:ng&&ng[1]},{k:"G2",n:"Sıradaki gol dep.",p:P.nextA,o:ng&&ng[2]}];
   c.forEach(x=>x.val=!!(x.o&&x.p*x.o>1.08));
   const best=c.slice().sort((a,b)=>b.p-a.p)[0];
   return {all:c, best};
@@ -4130,28 +4157,36 @@ function idlPick(m,P){
 function lnF(l){ return String(l).replace(".",","); }
 function pc9(p){ return Math.min(99,Math.max(1,Math.round(p*100))); }
 function idlRow(m){
-  const od=m.odds||{}, P=idlPred(m), K=idlPick(m,P), ms=od.ms, ou=od.ou;
-  const ob=(lab,v,lock,key)=>{ if(!v) return `<span class="na"><u>${lab}</u>–</span>`; const x=K&&K.all.find(z=>z.k===key);
-    const cls=[lock?"na":"", K&&K.best.k===key&&K.best.p>=.6?"pk":"", x&&x.val&&!lock?"val":""].join(" ");
+  const od=m.odds||{}, P=idlPred(m), K=idlPick(m,P), ms=od.ms, ou=od.ou, ng=od.ng;
+  const ob=(lab,v,lock,key)=>{ const x=K&&K.all.find(z=>z.k===key);
+    const cls=[lock?"lk":"", K&&K.best.k===key&&K.best.p>=.6?"pk":"", x&&x.val&&!lock?"val":""].join(" ");
     return `<span class="${cls}"><u>${lab}</u>${lock?"🔒":v.toFixed(2)}</span>`; };
-  let odds="";
-  if(m.sp===1) odds=`<div class="lv-od">${ob("MS 1",ms&&ms.v[0],ms&&ms.lock,"1")}${ob("MS X",ms&&ms.v[1],ms&&ms.lock,"X")}${ob("MS 2",ms&&ms.v[2],ms&&ms.lock,"2")}${ob(ou?lnF(ou.l)+" Alt":"Alt",ou&&ou.alt,ou&&ou.lock,"A")}${ob(ou?lnF(ou.l)+" Üst":"Üst",ou&&ou.ust,ou&&ou.lock,"U")}</div>`;
-  else odds=`<div class="lv-od" style="grid-template-columns:repeat(4,1fr)">${ob("MS 1",ms&&ms.v[0],ms&&ms.lock,"1")}${ob("MS 2",ms&&ms.v[1],ms&&ms.lock,"2")}${ob(ou?lnF(ou.l)+" Alt":"Alt",ou&&ou.alt,ou&&ou.lock,"A")}${ob(ou?lnF(ou.l)+" Üst":"Üst",ou&&ou.ust,ou&&ou.lock,"U")}</div>`;
+  // yalnız açık olan pazarlar gösterilir (boş kutu yok)
+  const B=[];
+  if(m.sp===1){
+    if(ms) B.push(ob("1",ms.v[0],ms.lock,"1"),ob("X",ms.v[1],ms.lock,"X"),ob("2",ms.v[2],ms.lock,"2"));
+    else if(ng) B.push(ob(`${ng.n||""}.gol 1`,ng.v[0],ng.lock,"G1"),ob("Gol yok",ng.v[1],ng.lock,"G0"),ob(`${ng.n||""}.gol 2`,ng.v[2],ng.lock,"G2"));
+    if(ou) B.push(ob(lnF(ou.l)+" Alt",ou.alt,ou.lock,"A"),ob(lnF(ou.l)+" Üst",ou.ust,ou.lock,"U"));
+  } else {
+    if(ms) B.push(ob("1",ms.v[0],ms.lock,"1"),ob("2",ms.v[1],ms.lock,"2"));
+    if(ou) B.push(ob(lnF(ou.l)+" A",ou.alt,ou.lock,"A"),ob(lnF(ou.l)+" Ü",ou.ust,ou.lock,"U"));
+  }
+  const odds=B.length?`<div class="lv-od" style="grid-template-columns:repeat(${B.length},1fr)">${B.join("")}</div>`:"";
+  const st=m.sp===1?[m.h1!=null?`İY ${m.h1}-${m.a1}`:"", m.co[0]!=null?`K ${m.co[0]}-${m.co[1]}`:"", m.yc[0]!=null?`🟨 ${m.yc[0]}-${m.yc[1]}`:""].filter(Boolean).join(" · ")
+    : (m.hq.length?m.hq.map((q,i)=>`${i+1}Ç ${q}-${m.aq[i]??0}`).join(" "):"");
   let pr="";
   if(P){ const b=K.best, pc=pc9(b.p);
-    pr=`<div class="lv-pr">🔮 Tahmin: MS <b>${esc(P.ft)}</b> · 1 %${pc9(P.H)} · X %${pc9(P.D)} · 2 %${pc9(P.A)} · ${lnF(P.line)} Üst %${pc9(P.pOver)}<br>`+
-      `<span class="${pc>=70?"hit":"mid"}">${pc>=70?"🎯 Güçlü":"⚖️ En olası"}: ${esc(b.n)} %${pc}${b.o?` · oran ${b.o.toFixed(2)}`:""}${b.val?" 💎":""}</span></div>`; }
+    pr=`<div class="lv-pr">🔮 <b>${esc(P.ft)}</b> <span class="pp">1 %${pc9(P.H)} · X %${pc9(P.D)} · 2 %${pc9(P.A)}</span> <span class="${pc>=70?"hit":"mid"}">${pc>=70?"🎯":"⚖️"} ${esc(b.n)} %${pc}${b.val?" 💎":""}</span>${st?` <small>${esc(st)}</small>`:""}</div>`; }
   else if(m.sp===2){ const f=BK.data&&(BK.data.fixtures||[]).find(x=>x.iid===m.id); const p=f&&bkPredict(f);
-    if(p){ const r=bkLivePred({mar:p.mar,sm:p.sm,mh:p.mh,ma:p.ma,L:p.L},{state:"in",clock:`${Math.max(m.hq.length,1)}th ${m.min||0}:${String(m.sec||0).padStart(2,"0")}`,hs:m.hs,as:m.as});
-      if(r){ const pc=pc9(Math.max(r.pH,r.pA)); pr=`<div class="lv-pr">🔮 Tahmin: MS <b>${r.fh}-${r.fa}</b> · 1 %${pc9(r.pH)} · 2 %${pc9(r.pA)}<br><span class="${pc>=70?"hit":"mid"}">${pc>=70?"🎯 Güçlü":"⚖️ En olası"}: MS ${r.pH>=r.pA?"1":"2"} %${pc}</span></div>`; } } }
-  const st=m.sp===1?[m.h1!=null?`İY ${m.h1}-${m.a1}`:"", m.co[0]!=null?`Korner ${m.co[0]}-${m.co[1]}`:"", m.yc[0]!=null?`Sarı ${m.yc[0]}-${m.yc[1]}`:""].filter(Boolean).join(" · ")
-    : (m.hq.length?m.hq.map((q,i)=>`${i+1}.Ç ${q}-${m.aq[i]??0}`).join(" · "):"");
+    let r=null; if(p) r=bkLivePred({mar:p.mar,sm:p.sm,mh:p.mh,ma:p.ma,L:p.L},{state:"in",clock:`${Math.max(m.hq.length,1)}th ${m.min||0}:${String(m.sec||0).padStart(2,"0")}`,hs:m.hs,as:m.as});
+    if(r){ const pc=pc9(Math.max(r.pH,r.pA)); pr=`<div class="lv-pr">🔮 <b>${r.fh}-${r.fa}</b> <span class="${pc>=70?"hit":"mid"}">${pc>=70?"🎯":"⚖️"} MS ${r.pH>=r.pA?"1":"2"} %${pc}</span>${st?` <small>${esc(st)}</small>`:""}</div>`; }
+    else if(st) pr=`<div class="lv-pr"><small>${esc(st)}</small></div>`; }
   const rc=n=>n?`<i class="rc"></i>`.repeat(Math.min(n,3)):"";
   return `<div class="lv-c" data-id="${m.id}">
     <div class="lv-top"><span class="lv-ko">${esc(ist(new Date(m.ts),{hour:"2-digit",minute:"2-digit"}))}</span>
       <span class="lv-tm"><span>${esc(m.h)}${rc(m.rc[0])}</span><span>${esc(m.a)}${rc(m.rc[1])}</span></span>
       <span class="lv-sc"><b>${m.hs}-${m.as}</b><i class="lclk" data-id="${m.id}" data-sp="${m.sp}">${esc(idlClockTxt(m))}</i></span></div>
-    ${odds}${pr}${st?`<div class="lv-st">${esc(st)}</div>`:""}</div>`;
+    ${odds}${pr}</div>`;
 }
 const IDLV={ sp:1, sort:(()=>{ try{ return localStorage.getItem("bx-lvsort")||"saat"; }catch(e){ return "saat"; } })() };
 function idlListHtml(sp, q){
