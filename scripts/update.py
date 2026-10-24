@@ -49,8 +49,26 @@ STRENGTH_PRIOR = {"en":0.0,"es":-0.05,"it":-0.08,"de":-0.1,"fr":-0.18,"pt":-0.25
   "en2":-0.35,"de2":-0.45,"it2":-0.55,"es2":-0.5,"fr2":-0.6,"sc2":-0.75,"fi":-0.7,"ie":-0.75}
 UNKNOWN_PRIOR = -0.5
 CUP_MAP = {"Inter Milan":"Inter","AC Milan":"Milan","Bayern Munich":"Bayern München","Paris SG":"Paris Saint-Germain",
-  "Atletico Madrid":"Atlético Madrid","Sporting CP":"Sporting CP","Sporting Lisbon":"Sporting CP","Galatasaray SK":"Galatasaray",
-  "Fenerbahce SK":"Fenerbahçe","Besiktas JK":"Beşiktaş","Istanbul Basaksehir":"Başakşehir"}
+  "Atletico Madrid":"Atlético Madrid","Sporting CP":"Sp Lisbon","Sporting Lisbon":"Sp Lisbon","Galatasaray SK":"Galatasaray",
+  "Fenerbahce SK":"Fenerbahçe","Besiktas JK":"Beşiktaş","Istanbul Basaksehir":"Başakşehir",
+  # ESPN kupa adları -> lig adları
+  "Fenerbahce":"Fenerbahçe","Besiktas":"Beşiktaş","Internazionale":"Inter","AEK Athens":"AEK","AGF":"Aarhus","Braga":"Sp Braga",
+  "F.C. København":"FC Copenhagen","FC Copenhagen":"FC Copenhagen","Heart of Midlothian":"Hearts","KAA Gent":"Gent","LASK Linz":"LASK",
+  "Lausanne Sports":"Lausanne","Mjällby AIF":"Mjallby","NEC Nijmegen":"Nijmegen","RB Salzburg":"Salzburg","Red Bull Salzburg":"Salzburg",
+  "Racing Genk":"Genk","KRC Genk":"Genk","Rapid Vienna":"SK Rapid","Sint-Truidense":"St Truiden","Stade Rennais":"Rennes",
+  "TSG Hoffenheim":"Hoffenheim","Union St.-Gilloise":"St. Gilloise","Union Saint-Gilloise":"St. Gilloise","Legia Warsaw":"Legia",
+  "Jagiellonia Bialystok":"Jagiellonia","Ajax Amsterdam":"Ajax","KuPS Kuopio":"KuPS","CSU Craiova":"Univ. Craiova",
+  "Universitatea Craiova":"Univ. Craiova","PSV Eindhoven":"PSV Eindhoven","Olympiacos":"Olympiakos","PAOK Salonika":"PAOK",
+  "Club Brugge":"Club Brugge","Celtic":"Celtic","Rangers":"Rangers","FC Midtjylland":"Midtjylland",
+  "Malmo FF":"Malmo FF","FCSB":"FCSB",
+  
+  "Tottenham Hotspur":"Tottenham","Aston Villa":"Aston Villa",
+  "Crystal Palace":"Crystal Palace","Olympique Lyonnais":"Lyon","Olympique de Marseille":"Marseille","AS Monaco":"Monaco",
+  "Lille":"Lille","OGC Nice":"Nice",
+  "Villarreal":"Villarreal","AS Roma":"Roma","SS Lazio":"Lazio","Napoli":"Napoli","Atalanta":"Atalanta","Fiorentina":"Fiorentina",
+  "Bologna":"Bologna","Juventus":"Juventus","Benfica":"Benfica","FC Porto":"Porto","Feyenoord Rotterdam":"Feyenoord","AZ Alkmaar":"AZ Alkmaar",
+  "FC Twente":"Twente","FC Utrecht":"Utrecht","Young Boys":"Young Boys","FC Basel":"Basel","Servette":"Servette","Sturm Graz":"Sturm Graz",
+  "Trabzonspor":"Trabzonspor","Samsunspor":"Samsunspor","Galatasaray":"Galatasaray"}
 
 # football-data.co.uk kısaltmaları -> uygulamadaki adlar
 MAP = {
@@ -631,6 +649,7 @@ EXTRA = {
  "nlw": ("ned.w.1", "Hollanda Eredivisie Kadın"),
 }
 ESPN_UA = {"User-Agent": "Mozilla/5.0 (BULUTOXX)"}
+WOMEN = {"nwsl", "wsl", "esw", "frw", "mxw", "nlw"}
 CAL_YEAR = {"col", "chi", "per", "ecu", "uru", "par", "ven", "bol", "ar2", "br2", "nwsl", "usl"}   # sezon = takvim yılı
 def season_for(lg, d):
     return int(d[:4]) if lg in CAL_YEAR else season_of(d)
@@ -736,15 +755,16 @@ def fetch_logos(season):
 
 def learn_strength(season, P, today):
     """Lig gücü katsayılarını ve kupa takım güçlerini Avrupa kupası sonuçlarından öğren."""
-    dom = {}
+    dom = {}; ncur = {}
     for lg, d in season.items():
-        if d.get("cup"): continue
+        if d.get("cup") or lg in WOMEN: continue   # erkek kupaları kadın ligleriyle eşleşmesin (Ajax ↔ Ajax Kadın)
         cur = [m for m in d["matches"] if m["season"] == d.get("season")]
         if len(cur) < 20: continue
         f = fit(d["matches"], today, P)
+        cnt = collections.Counter([m["h"] for m in cur] + [m["a"] for m in cur])
         for t, (a, de) in f["t"].items():
-            if any(m["h"] == t or m["a"] == t for m in cur): dom[t] = (lg, a, de)
-    cm = [m for d in season.values() if d.get("cup") for m in d["matches"]]
+            if cnt[t] and cnt[t] > ncur.get(t, 0): dom[t] = (lg, a, de); ncur[t] = cnt[t]   # çakışmada bu sezon en çok oynadığı lig
+    cm = [m for d in season.values() if d.get("cup") for m in d["matches"] if m.get("ft") and None not in m["ft"][:2]]
     k = {lg: STRENGTH_PRIOR.get(lg, UNKNOWN_PRIOR) for lg in {v[0] for v in dom.values()}}
     teams = sorted({m["h"] for m in cm} | {m["a"] for m in cm})
     ext = {t: [UNKNOWN_PRIOR, 0.0, 0.0] for t in teams if t not in dom}  # bilinmeyen takım: [güç, hücum, savunma] log
@@ -754,12 +774,20 @@ def learn_strength(season, P, today):
             lg, a, de = dom[t]; return math.log(a) + k[lg], math.log(de) - k[lg]
         e = ext[t]; return e[0] + e[1], -e[0] + e[2]
     if cm:
-        lr = 0.05
+        # Gradyanlar maç sayısına bölünür (ortalama kalıntı) ve değerler sınırlanır: kupa maçı sayısı arttıkça
+        # toplam gradyan büyüyüp exp() taşmasına yol açıyordu.
+        nk = collections.Counter(); ne = collections.Counter()
+        for m in cm:
+            for t in (m["h"], m["a"]):
+                if t in dom: nk[dom[t][0]] += 1
+                else: ne[t] += 1
+        clip = lambda x, lo=-2.5, hi=2.5: min(max(x, lo), hi)
+        lr = 0.3
         for _ in range(300):
             gk = {lg: 0.0 for lg in k}; ge = {t: [0.0, 0.0, 0.0] for t in ext}; sh = sa = eh_s = ea_s = 0.0
             for m in cm:
                 (ah, dh), (aa, da) = rating(m["h"]), rating(m["a"])
-                lh = mu * gam * math.exp(ah + da); la = mu * math.exp(aa + dh)
+                lh = mu * gam * math.exp(clip(ah + da, -4, 4)); la = mu * math.exp(clip(aa + dh, -4, 4))
                 rh, ra = m["ft"][0] - lh, m["ft"][1] - la
                 sh += m["ft"][0]; sa += m["ft"][1]; eh_s += lh; ea_s += la
                 for t, r_for, r_ag in ((m["h"], rh, ra), (m["a"], ra, rh)):
@@ -767,12 +795,14 @@ def learn_strength(season, P, today):
                     else:
                         g = ge[t]; g[0] += r_for - r_ag; g[1] += r_for; g[2] += r_ag
             for lg in k:
-                k[lg] += lr * (gk[lg] / 10 - 0.5 * (k[lg] - STRENGTH_PRIOR.get(lg, UNKNOWN_PRIOR)))
+                pr = STRENGTH_PRIOR.get(lg, UNKNOWN_PRIOR)
+                k[lg] = clip(k[lg] + lr * (gk[lg] / (nk[lg] + 10) - 0.05 * (k[lg] - pr)))
             for t, g in ge.items():
-                e = ext[t]
-                e[0] += lr * (g[0] / 10 - 0.5 * (e[0] - UNKNOWN_PRIOR)); e[1] += lr * (g[1] / 10 - 1.0 * e[1]); e[2] += lr * (g[2] / 10 - 1.0 * e[2])
+                e = ext[t]; c = ne[t] + 5
+                e[0] = clip(e[0] + lr * (g[0] / c - 0.05 * (e[0] - UNKNOWN_PRIOR)))
+                e[1] = clip(e[1] + lr * (g[1] / c - 0.1 * e[1]), -1, 1); e[2] = clip(e[2] + lr * (g[2] / c - 0.1 * e[2]), -1, 1)
             mu *= (sa / max(ea_s, 1e-6)) ** 0.2; gam *= ((sh / max(eh_s, 1e-6)) / (sa / max(ea_s, 1e-6))) ** 0.2
-            gam = min(max(gam, 1.0), 1.6)
+            mu = min(max(mu, 0.5), 3.0); gam = min(max(gam, 1.0), 1.6)
     base = {lg: round(v, 3) for lg, v in k.items()}
     for lg, v in STRENGTH_PRIOR.items(): base.setdefault(lg, v)
     cup_teams = {}
@@ -957,6 +987,8 @@ def main():
                 log[ck] = len(new)
             except Exception as ex:
                 log[ck] = f"hata: {ex.__class__.__name__}"
+        for m in old:   # eski kayıtlardaki adlar yeni eşleme kurallarıyla güncellenir
+            m["h"] = CUP_MAP.get(m["h"]) or resolve(m["h"], all_dom); m["a"] = CUP_MAP.get(m["a"]) or resolve(m["a"], all_dom)
         byid = {f"{m['d']}|{m['h']}|{m['a']}": m for m in old if m["d"] >= since}
         for m in new: byid[m["id"]] = m
         ms = sorted(byid.values(), key=lambda m: (m["d"], m["h"]))
