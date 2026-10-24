@@ -1,14 +1,22 @@
-import json, sys, collections
-sys.path.insert(0, "lab"); import iddaa as I
-out = {}
-for sp in (1, 2):
-    ev = I._get(f"events?st={sp}&type=0&version=0")["events"]
-    # basketbol: ilk 3 maçın tüm sov'lu pazarları (st, sov, oranlar)
-    if sp == 2:
-        out["bk_markets"] = [{"h": e["hn"], "a": e["an"], "m": [(m.get("st"), m.get("t"), m.get("sov"), {o.get("n"): o.get("odd") for o in m.get("o", [])}) for m in e.get("m", [])]} for e in ev[:4]]
-    st = collections.Counter(m.get("st") for e in ev for m in e.get("m", []))
-    out[f"st_{sp}"] = st.most_common(40)
-    p = I.fetch(sp)
-    out[f"parsed_{sp}"] = {"n": len(p), "ornek": p[:12], "comps": collections.Counter(x["comp"] for x in p).most_common(200),
-                           "cc": collections.Counter(x["cc"] for x in p).most_common(60), "no_ou": sum(1 for x in p if "ou" not in x["mk"] and "tot" not in x["mk"])}
+import json, re, urllib.request
+H = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/130.0 Safari/537.36"}
+def get(u): return urllib.request.urlopen(urllib.request.Request(u, headers=H), timeout=30).read().decode("utf-8", "replace")
+out = {"hosts": set(), "paths": set(), "ws": set()}
+pages = ["https://www.iddaa.com/", "https://www.iddaa.com/program/canli/futbol", "https://www.iddaa.com/canli-skor"]
+js = set()
+for p in pages:
+    try:
+        h = get(p); out.setdefault("pages", {})[p] = len(h)
+        js |= {("https://www.iddaa.com" + s) if s.startswith("/") else s for s in re.findall(r'src="([^"]+\.js)"', h)}
+    except Exception as e: out.setdefault("pages", {})[p] = str(e)[:100]
+out["n_js"] = len(js)
+for u in sorted(js)[:80]:
+    try: t = get(u)
+    except Exception: continue
+    out["hosts"] |= set(re.findall(r'https?://[a-z0-9.-]*iddaa\.com', t))
+    out["ws"] |= set(re.findall(r'wss?://[a-z0-9./-]+', t))
+    for m in re.findall(r'["\'`](/[a-zA-Z0-9_\-/]*(?:score|live|canli|statistic|event|match)[a-zA-Z0-9_\-/]*)', t): out["paths"].add(m)
+    for m in re.finditer(r'.{80}(?:livescore|liveScore|scoreboard|matchTracker|getScores).{120}', t): out.setdefault("ctx", []).append(m.group(0)[:200])
+out = {k: sorted(v) if isinstance(v, set) else v for k, v in out.items()}
+out["ctx"] = out.get("ctx", [])[:40]
 json.dump(out, open("lab/iddaa_probe.json", "w"), ensure_ascii=False, indent=1)

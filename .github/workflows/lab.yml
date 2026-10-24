@@ -12,7 +12,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: { python-version: "3.12" }
-      - run: python lab/iddaa_probe.py; python lab/iddaa_live.py > /dev/null; mv lab/iddaa_probe.json lab/live.json; python lab/iddaa_probe.py
+      - run: python lab/iddaa_probe.py
       - run: |
           git config user.name bot; git config user.email bot@users.noreply.github.com
-          git add lab/iddaa_probe.json lab/live.json; git commit -qm "probe [skip ci]"; git push
+          git add lab/iddaa_probe.json; git commit -qm "probe [skip ci]"; git push
