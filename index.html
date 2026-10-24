@@ -3543,7 +3543,7 @@ renderKarne=function(){ _rk4(); const k=$("karne"); if(!k) return;
     <div class="tbl"><table class="bk-tb"><thead><tr><th>Sezon (3 ay önce)</th><th>Kapsam</th><th>1X2 eski</th><th>1X2 yeni</th><th>Log-kayıp</th></tr></thead><tbody>
     ${F.map(x=>`<tr><td>${x.sezon}-${String(+x.sezon+1).slice(2)}</td><td>${pc(x.eski.kapsam)} → <b>${pc(x.yeni_tum.kapsam)}</b></td><td>${pc(x.eski["1x2"])}</td><td class="hi">${pc(x.yeni["1x2"])}</td><td>${x.eski.logloss} → <b>${x.yeni.logloss}</b></td></tr>`).join("")}
     </tbody></table></div>
-    <div class="list">${LAB.denenen.map(x=>`<div><span>${x.sonuc==="kabul"?"✅":"✖️"} <b>${esc(x.ad)}</b><br><small class="note">${esc(x.not)}</small></span><span>${x.sonuc==="kabul"?"Motora eklendi":"Elendi"}</span></div>`).join("")}</div>
+    <div class="list">${LAB.denenen.map(x=>`<div><span>${x.sonuc==="kabul"?"✅":x.sonuc==="beklemede"?"⏸️":"✖️"} <b>${esc(x.ad)}</b><br><small class="note">${esc(x.not)}</small></span><span>${x.sonuc==="kabul"?"Motora eklendi":x.sonuc==="beklemede"?"Beklemede":"Elendi"}</span></div>`).join("")}</div>
     <p class="note">Dürüst kıyas: aynı maçlarda bahis piyasasının kapanış oranları log-kayıp ${F.length?F[F.length-1].yeni.piyasa_ll:"–"} ile hâlâ daha iyi; oran girdiğinde BULUTOXX ikisini birleştirir.</p>`;
   }
   if(bt.risk&&bt.risk.kurallar){ h+=`<h3 style="margin-top:8px">🔥 Yüksek oran kutusu: kural yarışması</h3>
