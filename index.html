@@ -1145,6 +1145,10 @@ nav.tabs .pw-btn .badge{top:-2px;left:auto;right:-6px;background:#FFB020;color:#
 .os-b u{position:absolute;top:-3px;bottom:-3px;width:2px;background:#fff;opacity:.8;text-decoration:none}
 .mg-h{margin:18px 6px 8px;font:700 12.5px var(--font);color:var(--ink3);text-transform:uppercase;letter-spacing:.07em}
 #menuGroups .mg-h:first-child{margin-top:4px}
+body.tb2 #installPill,body.tb2 #shareTop,body.tb2 #setBtn,body.tb2 #hdrRefresh,body.tb2 #botFab,body.tb2 .livechip{display:none!important}
+body.tb2 #v-power .pw-cp{display:none}
+.kp-seg{margin:0 16px 12px}
+#v-kupon .oyn-h>b,#v-kupon .oyn-e>b{display:none}.kp-seg small{opacity:.7;font-weight:600;margin-left:4px}
 </style>
 </head>
 <body>
@@ -5049,7 +5053,7 @@ if((location.hash||"")==="#sonuclar") setTimeout(()=>$("navRes").click(),200);
 // =====================================================================
 // BULUTOXX v35: Otomatik sürüm güncelleme — yeni sürüm yayınlanınca uygulama kendini yeniler
 // =====================================================================
-const APP_V="2026-10-24.59";
+const APP_V="2026-10-24.60";
 (function autoUpdate(){
   let shown=false;
   async function check(auto){
@@ -5973,6 +5977,37 @@ function menuOrganize(){ const v=$("v-more"); if(!v) return; const wrap=v.queryS
 TAB_NAMES.sonuc="Kayıtlı tahminler"; TAB_NAMES.karne="Tahmin karnesi"; TAB_NAMES.more="Menü";
 menuOrganize(); setTimeout(menuOrganize,1500); setTimeout(menuOrganize,5000);
 document.addEventListener("click",e=>{ if(e.target.closest('nav.tabs button[data-v="more"]')) setTimeout(menuOrganize,0); });
+// ---------- v59 Adım 2: üst çubukta yalnız Bulut + Ses; Kupon tek kapı, içinde Kuponum / Oynadıklarım ----------
+(function topbarTidy(){
+  const tin=document.querySelector(".topbar .in"); if(!tin) return;
+  if(!$("hdrBot")){ const b=document.createElement("button"); b.className="iconbtn"; b.id="hdrBot"; b.type="button"; b.setAttribute("aria-label","Bulut sohbet asistanı");
+    b.innerHTML=`<svg viewBox="0 0 24 24"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>`; b.onclick=()=>{ buzz(6); try{ botOpen(); }catch(e){} };
+    const mode=$("modeBtn"); mode?mode.before(b):tin.appendChild(b); }
+  document.body.classList.add("tb2");
+})();
+const KP={tab:"cp"};
+function kuponTab(t){ KP.tab=t; const v=$("v-kupon"); if(!v) return;
+  let sg=$("kpSeg"); if(!sg){ const cb0=$("cpBox"); (cb0||v).insertAdjacentHTML(cb0?"beforebegin":"afterbegin",`<div class="seg kp-seg" id="kpSeg" role="group" aria-label="Kupon"><button type="button" data-kt="cp">Kuponum <small id="kpN1"></small></button><button type="button" data-kt="oyn">Oynadıklarım <small id="kpN2"></small></button></div>`); sg=$("kpSeg");
+    sg.onclick=e=>{ const b=e.target.closest("[data-kt]"); if(!b) return; buzz(6); kuponTab(b.dataset.kt); window.scrollTo({top:0}); }; }
+  sg.querySelectorAll("[data-kt]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.kt===t));
+  const n1=$("kpN1"), n2=$("kpN2"); if(n1) n1.textContent=CP.items.length||""; if(n2){ const w=OYN.L.filter(sl=>oynSt(sl)==="w").length; n2.textContent=OYN.L.length?(w?`${w} bekliyor`:OYN.L.length):""; }
+  const cb=$("cpBox"), ob=$("oynBox"); if(cb) cb.hidden=t!=="cp"; if(ob) ob.hidden=t!=="oyn";
+  const h1=v.querySelector(".ltitle h1"), hp=v.querySelector(".ltitle p"); if(h1) h1.textContent=t==="oyn"?"Oynadıklarım":"Kupon";
+  if(hp) hp.textContent=t==="oyn"?"Oynadığın kuponlar, sonuçları ve kişisel istatistiğin":"Seçimlerini birleştir, BULUTOXX değerlendirsin";
+  if(t==="oyn"){ try{ renderOyn(); oynGrade(); }catch(e){} } }
+const _rkKP=renderKupon;
+renderKupon=function(){ _rkKP(); kuponTab(KP.tab); };
+document.addEventListener("click",e=>{ if(e.target.closest('nav.tabs button[data-v="kupon"]')&&!e.target.closest("#moreOyn")) KP.tab=KP.tab||"cp"; },true);
+// Menü: Oynadıklarım artık Kupon'un sekmesi (tek kapı); bekleyen sayısı Kupon satırında görünür
+MENU_PLAN[0][1]=[["#moreCp","Kupon","Kuponum ve oynadıkların, sonuçları"]];
+MENU_PLAN[1][1]=MENU_PLAN[1][1].filter(x=>x[0]!=="#moreBot");
+MENU_HIDE.push("#moreOyn","#moreBot");
+oynBadge=function(){ const n=OYN.L.filter(sl=>oynSt(sl)==="w").length; const c=$("moreCp"); if(c){ const b=c.querySelector(".tx small"); if(b) b.textContent=n?`Kuponum ve oynadıkların · ${n} kupon sonuç bekliyor`:"Kuponum ve oynadıkların, sonuçları"; }
+  if($("kpSeg")) kuponTab(KP.tab); };
+function openOyn(){ KP.tab="oyn"; const b=document.querySelector('nav.tabs button[data-v="kupon"]'); if(b) b.click(); setTimeout(()=>kuponTab("oyn"),60); }
+const mc=$("moreCp"); if(mc) mc.onclick=()=>{ KP.tab="cp"; document.querySelector('nav.tabs button[data-v="kupon"]').click(); };
+document.addEventListener("click",e=>{ if(e.target.closest("#cpPlay")) KP.tab="oyn"; },true);
+menuOrganize(); oynBadge();
 </script>
 
 </body>
