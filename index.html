@@ -5035,7 +5035,7 @@ if((location.hash||"")==="#sonuclar") setTimeout(()=>$("navRes").click(),200);
 // =====================================================================
 // BULUTOXX v35: Otomatik sürüm güncelleme — yeni sürüm yayınlanınca uygulama kendini yeniler
 // =====================================================================
-const APP_V="2026-10-24.54";
+const APP_V="2026-10-24.56";
 (function autoUpdate(){
   let shown=false;
   async function check(auto){
@@ -5456,7 +5456,7 @@ function bj(k){ return rnd(BOT_J[k]).replace(/\{ad\}/g,botName()); }
 // ---------- 🧠 Akıllı mod: telefonda çalışan açık kaynak dil modeli (WebLLM + Qwen 3.5, Apache 2.0) ----------
 // İsteğe bağlıdır; bir kez indirilir, sonra internetsiz ve ücretsiz çalışır. Rakamları ASLA model üretmez:
 // model yalnız mesajı anlar (niyet, takım, lig, gün...) ve serbest sohbete kısa cevap verir; öneriler BULUTOXX motorundan gelir.
-const BRAIN_MB={hafif:0,guclu:0};   // indirme boyutları (MB), sınama sonucuyla doldurulur
+const BRAIN_MB={hafif:424,guclu:1059};   // indirme boyutları (MB)
 const WEBLLM_URL="https://cdn.jsdelivr.net/npm/@mlc-ai/web-llm@0.2.85/+esm";
 const BRAIN={ st:"off", eng:null, prog:0, txt:"", id:"", err:"",
   M:{hafif:{n:"Hafif",b:"Qwen3.5-0.8B",mb:BRAIN_MB&&BRAIN_MB.hafif},guclu:{n:"Güçlü",b:"Qwen3.5-2B",mb:BRAIN_MB&&BRAIN_MB.guclu}},
