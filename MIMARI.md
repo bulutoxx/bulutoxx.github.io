@@ -40,7 +40,7 @@ Futbolda tek maçın sonucu doğası gereği belirsizdir; hiçbir model her maç
 
 1. **Doğru referans:** Bahis piyasası en güçlü tek tahmincidir. Robot arenası her hafta beş bağımsız robotu
    (piyasa, Poisson, Elo, form, momentum) ve onları birleştiren öğrenen konseyi piyasaya karşı yarıştırır.
-   İlk ölçümde (15.000+ maç) konsey ağırlığın tamamını piyasaya verdi: diğer robotlar piyasaya bilgi eklemiyor.
+   İlk ölçümde (5.657 maç, iki sezon) konsey ağırlığın tamamını piyasaya verdi: diğer robotlar piyasaya bilgi eklemiyor.
    Sistem bu yüzden piyasa + kalibrasyon üzerine kuruludur. Konsey bir pazarda iki sezonda da piyasayı geçerse onay beklemeden devreye girer (scripts/konsey.py yaklaşan maçlara konsey olasılığını ekler); koruyucu sonrasını izler.
 2. **Kalibrasyon:** Gösterilen yüzde, geçmişte o güvendeki önerilerin gerçek tutma oranına göre düzeltilir
    (maç öncesi: 9.000+ maç; canlı: kilitli canlı seçimler; lig bazında: analist).
