@@ -4766,7 +4766,7 @@ const fair=p=>p>0.005?(1/p).toFixed(2):"–";
 function mOpt(key,name,p,o,m){
   const inCp=CP.items.some(c=>c.k===cpKey(m)&&c.mk===key), val=o&&p*o>1.08, t=ptier(p);
   return `<button type="button" class="mo ${inCp?"sel":""} ${val?"val":""} ${t}" data-mk="${key}" data-o="${o||(p>0.005?(1/p).toFixed(2):"")}" data-p="${p}" ${o?"":'data-fair="1"'}>
-    <span class="mo-n">${t==="t3"?"🔥 ":""}${esc(name)}</span><b>${o?(+o).toFixed(2):fair(p)}</b><small>%${pc9(p)}${o?"":" · adil"}${val?" 💎":""}</small></button>`;
+    <span class="mo-n">${esc(name)}</span><b>${o?(+o).toFixed(2):fair(p)}</b><small>%${pc9(p)}${val?" 💎":""}</small></button>`;
 }
 function mGroup(title,opts,cols){ return `<div class="mg"><h4>${esc(title)}</h4><div class="mg-o" style="grid-template-columns:repeat(${cols||opts.length},1fr)">${opts.join("")}</div></div>`; }
 const MS={m:null,f:null,tab:"tahmin",live:null};
@@ -4792,7 +4792,7 @@ function msRender(){
   const k=fkey(m.sp?{sp:1,id:m.id}:m);
   let center;
   if(lv) center=`<div class="ms-sc live"><b>${lv.hs}-${lv.as}</b><i class="lclk" data-id="${lv.id}" data-sp="1">${esc(idlClockTxt(lv))}</i></div>`;
-  else center=`<div class="ms-sc"><small>Tahmin</small><b>${r?esc(r.topFT[0].s):"–"}</b><i>İY ${r?esc(r.topH1[0].s):"–"}</i></div>`;
+  else center=`<div class="ms-sc"><small>Başlama</small><b>${esc(ist(dt,{hour:"2-digit",minute:"2-digit"}))}</b><i>Skor tahmini ${r?esc(r.topFT[0].s):"–"}</i></div>`;
   const tabs=[["tahmin","Tahmin"],["oran","Oranlar"],["form","Form"]];
   el.innerHTML=`<div class="ms-top"><button type="button" class="ms-x" aria-label="Kapat">‹</button><span class="ms-lg">${flag} ${esc(lg)}${f&&f.mbs?` <span class="ib-mbs">${f.mbs}</span>`:""}</span>${starBtn(k)}</div>
     <div class="ms-hd">
@@ -5758,7 +5758,7 @@ async function oynGrade(){ if(oynBusy) return; oynBusy=true; let ch=0;
 function oynSt(sl){ const I=sl.items; if(I.some(x=>x.ok===false)) return "x"; if(I.every(x=>x.ok===true)) return "g"; return "w"; }
 function oynBadge(){ const n=OYN.L.filter(sl=>oynSt(sl)==="w").length; const c=$("moreOyn"); if(c){ const b=c.querySelector(".tx small"); if(b) b.textContent=n?`${n} kupon sonuç bekliyor`:"Oynadığın kuponlar ve sonuçları"; } }
 function renderOyn(){ const box=$("oynBox"); if(!box) return;
-  if(!OYN.L.length){ box.innerHTML=`<div class="panel oyn-e"><b>🎯 Oynadıklarım</b><p class="note">Henüz kayıt yok. Kuponunu kurunca aşağıdaki <b>“✅ Oynadım, kaydet”</b> düğmesine bas; ya da maç sayfasında seçtiğin kutunun altındaki <b>“🎯 Oynadım”</b> ile tek maçı kaydet. Sonuçlar maç bitince otomatik kontrol edilir.</p></div>`; return; }
+  if(!OYN.L.length){ box.innerHTML=`<div class="xempty"><b>Henüz oynadığın kupon yok</b>Kuponunu kurup “Oynadım, kaydet”e bas ya da maç sayfasında seçtiğin kutunun altındaki “🎯 Oynadım” ile tek maçı kaydet. Sonuçlar maç bitince otomatik kontrol edilir.<button type="button" class="xbtn" data-a="home">Bültene git</button></div>`; return; }
   const g=OYN.L.filter(sl=>oynSt(sl)==="g").length, x=OYN.L.filter(sl=>oynSt(sl)==="x").length, it=OYN.L.flatMap(sl=>sl.items).filter(i=>i.ok!=null), ih=it.filter(i=>i.ok).length;
   const pill=i=>i.ok===true?`<span class="pill g">✅ Tuttu</span>`:i.ok===false?`<span class="pill x">❌ Yattı</span>`:`<span class="pill">⏳ ${Date.now()<new Date(i.dt).getTime()?"Başlamadı":i.need?"Elle işaretle":"Bekliyor"}</span>`;
   box.innerHTML=`<div class="panel oyn"><div class="oyn-h"><b>🎯 Oynadıklarım</b><small>${OYN.L.length} kupon · ${g} kazandı · ${x} kaybetti${it.length?` · seçim isabeti %${Math.round(ih/it.length*100)}`:""}</small></div>
@@ -5823,13 +5823,13 @@ renderPrediction=function(inp,r){ _rpOyn(inp,r); try{ const out=$("out"); if(!ou
 :root{
   --bg:#080C11; --bg2:#0B1016; --surface:#11171F; --surface2:#18202A; --elev:rgba(17,23,31,.92);
   --line:rgba(255,255,255,.06); --line2:rgba(255,255,255,.1);
-  --ink:#EEF2F6; --ink2:#A7B2C0; --ink3:#6C7887;
+  --ink:#EEF2F6; --ink2:#AFBACA; --ink3:#8B97A6;
   --acc:#2F7BFF; --good:#22C55E; --live:#FF4D4F; --gold:#F5B301;
   --x-r:12px; --x-h:44px; --ow:52px;
 }
 body{background:var(--bg)!important}
 body.x-on{padding-bottom:calc(70px + env(safe-area-inset-bottom,0px))}
-body.x-on.x-cp{padding-bottom:calc(128px + env(safe-area-inset-bottom,0px))}
+body.x-on.x-cp{padding-bottom:calc(142px + env(safe-area-inset-bottom,0px))}
 /* eski kalabalık parçalar gizlenir */
 body.x-on nav.tabs, body.x-on #botFab, body.x-on #cpBar, body.x-on .topbar .iconbtn, body.x-on .topbar .livechip, body.x-on .topbar .refresh, body.x-on .topbar button:not(.xb){display:none!important}
 /* üst çubuk */
@@ -5852,7 +5852,7 @@ body.x-on .topbar .logo b{font-size:18px;letter-spacing:.06em}
 .xnav .cpb .xi{stroke:#fff!important;width:24px;height:24px}
 .xnav button.cp .bd{left:calc(50% + 12px);top:-22px;background:var(--gold);color:#111}
 /* kupon çubuğu */
-.xslipbar{position:fixed;left:10px;right:10px;bottom:calc(66px + env(safe-area-inset-bottom,0px));z-index:49;display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:14px;background:var(--acc);color:#fff;border:0;box-shadow:0 8px 24px rgba(0,0,0,.45);font:600 14px var(--font);text-align:left}
+.xslipbar{position:fixed;left:10px;right:10px;bottom:calc(80px + env(safe-area-inset-bottom,0px));z-index:49;display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:14px;background:var(--acc);color:#fff;border:0;box-shadow:0 8px 24px rgba(0,0,0,.45);font:600 14px var(--font);text-align:left}
 .xslipbar .n{min-width:26px;height:26px;border-radius:8px;background:rgba(255,255,255,.22);display:grid;place-items:center;font-weight:800}
 .xslipbar .t{flex:1;line-height:1.2}.xslipbar .t small{display:block;font-weight:500;opacity:.85;font-size:12px}
 .xslipbar b{font-variant-numeric:tabular-nums}
@@ -5998,6 +5998,36 @@ body.x-on .mo.t2{box-shadow:inset 0 0 0 1px rgba(34,197,94,.35)}
 body.x-on .ms-leg{display:none}
 body.x-on .oyn-bar{font-size:12.5px;padding:8px 10px;background:rgba(255,255,255,.04);border-color:var(--line2)}
 body.x-on [data-allm]{display:none!important}
+
+/* v55.1 inceleme düzeltmeleri */
+.xo small,.xg-cols,.xdays button small{font-size:11px}
+.xnav button{font-size:11px}
+.xchips button{min-height:36px;padding:8px 14px}
+.xstake button{width:40px;height:40px;font-size:18px;border-radius:10px}
+.xsel .rm{width:36px;height:36px}
+.xb{width:44px;height:44px}
+.xo.lk.wide{grid-column:span 3;flex-direction:row;gap:6px;font:600 12.5px var(--font);color:var(--ink3)}
+.xo.lk.wide .xi{width:14px;height:14px}
+.xtag b{flex:none}
+.xr .tms .t span{flex:1;min-width:0}
+.xr .tms .t b{flex:none;min-width:14px;text-align:right}
+.xr .tt .mbs{font-size:9.5px;padding:2px 3px;white-space:nowrap}
+#v-xlive .xr{grid-template-columns:36px minmax(0,1fr) repeat(3,var(--ow))}
+#v-xlive .xr .tt span:not(.lvm){font-size:11px;color:var(--ink3)}
+@media (max-width:360px){ body.x-on .logo b{display:block!important;font-size:15px} }
+/* maç sayfası: tek vurgu dili — önerilen yeşil nokta, seçili mavi */
+body.x-on .mo.t3,body.x-on .mo.t2{box-shadow:none;background:var(--surface2)}
+body.x-on .mo.t3::after,body.x-on .mo.t2::after{content:"";position:absolute;top:6px;right:6px;width:6px;height:6px;border-radius:50%;background:var(--good)}
+body.x-on .mo.t2::after{opacity:.5}
+body.x-on .mo{position:relative}
+body.x-on .mo[data-fair] b{color:var(--ink2);font-style:italic;font-weight:600}
+body.x-on .ms-tabs{display:flex;gap:0;padding:0 12px}
+body.x-on .ms-tabs button{background:none!important;border-radius:0!important;color:var(--ink3);box-shadow:none;flex:1;padding:12px 4px;font-weight:700}
+body.x-on .ms-tabs button[aria-selected="true"]{color:var(--ink)!important;box-shadow:inset 0 -2px 0 var(--acc)!important}
+body.x-on .ms-sc small{font-size:11px;color:var(--ink3)}
+body.x-on .ms-sc i{font-size:11.5px;color:var(--ink2);font-style:normal}
+body.x-on .recbig .rb-add{background:var(--acc)!important;color:#fff!important;border:0}
+body.x-on .ms-body>.oyn-bar:first-child{margin-top:0}
 </style>
 <script id="ui2js">
 // ===================== BULUTOXX v55 · yeni arayüz (bahis sitesi düzeni) =====================
@@ -6074,9 +6104,9 @@ window.xSync=xSync;
 // ---------- kupon çubuğu ve rozetler ----------
 function xSlipBar(){ const st=cpStats(), b=$("xbCp"); if(b){ b.hidden=!st.n; b.textContent=st.n; }
   const show=st.n>0&&!vis("v-xslip")&&!(window.MS&&MS.m);
-  bar.hidden=!show; document.body.classList.toggle("x-cp",show);
+  bar.hidden=!show; document.body.classList.toggle("x-cp",show); if(b&&show) b.hidden=true;
   if(show){ let stake=50; try{ stake=+(localStorage.getItem("bx-stake")||50)||50; }catch(e){}
-    bar.innerHTML=`<span class="n">${st.n}</span><span class="t">Kuponum · Oran <b>${trN(st.odd)}</b><small>Olası kazanç ${trN(stake*st.odd)} ₺ · tutma olasılığı %${(st.p*100).toFixed(st.p<.1?1:0)}</small></span>${ic("chev")}`; } }
+    bar.innerHTML=`<span class="n">${st.n}</span><span class="t">Kuponum · Oran <b>${trN(st.odd)}</b><small>Olası kazanç ${trN(stake*st.odd)} ₺</small></span>${ic("chev")}`; } }
 const _pc=paintCoupon;
 paintCoupon=function(){ _pc(); try{ xSlipBar(); xMarkSel(); if(vis("v-xslip")&&X.slipTab==="cp") xSlip(); }catch(e){} };
 function xMarkSel(){ document.querySelectorAll(".xo[data-k]").forEach(o=>{ const m=o.closest("[data-i],[data-li]"); if(!m) return; const x=o.dataset.i!=null?X.rows[+o.dataset.i]:null; const mm=x?x.m:(o.dataset.li!=null?xLiveKey(X.live[+o.dataset.li]):null); if(mm) o.classList.toggle("sel",inCp(mm,o.dataset.k)); }); }
@@ -6114,13 +6144,13 @@ function xGroup(R){ const G=new Map();
   const A=[...G.values()]; A.forEach(g=>g.items.sort((a,b)=>a.m.dt-b.m.dt||a.m.h.localeCompare(b.m.h,"tr")));
   return A.sort((a,b)=>pr(a.lg)-pr(b.lg)||a.t-b.t||lgName(a.lg).localeCompare(lgName(b.lg),"tr")); }
 function xTag(R,i,live){ if(!R) return "";
-  if(R.tier==="w") return `<span class="xtag w">Pas · en olası ${esc(R.n)} %${pc9(R.cp)}</span>`;
+  if(R.tier==="w") return `<span class="xtag w">Pas · ${esc(R.n)} <b>%${pc9(R.cp)}</b></span>`;
   return `<button type="button" class="xtag ${R.tier}${R.inCp?" in":""}" ${live?`data-lt="${i}"`:`data-t="${i}"`}>${R.tier==="g"?"✓":"•"} ${esc(R.n)} <b>%${pc9(R.cp)}</b>${R.o?` · ${od2(R.o)}`:""}</button>`; }
 function xRow(x,i){ const {m,f,pq,R}=x, o=f&&f.odds;
   if(R) R.inCp=inCp(m,R.k);
   const cell=(k,v,p)=>v?`<button type="button" class="xo${R&&R.k===k&&R.tier!=="w"?" rk":""}${inCp(m,k)?" sel":""}" data-i="${i}" data-k="${k}" data-o="${v}" data-p="${p??""}">${od2(v)}${p!=null?`<small>%${pc9(p)}</small>`:""}</button>`:`<span class="xo na">–</span>`;
   const t=X.q&&istDay(m.dt)!==istDay(new Date())?esc(ist(m.dt,{day:"numeric",month:"short"}))+"<br>":"";
-  return `<div class="xr" data-i="${i}"${omA(m)}><div class="tt"><span>${t}${esc(ist(m.dt,{hour:"2-digit",minute:"2-digit"}))}</span>${f&&f.mbs?`<span class="mbs" title="Minimum bahis sayısı">${f.mbs}</span>`:""}</div>
+  return `<div class="xr" data-i="${i}"${omA(m)}><div class="tt"><span>${t}${esc(ist(m.dt,{hour:"2-digit",minute:"2-digit"}))}</span>${f&&f.mbs?`<span class="mbs" title="Minimum bahis sayısı: kuponda en az bu kadar maç olmalı">MBS ${f.mbs}</span>`:""}</div>
     <div class="tms"><div class="t"><span>${esc(m.h)}</span></div><div class="t"><span>${esc(m.a)}</span></div>${xTag(R,i)}</div>
     ${cell("1",o&&o[0],pq&&pq.H)}${cell("X",o&&o[1],pq&&pq.D)}${cell("2",o&&o[2],pq&&pq.A)}</div>`; }
 function xGroupHtml(g){ const shut=X.shut.has(g.lg);
@@ -6173,11 +6203,12 @@ function xLiveRow(m,i){ const sp=m.sp, rc=n=>n?`<i class="rc"></i>`.repeat(Math.
   let tag=""; const tag0=()=>tag;
   if(K){ const b=K.all.filter(c=>c.o&&c.o>=1.03).sort((a,b)=>b.p-a.p)[0]||K.best; let cp=b.p; try{ cp=Math.min(liveCal(b.p).p,.99); }catch(e){}
     const tier=cp>=.70?"g":cp>=.58?"m":"w"; m._tip={k:b.k,n:b.n,o:b.o,p:cp};
-    tag=tier==="w"?`<span class="xtag w">Pas · en olası ${esc(b.n)} %${pc9(cp)}</span>`:`<button type="button" class="xtag ${tier}" data-lt="${i}">🎯 ${esc(b.n)} <b>%${pc9(cp)}</b>${b.o?` · ${od2(b.o)}`:""}</button>`; }
+    tag=tier==="w"?`<span class="xtag w">Pas · ${esc(b.n)} <b>%${pc9(cp)}</b></span>`:`<button type="button" class="xtag ${tier}" data-lt="${i}">🎯 ${esc(b.n)} <b>%${pc9(cp)}</b>${b.o?` · ${od2(b.o)}`:""}</button>`; }
   const od=m.odds||{}, ms=od.ms, mm=xLiveKey(m), lock=ms&&ms.lock;
   const ou=od.ou&&!od.ou.lock?od.ou:null;
   const btn=(k,o,p,lab)=>o?`<button type="button" class="xo${inCp(mm,k)?" sel":""}" data-li="${i}" data-k="${k}" data-o="${o}" data-p="${p??""}">${od2(o)}<small>${lab}</small></button>`:`<span class="xo na">–<small>${lab}</small></span>`;
-  const cell=(k,j,p)=>lock?`<span class="xo lk">${ic("lock")}</span>`:btn(k,ms.v[j],p,k);
+  const cell=(k,j,p)=>btn(k,ms.v[j],p,k);
+  if((!ms||lock)&&!ou) return `<div class="xr" data-li="${i}"${omA(m)}>${tt}${tms}${tag0()}</div><span class="xo lk wide">${ms?ic("lock")+" Bahis kapalı":"Oran yok"}</span></div>`;
   if(!ms||(lock&&ou)){ const k1="A"+(ou?ou.l:""), k2="U"+(ou?ou.l:""); if(ou){ MKT_N[k1]=`${lnF(ou.l)} Alt`; MKT_N[k2]=`${lnF(ou.l)} Üst`; }
     return `<div class="xr" data-li="${i}"${omA(m)}>${tt}${tms}${tag0()}</div>${ou?btn(k1,ou.alt,P&&1-P.pOver,lnF(ou.l)+" A")+btn(k2,ou.ust,P&&P.pOver,lnF(ou.l)+" Ü"):`<span class="xo na">–</span><span class="xo na">–</span>`}<span class="xo na">${ic("chev")}</span></div>`; }
   return `<div class="xr" data-li="${i}"${omA(m)}>${tt}${tms}${tag}</div>${cell("1",0,P&&P.H)}${cell("X",1,P&&P.D)}${cell("2",2,P&&P.A)}</div>`; }
@@ -6260,9 +6291,9 @@ function xMenu(){ const nav0=v=>()=>{ const b=document.querySelector(`nav.tabs b
     ["share","Uygulamayı paylaş","Arkadaşlarına gönder","#22A06B",()=>{ try{ shareAppSheet(); }catch(_){} }],
     ["book","Nasıl kullanılır","Kısa rehber","#0EA5E9",()=>goView("rehber")],
     ["shield","Kullanım şartları","18+ · sorumlu oyun","#334155",()=>{ try{ showTerms(false); }catch(_){} }]]]];
-  $("xmBody").innerHTML=`<div class="xmh"><img src="icons/mark.png" alt=""><div><b>BULUTOXX</b><small>Ücretsiz maç tahmini · sürüm ${esc(String(typeof APP_V!=="undefined"?APP_V:""))}</small></div></div>
+  $("xmBody").innerHTML=`<div class="xsec" style="padding:16px 16px 0"><h2 style="font-size:22px">Menü</h2></div>
     <div class="xml">${X.MI.map(([h,L],gi)=>`<h3>${h}</h3><div class="grp">${L.map(([icn,t,s,c,fn,n],ii)=>`<button type="button" class="it" data-mi="${gi}:${ii}"><span class="ic" style="background:${c}">${ic(icn)}</span><span class="tx">${esc(t)}<small>${esc(s)}</small></span>${n?`<span class="n">${n}</span>`:""}${ic("chev")}</button>`).join("")}</div>`).join("")}</div>
-    <p class="xnote" style="margin-top:16px;text-align:center">BULUTOXX bahis almaz; olasılıklar istatistiksel tahmindir, kesinlik içermez. 18 yaş altı bahis oynayamaz.</p>`;
+    <p class="xnote" style="margin-top:16px;text-align:center">BULUTOXX bahis almaz; olasılıklar istatistiksel tahmindir, kesinlik içermez. 18 yaş altı bahis oynayamaz.<br>BULUTOXX · sürüm ${esc(String(typeof APP_V!=="undefined"?APP_V:""))}</p>`;
 }
 $("v-xmenu").addEventListener("click",e=>{ const b=e.target.closest("[data-mi]"); if(!b) return; const [g,i]=b.dataset.mi.split(":").map(Number); const it=X.MI&&X.MI[g]&&X.MI[g][1][i]; if(it){ buzz(6); it[4](); setTimeout(xSync,60); } });
 
