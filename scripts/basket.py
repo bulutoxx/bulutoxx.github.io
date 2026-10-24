@@ -30,7 +30,7 @@ LEAGUES = {
 HIST_DAYS = 560          # yaklaşık iki sezon
 FIX_DAYS = 8
 KS = {}
-ENGINE_V = "2026-10-24.2"
+ENGINE_V = "2026-10-24.3"
 STORE_V = 2              # veri biçimi sürümü             # kaç gün sonrasına kadar fikstür
 
 def fetch(url, tries=3):
@@ -151,7 +151,7 @@ def download(lg, store, today, log):
                 if g["state"] == "post" and "hs" in g: games[g["id"]] = g; n_new += 1
             if (today - month_end).days > 4: done.add(ym)
         log[lg] = n_new
-        for k in range(0, FIX_DAYS):
+        for k in range(-1, FIX_DAYS):
             dd = today + timedelta(days=k)
             try:
                 for g in espn_day(code, dd.strftime("%Y%m%d"), lg):
@@ -251,8 +251,8 @@ def score_rows(rows, late=None, split=None):
 def tune(games, lg, prev=None):
     """Ayarları ilk %70 maçta öğren, son %30 maçta doğrula. Doğrulamada kötüleşen değişiklik kabul edilmez (ezber koruması)."""
     grid_d = [0.0, 0.004, 0.008, 0.015, 0.03]; grid_l = [1.0, 3.0, 8.0, 20.0, 50.0]
-    grid_n = [None, [0.0, 0.0], [-3.0, 3.0], [-6.0, 6.0]]
-    P0 = {"decay": 0.008, "lam": 8.0, "newp": None}
+    grid_n = [[0.0, 0.0], [-3.0, 3.0], [-6.0, 6.0]]
+    P0 = {"decay": 0.008, "lam": 8.0, "newp": [0.0, 0.0]}
     if prev: P0.update({k: v for k, v in prev.items() if k in P0})
     mt = 200 if lg == "ncaa" else 80
     rows0 = backtest(games, P0, mt)
@@ -363,12 +363,14 @@ def pick_score(mh, ma, shares):
 # ---------------------------------------------------------------- tahmin günlüğü
 def lock_and_grade(plog, fixtures, fits, Ps, store_games, today):
     have = {e["id"] for e in plog}
+    now_iso = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M")
     for f in fixtures:
-        if f["id"] in have or f.get("state") == "in": continue
+        if f["id"] in have or f.get("state") in ("in", "post") or f.get("live") or f["dt"][:16] <= now_iso: continue
         F = fits.get(f["lg"]); pm = pred_means(F, f["h"], f["a"], f.get("neutral", False), Ps.get(f["lg"], {}).get("newp")) if F else None
         if not pm: continue
         k_ = KS.get(f["lg"], 1.0); pm = (((pm[0] + pm[1]) + k_ * (pm[0] - pm[1])) / 2, ((pm[0] + pm[1]) - k_ * (pm[0] - pm[1])) / 2)
-        e = {"id": f["id"], "lg": f["lg"], "d": f["dt"][:10], "h": f["h"], "a": f["a"], "ph": round(pm[0], 1), "pa": round(pm[1], 1)}
+        e = {"id": f["id"], "lg": f["lg"], "d": f["dt"][:10], "h": f["h"], "a": f["a"], "ph": round(pm[0], 1), "pa": round(pm[1], 1),
+             "v": ENGINE_V, "ts": now_iso + "Z"}
         if f.get("odds"): e["odds"] = f["odds"]
         plog.append(e)
     res = {}
@@ -390,7 +392,8 @@ def live_report(plog, today):
         oo = [e for e in es if e.get("odds") and e["odds"].get("ou")]
         if oo:
             out["ou_n"] = len(oo)
-            out["ou"] = round(float(np.mean([((e["ph"] + e["pa"]) > e["odds"]["ou"]) == ((e["r"][0] + e["r"][1]) > e["odds"]["ou"]) for e in oo if (e["r"][0] + e["r"][1]) != e["odds"]["ou"]])), 4)
+            vv = [((e["ph"] + e["pa"]) > e["odds"]["ou"]) == ((e["r"][0] + e["r"][1]) > e["odds"]["ou"]) for e in oo if (e["r"][0] + e["r"][1]) != e["odds"]["ou"]]
+            out["ou"] = round(float(np.mean(vv)), 4) if vv else None
         return out
     cut = (today - timedelta(days=30)).isoformat()
     return {"all": st(plog), "d30": st([e for e in plog if e["d"] >= cut]), "pending": sum(1 for e in plog if e.get("r") is None)}
@@ -438,6 +441,9 @@ def main():
     out_lg, fits, Ps, bt_all = {}, {}, {}, []
     for lg, (src, code, name, qlen) in LEAGUES.items():
         games = store.get(lg, {}).get("g", [])
+        cnt_ = {}
+        for g in games: cnt_[g["h"]] = cnt_.get(g["h"], 0) + 1; cnt_[g["a"]] = cnt_.get(g["a"], 0) + 1
+        games = [g for g in games if cnt_[g["h"]] >= 5 and cnt_[g["a"]] >= 5]   # All-Star ve gösteri maçları elenir
         if len(games) < 40: continue
         if quick and lg in old["leagues"]:
             P = old["leagues"][lg]["params"]; fits[lg] = fit(games, today, P); Ps[lg] = P; out_lg[lg] = old["leagues"][lg]; continue
@@ -507,7 +513,7 @@ def main():
         fx_out.append(x)
     res = {"updated": now, "tuned": old.get("tuned", now) if quick else now, "fp": fp, "engine": ENGINE_V, "leagues": out_lg, "fixtures": fx_out, "backtest": tot, "history": hist,
            "live": live_report(plog, today), "market": {"w": mw if mw is not None else 0.5, "n": mn, "learned": mw is not None}, "sources": log}
-    json.dump(res, open(op, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
+    json.dump(res, open(op, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"), allow_nan=False)
     print("Bitti:", json.dumps(tot, ensure_ascii=False), "fikstür", len(fx_out), flush=True)
 
 if __name__ == "__main__":

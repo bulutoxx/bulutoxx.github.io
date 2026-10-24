@@ -104,9 +104,10 @@ def resolve(name, known):
         if norm(k) == n: return k
     for k in known:
         kn = norm(k)
-        if kn.startswith(n) or n.startswith(kn): return k
-    best = difflib.get_close_matches(n, [norm(k) for k in known], n=1, cutoff=0.75)
-    if best:
+        if min(len(kn), len(n)) >= 5 and (kn.startswith(n + " ") or n.startswith(kn + " ")): return k
+    # bulanık eşleme yalnızca çok yakın ve aynı başlangıçlı adlarda (Antalyaspor ≠ Alanyaspor, Sheffield Weds ≠ Sheffield United)
+    best = difflib.get_close_matches(n, [norm(k) for k in known], n=1, cutoff=0.9)
+    if best and best[0][:4] == n[:4]:
         for k in known:
             if norm(k) == best[0]: return k
     return name
@@ -189,18 +190,26 @@ def season_of(d):
 
 def merge(old, new):
     """Aynı sezon + ev + deplasman = aynı maç. Yeni kaynak eskiyi günceller; eskide olan İY/oran korunur."""
-    idx = {}
+    pairs = {}
+    def find(m):
+        for o in pairs.get((m["h"], m["a"]), []):
+            if abs((date.fromisoformat(o["d"]) - date.fromisoformat(m["d"])).days) <= 3: return o
+        return None
     for m in old:
-        m.setdefault("season", season_of(m["d"])); idx[(m["season"], m["h"], m["a"])] = m
+        if m["h"] == m["a"]: continue
+        m.setdefault("season", season_of(m["d"]))
+        if not find(m): pairs.setdefault((m["h"], m["a"]), []).append(m)
     for m in new:
-        k = (m["season"], m["h"], m["a"])
-        if k in idx:
-            o = idx[k]
+        if m["h"] == m["a"]: continue                     # hatalı isim eşlemesi: aynı takım iki tarafta
+        o = find(m)
+        if o:
             if m.get("ht") is None and o.get("ht"): m["ht"] = o["ht"]
             for f in ("odds", "ou"):
                 if f not in m and f in o: m[f] = o[f]
-        idx[k] = m
-    return sorted(idx.values(), key=lambda m: (m["d"], m["h"]))
+            lst = pairs[(m["h"], m["a"])]; lst[lst.index(o)] = m
+        else:
+            pairs.setdefault((m["h"], m["a"]), []).append(m)
+    return sorted((m for lst in pairs.values() for m in lst), key=lambda m: (m["d"], m["h"]))
 
 # ------------------------------------------------------------------ model
 def pois_vec(lam, kmax=10):
@@ -227,7 +236,7 @@ _TABLE = None
 def market_xg(matches):
     """Kapanış oranlarından maç başına piyasa beklenen golü (xg) çıkar; bir kez hesaplanır, saklanır."""
     global _TABLE
-    todo = [m for m in matches if m.get("odds") and "xg" not in m]
+    todo = [m for m in matches if m.get("odds") and ("xg" not in m or m.get("xg_o") != m["odds"])]
     if not todo: return 0
     if _TABLE is None:
         lam = np.arange(0.15, 4.01, 0.05)
@@ -243,7 +252,7 @@ def market_xg(matches):
         has = ~np.isnan(ou)
         if has.any(): d[has] += (TO[None, :] - ou[has, None]) ** 2
         k = d.argmin(1)
-        for m, j in zip(ch, k): m["xg"] = [round(float(LH[j]), 2), round(float(LA[j]), 2)]
+        for m, j in zip(ch, k): m["xg"] = [round(float(LH[j]), 2), round(float(LA[j]), 2)]; m["xg_o"] = list(m["odds"])
     return len(todo)
 
 def targets(ms, P):
@@ -400,13 +409,10 @@ def risk_test(bt):
         e = st([x for x in items if x[0] < split], rule); l = st([x for x in items if x[0] >= split], rule)
         if e and l: out.append(dict(rule, ilk70=e, son30=l))
     if not out: return None
-    best = max(out, key=lambda x: x["ilk70"]["getiri"])
-    # doğrulama: son %30'da da en kötü olmasın, yoksa son %30'da en iyi olanı al
-    if best["son30"]["getiri"] < max(x["son30"]["getiri"] for x in out) - 0.03:
-        best = max(out, key=lambda x: x["son30"]["getiri"])
+    best = max(out, key=lambda x: x["ilk70"]["getiri"])     # seçim yalnızca ilk %70'te; son %30 dürüst doğrulamadır
     return {"secilen": best["id"], "kural": {k: best[k] for k in ("id", "ad", "omin", "omax", "only", "pick")}, "kurallar": out}
 
-def calibrate(bt):
+def calibrate(bt, rho=-0.06):
     """Olasılık kalibrasyonu: keskinleştirme (T), gol ölçeği (g), beraberlik katsayısı (dk).
     İlk %70 maçta seçilir, son %30'da doğrulanır; geçemezse etkisiz (1, 1, 1). Laboratuvarda 3 sezonda doğrulandı."""
     rows = bt["rows"]; n = len(rows)
@@ -417,7 +423,7 @@ def calibrate(bt):
     tot = np.array([sum(r[1]["ft"]) for r in rows])
     cache = {}
     def ev(T, g, dk, mask):
-        if g not in cache: cache[g] = outcome_probs(lh * g, la * g, -0.06)[:2]
+        if g not in cache: cache[g] = outcome_probs(lh * g, la * g, rho)[:2]
         p, pO = cache[g]; q = p ** T; q /= q.sum(1, keepdims=True); q[:, 1] *= dk; q /= q.sum(1, keepdims=True)
         idx = np.where(mask)[0]
         l1 = -np.log(np.maximum(q[idx, res[idx]], 1e-9)).mean()
@@ -528,7 +534,8 @@ def tune(all_ms, P0):
     return P, fin
 
 GUARD = None
-ENGINE_V = "2026-10-24.2"   # motor kodu değişince bir kez tam eğitim yapılır
+ENGINE_V = "2026-10-24.3"
+DATA_V = 2   # 2: aynı eşleşmenin sezonda birden çok oynanması + sıkı isim eşleme   # motor kodu değişince bir kez tam eğitim yapılır
 CAL_INFO = {}
 NEW_TEAM = (0.95, 1.05)   # 3 ay önceden testte (3 sezon) en iyi çıkan: lige yeni gelen takım ortalamaya yakın, hafif zayıf
 
@@ -765,6 +772,9 @@ def main():
     offline = "--offline" in sys.argv
     sp = os.path.join(DATA, "season.json")
     season = json.load(open(sp, encoding="utf-8")) if os.path.exists(sp) else {}
+    mp0 = os.path.join(DATA, "model.json")
+    if not offline and (json.load(open(mp0, encoding="utf-8")) if os.path.exists(mp0) else {}).get("data_v") != DATA_V:
+        print("Veri kuralları değişti: sezon verisi baştan kuruluyor", flush=True); season = {}
     today = date.today()
     code, y = season_code(today)
     prev_code, py = f"{(y-1)%100:02d}{y%100:02d}", y - 1
@@ -845,7 +855,7 @@ def main():
     # Akıllı nöbet: motor saatte bir uyanır; yeni maç sonucu yoksa yeniden eğitmez (aynı veri = aynı model),
     # yalnızca oranları, fikstürü ve tahmin karnesini tazeler. Yeni sonuç gelince tam öğrenme yapar.
     import hashlib
-    fp = hashlib.sha1(json.dumps(sorted((lg, len(ms), max((m["d"] for m in ms), default=""), sum(sum(m["ft"]) for m in ms))
+    fp = hashlib.sha1(json.dumps(sorted((lg, [(m["d"], m["h"], m["a"], m["ft"], m.get("ht"), m.get("odds"), m.get("ou")) for m in ms])
                                          for lg, ms in all_ms.items())).encode()).hexdigest()[:16]
     quick = (model.get("fp") == fp and model.get("engine") == ENGINE_V and bool(model.get("backtest")) and "--force" not in sys.argv)
     full = "--no-tune" not in sys.argv and not quick
@@ -859,7 +869,7 @@ def main():
         print("Günlük test (ayarlar korunuyor)…", flush=True)
         P, bt = dict(P0), backtest(all_ms, P0)
     if not quick and bt:
-        cal = calibrate(bt); P["calT"], P["gscale"], P["dk"] = cal["T"], cal["g"], cal["dk"]
+        cal = calibrate(bt, P["rho"]); P["calT"], P["gscale"], P["dk"] = cal["T"], cal["g"], cal["dk"]
         CAL_INFO.clear(); CAL_INFO.update(cal)
     if not quick:
         P["h1"] = h1_share(all_ms)
@@ -897,20 +907,31 @@ def main():
     json.dump([{k: v for k, v in f.items() if k != "xg"} for f in fx], open(fxp, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
     plog = json.load(open(plp, encoding="utf-8")) if os.path.exists(plp) else []
     have = {e["id"] for e in plog}
-    for e in predict_fixtures(fx, all_ms, P, today):
-        if e["id"] not in have: plog.append(e)          # maçtan önceki ilk tahmin kilitlenir, sonradan değiştirilmez
+    played = {(lg, m["h"], m["a"], m["d"]) for lg, ms in all_ms.items() for m in ms}
+    now_utc = datetime.now(timezone.utc)
+    def kickoff(f):
+        try:
+            from zoneinfo import ZoneInfo
+            hh, mm = (f.get("t") or "23:59").split(":")[:2]
+            return datetime.fromisoformat(f["d"]).replace(hour=int(hh), minute=int(mm), tzinfo=ZoneInfo("Europe/London"))
+        except Exception:
+            return datetime.fromisoformat(f["d"] + "T23:59:00+00:00")
+    fx_lock = [f for f in fx if kickoff(f) > now_utc and (f["lg"], f["h"], f["a"], f["d"]) not in played]
+    for e in predict_fixtures(fx_lock, all_ms, P, today):
+        if e["id"] not in have:                           # maçtan önceki ilk tahmin kilitlenir, sonradan değiştirilmez
+            e["v"] = ENGINE_V; e["ts"] = now_utc.strftime("%Y-%m-%dT%H:%MZ"); plog.append(e)
     plog = grade_predlog(plog, all_ms, today)
     json.dump(plog, open(plp, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
     live = live_report(plog, today)
     print("Canlı karne:", json.dumps(live, ensure_ascii=False), flush=True)
-    model = {"live": live, "cup": cup, "updated": now, "tuned": now if not quick else model.get("tuned", now), "fp": fp, "engine": ENGINE_V,
+    model = {"live": live, "cup": cup, "updated": now, "tuned": now if not quick else model.get("tuned", now), "fp": fp, "engine": ENGINE_V, "data_v": DATA_V,
              "checks": (model.get("checks", 0) + 1), "trainings": model.get("trainings", 0) + (0 if quick else 1),
              "tuned_n": (bt["n"] if bt else 0) if not quick else model.get("tuned_n", 0), "params": P, "backtest": mt, "market": mstats, "sources": log,
              "leagues": {lg: {"name": d.get("name", LEAGUES.get(lg, ("", "", lg))[2]), "asOf": d["asOf"],
                               "n": len([m for m in d["matches"] if m["season"] == d.get("season")]), "n_all": len(d["matches"]),
                               "avg": round(sum(sum(m["ft"]) for m in d["matches"] if m["season"] == d.get("season")) / max(1, len([m for m in d["matches"] if m["season"] == d.get("season")])), 2)}
                          for lg, d in season.items()}}
-    json.dump(model, open(mp, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+    json.dump(model, open(mp, "w", encoding="utf-8"), ensure_ascii=False, indent=1, allow_nan=False)
     hp = os.path.join(DATA, "history.json")
     hist = json.load(open(hp, encoding="utf-8")) if os.path.exists(hp) else []
     if mt and not quick:
