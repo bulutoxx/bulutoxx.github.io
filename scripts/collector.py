@@ -20,7 +20,7 @@ TR = ZoneInfo("Europe/Istanbul")
 KEEP_DAYS = 120
 
 def rec_for(ms, ou, rho):
-    """Uygulamadaki öneriyle aynı kural: MS 1/X/2 ve 2,5 Alt/Üst içinden oranı ≥1,15 olan en yüksek olasılık."""
+    """Uygulamadaki öneriyle aynı kural: MS 1/X/2 ve 2,5 Alt/Üst içinden en yüksek olasılık."""
     tmp = [dict({"odds": ms}, **({"ou": ou} if ou else {}))]
     U.market_xg(tmp)
     lh, la = tmp[0]["xg"]
@@ -28,8 +28,8 @@ def rec_for(ms, ou, rho):
     p = p[0]; pO = float(pO[0])
     c = [("1", float(p[0]), ms[0]), ("X", float(p[1]), ms[1]), ("2", float(p[2]), ms[2])]
     if ou: c += [("U", pO, ou[0]), ("A", 1 - pO, ou[1])]   # alt/üst oranı yoksa gol beklentisi belirsiz: alt/üst önerilmez
-    ok = [x for x in c if x[2] is None or x[2] >= 1.15]
-    k, pp, o = max(ok or c, key=lambda x: x[1])
+    # en olası seçenek önerilir; oranı düşük olsa bile (eski kural oran <1,15 ise favoriyi atlayıp %7'lik seçeneği öneriyordu)
+    k, pp, o = max(c, key=lambda x: x[1])
     return {"lam": [lh, la], "p": [round(float(x), 4) for x in p], "o25": round(pO, 4), "kg": round(float(pB[0]), 4), "rk": k, "rp": round(pp, 4), "ro": o}
 
 def hit(rk, hs, as_):

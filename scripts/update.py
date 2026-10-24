@@ -924,7 +924,6 @@ def pick_calib(season, rho):
     for i, m in enumerate(ms):
         a, b = m["ft"]; r = 0 if a > b else 1 if a == b else 2; ov = a + b > 2
         c = [(p[i, 0], m["odds"][0], r == 0), (p[i, 1], m["odds"][1], r == 1), (p[i, 2], m["odds"][2], r == 2), (pO[i], m["ou"][0], ov), (1 - pO[i], m["ou"][1], not ov)]
-        c = [x for x in c if x[1] >= 1.15]
         if c: bb = max(c, key=lambda x: x[0]); rows.append((m["season"], float(bb[0]), bool(bb[2])))
     edges = [0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 1.01]
     def tab(rs):
