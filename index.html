@@ -1189,6 +1189,10 @@ body #btChips button[data-f="value"]{display:none!important}
 .lg-wipe{margin:16px 0 8px;display:flex;flex-direction:column;gap:6px}.lg-wipe small{color:var(--ink3);font-size:12px}
 .lg-wipe .btn.danger{border-color:#FF5A5F!important;color:#FF8A8C!important}
 #instGate .btn.ghost{margin-top:8px}
+.gbox.fb{text-align:left}.fb-l{display:flex;flex-direction:column;gap:6px;margin:10px 0;font-weight:600;font-size:14px}
+.fb-l select,.fb-l textarea,.fb-l input{width:100%;background:var(--surface2);border:1px solid var(--line2);border-radius:12px;color:var(--ink);font:500 15px var(--font);padding:10px 12px}
+.fb-l textarea{resize:vertical;min-height:120px}.fb-l small{color:var(--ink3);font-weight:500;font-size:12px}
+.fb-n{font-size:12px}#fbGate .btn.ghost{margin-top:8px}
 </style>
 </head>
 <body>
@@ -2964,8 +2968,8 @@ loadFixtures().then(()=>{ applyFixtureOdds(); renderStrip(); renderKarne(); });
 // BULUTOXX v7: Kullanım koşulları, sorumluluk reddi ve ilk açılışta onay
 // =====================================================================
 const TERMS_VER="2.0", TERMS_DATE="24 Ekim 2026";
-const LEGAL_DEV="BULUTOXX geliştiricisi", LEGAL_MAIL="";   // iletişim e-postası sahibin kararıyla eklenecek
-const LEGAL_CONTACT=()=>LEGAL_MAIL?`<a href="mailto:${LEGAL_MAIL}">${LEGAL_MAIL}</a>`:"iletişim adresi yakında bu sayfaya eklenecektir";
+const LEGAL_DEV="BULUTOXX geliştiricisi", LEGAL_MAIL="";   // adres bilinçli olarak yayımlanmaz; iletişim Öneri ve görüşler formu üzerinden
+const LEGAL_CONTACT=(t)=>`uygulamadaki <a href="#" data-fb="${t||""}">Menü › Öneri ve görüşler</a> bölümü`;
 const TERMS_HTML=`
 <p><b>Son güncelleme:</b> ${TERMS_DATE} · <b>Sürüm:</b> ${TERMS_VER}</p>
 <h3>1. Nitelik</h3><p>BULUTOXX yalnızca <b>hobi amaçlı bir maç tahmini ve takip aracıdır. Bahis amaçlı değildir.</b> Bahis oynamayı önermez, teşvik etmez, tanıtmaz.</p>
@@ -2982,12 +2986,12 @@ const TERMS_HTML=`
 <h3>12. Üçüncü taraf hizmetler</h3><p>Veriler ve bazı bileşenler üçüncü taraf hizmetlerden gelir. Bu hizmetlerin çalışması, doğruluğu ve kendi veri işlemeleri ${LEGAL_DEV}nin denetiminde değildir.</p>
 <h3>13. Hizmetin durumu</h3><p>Uygulama "olduğu gibi" sunulur. Kesintisiz, hatasız veya güncel olacağı garanti edilmez. Uygulama önceden bildirim yapılmadan değiştirilebilir, durdurulabilir veya kaldırılabilir.</p>
 <h3>14. Sorumluluğun sınırı</h3><p>Kast ve ağır kusur hâlleri hariç olmak üzere, kanunun izin verdiği ölçüde ${LEGAL_DEV} şunlardan sorumlu değildir: tahmin, oran, skor veya bildirimlere dayanarak verdiğiniz kararlar ve bunların sonuçları (para kaybı dâhil); veri kaybı; üçüncü taraf hizmetlerden kaynaklanan sorunlar. <b>Kararlarınızın sorumluluğu size aittir.</b></p>
-<h3>15. Fikrî haklar</h3><p>Uygulamanın kodu, tasarımı, modeli ve metinleri ${LEGAL_DEV}ne aittir. Üçüncü taraf verileri, logolar ve markalar sahiplerine aittir. Hak sahibi olarak bir içeriğin kaldırılmasını istiyorsanız ${LEGAL_CONTACT()}. Talebiniz gecikmeden incelenir.</p>
+<h3>15. Fikrî haklar</h3><p>Uygulamanın kodu, tasarımı, modeli ve metinleri ${LEGAL_DEV}ne aittir. Üçüncü taraf verileri, logolar ve markalar sahiplerine aittir. Hak sahibi olarak bir içeriğin kaldırılmasını istiyorsanız ${LEGAL_CONTACT("İçerik / kaldırma talebi")} üzerinden "İçerik / kaldırma talebi" konusuyla yazın. Talebiniz gecikmeden incelenir.</p>
 <h3>16. Değişiklikler</h3><p>Bu koşullar güncellenebilir. Önemli bir değişiklikte uygulama içinde yeniden onay istenir.</p>
-<h3>17. Uygulanacak hukuk ve iletişim</h3><p>Bu koşullara Türk hukuku uygulanır. İletişim: ${LEGAL_DEV}, ${LEGAL_CONTACT()}.</p>`;
+<h3>17. Uygulanacak hukuk ve iletişim</h3><p>Bu koşullara Türk hukuku uygulanır. İletişim: ${LEGAL_CONTACT()}.</p>`;
 const KVKK_HTML=`
 <p><b>Son güncelleme:</b> ${TERMS_DATE}</p>
-<h3>1. Veri sorumlusu</h3><p>${LEGAL_DEV}. İletişim: ${LEGAL_CONTACT()}.</p>
+<h3>1. Veri sorumlusu</h3><p>${LEGAL_DEV}. İletişim: ${LEGAL_CONTACT("KVKK başvurusu")}.</p>
 <h3>2. Geliştiricinin işlediği veriler</h3><p>${LEGAL_DEV} kişisel veri toplamaz, saklamaz ve paylaşmaz. Hesap, üyelik, çerez ve reklam yoktur. Uygulama sizden ad, telefon numarası, e-posta veya konum istemez. "Tahmin listem", "Sonuç takibim" ve tercihleriniz yalnızca cihazınızın tarayıcı depolamasında (localStorage) tutulur; geliştiriciye gönderilmez ve geliştirici bunlara erişemez. Bildirimler, cihazınızın kendi bildirim sistemiyle ve sizin izninizle gösterilir.</p>
 <h3>3. Dış hizmetlere bağlantılar</h3><p>Uygulamanın çalışması için cihazınız aşağıdaki hizmetlere doğrudan bağlanır. Her bağlantıda IP adresiniz, tarayıcı ve cihaz bilgisi ile isteğin zamanı, internetin işleyişi gereği ilgili hizmete iletilir. Bu hizmetler bu bilgileri kendi gizlilik politikalarına göre işler. Geliştirici bu bilgileri almaz ve göremez.</p>
 <ul><li><b>GitHub Pages (GitHub Inc., ABD):</b> uygulamanın kendisini sunar; her açılışta.</li>
@@ -2995,12 +2999,13 @@ const KVKK_HTML=`
 <li><b>ESPN (ABD):</b> canlı skor ve takım logoları; kullanım sırasında.</li>
 <li><b>abacus.jasoncameron.dev (yurt dışı):</b> yalnızca toplam kullanıcı ve yükleme sayısı; sizi tanımlayan bilgi gönderilmez.</li>
 <li><b>jsDelivr ve Hugging Face (yurt dışı):</b> yalnızca "Akıllı mod"u açarsanız yapay zekâ modeli indirilir; mesajlarınız cihazınızda kalır.</li>
-<li><b>cdnjs (Cloudflare, yurt dışı):</b> yalnızca paylaşım için QR kodu oluşturduğunuzda.</li></ul>
+<li><b>cdnjs (Cloudflare, yurt dışı):</b> yalnızca paylaşım için QR kodu oluşturduğunuzda.</li><li><b>Web3Forms (yurt dışı, Amazon Web Services altyapısı):</b> yalnızca "Öneri ve görüşler" formundan mesaj gönderdiğinizde (bkz. madde 9).</li></ul>
 <h3>4. Amaç ve hukuki sebep</h3><p>Bağlantılar, uygulamanın size sunulması için teknik olarak zorunludur (KVKK md. 5/2-c). Toplam kullanıcı sayısını ölçmek, geliştiricinin meşru menfaatine dayanır (KVKK md. 5/2-f). Açık rızaya dayanan bir işleme yoktur.</p>
 <h3>5. Yurt dışı</h3><p>Yurt dışındaki hizmetlere bağlantı, cihazınızın bu hizmetlere doğrudan istek göndermesiyle kurulur. Geliştirici tarafından yurt dışına veri aktarımı yapılmaz. "Akıllı mod" ve QR paylaşımı isteğe bağlıdır; kullanmazsanız bu hizmetlere bağlanılmaz.</p>
 <h3>6. Saklama</h3><p>Geliştirici veri saklamaz. Cihazınızdaki verileri istediğiniz zaman bu sayfadaki <b>"Bu cihazdaki BULUTOXX verilerini sil"</b> düğmesiyle veya tarayıcı verilerini temizleyerek silebilirsiniz.</p>
 <h3>7. Haklarınız (KVKK md. 11)</h3><ul><li>Kişisel verinizin işlenip işlenmediğini öğrenmek ve işlenmişse bilgi istemek;</li><li>işleme amacını ve amaca uygun kullanılıp kullanılmadığını öğrenmek;</li><li>verinin aktarıldığı üçüncü kişileri öğrenmek;</li><li>verinin düzeltilmesini, silinmesini veya yok edilmesini ve bunun aktarılan kişilere bildirilmesini istemek;</li><li>yalnızca otomatik sistemlerle yapılan analizin aleyhinize sonucuna itiraz etmek;</li><li>kanuna aykırı işleme yüzünden doğan zararın giderilmesini istemek.</li></ul>
-<h3>8. Başvuru</h3><p>Taleplerinizi ${LEGAL_CONTACT()} üzerinden yazılı olarak iletebilirsiniz. Başvurular en geç 30 gün içinde ücretsiz olarak sonuçlandırılır (KVKK md. 13). Yanıt alamazsanız veya yanıtı yetersiz bulursanız Kişisel Verileri Koruma Kurulu'na şikâyette bulunabilirsiniz (KVKK md. 14).</p>`;
+<h3>8. Başvuru</h3><p>Taleplerinizi ${LEGAL_CONTACT("KVKK başvurusu")} üzerinden "KVKK başvurusu" konusuyla yazılı olarak iletebilirsiniz. Başvurular en geç 30 gün içinde ücretsiz olarak sonuçlandırılır (KVKK md. 13). Yanıt alamazsanız veya yanıtı yetersiz bulursanız Kişisel Verileri Koruma Kurulu'na şikâyette bulunabilirsiniz (KVKK md. 14).</p>
+<h3>9. Öneri ve görüşler formu</h3><p>Formdan mesaj gönderirseniz şu bilgiler işlenir: seçtiğiniz konu, mesajınız, isteğe bağlı olarak yazdığınız e-posta adresiniz ve uygulama sürümü; iletim sırasında IP adresiniz form servisine ulaşır. <b>Amaç:</b> önerinizi, hata bildiriminizi veya talebinizi değerlendirmek ve isterseniz size dönüş yapmak. <b>Hukuki sebep:</b> talebinizin değerlendirilmesindeki meşru menfaat (KVKK md. 5/2-f); e-posta yazdıysanız size dönüş yapılması. <b>Yurt dışı:</b> mesajınız, iletim için yurt dışındaki Web3Forms servisine aktarılır; bu aktarım her gönderimde ayrıca alınan açık rızanıza dayanır (KVKK md. 9/6-a) ve rıza vermezseniz form gönderilmez. <b>Saklama:</b> mesajlar geliştiricinin e-posta kutusunda en fazla 1 yıl tutulur, sonra silinir; form servisi kendi kayıtlarını kendi politikasına göre (ücretsiz planda 30 gün) tutar. Mesajınıza kişisel bilgi (kimlik no, telefon, adres) yazmayın.</p>`;
 
 function termsAccepted(){ try{ const t=JSON.parse(localStorage.getItem("bx-terms")||"null"); return t && t.v===TERMS_VER; }catch(e){ return false; } }
 function legalWipeBtn(){ return `<div class="lg-wipe"><button type="button" class="btn ghost" data-wipe="1">🗑 Bu cihazdaki BULUTOXX verilerini sil</button><small>Listelerin, takip ettiklerin, tercihlerin ve onayın silinir; uygulama yeniden başlar.</small></div>`; }
@@ -5128,7 +5133,7 @@ if((location.hash||"")==="#sonuclar") setTimeout(()=>$("navRes").click(),200);
 // =====================================================================
 // BULUTOXX v35: Otomatik sürüm güncelleme — yeni sürüm yayınlanınca uygulama kendini yeniler
 // =====================================================================
-const APP_V="2026-10-24.65";
+const APP_V="2026-10-24.66";
 (function autoUpdate(){
   let shown=false;
   async function check(auto){
@@ -6239,6 +6244,55 @@ doInstall=function(){ if(!termsAccepted()){ window._pendInst=true; showTerms(tru
     el.classList.add("out"); setTimeout(()=>el.remove(),300); buzz(10); return _doInstallL(); };
 };
 document.querySelectorAll("#installBtn,#installPill,#rhInstall").forEach(b=>b&&(b.onclick=()=>doInstall()));
+// ---------- v66 💡 Öneri ve görüşler: mesaj geliştiriciye iletilir, iletişim adresi hiçbir yerde görünmez ----------
+const FB_KEY="322c9d90-c807-42cd-b2b3-aab8997ca714";   // Web3Forms erişim anahtarı (adres değil; sayfada kullanılmak için)
+function openFeedback(topic){
+  const old=$("fbGate"); if(old) old.remove();
+  let last=0; try{ last=+(localStorage.getItem("bx-fb-last")||0); }catch(e){}
+  const el=document.createElement("div"); el.className="gate"; el.id="fbGate";
+  el.innerHTML=`<div class="gbox fb" role="dialog" aria-modal="true" aria-labelledby="fbT">
+    <h2 id="fbT">💡 Öneri ve görüşler</h2>
+    <p>BULUTOXX hobi olarak geliştirilen, ticari olmayan bir projedir. Fikirlerin, hata bildirimlerin ve taleplerin bizim için değerli. Mesajın geliştiriciye iletilir; her mesaja dönüş yapamayabiliriz.</p>
+    <label class="fb-l">Konu<select id="fbTopic"><option>Öneri</option><option>Hata bildirimi</option><option>İçerik / kaldırma talebi</option><option>KVKK başvurusu</option><option>Diğer</option></select></label>
+    <label class="fb-l">Mesajın<textarea id="fbMsg" maxlength="2000" rows="6" placeholder="Ne düşünüyorsun? Kişisel bilgi (TC kimlik no, telefon, adres) yazma."></textarea><small id="fbCnt">0 / 2000</small></label>
+    <label class="fb-l">Cevap istersen e-postan <small>(isteğe bağlı)</small><input id="fbMail" type="email" inputmode="email" autocomplete="email" placeholder="ornek@eposta.com"></label>
+    <input id="fbHp" type="checkbox" tabindex="-1" autocomplete="off" style="position:absolute;left:-9999px;opacity:0" aria-hidden="true">
+    <p class="note fb-n">Mesajın, konu ve (yazdıysan) e-postan, iletim için yurt dışındaki form servisi (Web3Forms) üzerinden geliştiriciye gönderilir; uygulama sürümü dışında cihazından bilgi eklenmez. Ayrıntı: KVKK Aydınlatma Metni md. 9.</p>
+    <label class="gchk"><input type="checkbox" id="fbOk"><span>Mesajımın iletilmesi için yurt dışındaki form servisine aktarılmasına açık rıza veriyorum.</span></label>
+    <button class="btn" id="fbGo" type="button" disabled>Gönder</button><button class="btn ghost" id="fbNo" type="button">Vazgeç</button>
+    <p class="note" id="fbSt" style="text-align:center"></p></div>`;
+  document.body.appendChild(el);
+  if(topic) $("fbTopic").value=topic;
+  const msg=$("fbMsg"), ok=$("fbOk"), go=$("fbGo");
+  const upd=()=>{ $("fbCnt").textContent=`${msg.value.length} / 2000`; go.disabled=!(ok.checked&&msg.value.trim().length>=5); };
+  msg.oninput=upd; ok.onchange=upd;
+  $("fbNo").onclick=()=>{ el.classList.add("out"); setTimeout(()=>el.remove(),300); };
+  go.onclick=async()=>{
+    if(Date.now()-last<60e3){ $("fbSt").textContent="Biraz önce mesaj gönderdin; lütfen bir dakika sonra tekrar dene."; return; }
+    const mail=$("fbMail").value.trim(); if(mail&&!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(mail)){ $("fbSt").textContent="E-posta adresini kontrol et ya da boş bırak."; return; }
+    if($("fbHp").checked){ el.remove(); return; }   // bot tuzağı
+    go.disabled=true; $("fbSt").textContent="Gönderiliyor…";
+    const body={access_key:FB_KEY, subject:`BULUTOXX · ${$("fbTopic").value}`, from_name:"BULUTOXX Öneri ve görüşler", konu:$("fbTopic").value, message:msg.value.trim().slice(0,2000), surum:(typeof APP_V!=="undefined"?APP_V:""), botcheck:false};
+    if(mail){ body.email=mail; body.replyto=mail; }
+    try{ const r=await fetch("https://api.web3forms.com/submit",{method:"POST",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify(body)});
+      const j=await r.json().catch(()=>({}));
+      if(r.ok&&j.success!==false){ try{ localStorage.setItem("bx-fb-last",Date.now()); }catch(e){}
+        el.querySelector(".gbox").innerHTML=`<h2>Teşekkürler 💙</h2><p>Mesajın geliştiriciye iletildi. Her mesajı okuyoruz; hobi projesi olduğumuz için her birine dönüş yapamayabiliriz.</p><button class="btn" type="button" id="fbClose">Kapat</button>`;
+        $("fbClose").onclick=()=>{ el.classList.add("out"); setTimeout(()=>el.remove(),300); }; buzz([10,30,10]); return; }
+      throw new Error(j.message||"gönderilemedi");
+    }catch(e){ go.disabled=false; $("fbSt").textContent="Mesaj gönderilemedi. İnternet bağlantını kontrol edip tekrar dene."; }
+  };
+  setTimeout(()=>msg.focus(),200);
+}
+window.openFeedback=openFeedback;
+(function fbMount(){
+  const ml=document.querySelector("#v-more .mlist");
+  if(ml&&!$("moreFb")){ const c=document.createElement("button"); c.className="cell"; c.id="moreFb"; c.type="button";
+    c.innerHTML=`<span class="ic" style="background:linear-gradient(135deg,#FFD166,#F59E0B)"><svg viewBox="0 0 24 24"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-4 10.5c.7.7 1 1.5 1 2.5h6c0-1 .3-1.8 1-2.5A6 6 0 0 0 12 3z"/></svg></span><span class="tx"><b>Öneri ve görüşler</b><small>Fikrini, hata bildirimini veya talebini yaz</small></span><span class="ar">›</span>`;
+    c.onclick=()=>openFeedback(); ml.appendChild(c); }
+  try{ MENU_PLAN[3][1].splice(4,0,["#moreFb","Öneri ve görüşler","Fikrini, hata bildirimini veya talebini yaz"]); menuOrganize(); }catch(e){}
+})();
+document.addEventListener("click",e=>{ const a=e.target.closest("[data-fb]"); if(!a) return; e.preventDefault(); openFeedback(a.dataset.fb||""); });
 </script>
 
 </body>
