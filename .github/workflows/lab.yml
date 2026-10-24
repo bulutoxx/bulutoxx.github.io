@@ -1,0 +1,18 @@
+name: lab
+on:
+  push:
+    branches: [lab]
+permissions:
+  contents: write
+jobs:
+  f:
+    if: contains(github.event.head_commit.message, '[probe]')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: python lab/iddaa_probe.py
+      - run: |
+          git config user.name bot; git config user.email bot@users.noreply.github.com
+          git add lab/iddaa_probe.json; git commit -qm "probe [skip ci]"; git push
