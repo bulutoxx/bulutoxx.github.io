@@ -860,6 +860,31 @@ def download_fixtures(season, today):
 def pick_calib(season, rho):
     """Öneri kalibrasyonu: her maçta en yüksek olasılıklı seçenek (MS 1/X/2, 2,5 Alt/Üst; oran ≥1.15) geçmişte ne sıklıkla tuttu?
     Olasılık dilimlerine göre gerçek isabet; bir önceki sezonda öğrenilip son sezonda doğrulanır."""
+    # Kendi arşivimiz (scripts/collector.py: tüm iddaa liglerinde kilitli öneri + sonuç) yeterince büyüdüyse onu kullan
+    try:
+        import glob as _g
+        arc = sorted(_g.glob(os.path.join(DATA, "archive", "*.json")))
+        ar = [(os.path.basename(f)[:10], r) for f in arc for r in json.load(open(f, encoding="utf-8")).values() if r.get("ok") is not None and r.get("rp")]
+        if len(ar) >= 3000:
+            edges = [0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 1.01]; mid = sorted(a[0] for a in ar)[len(ar) // 2]
+            def tab2(rs):
+                o = []
+                for lo, hi in zip(edges[:-1], edges[1:]):
+                    s_ = [r for r in rs if lo <= r["rp"] < hi]
+                    o.append([lo, hi, len(s_), round(sum(r["ok"] for r in s_) / len(s_), 4) if s_ else None, round(float(np.mean([r["rp"] for r in s_])), 4) if s_ else None])
+                return o
+            tr, te = tab2([r for d_, r in ar if d_ < mid]), tab2([r for d_, r in ar if d_ >= mid])
+            def br(rs, T):
+                def cal(pp):
+                    for lo, hi, n, h, e in T:
+                        if lo <= pp < hi and n and h is not None: return (h * n + pp * 50) / (n + 50)
+                    return pp
+                return float(np.mean([(r["rp"] - r["ok"]) ** 2 for r in rs])), float(np.mean([(cal(r["rp"]) - r["ok"]) ** 2 for r in rs]))
+            b0, b1 = br([r for d_, r in ar if d_ >= mid], tr)
+            return {"bins": tab2([r for _, r in ar]), "min_odd": 1.15, "n": len(ar), "hit": round(sum(r["ok"] for _, r in ar) / len(ar), 4), "kaynak": "arşiv",
+                    "dogrulama": {"sezon": mid, "ogrenme": tr, "test": te, "brier_ham": round(b0, 4), "brier_kalibre": round(b1, 4), "kabul": b1 <= b0}}
+    except Exception as ex:
+        print("arşiv kalibrasyonu atlandı:", ex, flush=True)
     ms = [m for lg, d in season.items() if not d.get("cup") and d.get("src") != "espn" for m in d["matches"] if m.get("odds") and m.get("ou")]
     if len(ms) < 2000: return None
     market_xg(ms)

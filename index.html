@@ -1030,6 +1030,10 @@ main.page{padding-bottom:calc(120px + env(safe-area-inset-bottom,0px))!important
 .recbig.rec-w{background:rgba(255,176,32,.08);border-color:rgba(255,176,32,.5)}
 .rb-add{align-self:center;padding:9px 18px!important;font-weight:800;border-radius:12px!important;flex-direction:row!important}
 .ms-more{border:0;padding:0}.ms-more summary{cursor:pointer;color:var(--cyan);font-weight:700;font-size:13.5px;padding:6px 2px}
+.dayban{display:flex;align-items:center;gap:8px;width:100%;margin:0 0 8px;padding:9px 12px;border-radius:12px;background:linear-gradient(135deg,rgba(32,194,94,.2),rgba(17,138,67,.08));border:1px solid rgba(59,234,126,.45);font-size:13px;color:var(--ink2);text-align:left}
+.dayban b{color:#3BEA7E;font-weight:800}.dayban small{margin-left:auto;color:var(--ink3)}
+.rs-sum i{display:block}
+.rs-share{width:100%;margin:0 0 10px;padding:11px;border-radius:12px;background:var(--grad);color:#fff;font-weight:800;font-size:14.5px}
 </style>
 </head>
 <body>
@@ -4433,7 +4437,8 @@ function recOf(P, f){
   if(!P) return null; const o=f&&f.odds, ou=f&&f.ou;
   const c=[{k:"1",n:"MS 1",p:P.H,o:o&&o[0]},{k:"X",n:"MS X",p:P.D,o:o&&o[1]},{k:"2",n:"MS 2",p:P.A,o:o&&o[2]},
            {k:"U",n:"2,5 Üst",p:P.o25,o:ou&&ou[0]},{k:"A",n:"2,5 Alt",p:1-P.o25,o:ou&&ou[1]}].filter(x=>x.p!=null&&!isNaN(x.p));
-  const ok=c.filter(x=>!x.o||x.o>=1.15); const b=(ok.length?ok:c).sort((a,b)=>b.p-a.p)[0]; if(!b) return null;
+  const hasOdds=c.some(x=>x.o); const ok=c.filter(x=>hasOdds?(x.o&&x.o>=1.15):true);   // oran varsa yalnız oranı olan seçenekler (motor ve arşivle aynı kural)
+  const b=(ok.length?ok:c).sort((a,b)=>b.p-a.p)[0]; if(!b) return null;
   const C=recCal(b.p); const tier=C.p>=.70?"g":C.p>=.58?"m":"w";
   return Object.assign({},b,{cp:C.p, cn:C.n, ch:C.h, tier, label:tier==="g"?"Güçlü öneri":tier==="m"?"Öneri":"Riskli öneri"});
 }
@@ -4881,7 +4886,7 @@ if((location.hash||"")==="#sonuclar") setTimeout(()=>$("navRes").click(),200);
 // =====================================================================
 // BULUTOXX v35: Otomatik sürüm güncelleme — yeni sürüm yayınlanınca uygulama kendini yeniler
 // =====================================================================
-const APP_V="2026-10-24.41";
+const APP_V="2026-10-24.42";
 (function autoUpdate(){
   let shown=false;
   async function check(auto){
@@ -4928,6 +4933,48 @@ renderKarne=function(){ _rkV37(); const k=$("karne"); if(!k||!AUTOLAB) return; c
     <div class="tbl"><table class="bk-tb"><thead><tr><th>Aday</th>${ss.map(s=>`<th>${s} log-loss</th><th>isabet</th>`).join("")}</tr></thead><tbody>${rows}</tbody></table></div>
     <p class="note"><b>Karar:</b> ${esc(A.karar.aciklama)} (Log-loss düşük = daha iyi.)</p>`;
   k.appendChild(el); };
+
+// =====================================================================
+// BULUTOXX v38: "Dün %X tuttu" — kilitli öneri arşivinden (scripts/collector.py) günlük karne + paylaşılabilir kart
+// =====================================================================
+let DAILY=null;
+function dailyLoad(){ return fetch("data/daily.json?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():null).then(d=>{ DAILY=d; dailyBanner(); if($("v-sonuclar")&&!$("v-sonuclar").hidden) renderRes(); return d; }).catch(()=>null); }
+function dayStat(day){ return DAILY&&(DAILY.gunler||[]).find(x=>x.d===day&&x.n>0); }
+function lastFull(){ const today=istDay(new Date()); const g=(DAILY&&DAILY.gunler||[]).filter(x=>x.n>=20&&x.d<today); return g[g.length-1]||null; }
+function dailyBanner(){
+  const head=document.querySelector("#v-bulten .bt-head"); if(!head) return; let b=$("dayBan"); const L=lastFull();
+  if(!L){ if(b) b.remove(); return; }
+  const g=L.guclu&&L.guclu.n?L.guclu:null, yest=L.d===istDay(new Date(Date.now()-864e5));
+  if(!b){ b=document.createElement("button"); b.type="button"; b.id="dayBan"; b.className="dayban"; head.after(b);
+    b.onclick=()=>{ RS.day=L.d; $("navRes").click(); }; }
+  b.innerHTML=`<span>📊 ${yest?"Dün":esc(ist(new Date(L.d+"T12:00:00+03:00"),{day:"numeric",month:"long"}))}</span><b>${g?`güçlü önerilerin %${Math.round(g.hit*100)}'i tuttu`:`önerilerin %${Math.round(L.hit*100)}'i tuttu`}</b><small>${g?`${Math.round(g.hit*g.n)}/${g.n}`:`${L.n} maç`} ›</small>`;
+}
+async function shareDay(day){
+  const st=dayStat(day); if(!st){ toast("Bu gün için puanlanmış öneri yok"); return; }
+  const g=st.guclu&&st.guclu.n?st.guclu:null, pct=Math.round((g?g.hit:st.hit)*100);
+  const c=document.createElement("canvas"); c.width=1080; c.height=1350; const x=c.getContext("2d");
+  const gr=x.createLinearGradient(0,0,1080,1350); gr.addColorStop(0,"#071426"); gr.addColorStop(1,"#03060D"); x.fillStyle=gr; x.fillRect(0,0,1080,1350);
+  x.fillStyle="#22D3FF"; x.font="800 64px system-ui,sans-serif"; x.fillText("BULUTOXX",80,140);
+  x.fillStyle="#AAB5CA"; x.font="600 40px system-ui,sans-serif"; x.fillText(ist(new Date(day+"T12:00:00+03:00"),{day:"numeric",month:"long",weekday:"long"}),80,210);
+  x.fillStyle="#3BEA7E"; x.font="900 260px system-ui,sans-serif"; x.fillText("%"+pct,70,500);
+  x.fillStyle="#F4F7FC"; x.font="700 52px system-ui,sans-serif"; x.fillText(g?"güçlü önerilerimiz tuttu":"önerilerimiz tuttu",80,580);
+  x.fillStyle="#AAB5CA"; x.font="500 38px system-ui,sans-serif"; x.fillText(g?`${Math.round(g.hit*g.n)} / ${g.n} güçlü öneri · toplam ${st.n} maç`:`${st.n} maç`,80,640);
+  let y=740; x.font="600 38px system-ui,sans-serif";
+  for(const e of (st.ornek||[]).slice(0,5)){ x.fillStyle="#3BEA7E"; x.fillText("✓",80,y); x.fillStyle="#F4F7FC"; const t=`${e.h} - ${e.a}`; x.fillText(t.length>30?t.slice(0,29)+"…":t,130,y);
+    x.fillStyle="#22D3FF"; x.fillText(`${e.o} · ${e.s}`,130,y+48); y+=118; }
+  x.fillStyle="#6F7B93"; x.font="500 28px system-ui,sans-serif"; x.fillText("bulutoxx.github.io · öneriler maçtan önce kilitlenir · 18+",80,1305);
+  const text=`BULUTOXX ${ist(new Date(day+"T12:00:00+03:00"),{day:"numeric",month:"long"})}: ${g?"güçlü önerilerin":"önerilerin"} %${pct}'i tuttu${g?` (${Math.round(g.hit*g.n)}/${g.n})`:""}. Sen de dene: https://bulutoxx.github.io`;
+  const blob=await new Promise(r=>c.toBlob(r,"image/png")); const file=new File([blob],`bulutoxx-${day}.png`,{type:"image/png"});
+  try{ if(navigator.canShare&&navigator.canShare({files:[file]})){ await navigator.share({files:[file],text}); return; } if(navigator.share){ await navigator.share({text,url:"https://bulutoxx.github.io"}); return; } }catch(e){ if(e&&e.name==="AbortError") return; }
+  const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=file.name; a.click(); try{ await navigator.clipboard.writeText(text); toast("Kart indirildi, metin kopyalandı"); }catch(e){ toast("Kart indirildi"); }
+}
+const _rrV38=renderRes;
+renderRes=function(){ _rrV38(); const st=dayStat(RS.day), box=$("rsSum"); if(!box||!st) return;
+  const g=st.guclu||{}, o=st.oneri||{}, r=st.riskli||{}, f=v=>v&&v.n?`%${Math.round(v.hit*100)}<i>${Math.round(v.hit*v.n)}/${v.n}</i>`:"–";
+  box.innerHTML=`<div class="rs-sum"><div><small>Puanlanan öneri</small><b>${st.n}</b></div><div><small>Tümü tuttu</small><b>%${Math.round(st.hit*100)}</b></div><div><small>✅ Güçlü</small><b>${f(g)}</b></div><div><small>👍 Öneri</small><b>${f(o)}</b></div></div>
+    <button type="button" class="rs-share" id="rsShare">📤 Paylaş: ${g.n?`güçlü önerilerin %${Math.round(g.hit*100)}'i tuttu`:`önerilerin %${Math.round(st.hit*100)}'i tuttu`}</button>`;
+  $("rsShare").onclick=()=>{ buzz(8); shareDay(RS.day); }; };
+setTimeout(dailyLoad,2500); setInterval(()=>{ if(!document.hidden) dailyLoad(); },15*60e3);
 </script>
 
 </body>
