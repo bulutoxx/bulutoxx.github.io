@@ -148,6 +148,14 @@ def download(lg, code, start_year, known):
             if all(o): m["odds"] = [round(x, 2) for x in o]
             ou = [fnum(row.get("Avg>2.5")), fnum(row.get("Avg<2.5"))]
             if all(ou): m["ou"] = [round(x, 2) for x in ou]
+            # korner, kart ve şut (varsa): korner/kart tahmin modeli için
+            try:
+                if row.get("HC", "") not in ("", None) and row.get("AC", "") not in ("", None): m["c"] = [int(float(row["HC"])), int(float(row["AC"]))]
+                if row.get("HY", "") not in ("", None) and row.get("AY", "") not in ("", None):
+                    m["k"] = [int(float(row["HY"])) + int(float(row.get("HR") or 0)), int(float(row["AY"])) + int(float(row.get("AR") or 0))]
+                if row.get("HST", "") not in ("", None) and row.get("AST", "") not in ("", None): m["st"] = [int(float(row["HST"])), int(float(row["AST"]))]
+            except (TypeError, ValueError):
+                pass
             out.append(m)
         except (ValueError, KeyError):
             continue
@@ -204,7 +212,7 @@ def merge(old, new):
         o = find(m)
         if o:
             if m.get("ht") is None and o.get("ht"): m["ht"] = o["ht"]
-            for f in ("odds", "ou"):
+            for f in ("odds", "ou", "c", "k", "st"):
                 if f not in m and f in o: m[f] = o[f]
             lst = pairs[(m["h"], m["a"])]; lst[lst.index(o)] = m
         else:
@@ -443,6 +451,28 @@ def apply_cal(p, P):
     if T == 1.0 and dk == 1.0: return p
     q = p ** T; q /= q.sum(1, keepdims=True); q[:, 1] *= dk; q /= q.sum(1, keepdims=True)
     return q
+
+def build_ck(season, today):
+    """Korner ve kart: takım bazlı oran modeli (gol modeliyle aynı yapı). Laboratuvar: korner 9,5 çizgisinde
+    lig ortalamasına göre +%1,5-2,8; kart 3,5 çizgisinde +%3-5 isabet (2024'te seçildi, 2025-26'da doğrulandı)."""
+    out = {}
+    for lg, d in season.items():
+        if d.get("cup") or d.get("src") == "espn": continue
+        lgo = {}
+        for key, r in (("c", 10), ("k", 5)):
+            ms = [dict(d=m["d"], h=m["h"], a=m["a"], ft=m[key]) for m in d["matches"] if key in m]
+            if len(ms) < 120: continue
+            try:
+                F = fit(ms, today, {"decay": 0.004, "prior": 3.0, "mkt": 0.0}, iters=25)
+            except Exception:
+                continue
+            lgo[key] = {"mu": round(F["mu"], 4), "g": round(F["gamma"], 4), "r": r,
+                        "t": {t: [round(a, 3), round(dd, 3)] for t, (a, dd) in F["t"].items()},
+                        "avg": round(float(np.mean([sum(m["ft"]) for m in ms[-300:]])), 2)}
+        if lgo: out[lg] = lgo
+    json.dump({"test": {"korner_9.5": "lig ort. %52-54 → model %54,5-56,4", "kart_3.5": "lig ort. %56-60 → model %60-62"}, "ligler": out},
+              open(os.path.join(DATA, "ck.json"), "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"), allow_nan=False)
+    return len(out)
 
 def metrics(bt, P):
     rows, p, res = bt["rows"], bt["p"], bt["res"]
@@ -944,6 +974,9 @@ def main():
     else:
         print("Günlük test (ayarlar korunuyor)…", flush=True)
         P, bt = dict(P0), backtest(all_ms, P0)
+    if not quick or not os.path.exists(os.path.join(DATA, "ck.json")):
+        try: print("Korner/kart modeli:", build_ck(season, today), "lig", flush=True)
+        except Exception as e: print("korner/kart atlandı:", e, flush=True)
     if not quick and bt:
         cal = calibrate(bt, P["rho"]); P["calT"], P["gscale"], P["dk"] = cal["T"], cal["g"], cal["dk"]
         CAL_INFO.clear(); CAL_INFO.update(cal)
