@@ -1,0 +1,27 @@
+name: BULUTOXX canlı kayıt
+# 15 dakikada bir canlı maçlardaki en yüksek olasılıklı seçimi kilitleyip kaydeder (Power Now kendi isabetinden öğrenir)
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: live-log
+  cancel-in-progress: false
+jobs:
+  log:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install numpy==2.1.3
+      - run: python scripts/collector.py live
+      - run: |
+          git config user.name "bulutoxx-bot"; git config user.email "bulutoxx-bot@users.noreply.github.com"
+          git add data/archive/live
+          git diff --cached --quiet && exit 0
+          git commit -qm "Canlı seçim kaydı $(date -u +%FT%H:%M) [skip ci]"
+          for i in 1 2 3; do git pull -q --rebase -X theirs origin main && git push -q origin HEAD:main && break; sleep 8; done

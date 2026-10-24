@@ -4914,7 +4914,7 @@ if((location.hash||"")==="#sonuclar") setTimeout(()=>$("navRes").click(),200);
 // =====================================================================
 // BULUTOXX v35: Otomatik sürüm güncelleme — yeni sürüm yayınlanınca uygulama kendini yeniler
 // =====================================================================
-const APP_V="2026-10-24.43";
+const APP_V="2026-10-24.44";
 (function autoUpdate(){
   let shown=false;
   async function check(auto){
@@ -5010,13 +5010,17 @@ setTimeout(dailyLoad,2500); setInterval(()=>{ if(!document.hidden) dailyLoad(); 
 // Kupon artık Power Now sayfasının üstündeki "Kuponum" şeridinden ve Menü'den açılır.
 // =====================================================================
 const PW={th:0.75, pick:0.80, timer:null, last:null};
+// Canlı seçim kalibrasyonu: 15 dakikada bir kilitlenen canlı seçimlerin gerçek tutma oranı (data/daily.json → canli)
+function liveCal(pp){ const C=DAILY&&DAILY.canli; if(!C||!C.bins) return {p:pp};
+  for(const [lo,hi,n,h] of C.bins) if(pp>=lo&&pp<hi&&n>=30&&h!=null) return {p:(h*n+pp*50)/(n+50), n, h};
+  return {p:pp}; }
 function pwLiveCands(){
   const out=[];
   for(const m of (IDL.live[1]||[])){
     let P=null, K=null; try{ P=idlPred(m); K=idlPick(m,P); }catch(e){}
     if(!P||!K) continue;
-    const best=K.all.filter(c=>c.o&&c.o>=1.03&&c.p>=PW.pick&&isFinite(c.p)).sort((a,b)=>b.p-a.p)[0];
-    if(best) out.push({m, k:best.k, n:best.n, p:Math.min(best.p,.99), o:best.o, clock:idlClockTxt(m)});
+    const best=K.all.filter(c=>c.o&&c.o>=1.03&&c.p>=.6&&isFinite(c.p)).sort((a,b)=>b.p-a.p)[0];
+    if(best){ const C=liveCal(best.p); if(C.p>=PW.pick) out.push({m, k:best.k, n:best.n, p:Math.min(C.p,.99), raw:best.p, cn:C.n, ch:C.h, o:best.o, clock:idlClockTxt(m)}); }
   }
   return out.sort((a,b)=>b.p-a.p);
 }
@@ -5056,6 +5060,7 @@ function renderPower(){
       ${L.length?L.slice(0,8).map(x=>`<div class="pw-line">${row(x.m,x.n,x.p,x.o,x.clock)}<button type="button" class="pw-one" data-i="${L.indexOf(x)}">+</button></div>`).join(""):`<p class="note">Şu an %80 üzeri canlı seçim yok.</p>`}</div>
     <div class="pw-card"><div class="pw-h"><span>✅ Bugünün en güçlü önerileri</span><small>maç öncesi · %75+</small></div>
       ${pre.length?pre.map((x,i)=>`<div class="pw-line">${row(x.m,x.R.n,x.R.cp,x.R.o)}<button type="button" class="pw-pre" data-i="${i}">+</button></div>`).join(""):`<p class="note">Önümüzdeki 24 saatte %75 üzeri öneri yok.</p>`}</div>
+    ${DAILY&&DAILY.canli&&DAILY.canli.n?`<div class="pw-card"><div class="pw-h"><span>📒 Canlı karne</span><small>kilitli canlı seçimler</small></div><p class="note" style="margin:0">Şimdiye kadar ${DAILY.canli.n.toLocaleString("tr-TR")} canlı seçim kaydedildi ve sonuçlandı; %${Math.round(DAILY.canli.hit*100)}'i tuttu. ${DAILY.canli.bins.filter(b=>b[0]>=.75&&b[2]).map(b=>`%${Math.round(b[0]*100)}–${Math.min(100,Math.round(b[1]*100))}: ${b[2]} seçim, %${Math.round(b[3]*100)} tuttu`).join(" · ")}. Yüzdeler bu gerçek sonuçlarla düzeltilir.</p></div>`:`<div class="pw-card"><div class="pw-h"><span>📒 Canlı karne</span></div><p class="note" style="margin:0">Canlı seçimler 15 dakikada bir kilitlenip kaydediliyor; sonuçlandıkça burada gerçek isabet görünecek ve yüzdeler buna göre düzeltilecek.</p></div>`}
     <p class="disc">Olasılıklar BULUTOXX modelinin tahminidir; %75 de kesinlik değildir (yaklaşık her 4 kuponun 1'i tutmaz). Canlı oranlar maç içinde hızla değişir, iddaa bahsi kapatabilir · 18+</p>`;
   $("pwCp").onclick=()=>{ document.querySelector('nav.tabs button[data-v="kupon"]').click(); };
   const ac=$("pwAddC"); if(ac) ac.onclick=()=>{ buzz([10,30,10]); pwAdd(C.sel); };
