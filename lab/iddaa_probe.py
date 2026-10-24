@@ -9,14 +9,12 @@ out = {"live": [{k: v for k, v in e.items() if k != "m"} for e in lv]}
 e = lv[0] if lv else ev[0]
 i, bri, bgi = e["i"], e.get("bri"), e.get("bgi")
 S, B = "https://statisticsv2.iddaa.com", "https://sportsbookv2.iddaa.com"
-urls = [f"{B}/sportsbook/live-events-for-widget", f"{B}/sportsbook/live-events-for-widget?st=1", f"{B}/sportsbook/upcoming-events-for-widget",
-        f"{B}/sportsbook/event/{i}", f"{B}/sportsbook/played-event-percentage",
-        f"{S}/live-results/sports", f"{S}/live-results/sports/1", f"{S}/statistics/live-results/sports/1", f"{B}/live-results/sports/1",
-        f"{S}/statistics/eventsummary/{i}", f"{S}/statistics/eventsummary/1/{i}", f"{S}/statistics/eventsummary/{bri}",
-        f"{S}/statistics/soccer/match-card/{i}", f"{S}/statistics/soccer/match-card/{bri}", f"{S}/statistics/eventcommentary/{i}",
-        f"https://commonv2.iddaa.com/live-results/sports", f"https://contentv2.iddaa.com/live-results/sports"]
+urls = [f"{S}/statistics/soccer/match-card/{i}", f"{S}/live-results/events/1", f"{S}/live-results/events?sportId=1", f"{S}/live-results/sport/1",
+        f"{S}/live-results/1", f"{S}/live-results?sportId=1", f"{S}/live-results/events?sport=1", f"{S}/live-results/matches/1",
+        f"{S}/live-results/sports/1/events", f"{S}/live-results/live/1", f"{S}/live-results/events?sportId=1&date=2026-10-24",
+        f"{S}/live-results/tournaments/1", f"{S}/live-results/score/{i}", f"{S}/statistics/soccer/scoreboard/{i}", f"{S}/statistics/eventsummary/1/{i}"]
 for u in urls:
     try:
-        st, a, t = get(u); out[u] = {"st": st, "acao": a, "len": len(t), "head": t[:1500]}
+        st, a, t = get(u); out[u] = {"st": st, "acao": a, "len": len(t), "head": t[:6000]}
     except Exception as ex: out[u] = {"hata": str(ex)[:120]}
 json.dump(out, open("lab/iddaa_probe.json", "w"), ensure_ascii=False, indent=1)
