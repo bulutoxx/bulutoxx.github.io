@@ -1034,6 +1034,34 @@ main.page{padding-bottom:calc(120px + env(safe-area-inset-bottom,0px))!important
 .dayban b{color:#3BEA7E;font-weight:800}.dayban small{margin-left:auto;color:var(--ink3)}
 .rs-sum i{display:block}
 .rs-share{width:100%;margin:0 0 10px;padding:11px;border-radius:12px;background:var(--grad);color:#fff;font-weight:800;font-size:14.5px}
+/* v39: POWER NOW */
+nav.tabs .pw-btn{position:relative;min-height:52px;justify-content:flex-end}
+nav.tabs .pw-btn .pw-logo{position:absolute;left:50%;top:-34px;transform:translateX(-50%);width:60px;height:60px;border-radius:50%;display:grid;place-items:center;
+  background:radial-gradient(circle at 30% 25%,#163a6b,#060d1c 70%);border:3px solid transparent;background-clip:padding-box;
+  box-shadow:0 0 0 3px #22D3FF,0 0 0 7px var(--bg),0 8px 24px -6px rgba(34,211,255,.85);animation:pwglow 2.4s ease-in-out infinite}
+nav.tabs .pw-btn .pw-logo img{width:40px;height:auto;filter:drop-shadow(0 0 6px rgba(34,211,255,.6))}
+nav.tabs .pw-btn .pw-lb{position:absolute;left:0;right:0;bottom:9px;text-align:center;font:900 10.5px var(--round);letter-spacing:.05em;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;white-space:nowrap}
+nav.tabs .pw-btn[aria-current="page"]::before{display:none}
+nav.tabs .pw-btn .badge{top:-2px;left:auto;right:-6px;background:#FFB020;color:#111}
+@keyframes pwglow{0%,100%{box-shadow:0 0 0 3px #22D3FF,0 0 0 7px var(--bg),0 8px 24px -6px rgba(34,211,255,.85)}50%{box-shadow:0 0 0 3px #3BEA7E,0 0 0 7px var(--bg),0 8px 28px -4px rgba(59,234,126,.9)}}
+@media (prefers-reduced-motion:reduce){nav.tabs .pw-btn .pw-logo{animation:none}}
+.pw-top{display:flex;align-items:center;gap:12px;margin:10px 2px 10px}
+.pw-top img{width:52px;height:auto}.pw-top h1{margin:0;font:900 26px var(--round);background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.pw-top p{margin:2px 0 0;color:var(--ink3);font-size:13px}
+.pw-body{display:flex;flex-direction:column;gap:10px}
+.pw-cp{display:flex;align-items:center;gap:6px;width:100%;padding:11px 12px;border-radius:12px;background:var(--surface);border:1px solid var(--line);font-size:13.5px;color:var(--ink2);text-align:left}
+.pw-cp b{color:var(--ink)}.pw-cp span{margin-left:auto;color:var(--cyan);font-weight:700}
+.pw-card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px 12px;display:flex;flex-direction:column;gap:8px}
+.pw-star{background:linear-gradient(160deg,rgba(255,214,10,.12),rgba(32,194,94,.08));border-color:rgba(255,214,10,.45)}
+.pw-h{display:flex;align-items:baseline;gap:8px}.pw-h span{font-weight:800;font-size:15px}.pw-h small{margin-left:auto;color:var(--ink3);font-size:11.5px}
+.pw-r{display:flex;align-items:center;gap:8px;flex:1;min-width:0}
+.pw-m{flex:1;min-width:0;display:flex;flex-direction:column}.pw-m b{font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.pw-m small{font-size:11px;color:var(--ink3)}
+.pw-s{flex:none;display:flex;align-items:center;gap:6px;font-size:12.5px}.pw-s span{color:var(--ink2)}.pw-s b{color:#3BEA7E;font:800 14px var(--round)}.pw-s i{font-style:normal;padding:2px 7px;border-radius:7px;background:rgba(255,255,255,.08);font-weight:700}
+.pw-line{display:flex;align-items:center;gap:8px;padding-top:6px;border-top:1px solid var(--line)}
+.pw-one,.pw-pre{flex:none;width:32px;height:32px;border-radius:9px;background:var(--grad);color:#fff;font-weight:800;font-size:18px}
+.pw-tot{display:grid;grid-template-columns:1fr auto 1fr auto;gap:6px;align-items:center;padding:8px 10px;border-radius:10px;background:rgba(0,0,0,.25);font-size:12.5px;color:var(--ink2)}
+.pw-tot b{font:800 17px var(--round);color:#FFD60A}
+.pw-add{width:100%;padding:11px;border-radius:12px;background:linear-gradient(135deg,#FFD60A,#FF9F0A);color:#111;font-weight:900;font-size:15px}
 </style>
 </head>
 <body>
@@ -4886,7 +4914,7 @@ if((location.hash||"")==="#sonuclar") setTimeout(()=>$("navRes").click(),200);
 // =====================================================================
 // BULUTOXX v35: Otomatik sürüm güncelleme — yeni sürüm yayınlanınca uygulama kendini yeniler
 // =====================================================================
-const APP_V="2026-10-24.42";
+const APP_V="2026-10-24.43";
 (function autoUpdate(){
   let shown=false;
   async function check(auto){
@@ -4975,6 +5003,89 @@ renderRes=function(){ _rrV38(); const st=dayStat(RS.day), box=$("rsSum"); if(!bo
     <button type="button" class="rs-share" id="rsShare">📤 Paylaş: ${g.n?`güçlü önerilerin %${Math.round(g.hit*100)}'i tuttu`:`önerilerin %${Math.round(st.hit*100)}'i tuttu`}</button>`;
   $("rsShare").onclick=()=>{ buzz(8); shareDay(RS.day); }; };
 setTimeout(dailyLoad,2500); setInterval(()=>{ if(!document.hidden) dailyLoad(); },15*60e3);
+
+// =====================================================================
+// BULUTOXX v39: POWER NOW — alt menünün ortasında logolu düğme.
+// Canlı maçlardan %75 ve üzeri tutma olasılıklı "yıldız kupon", canlı tekli yıldızlar ve bugünün en güçlü önerileri.
+// Kupon artık Power Now sayfasının üstündeki "Kuponum" şeridinden ve Menü'den açılır.
+// =====================================================================
+const PW={th:0.75, pick:0.80, timer:null, last:null};
+function pwLiveCands(){
+  const out=[];
+  for(const m of (IDL.live[1]||[])){
+    let P=null, K=null; try{ P=idlPred(m); K=idlPick(m,P); }catch(e){}
+    if(!P||!K) continue;
+    const best=K.all.filter(c=>c.o&&c.o>=1.03&&c.p>=PW.pick&&isFinite(c.p)).sort((a,b)=>b.p-a.p)[0];
+    if(best) out.push({m, k:best.k, n:best.n, p:Math.min(best.p,.99), o:best.o, clock:idlClockTxt(m)});
+  }
+  return out.sort((a,b)=>b.p-a.p);
+}
+function pwCoupon(c){
+  // en olası seçimlerden başlayıp toplam olasılık %75'in üstünde kaldıkça ekle (en fazla 4 maç, farklı maçlardan)
+  const sel=[]; let p=1, o=1;
+  for(const x of c){ if(sel.length>=4) break; if(p*x.p<PW.th) continue; sel.push(x); p*=x.p; o*=x.o; }
+  return sel.length>=2?{sel,p,o}:null;
+}
+function pwPreCands(){
+  const now=Date.now(), out=[];
+  for(const m of Pick.list()){
+    if(m.live||m.dt.getTime()<now||m.dt.getTime()>now+24*3600e3) continue;
+    const f=m.src==="fx"?FIXTURES.find(x=>x.lg===m.lg&&x.h===m.h&&x.a===m.a):null; if(!f||!f.odds) continue;
+    let p=null; try{ p=quickPred(m,f); }catch(e){} if(!p||!p.pm) continue;
+    const R=recOf({H:p.pm[0],D:p.pm[1],A:p.pm[2],o25:p.o25m},f); if(R&&R.o&&R.cp>=PW.th) out.push({m,R});
+  }
+  return out.sort((a,b)=>b.R.cp-a.R.cp).slice(0,8);
+}
+function pwKey(x){ return x.m.sp?{lg:"i"+x.m.ci,h:x.m.h,a:x.m.a,dt:new Date(x.m.ts)}:x.m; }
+function pwAdd(list){ let n=0;
+  for(const x of list){ const mm=pwKey(x), k=x.k||x.R.k, o=x.o||x.R.o, p=x.p||x.R.cp;
+    if(CP.items.some(c=>c.k===cpKey(mm)&&c.mk===k)) continue; cpToggle(mm,k,+o,p); n++; }
+  if(typeof paintCoupon==="function") paintCoupon(); toast(n?`${n} seçim kupona eklendi`:"Bu seçimler zaten kuponda"); renderPower(); }
+function renderPower(){
+  const v=$("v-power"); if(!v) return;
+  const st=cpStats(), L=pwLiveCands(), C=pwCoupon(L), pre=pwPreCands();
+  const row=(m,txt,p,o,clock)=>`<div class="pw-r"><div class="pw-m"><b>${esc(m.h)} - ${esc(m.a)}</b><small>${clock?`🔴 ${esc(clock)} · ${m.hs}-${m.as}`:esc(ist(m.dt,{hour:"2-digit",minute:"2-digit"}))+" · "+esc((LEAGUES[m.lg]||{n:""}).n)}</small></div><div class="pw-s"><span>${esc(txt)}</span><b>%${pc9(p)}</b>${o?`<i>${(+o).toFixed(2)}</i>`:""}</div></div>`;
+  v.querySelector(".pw-body").innerHTML=`
+    <button type="button" class="pw-cp" id="pwCp">🎫 Kuponum · <b>${st.n} maç</b> · oran <b>${st.n?st.odd.toLocaleString("tr-TR",{minimumFractionDigits:2,maximumFractionDigits:2}):"0,00"}</b><span>Aç ›</span></button>
+    <div class="pw-card pw-star"><div class="pw-h"><span>⭐ Canlı yıldız kupon</span><small>${IDL.ok[1]?`${IDL.live[1].length} canlı maç tarandı`:"canlı maçlar yükleniyor…"}</small></div>
+      ${C?`${C.sel.map(x=>row(x.m,x.n,x.p,x.o,x.clock)).join("")}
+        <div class="pw-tot"><span>Birlikte tutma olasılığı</span><b>%${pc9(C.p)}</b><span>Toplam oran</span><b>${C.o.toFixed(2)}</b></div>
+        <button type="button" class="pw-add" id="pwAddC">+ Yıldız kuponu ekle</button>`
+      :`<p class="note">${IDL.ok[1]?"Şu an %75 üzeri tutma olasılığına sahip, en az iki maçlık canlı kupon yok. Liste her 15 saniyede yenilenir.":"Canlı veriler alınıyor…"}</p>`}</div>
+    <div class="pw-card"><div class="pw-h"><span>🔥 Canlı tekli yıldızlar</span><small>%80+ olasılık · açık oranlı</small></div>
+      ${L.length?L.slice(0,8).map(x=>`<div class="pw-line">${row(x.m,x.n,x.p,x.o,x.clock)}<button type="button" class="pw-one" data-i="${L.indexOf(x)}">+</button></div>`).join(""):`<p class="note">Şu an %80 üzeri canlı seçim yok.</p>`}</div>
+    <div class="pw-card"><div class="pw-h"><span>✅ Bugünün en güçlü önerileri</span><small>maç öncesi · %75+</small></div>
+      ${pre.length?pre.map((x,i)=>`<div class="pw-line">${row(x.m,x.R.n,x.R.cp,x.R.o)}<button type="button" class="pw-pre" data-i="${i}">+</button></div>`).join(""):`<p class="note">Önümüzdeki 24 saatte %75 üzeri öneri yok.</p>`}</div>
+    <p class="disc">Olasılıklar BULUTOXX modelinin tahminidir; %75 de kesinlik değildir (yaklaşık her 4 kuponun 1'i tutmaz). Canlı oranlar maç içinde hızla değişir, iddaa bahsi kapatabilir · 18+</p>`;
+  $("pwCp").onclick=()=>{ document.querySelector('nav.tabs button[data-v="kupon"]').click(); };
+  const ac=$("pwAddC"); if(ac) ac.onclick=()=>{ buzz([10,30,10]); pwAdd(C.sel); };
+  v.querySelectorAll(".pw-one").forEach(b=>b.onclick=()=>{ buzz(8); pwAdd([L[+b.dataset.i]]); });
+  v.querySelectorAll(".pw-pre").forEach(b=>b.onclick=()=>{ buzz(8); pwAdd([pre[+b.dataset.i]]); });
+  const bd=$("pwBadge"); if(bd){ bd.hidden=!L.length; bd.textContent=L.length; }
+}
+(function powerNow(){
+  const nav=document.querySelector("nav.tabs .in"); if(!nav||$("navPow")) return;
+  const bK=nav.querySelector('button[data-v="kupon"]'); if(bK) bK.classList.add("hidtab");
+  const b=document.createElement("button"); b.id="navPow"; b.dataset.v="power"; b.className="pw-btn";
+  b.innerHTML=`<span class="pw-logo"><img src="icons/mark.png" alt=""><span class="badge" id="pwBadge" hidden></span></span><span class="pw-lb">POWER NOW</span>`;
+  nav.insertBefore(b, $("navRes")||nav.querySelector('button[data-v="more"]'));
+  const main=document.querySelector("main");
+  if(main&&!$("v-power")){ const s=document.createElement("section"); s.className="view"; s.id="v-power"; s.hidden=true;
+    s.innerHTML=`<div class="pw-top"><img src="icons/mark.png" alt=""><div><h1>Power Now</h1><p>Yüksek olasılıklı canlı kuponlar</p></div></div><div class="pw-body"></div>`; main.appendChild(s); }
+  b.addEventListener("click",()=>{ document.querySelectorAll("nav button").forEach(x=>x.removeAttribute("aria-current")); b.setAttribute("aria-current","page");
+    document.querySelectorAll("section.view").forEach(x=>x.hidden=x.id!=="v-power"); window.scrollTo(0,0);
+    try{ history.replaceState(null,"","#power"); }catch(e){} Sound.tab(); buzz(6);
+    renderPower(); IDL.load(1,true).then(renderPower); });
+  setInterval(()=>{ const v=$("v-power"); if(v&&!v.hidden&&!document.hidden) IDL.load(1).then(renderPower); },15000);
+  // rozet: arka planda canlı veri geldiğinde yıldız sayısı
+  const _ld=IDL.load.bind(IDL); IDL.load=async function(sp,f){ const r=await _ld(sp,f); if(sp===1){ try{ const n=pwLiveCands().length, bd=$("pwBadge"); if(bd){ bd.hidden=!n; bd.textContent=n; } }catch(e){} } return r; };
+  // Menü'ye Kuponum
+  const ml=document.querySelector("#v-more .mlist");
+  if(ml&&!$("moreCp")){ const c=document.createElement("button"); c.className="cell"; c.id="moreCp"; c.type="button";
+    c.innerHTML=`<span class="ic" style="background:linear-gradient(135deg,#2F7BFF,#22D3FF)"><svg viewBox="0 0 24 24"><path d="M4 6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v3a2 2 0 0 0 0 4v5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-5a2 2 0 0 0 0-4z"/></svg></span><span class="tx"><b>Kuponum</b><small>Seçimlerin, tutar ve olası kazanç</small></span><span class="ar">›</span>`;
+    c.onclick=()=>document.querySelector('nav.tabs button[data-v="kupon"]').click(); ml.prepend(c); }
+  if((location.hash||"")==="#power") setTimeout(()=>b.click(),250);
+})();
 </script>
 
 </body>
