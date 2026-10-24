@@ -1165,6 +1165,23 @@ body.bt3 #v-bulten .tb-row{position:relative}
 .kz-tech{margin-top:14px}.kz-tech>summary{cursor:pointer;padding:14px 16px;border-radius:14px;background:var(--surface2);border:1px solid var(--line);font-weight:700;color:var(--ink2)}
 .kz-tech[open]>summary{margin-bottom:12px}
 .pw-kz{width:100%;display:flex;align-items:center;gap:8px;background:none;border:0;color:var(--ink);font:600 14px var(--font);text-align:left;padding:2px 0}.pw-kz span{margin-left:auto;color:var(--cyan);font-size:13px;white-space:nowrap}
+/* 🥇 BULUTOXX Altın */
+:root{--gold:linear-gradient(135deg,#7A5C1E 0%,#C9A227 28%,#F5E08A 52%,#D4AF37 72%,#B8892B 100%)}
+.gold-seal{display:inline-flex;align-items:center;gap:4px;padding:3px 8px 3px 4px;border-radius:99px;background:var(--gold);color:#3B2A05;font:800 10.5px/1 var(--font);letter-spacing:.06em;box-shadow:0 1px 0 rgba(255,255,255,.45) inset,0 2px 8px rgba(212,175,55,.35);border:1px solid #5A4310;white-space:nowrap;vertical-align:middle;flex:none}
+.gold-seal img{width:17px;height:12px;filter:drop-shadow(0 0 1px rgba(0,0,0,.45))}
+.ib-r.gold-row,.pw-r.gold-row,.bt-card.gold-row{border:1px solid rgba(212,175,55,.6)!important;box-shadow:inset 3px 0 0 #D4AF37,0 6px 20px rgba(212,175,55,.12)!important;background:linear-gradient(180deg,rgba(212,175,55,.09),rgba(212,175,55,0) 65%)!important;border-radius:14px}
+.ib-r.gold-row .ib-top .gold-seal{margin-left:auto}
+.gold-odd{background:var(--gold)!important;color:#3B2A05!important;border-color:#8A6A1E!important}
+.gold-odd u,.gold-odd b,.gold-odd small,.gold-odd span{color:#3B2A05!important}
+.rec.rec-gold{background:linear-gradient(90deg,rgba(212,175,55,.2),rgba(212,175,55,.04))!important;border-color:rgba(212,175,55,.55)!important}
+.rec.rec-gold .rec-t,.rec.rec-gold .rec-p,.rec.rec-gold b{color:#F5D35A!important}
+.pw-gold{border:1px solid rgba(212,175,55,.6)!important;background:linear-gradient(160deg,rgba(212,175,55,.16),rgba(212,175,55,.03) 55%)!important}
+.pw-gold .pw-h>span{display:flex;align-items:center;gap:8px;color:#F5D35A}
+.gold-btn{background:var(--gold)!important;color:#3B2A05!important;border:1px solid #5A4310!important}
+.recbig.rec-goldbig{border-color:rgba(212,175,55,.7)!important;box-shadow:0 0 0 1px rgba(212,175,55,.25),0 10px 30px rgba(212,175,55,.15)!important}
+.recbig.rec-goldbig>b{color:#F5D35A!important}
+.bt-card.gold-row .gold-seal{margin:3px 0}
+#btGold[aria-pressed="true"]{background:var(--gold)!important;color:#3B2A05!important;border-color:#5A4310!important}
 </style>
 </head>
 <body>
@@ -5071,7 +5088,7 @@ if((location.hash||"")==="#sonuclar") setTimeout(()=>$("navRes").click(),200);
 // =====================================================================
 // BULUTOXX v35: Otomatik sürüm güncelleme — yeni sürüm yayınlanınca uygulama kendini yeniler
 // =====================================================================
-const APP_V="2026-10-24.62";
+const APP_V="2026-10-24.63";
 (function autoUpdate(){
   let shown=false;
   async function check(auto){
@@ -6089,6 +6106,73 @@ renderPower=function(){ _renderPower4(); const v=$("v-power"); if(!v) return;
   c.innerHTML=`<button type="button" class="pw-kz">📒 Canlı karne${C&&C.n?`: ${C.n} seçim, <b>%${Math.round(C.hit*100)}</b> tuttu`:""}<span>Tahmin karnesi ›</span></button>`;
   c.querySelector(".pw-kz").onclick=()=>{ goView("karne","more"); }; };
 const ml4=$("moreGel"); if(ml4){ const s=ml4.querySelector(".tx small"); if(s) s.textContent="Yenilikler ve sistemin kendi geliştirmeleri"; }
+// ---------- v63 Adım 5: 🥇 BULUTOXX Altın — günün en güvenilir seçimleri (temkinli, günde en fazla 3) ----------
+const GOLD={ thr:.78, omin:1.20, omax:2.00, perDay:3, set:null, at:0, karne:null };
+function goldCalc(){ const now=Date.now(), sig=Pick.list().length+"|"+FIXTURES.length+"|"+(MODEL&&MODEL.updated)+"|"+GOLD.thr; if(GOLD.set&&GOLD.sig===sig&&now-GOLD.at<60e3) return GOLD.set; GOLD.sig=sig;
+  const by={};
+  for(const m of Pick.list()){ if(m.live||m.started) continue; const t=m.dt.getTime(); if(t<now+30*60e3||t>now+7*864e5) continue;
+    const f=m.src==="fx"?FIXTURES.find(x=>x.lg===m.lg&&x.h===m.h&&x.a===m.a):fxOdds(m); if(!f||!f.odds) continue;
+    let p=null; try{ p=quickPred(m,f); }catch(e){} if(!p||!p.pm) continue;
+    let R=null; try{ R=recOf({H:p.pm[0],D:p.pm[1],A:p.pm[2],o25:p.o25m},f); }catch(e){}
+    if(!R||!R.o||R.cp<GOLD.thr||R.o<GOLD.omin||R.o>GOLD.omax) continue;
+    (by[istDay(m.dt)]=by[istDay(m.dt)]||[]).push({m,f,R,p}); }
+  const S=new Map(); for(const d in by) by[d].sort((a,b)=>b.R.cp-a.R.cp).slice(0,GOLD.perDay).forEach(x=>S.set(fkey(x.m),x));
+  GOLD.set=S; GOLD.at=now; return S; }
+function goldOf(m){ try{ return goldCalc().get(fkey(m))||null; }catch(e){ return null; } }
+const GOLD_SEAL=`<span class="gold-seal"><img src="icons/mark.png" alt="">ALTIN</span>`;
+// Bülten satırı
+const _ibRowG=ibRow;
+ibRow=function(x){ let h=_ibRowG(x); const g=goldOf(x.m); if(!g) return h;
+  h=h.replace('<div class="ib-r"','<div class="ib-r gold-row"');
+  const i=h.indexOf('<div class="ib-od">'); const j=h.lastIndexOf("</div>",i); if(j>0) h=h.slice(0,j)+GOLD_SEAL+h.slice(j);
+  h=h.replace(/class="rk rk-g ?( ?sel)?\s*"/,(s,a)=>`class="rk rk-g gold-odd${a?" sel":""}"`);
+  h=h.replace('<div class="rec rec-g">','<div class="rec rec-g rec-gold">');
+  return h; };
+// 🥇 Altın filtresi
+(function(){ const c=$("btChips"); if(!c||$("btGold")) return; const b=document.createElement("button"); b.id="btGold"; b.dataset.f="gold"; b.setAttribute("aria-pressed","false"); b.innerHTML="🥇 Altın"; c.insertBefore(b,c.children[1]||null); b.onclick=()=>{ buzz(6); BT.f="gold"; c.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",x===b)); try{ lgChipPaint(); }catch(e){} renderBulten(); window.scrollTo({top:0}); }; })();
+const _rbGold=renderBulten;
+renderBulten=function(){ if(BT.f!=="gold") return _rbGold();
+  BT.f="all"; try{ _rbGold(); } finally{ BT.f="gold"; }
+  const list=$("btList"), box=list&&list.querySelector(".ib"); if(!box) return;
+  IB.rows=IB.rows.filter(x=>goldOf(x.m)); IB.i=0; IB.lastLg=null; box.querySelectorAll(".ib-r,.ib-h,.ib-more").forEach(e=>e.remove());
+  if(!IB.rows.length){ box.insertAdjacentHTML("beforeend",`<div class="panel empty"><b>Bu gün için Altın seçim yok</b>Altın, BULUTOXX'un en güvendiği seçimdir: kazanma olasılığı %${Math.round(GOLD.thr*100)} ve üstü, oranı ${GOLD.omin.toFixed(2).replace(".",",")}–${GOLD.omax.toFixed(2).replace(".",",")} arası, günde en fazla ${GOLD.perDay}. Hak eden yoksa rozet verilmez.</div>`); }
+  else { ibChunk(box); }
+  $("btSub").textContent=`🥇 ${IB.rows.length} Altın seçim`; };
+// Power Now: Günün Altın Kuponu
+const _renderPowerG=renderPower;
+renderPower=function(){ _renderPowerG(); const v=$("v-power"), body=v&&v.querySelector(".pw-body"); if(!body) return;
+  const today=istDay(new Date()), tom=istDay(new Date(Date.now()+864e5));
+  let L=[...goldCalc().values()].filter(x=>istDay(x.m.dt)===today); let dayLbl="Bugün";
+  if(L.length<2){ L=[...goldCalc().values()].filter(x=>istDay(x.m.dt)===tom); dayLbl="Yarın"; }
+  let card=$("pwGold"); if(!card){ card=document.createElement("div"); card.id="pwGold"; card.className="pw-card pw-gold"; body.prepend(card); }
+  if(L.length<2){ card.innerHTML=`<div class="pw-h"><span>${GOLD_SEAL} Günün Altın Kuponu</span></div><p class="note" style="margin:0">Şu an Altın kuralına uyan en az 2 maç yok (olasılık %${Math.round(GOLD.thr*100)}+, oran ${GOLD.omin.toFixed(2).replace(".",",")}–${GOLD.omax.toFixed(2).replace(".",",")}). Hak eden olmadığında BULUTOXX zorlamaz.</p>`; return; }
+  L=L.slice(0,3); const P=L.reduce((a,x)=>a*x.R.cp,1), O=L.reduce((a,x)=>a*x.R.o,1);
+  card.innerHTML=`<div class="pw-h"><span>${GOLD_SEAL} Günün Altın Kuponu</span><small>${dayLbl} · ${L.length} maç</small></div>
+    ${L.map(x=>`<div class="pw-r"${omA(x.m)}><div class="pw-m"><b>${esc(x.m.h)} - ${esc(x.m.a)}</b><small>${esc(ist(x.m.dt,{hour:"2-digit",minute:"2-digit"}))} · ${esc((x.f&&(x.f.cn||x.f.ln))||(LEAGUES[x.m.lg]||{n:""}).n)}</small></div><div class="pw-s"><span>${esc(x.R.n)}</span><b>%${pc9(x.R.cp)}</b><i>${x.R.o.toFixed(2)}</i></div></div>`).join("")}
+    <div class="pw-tot"><span>Birlikte tutma olasılığı</span><b>%${pc9(P)}</b><span>Toplam oran</span><b>${O.toFixed(2)}</b></div>
+    <button type="button" class="pw-add gold-btn" id="pwGoldAdd">+ Altın kuponu ekle</button>${GOLD.karne&&GOLD.karne.n?`<p class="note" style="margin:8px 0 0">📒 Altın kuralına uyan geçmiş öneriler: ${GOLD.karne.h}/${GOLD.karne.n} tuttu (%${Math.round(GOLD.karne.h/GOLD.karne.n*100)}).</p>`:""}`;
+  $("pwGoldAdd").onclick=()=>{ buzz([10,30,10]); let n=0; for(const x of L){ if(!CP.items.some(c=>c.k===cpKey(x.m)&&c.mk===x.R.k)){ cpToggle(x.m,x.R.k,+x.R.o,x.R.cp); n++; } } try{ paintCoupon(); }catch(e){} toast(n?`🥇 ${n} Altın seçim kupona eklendi`:"Altın seçimler zaten kuponda"); };
+  // en güçlü önerilerde Altın olanlar mühürlü
+  v.querySelectorAll(".pw-line .pw-r[data-om]").forEach(r=>{ const m=OMR.get(r.dataset.om); if(m&&!m.sp&&goldOf(m)&&!r.querySelector(".gold-seal")){ r.classList.add("gold-row"); r.querySelector(".pw-m b")?.insertAdjacentHTML("afterend",GOLD_SEAL); } }); };
+// Bulut kartları ve maç sayfası
+const _botCardG=botCard;
+botCard=function(x,i){ let h=_botCardG(x,i); if(goldOf(x.m)) h=h.replace('<div class="bt-card','<div class="bt-card gold-row').replace('</b><small>',`</b>${GOLD_SEAL}<small>`); return h; };
+const _msRenderG=msRender;
+msRender=function(){ _msRenderG(); const el=$("msheet"), m=MS.m; if(!el||!m||m.sp) return; const g=goldOf(m); if(!g) return;
+  const rb=el.querySelector(".recbig"); if(rb&&!rb.querySelector(".gold-seal")){ rb.classList.add("rec-goldbig"); rb.querySelector("small")?.insertAdjacentHTML("afterend",`<div>${GOLD_SEAL}</div>`); }
+  el.querySelectorAll(`.mo[data-mk="${g.R.k}"]`).forEach(b=>b.classList.add("gold-odd")); };
+// Altın karnesi: kilitli arşivde aynı kurala uyan önerilerin gerçek sonucu; isabet %72'nin altına düşerse eşik %82'ye çıkar
+async function goldKarne(){ try{ const days=(DAILY&&DAILY.gunler||[]).filter(g=>g.n>0).map(g=>g.d).slice(-30); let n=0,h=0;
+    for(const d of days){ let A=null; try{ const r=await fetch(`data/archive/${d}.json`,{cache:"no-cache"}); if(r.ok) A=await r.json(); }catch(e){} if(!A) continue;
+      for(const v of Object.values(A)){ if(v.ok==null||v.rp==null||!v.ro) continue; if(v.rp>=.78&&v.ro>=GOLD.omin&&v.ro<=GOLD.omax){ n++; if(v.ok) h++; } } }
+    GOLD.karne={n,h}; const thr=n>=20&&h/n<.72?.82:.78; if(thr!==GOLD.thr){ GOLD.thr=thr; GOLD.set=null; }
+  }catch(e){} }
+setTimeout(()=>goldKarne().then(()=>{ try{ if(!$("v-power").hidden) renderPower(); }catch(e){} }),6000);
+// Tahmin karnesi özetine Altın satırı
+const _karneOzetG=karneOzetHtml;
+karneOzetHtml=function(){ let h=_karneOzetG(); const K=GOLD.karne;
+  const line=`<p>${GOLD_SEAL} Altın kuralı: olasılık %${Math.round(GOLD.thr*100)}+, oran ${GOLD.omin.toFixed(2).replace(".",",")}–${GOLD.omax.toFixed(2).replace(".",",")}, günde en fazla ${GOLD.perDay}. ${K&&K.n?`Kurala uyan geçmiş öneriler: <b>${K.h}/${K.n}</b> (%${Math.round(K.h/K.n*100)}).`:"Kilitli arşivde henüz yeterli örnek yok; geçmiş sınamada bu güvendeki öneriler %82 tuttu."}</p>`;
+  return h.includes('<div class="kz-r">')?h.replace('<div class="kz-r">','<div class="kz-r">'+line):h.replace(/<\/div>$/,`<div class="kz-r">${line}</div></div>`); };
 </script>
 
 </body>
