@@ -1178,6 +1178,26 @@ body.bt3 #v-bulten .tb-row{position:relative}
 .pw-gold{border:1px solid rgba(212,175,55,.6)!important;background:linear-gradient(160deg,rgba(212,175,55,.16),rgba(212,175,55,.03) 55%)!important}
 .pw-gold .pw-h>span{display:flex;align-items:center;gap:8px;color:#F5D35A}
 .gold-btn{background:var(--gold)!important;color:#3B2A05!important;border:1px solid #5A4310!important}
+.tp-box{margin:6px 16px 14px;padding:14px;border-radius:var(--r);background:linear-gradient(180deg,rgba(212,175,55,.10),rgba(12,19,34,.9) 60%);border:1px solid rgba(212,175,55,.35)}
+.tp-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.tp-h b{display:flex;align-items:center;gap:8px;font:800 17px/1.2 var(--font);color:var(--ink)}
+.tp-h small{display:block;color:var(--ink3);font-size:12.5px;margin-top:4px}
+.tp-ch{display:flex;gap:6px;overflow-x:auto;margin-bottom:10px;scrollbar-width:none}
+.tp-ch button,.tp-dt{flex:none;position:relative;padding:7px 12px;border-radius:99px;border:1px solid var(--line2);background:var(--surface2);color:var(--ink2);font:600 13px/1 var(--font);cursor:pointer;display:inline-flex;align-items:center;gap:4px}
+.tp-ch button[aria-pressed="true"],.tp-dt.on{background:var(--gold);color:#3B2A05;border-color:#5A4310}
+.tp-dt input{position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:pointer}
+.tp-r{display:flex;align-items:center;gap:10px;padding:10px 10px 10px 12px;margin:6px 0;border-radius:14px;background:var(--surface);border:1px solid var(--line);cursor:pointer}
+.tp-m{flex:1;min-width:0}.tp-m b{display:block;font:700 14px/1.25 var(--font);color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tp-m small{display:block;color:var(--ink3);font-size:12px;margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tp-live{color:var(--red);font-style:normal;font-weight:700}
+.tp-p{display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex:none}
+.tp-n{font:800 14px/1 var(--font);color:var(--ink)}.tp-pc{font:600 12px/1 var(--font);color:var(--lime)}
+.tp-g{padding:3px 7px;border-radius:99px;background:rgba(156,255,87,.14);color:var(--lime);font:800 10px/1 var(--font);letter-spacing:.06em}
+.tp-add{flex:none;width:34px;height:34px;border-radius:50%;border:1px solid var(--line2);background:var(--surface2);color:var(--ink);font:700 18px/1 var(--font);cursor:pointer}
+.tp-add.on{background:var(--lime);color:#0B1A02;border-color:transparent}
+.tp-sep{margin:12px 2px 2px;color:var(--ink3);font:700 11.5px/1 var(--font);letter-spacing:.08em;text-transform:uppercase}
+.tp-box .pw-add{margin-top:10px;width:100%}
+.tp-k,.tp-empty{margin:10px 2px 0!important;font-size:12px}
 .recbig.rec-goldbig{border-color:rgba(212,175,55,.7)!important;box-shadow:0 0 0 1px rgba(212,175,55,.25),0 10px 30px rgba(212,175,55,.15)!important}
 .recbig.rec-goldbig>b{color:#F5D35A!important}
 .bt-card.gold-row .gold-seal{margin:3px 0}
@@ -5133,7 +5153,7 @@ if((location.hash||"")==="#sonuclar") setTimeout(()=>$("navRes").click(),200);
 // =====================================================================
 // BULUTOXX v35: Otomatik sürüm güncelleme — yeni sürüm yayınlanınca uygulama kendini yeniler
 // =====================================================================
-const APP_V="2026-10-24.67";
+const APP_V="2026-10-25.68";
 (function autoUpdate(){
   let shown=false;
   async function check(auto){
@@ -6293,6 +6313,59 @@ window.openFeedback=openFeedback;
   try{ MENU_PLAN[3][1].splice(4,0,["#moreFb","Öneri ve görüşler","Fikrini, hata bildirimini veya talebini yaz"]); menuOrganize(); }catch(e){}
 })();
 document.addEventListener("click",e=>{ const a=e.target.closest("[data-fb]"); if(!a) return; e.preventDefault(); openFeedback(a.dataset.fb||""); });
+// ---------- v68: 🥇 Hazır tahminler — "Maç tahmini" açılınca en yakın maçlardan Altın ve Güçlü net tahminler; tarih seçilerek ileri günler ----------
+const TP={ mode:"near", day:null, karne:null };
+const tpDay=o=>istDay(new Date(Date.now()+o*864e5));
+function tpCands(){ const now=Date.now(), out=[];
+  for(const m of Pick.list()){ const t=m.dt.getTime(); if(!m.live&&t<now-2*3600e3) continue;
+    const f=m.src==="fx"?FIXTURES.find(x=>x.lg===m.lg&&x.h===m.h&&x.a===m.a):fxOdds(m); if(!f||!f.odds) continue;
+    let p=null; try{ p=quickPred(m,f); }catch(e){} if(!p||!p.pm) continue;
+    let R=null; try{ R=recOf({H:p.pm[0],D:p.pm[1],A:p.pm[2],o25:p.o25m},f); }catch(e){}
+    if(!R||!R.o||R.cp<.70||R.o<GOLD.omin||R.o>GOLD.omax) continue;   // yalnız güçlü ve anlamlı oranlı (1,20–2,00) seçimler
+    out.push({m,f,R,p,d:istDay(m.dt),on:m.live||m.started||t<=now}); }
+  // Altın: günde en fazla 3, olasılık eşiği GOLD.thr (Bülten ve Power Now ile aynı kural)
+  const by={}; for(const x of out) (by[x.d]=by[x.d]||[]).push(x);
+  for(const d in by) by[d].filter(x=>x.R.cp>=GOLD.thr).sort((a,b)=>b.R.cp-a.R.cp).slice(0,GOLD.perDay).forEach(x=>x.gold=true);
+  for(const x of out) if(!x.gold&&goldOf(x.m)) x.gold=true;
+  return out; }
+function tpPick(){ const all=tpCands(), now=Date.now(); let L, lbl;
+  if(TP.mode==="near"){ L=all.filter(x=>x.on||x.m.dt.getTime()<now+36*3600e3); lbl="Başlamış ve önümüzdeki 36 saat"; }
+  else { const d=TP.mode==="today"?tpDay(0):TP.mode==="tom"?tpDay(1):TP.day; L=all.filter(x=>x.d===d); lbl=ist(new Date(d+"T12:00:00+03:00"),{day:"numeric",month:"long",weekday:"long"}); }
+  const G=L.filter(x=>x.gold).sort((a,b)=>(b.on-a.on)||(a.m.dt-b.m.dt));
+  const S=L.filter(x=>!x.gold).sort((a,b)=>b.R.cp-a.R.cp).slice(0,8).sort((a,b)=>(b.on-a.on)||(a.m.dt-b.m.dt));
+  return {G,S,lbl,maxDay:all.reduce((a,x)=>x.d>a?x.d:a,tpDay(0))}; }
+function tpRow(x){ const m=x.m, lg=(x.f&&(x.f.cn||x.f.ln))||(LEAGUES[m.lg]||{n:""}).n;
+  const t=m.live?`<em class="tp-live">● ${esc(m.hs??0)}-${esc(m.as??0)}${m.clock?" · "+esc(m.clock):""}</em>`:x.on?`<em class="tp-live">Başladı</em>`:esc((istDay(m.dt)===tpDay(0)?"":ist(m.dt,{day:"numeric",month:"short"})+" ")+ist(m.dt,{hour:"2-digit",minute:"2-digit"}));
+  const inCp=CP.items.some(c=>c.k===cpKey(m)&&c.mk===x.R.k);
+  return `<div class="tp-r${x.gold?" gold-row":""}"${omA(m)}><div class="tp-m"><b>${esc(m.h)} - ${esc(m.a)}</b><small>${t} · ${esc(lg)}</small></div>
+    <div class="tp-p">${x.gold?GOLD_SEAL:`<span class="tp-g">GÜÇLÜ</span>`}<span class="tp-n">${esc(x.R.n)}</span><span class="tp-pc">%${pc9(x.R.cp)} · ${(+x.R.o).toFixed(2)}</span></div>
+    <button type="button" class="tp-add${inCp?" on":""}" data-tpk="${esc(fkey(m))}" aria-label="Listeye ekle">${inCp?"✓":"+"}</button></div>`; }
+function renderTP(){ const v=$("v-tahmin"); if(!v) return; let box=$("tpBox");
+  if(!box){ box=document.createElement("div"); box.id="tpBox"; box.className="tp-box"; const s=$("todayStrip"); s.parentNode.insertBefore(box,s); }
+  const {G,S,lbl,maxDay}=tpPick(); TP.rows=[...G,...S];
+  const K=TP.karne, kl=K&&K.n>=10?`📒 Bu kurala uyan geçmiş tahminler (son 30 gün): <b>${K.h}/${K.n}</b> tuttu (%${Math.round(K.h/K.n*100)}).`:"";
+  const ch=(k,t)=>`<button type="button" data-tpm="${k}" aria-pressed="${TP.mode===k}">${t}</button>`;
+  box.innerHTML=`<div class="tp-h"><div><b>${GOLD_SEAL} Hazır tahminler</b><small>${esc(lbl)}</small></div></div>
+    <div class="tp-ch">${ch("near","En yakın")}${ch("today","Bugün")}${ch("tom","Yarın")}<label class="tp-dt${TP.mode==="date"?" on":""}">📅 <span>${TP.mode==="date"?esc(ist(new Date(TP.day+"T12:00:00+03:00"),{day:"numeric",month:"short"})):"Tarih"}</span><input type="date" id="tpDate" min="${tpDay(0)}" max="${maxDay}" value="${TP.day||tpDay(2)}" aria-label="Tarih seç"></label></div>
+    ${G.length||S.length?`${G.map(tpRow).join("")}${S.length?`${G.length?`<div class="tp-sep">Güçlü tahminler</div>`:""}${S.map(tpRow).join("")}`:""}
+    <button type="button" class="pw-add gold-btn" id="tpAll">+ ${G.length?"Altın tahminleri":"Tümünü"} listeye ekle</button>`
+    :`<p class="note tp-empty">Bu aralıkta kurala uyan tahmin yok. BULUTOXX zorlamaz: yalnız kazanma olasılığı %70+ ve oranı 1,20–2,00 olan seçimleri gösterir. Başka bir gün seç.</p>`}
+    <p class="note tp-k">Altın: olasılık %${Math.round(GOLD.thr*100)}+, günde en fazla ${GOLD.perDay} · Güçlü: %70+. ${kl} Tahmindir, garanti değildir.</p>`;
+  box.querySelectorAll("[data-tpm]").forEach(b=>b.onclick=()=>{ buzz(6); TP.mode=b.dataset.tpm; renderTP(); });
+  const di=$("tpDate"); di.onchange=()=>{ if(!di.value) return; TP.mode="date"; TP.day=di.value; renderTP(); };
+  box.querySelectorAll(".tp-add").forEach(b=>b.onclick=e=>{ e.stopPropagation(); const x=TP.rows.find(r=>fkey(r.m)===b.dataset.tpk); if(!x) return; buzz(8);
+    cpToggle(x.m,x.R.k,+x.R.o,x.R.cp); try{ paintCoupon(); }catch(e){} renderTP(); });
+  const all=$("tpAll"); if(all) all.onclick=()=>{ buzz([10,30,10]); let n=0; for(const x of (G.length?G:TP.rows)){ if(!CP.items.some(c=>c.k===cpKey(x.m)&&c.mk===x.R.k)){ cpToggle(x.m,x.R.k,+x.R.o,x.R.cp); n++; } } try{ paintCoupon(); }catch(e){} toast(n?`🥇 ${n} tahmin listeye eklendi`:"Bu tahminler zaten listende"); renderTP(); }; }
+async function tpKarne(){ try{ const days=(DAILY&&DAILY.gunler||[]).filter(g=>g.n>0).map(g=>g.d).slice(-30); let n=0,h=0;
+  for(const d of days){ let A=null; try{ const r=await fetch(`data/archive/${d}.json`,{cache:"no-cache"}); if(r.ok) A=await r.json(); }catch(e){} if(!A) continue;
+    for(const v of Object.values(A)){ if(v.ok==null||v.rp==null||!v.ro) continue; if(v.rp>=.70&&v.ro>=GOLD.omin&&v.ro<=GOLD.omax){ n++; if(v.ok) h++; } } }
+  TP.karne={n,h}; }catch(e){} }
+const _tahminResetTP=tahminReset;
+tahminReset=function(){ _tahminResetTP(); TP.mode="near"; TP.day=null; try{ renderTP(); }catch(e){} };
+const _renderStripTP=renderStrip;
+renderStrip=function(){ _renderStripTP(); try{ const v=$("v-tahmin"); if(v&&(!v.hidden||!$("tpBox"))) renderTP(); }catch(e){} };
+setTimeout(()=>tpKarne().then(()=>{ try{ renderTP(); }catch(e){} }),7000);
+setTimeout(()=>{ try{ renderTP(); }catch(e){} },1500);
 </script>
 
 </body>
