@@ -4831,6 +4831,36 @@ function renderRes(){
 }
 setInterval(()=>{ const v=$("v-sonuclar"); if(v&&!v.hidden&&!document.hidden&&RS.day===istDay(new Date())) RS.load(RS.day,true).then(renderRes); },90000);
 if((location.hash||"")==="#sonuclar") setTimeout(()=>$("navRes").click(),200);
+
+// =====================================================================
+// BULUTOXX v35: Otomatik sürüm güncelleme — yeni sürüm yayınlanınca uygulama kendini yeniler
+// =====================================================================
+const APP_V="2026-10-24.39";
+(function autoUpdate(){
+  let shown=false;
+  async function check(auto){
+    try{
+      const r=await fetch("index.html?vchk="+Date.now(),{cache:"no-store"}); if(!r.ok) return;
+      const t=await r.text(); const m=t.match(/const APP_V="([^"]+)"/); if(!m||m[1]===APP_V) return;
+      if(navigator.serviceWorker&&navigator.serviceWorker.getRegistration){ const reg=await navigator.serviceWorker.getRegistration(); if(reg) reg.update().catch(()=>{}); }
+      if(auto){ apply(); return; }
+      if(shown) return; shown=true;
+      const b=document.createElement("button"); b.type="button"; b.id="updBanner";
+      b.style.cssText="position:fixed;left:12px;right:12px;top:calc(64px + env(safe-area-inset-top,0px));z-index:90;padding:12px 14px;border-radius:14px;background:linear-gradient(135deg,#1FBF5B,#14984A);color:#fff;font-weight:800;font-size:15px;box-shadow:0 10px 30px -8px rgba(0,0,0,.6)";
+      b.textContent="✨ Yeni sürüm hazır — dokun, hemen güncelle"; b.onclick=apply; document.body.appendChild(b);
+    }catch(e){}
+  }
+  async function apply(){
+    try{ if(window.caches){ const ks=await caches.keys(); await Promise.all(ks.map(k=>caches.delete(k))); } }catch(e){}
+    try{ const reg=navigator.serviceWorker&&await navigator.serviceWorker.getRegistration(); if(reg) await reg.update(); }catch(e){}
+    location.reload();
+  }
+  let hiddenAt=0;
+  document.addEventListener("visibilitychange",()=>{ if(document.hidden){ hiddenAt=Date.now(); return; } check(Date.now()-hiddenAt>60e3); });
+  setTimeout(()=>check(false),5000); setInterval(()=>{ if(!document.hidden) check(false); },3*60e3);
+  // Güncelle düğmesi: yeni sürüm varsa onu da getirir
+  const _dr=doRefresh; doRefresh=function(){ check(true); return _dr.apply(this,arguments); };
+})();
 </script>
 
 </body>
