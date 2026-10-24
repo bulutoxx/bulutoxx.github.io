@@ -1149,6 +1149,13 @@ body.tb2 #installPill,body.tb2 #shareTop,body.tb2 #setBtn,body.tb2 #hdrRefresh,b
 body.tb2 #v-power .pw-cp{display:none}
 .kp-seg{margin:0 16px 12px}
 #v-kupon .oyn-h>b,#v-kupon .oyn-e>b{display:none}.kp-seg small{opacity:.7;font-weight:600;margin-left:4px}
+body.bt3 #v-bulten .tb-sort,body.bt3 #v-bulten .upd-go,body.bt3 #v-bulten .clkv,body.bt3 #ibAllLive,body.bt3 #btList .pleg,body.bt3 #btChips button[data-f="live"],body.bt3 #btChips button[data-f="top"]{display:none!important}
+body.bt3 #v-bulten .tb-row{position:relative}
+.bt-pop{position:absolute;right:0;top:calc(100% + 6px);z-index:40;min-width:230px;background:var(--surface2);border:1px solid var(--line2);border-radius:14px;padding:6px;box-shadow:0 12px 30px rgba(0,0,0,.5);display:flex;flex-direction:column}
+.bt-pop button{background:none;border:0;color:var(--ink);text-align:left;padding:11px 12px;border-radius:10px;font:600 14.5px var(--font)}
+.bt-pop button:active{background:rgba(255,255,255,.07)}
+#btMore{font-size:22px;line-height:1;font-weight:800;letter-spacing:1px}
+.lg-top{border:1px solid rgba(255,214,102,.35)!important;background:rgba(255,214,102,.07)!important}
 </style>
 </head>
 <body>
@@ -4684,16 +4691,17 @@ renderPrediction=function(inp,r){ _rpV27(inp,r);
 (function(){ const c=$("btChips"); if(!c||$("btLgChip")) return;
   const b=document.createElement("button"); b.type="button"; b.id="btLgChip"; b.setAttribute("aria-pressed","false"); b.textContent="🏆 Lig seç";
   c.insertBefore(b, c.children[1]||null);
-  const paint=()=>{ b.textContent=BT.lg?`🏆 ${(LEAGUES[BT.lg]||{n:BT.lg}).n} ✕`:"🏆 Lig seç"; b.setAttribute("aria-pressed",!!BT.lg); };
+  const paint=()=>{ b.textContent=BT.lg?`🏆 ${(LEAGUES[BT.lg]||{n:BT.lg}).n} ✕`:BT.f==="top"?"🏆 Büyük ligler ✕":"🏆 Lig"; b.setAttribute("aria-pressed",!!BT.lg||BT.f==="top"); };
+  window.lgChipPaint=paint;
   b.onclick=e=>{ e.stopPropagation(); Sound.tap();
-    if(BT.lg){ BT.lg=null; paint(); renderBulten(); return; }
+    if(BT.lg||BT.f==="top"){ BT.lg=null; if(BT.f==="top"){ BT.f="all"; $("btChips").querySelectorAll("button[data-f]").forEach(z=>z.setAttribute("aria-pressed",z.dataset.f==="all")); } paint(); renderBulten(); return; }
     // tüm yaklaşan maçların ligleri (bugün + ileriki günler), o günkü maç sayısı önde
     const now=Date.now(), all=Pick.list().filter(m=>!m.live&&m.dt.getTime()>now-5*60e3), cnt={}, dayCnt={};
     all.forEach(m=>{ cnt[m.lg]=(cnt[m.lg]||0)+1; if(istDay(m.dt)===BT.day) dayCnt[m.lg]=(dayCnt[m.lg]||0)+1; });
     const lgs=Object.keys(cnt).sort((a,b)=>(!!dayCnt[b]-!!dayCnt[a])||((TOPL.indexOf(a)+99)%99)-((TOPL.indexOf(b)+99)%99)||(LEAGUES[a]||{n:a}).n.localeCompare((LEAGUES[b]||{n:b}).n,"tr"));
     const sh=$("sheet");
     sh.innerHTML=`<div class="box" role="dialog" aria-modal="true" aria-label="Lig seç"><div class="grab"></div><div class="pk-h"><h2>Lig seç · ${lgs.length} lig</h2><button class="ch-x" type="button" id="lgX" aria-label="Kapat">✕</button></div>
-      <input id="lgQ" type="search" placeholder="Lig ara" autocomplete="off"><div class="lgpick" id="lgList"></div></div>`;
+      <input id="lgQ" type="search" placeholder="Lig ara" autocomplete="off"><div class="lgpick"><button type="button" id="lgTop" class="lg-top">⭐ Büyük ligler<small>Avrupa'nın büyük ligleri, kupalar ve Süper Lig</small></button></div><div class="lgpick" id="lgList"></div></div>`;
     const draw=q=>{ $("lgList").innerHTML=lgs.filter(l=>!q||qMatch(q,[(LEAGUES[l]||{n:l}).n])).map(l=>`<button type="button" data-l="${esc(l)}">${FLAG[l]||"⚽"} ${esc((LEAGUES[l]||{n:l}).n)}<small>${dayCnt[l]?`bugün ${dayCnt[l]} · `:""}${cnt[l]} maç</small></button>`).join("")||`<p class="note">Lig bulunamadı</p>`;
       $("lgList").querySelectorAll("button").forEach(x=>x.onclick=()=>{ BT.lg=x.dataset.l; close(); paint();
         // filtreleri sıfırla, seçilen ligin maçı bu gün yoksa ilk maç gününe geç
@@ -4701,7 +4709,8 @@ renderPrediction=function(inp,r){ _rpV27(inp,r);
         $("btChips").querySelectorAll("button[data-f]").forEach(z=>z.setAttribute("aria-pressed",z.dataset.f==="all"));
         if(!dayCnt[BT.lg]){ const d=all.filter(m=>m.lg===BT.lg).map(m=>istDay(m.dt)).sort()[0]; if(d) BT.day=d; } if(TL.get()!=="saat"){ TL.set("saat"); document.querySelectorAll(".sortsw button").forEach(z=>z.setAttribute("aria-pressed",z.dataset.s==="saat")); } renderBulten(); window.scrollTo({top:0}); }); };
     const close=()=>{ sh.hidden=true; sh.innerHTML=""; };
-    sh.hidden=false; draw(""); $("lgX").onclick=close; sh.onclick=ev=>{ if(ev.target===sh) close(); };
+    sh.hidden=false; draw(""); $("lgX").onclick=close;
+    $("lgTop").onclick=()=>{ close(); BT.lg=null; BT.f="top"; $("btChips").querySelectorAll("button[data-f]").forEach(z=>z.setAttribute("aria-pressed",z.dataset.f==="top")); paint(); renderBulten(); window.scrollTo({top:0}); }; sh.onclick=ev=>{ if(ev.target===sh) close(); };
     $("lgQ").oninput=ev=>draw(ev.target.value.trim()); };
   // gün değişince lig seçimi korunur; seçili lig o gün yoksa liste boş görünür, çipten kaldırılabilir
 })();
@@ -5053,7 +5062,7 @@ if((location.hash||"")==="#sonuclar") setTimeout(()=>$("navRes").click(),200);
 // =====================================================================
 // BULUTOXX v35: Otomatik sürüm güncelleme — yeni sürüm yayınlanınca uygulama kendini yeniler
 // =====================================================================
-const APP_V="2026-10-24.60";
+const APP_V="2026-10-24.61";
 (function autoUpdate(){
   let shown=false;
   async function check(auto){
@@ -6008,6 +6017,25 @@ function openOyn(){ KP.tab="oyn"; const b=document.querySelector('nav.tabs butto
 const mc=$("moreCp"); if(mc) mc.onclick=()=>{ KP.tab="cp"; document.querySelector('nav.tabs button[data-v="kupon"]').click(); };
 document.addEventListener("click",e=>{ if(e.target.closest("#cpPlay")) KP.tab="oyn"; },true);
 menuOrganize(); oynBadge();
+
+// ---------- v61 Adım 3: Bülten üstü sade — ⚽/🏀 · Ara · ⋯ ; tarih ; tek sıra filtre ----------
+(function btTidy(){
+  const h=document.querySelector("#v-bulten .bt-head"); if(!h) return; document.body.classList.add("bt3");
+  const row=h.querySelector(".tb-row");
+  if(row&&!$("btMore")){ const b=document.createElement("button"); b.type="button"; b.className="tb-ic"; b.id="btMore"; b.setAttribute("aria-label","Sıralama ve güncelleme"); b.textContent="⋯"; row.appendChild(b);
+    b.onclick=e=>{ e.stopPropagation(); buzz(6); let m=$("btMoreMenu"); if(m){ m.remove(); return; }
+      m=document.createElement("div"); m.id="btMoreMenu"; m.className="bt-pop";
+      const srt=TL.get();
+      m.innerHTML=`<button type="button" data-o="saat">${srt==="saat"?"✓ ":""}🕒 Saate göre sırala</button><button type="button" data-o="lig">${srt!=="saat"?"✓ ":""}🏆 Lige göre grupla</button><button type="button" data-o="upd">↻ Verileri güncelle</button><button type="button" data-o="help">❔ İşaretler ne demek?</button>`;
+      b.after(m);
+      m.onclick=ev=>{ const x=ev.target.closest("[data-o]"); if(!x) return; const o=x.dataset.o; m.remove();
+        if(o==="upd"){ try{ doRefresh(); }catch(_){} return; }
+        if(o==="help"){ toast("✅ Güçlü öneri: kazanma olasılığı %70+ · 👍 Öneri: %58+ · ⏸️ Pas: net öneri yok · 💎 Değerli: olasılık orana göre yüksek · 🥇 Altın: BULUTOXX'un en güvendiği seçim"); return; }
+        if(TL.get()!==o){ const so=h.querySelector(".tb-sort"); if(so) so.click(); else { TL.set(o); renderBulten(); } } };
+      setTimeout(()=>document.addEventListener("click",function cl(ev){ if(!ev.target.closest("#btMoreMenu")){ const mm=$("btMoreMenu"); if(mm) mm.remove(); document.removeEventListener("click",cl); } }),0); }; }
+  try{ if(window.lgChipPaint) lgChipPaint(); }catch(e){}
+  const fav=[...h.querySelectorAll('#btChips button[data-f="fav"]')][0]; if(fav) fav.textContent="⭐ Favori";
+})();
 </script>
 
 </body>
