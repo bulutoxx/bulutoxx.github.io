@@ -1,20 +1,17 @@
-import json, urllib.request, collections
+import json, urllib.request, collections, time
 H = {"User-Agent": "Mozilla/5.0 Chrome/130", "Accept": "application/json"}
 def get(u): return json.loads(urllib.request.urlopen(urllib.request.Request(u, headers=H), timeout=30).read())
 out = {}
 for sp in (1, 2):
     d = get(f"https://statisticsv2.iddaa.com/live-results?sportId={sp}")["data"]
-    o = {"keys": list(d), "types": {k: type(v).__name__ for k, v in d.items()}}
-    for k, v in d.items():
-        if k == "competitions": continue
-        if isinstance(v, dict): o[k + "_n"] = len(v); smp = list(v.values())[:1]
-        elif isinstance(v, list): o[k + "_n"] = len(v); smp = v[:1]
-        else: o[k] = v; continue
-        o[k + "_ornek"] = smp
-        items = list(v.values()) if isinstance(v, dict) else v
-        o[k + "_alanlar"] = collections.Counter(kk for x in items if isinstance(x, dict) for kk in x).most_common(60)
-        # canlı olanlardan örnek
-        lv = [x for x in items if isinstance(x, dict) and any(str(x.get(f)).lower() in ("1", "true", "live", "inprogress") for f in ("s", "st", "status", "il", "isLive", "live"))]
-        o[k + "_canli_ornek"] = lv[:3]
-    out[sp] = o
+    ev = {e["eventId"]: e for e in d["events"]}; sc = d["sc"]
+    out[sp] = {"phase": collections.Counter(e["phase"] for e in d["events"]).most_common(),
+               "s": collections.Counter(v["s"] for v in sc.values()).most_common(),
+               "phase_s": collections.Counter((ev.get(int(k), {}).get("phase"), v["s"], "min" in v) for k, v in sc.items()).most_common(),
+               "min_ornek": [dict(v, ev=ev.get(int(k))) for k, v in sc.items() if "min" in v][:6], "now": time.time(),
+               "sc_key_type": type(next(iter(sc))).__name__}
+    lv = get(f"https://sportsbookv2.iddaa.com/sportsbook/events?st={sp}&type=1&version=0")["data"]["events"]
+    live_ids = [e["i"] for e in lv if e.get("s") == 1]
+    out[sp]["sb_live"] = len(live_ids); out[sp]["sb_live_in_sc"] = sum(1 for i in live_ids if str(i) in sc or i in sc)
+    out[sp]["sb_live_phase"] = collections.Counter(ev.get(i, {}).get("phase") for i in live_ids).most_common()
 json.dump(out, open("lab/iddaa_probe.json", "w"), ensure_ascii=False, indent=1, default=str)
