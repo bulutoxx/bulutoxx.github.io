@@ -894,6 +894,7 @@ def merge_iddaa(fx, season, today):
     out_fx = list(fx); extra = []; lam = {}
     def add_io(f, e):
         mk = e["mk"]; f["io"] = mk["ms"]; f["iid"] = e["iid"]
+        if e.get("mbc"): f["mbs"] = e["mbc"]
         if mk.get("ou"): f["iou"] = mk["ou"]
         if mk.get("kg"): f["ikg"] = mk["kg"]
         if not f.get("odds"): f["odds"] = mk["ms"]
