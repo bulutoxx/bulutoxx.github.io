@@ -791,6 +791,48 @@ body.ios-guide main,body.ios-guide .page{padding-bottom:40vh}
 @media (max-width:420px){.logo b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}#installPill span{display:none}#installPill{padding-left:10px;padding-right:10px}}
 ul.why{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px;font-size:14px;line-height:1.4;color:var(--ink2)}
 ul.why b{color:var(--ink)}
+/* v25: Canlı menü yeşil + iddaa canlı listesi */
+nav.tabs button[data-v="canli"]{color:#2BD46B}
+nav.tabs button[data-v="canli"] svg{filter:drop-shadow(0 0 6px rgba(43,212,107,.55))}
+nav.tabs button[data-v="canli"][aria-current="page"]{color:#3BEA7E}
+nav.tabs button[data-v="canli"][aria-current="page"]::before{background:linear-gradient(90deg,#1FBF5B,#3BEA7E);box-shadow:0 0 12px rgba(59,234,126,.75)}
+nav.tabs button[data-v="canli"]::after{content:"";position:absolute;top:8px;left:calc(50% - 17px);width:7px;height:7px;border-radius:50%;background:#2BD46B;box-shadow:0 0 0 0 rgba(43,212,107,.7);animation:lvpulse 1.6s infinite}
+nav.tabs button[data-v="canli"].nolive::after{display:none}
+nav.tabs #liveBadge{background:#1FBF5B}
+@keyframes lvpulse{0%{box-shadow:0 0 0 0 rgba(43,212,107,.7)}70%{box-shadow:0 0 0 8px rgba(43,212,107,0)}100%{box-shadow:0 0 0 0 rgba(43,212,107,0)}}
+#btChips button[data-f="live"]{border-color:rgba(43,212,107,.45);color:#3BEA7E}
+#btChips button[data-f="live"][aria-pressed="true"]{background:linear-gradient(135deg,#1FBF5B,#14984A);color:#fff;border-color:transparent}
+.idl{display:flex;flex-direction:column;gap:10px}
+.idl-bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.idl-bar .sp{display:flex;background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:12px;padding:3px;gap:3px}
+.idl-bar button{padding:8px 12px;border-radius:9px;font-weight:700;font-size:13.5px;color:var(--ink2)}
+.idl-bar button[aria-pressed="true"]{background:linear-gradient(135deg,#1FBF5B,#14984A);color:#fff}
+.idl-up{font-size:12px;color:var(--ink3);margin-left:auto}
+.idl-g{border-radius:14px;overflow:hidden;border:1px solid var(--line);background:var(--surface)}
+.idl-gh{display:flex;align-items:center;gap:8px;padding:9px 12px;background:linear-gradient(90deg,#0E3B5C,#0B2A44);font-weight:700;font-size:14px}
+.idl-gh small{margin-left:auto;color:#9fd3ff;font-weight:600}
+.lv-c{padding:10px 12px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:8px}
+.lv-c:first-of-type{border-top:0}
+.lv-top{display:flex;align-items:center;gap:10px}
+.lv-ko{font:700 12px var(--round);color:var(--ink3);min-width:38px}
+.lv-tm{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;font-weight:650;font-size:14.5px}
+.lv-tm span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lv-tm .rc{display:inline-block;width:8px;height:11px;background:#FF3B30;border-radius:2px;margin-left:5px;vertical-align:-1px}
+.lv-sc{min-width:66px;text-align:center;background:linear-gradient(135deg,#1FBF5B,#14984A);border-radius:10px;padding:5px 6px;color:#fff;box-shadow:0 4px 14px rgba(31,191,91,.25)}
+.lv-sc b{display:block;font:800 19px var(--round);letter-spacing:.02em}
+.lv-sc i{display:block;font:700 12px var(--round);font-style:normal;opacity:.95;font-variant-numeric:tabular-nums}
+.lv-od{display:grid;grid-template-columns:repeat(5,1fr);gap:5px}
+.lv-od span{background:rgba(255,255,255,.06);border:1px solid var(--line);border-radius:8px;text-align:center;padding:5px 2px;font:700 14px var(--round);line-height:1.15}
+.lv-od span u{display:block;text-decoration:none;font:600 10.5px var(--font);color:var(--ink3)}
+.lv-od span.na{opacity:.35}
+.lv-od span.pk{border-color:#2BD46B;background:rgba(43,212,107,.14);color:#3BEA7E}
+.lv-od span.val::after{content:" 💎";font-size:10px}
+.lv-pr{font-size:12.5px;color:var(--ink2);line-height:1.45}
+.lv-pr b{color:var(--ink)}
+.lv-pr .hit{display:inline-block;margin-top:3px;padding:3px 8px;border-radius:8px;background:rgba(43,212,107,.15);color:#3BEA7E;font-weight:700}
+.lv-pr .mid{display:inline-block;margin-top:3px;padding:3px 8px;border-radius:8px;background:rgba(255,176,32,.12);color:var(--amber);font-weight:700}
+.lv-st{font-size:11.5px;color:var(--ink3)}
+.idl-empty{padding:22px 16px;text-align:center;color:var(--ink2)}
 </style>
 </head>
 <body>
@@ -912,7 +954,7 @@ ul.why b{color:var(--ink)}
       </div>
     </div>
     <div id="btList"></div>
-    <p class="disc">Oranlar bahis şirketlerinin ortalamasıdır ve bilgi amaçlıdır; BULUTOXX bahis almaz. Alttaki yüzdeler BULUTOXX modelinin tahminidir. 💎 model olasılığı orana göre yüksekse işaretlenir · 18+</p>
+    <p class="disc">Oranlar resmi iddaa bülteninden gelir (Bilyoner, Nesine vb. ile aynı); yalnızca bilgi amaçlıdır; BULUTOXX bahis almaz. Alttaki yüzdeler BULUTOXX modelinin tahminidir. 💎 model olasılığı orana göre yüksekse işaretlenir · 18+</p>
   </section>
 
   <!-- BASKETBOL -->
@@ -2788,7 +2830,7 @@ const Pick={ extra:{}, loaded:false,
     for(const f of FIXTURES){
       const dt=ukToDate(f.d,f.t); if(dt.getTime()<now-2*3600e3) continue;   // başlamış ve muhtemelen bitmiş maçları gösterme
       const k=key(f.lg,f.h,f.a); if(seen.has(k)) continue; seen.add(k);
-      out.push({src:"fx", lg:f.lg, dt, live:false, h:f.h, a:f.a, odds:!!f.odds, started:dt.getTime()<now});
+      out.push({src:"fx", lg:f.lg, dt, live:false, h:f.h, a:f.a, odds:!!f.odds, started:dt.getTime()<now, iid:f.iid});
     }
     return out.sort((x,y)=>(y.live-x.live) || (x.dt-y.dt));
   }
@@ -2933,9 +2975,9 @@ function renderBulten(){
   if(BT.f==="live") L=live;
   else if(BT.f==="fav") L=L.filter(m=>FAVT.has(bestTeamName(m.h))||FAVT.has(bestTeamName(m.a)));
   else L=L.filter(m=>m.live || istDay(m.dt)===BT.day);
-  if(BT.q){ const n=norm(BT.q); L=Pick.list().filter(m=>norm(m.h).includes(n)||norm(m.a).includes(n)||norm((LEAGUES[m.lg]||{n:""}).n).includes(n)); }
+  if(BT.q){ L=Pick.list().filter(m=>qMatch(BT.q,[m.h,m.a,(LEAGUES[m.lg]||{n:""}).n])); }
   if(BT.f==="top") L=L.filter(m=>TOPL.includes(m.lg));
-  const rows=L.slice(0,260).map(m=>{ const f=m.src==="fx"?FIXTURES.find(x=>x.lg===m.lg&&x.h===m.h&&x.a===m.a):fxOdds(m); return {m,f,p:quickPred(m,f)}; });
+  const rows=L.slice(0,800).map(m=>{ const f=m.src==="fx"?FIXTURES.find(x=>x.lg===m.lg&&x.h===m.h&&x.a===m.a):fxOdds(m); return {m,f,p:quickPred(m,f)}; });
   let R=rows;
   if(BT.f==="value") R=rows.filter(x=>x.f&&x.f.odds&&x.p&&x.p.p.some((pp,i)=>pp*x.f.odds[i]>1.10));
   if(BT.f==="sure") R=rows.filter(x=>x.p&&Math.max(...x.p.p)>=.6);
@@ -3907,6 +3949,241 @@ renderPrediction=function(inp,r){ _rpX(inp,r); try{
     for(const l of Object.keys(BK_NAMES)) if(!seen.has(l)){ seen.add(l); if(!PREFS.bkLeagues.includes(l)) PREFS.bkLeagues.push(l); ch=true; }
     if(ch){ PREFS.bkSeen=[...seen]; savePrefs(); } }catch(e){}
 })();
+
+// =====================================================================
+// BULUTOXX v25: Resmi iddaa bülteni (Bilyoner, Nesine vb. ile aynı liste)
+// Canlı skor, dakika:saniye, canlı oranlar ve maç içi tahmin; bültende iddaa oranları; bulanık arama.
+// Veri doğrudan tarayıcıdan iddaa.com'un herkese açık uçlarından okunur (sanal/e-spor hariç).
+// =====================================================================
+function qTok(s){ return norm(String(s||"")).split(" ").filter(w=>w&&!["fc","sk","fk","cf","ac","as","sc","cd","club","spor","kulubu"].includes(w)); }
+function qLev(a,b){ const m=a.length,n=b.length; if(Math.abs(m-n)>2) return 9; let p=[...Array(n+1).keys()];
+  for(let i=1;i<=m;i++){ const c=[i]; for(let j=1;j<=n;j++) c[j]=Math.min(p[j]+1,c[j-1]+1,p[j-1]+(a[i-1]===b[j-1]?0:1)); p=c; } return p[n]; }
+function qSim(a,b){ if(a===b) return 1; if(a.length<2||b.length<2) return 0;
+  const bg=w=>{ const o=new Map(); for(let i=0;i<w.length-1;i++){ const k=w.slice(i,i+2); o.set(k,(o.get(k)||0)+1); } return o; };
+  const A=bg(a), B=bg(b); let n=0; for(const [k,v] of A) n+=Math.min(v,B.get(k)||0); return 2*n/((a.length-1)+(b.length-1)); }
+// Arama: önce düz içerme, olmazsa her kelime için benzerlik (yazım hatasına dayanıklı: "fc kurum" → "FC Kurim")
+function qMatch(q, fields){
+  const n=norm(q); if(!n) return true;
+  const hay=fields.map(f=>norm(String(f||""))).join(" | ");
+  if(hay.includes(n)) return true;
+  const qt=qTok(q); if(!qt.length) return false;
+  const ft=fields.flatMap(qTok);
+  return qt.every(w=>ft.some(t=>t.startsWith(w)||(w.length>=4&&qSim(w,t)>=.7)||(w.length>=4&&t.length>=4&&(t.includes(w)||w.includes(t)))||(w.length>=4&&qLev(w,t.slice(0,w.length+1))<=(w.length>=7?2:1))));
+}
+function ccFlag(cc){ cc=String(cc||"").toUpperCase(); if(cc==="GB"||cc==="EN"||cc==="UK") return "🏴"; if(cc==="EU"||cc==="UEFA") return "🇪🇺";
+  if(!/^[A-Z]{2}$/.test(cc)) return "⚽"; return String.fromCodePoint(...[...cc].map(c=>127397+c.charCodeAt(0))); }
+const IDL_SKIP=/(e-?spor|e-?futbol|e-?soccer|esoccer|efootball|e-?basket|ebasket|sanal|virtual|simul|nba ?2k|cyber)/i;
+const IDL={ live:{1:[],2:[]}, byId:{1:{},2:{}}, at:{1:0,2:0}, ok:{1:false,2:false}, busy:{}, lam:{}, sp:1, failed:0,
+  async lamLoad(){ try{ const r=await fetch("data/iddaa.json",{cache:"no-cache"}); if(r.ok){ const d=await r.json(); this.lam=d.lam||{}; } }catch(e){} },
+  async load(sp, force){
+    if(this.busy[sp]) return; if(!force && Date.now()-this.at[sp]<10000) return;
+    this.busy[sp]=true;
+    try{
+      const get=u=>fetch(u,{cache:"no-store"}).then(r=>r.ok?r.json():null).catch(()=>null);
+      const [a,b]=await Promise.all([get(`https://statisticsv2.iddaa.com/live-results?sportId=${sp}`), get(`https://sportsbookv2.iddaa.com/sportsbook/events?st=${sp}&type=1&version=0`)]);
+      const d=a&&a.data; if(!d) throw new Error("veri yok");
+      const comps=d.competitions||{}, sc=d.sc||{}, odds={}, liveSb=new Set();
+      for(const e of ((b&&b.data&&b.data.events)||[])){ if(e.s===1) liveSb.add(e.i); odds[e.i]=idlOdds(e,sp); }
+      const out=[], by={};
+      for(const e of (d.events||[])){
+        if(e.phase!==1 && !liveSb.has(e.eventId)) continue;
+        const s=sc[String(e.eventId)]||{}, c=comps[String(e.ci)]||{}, H=s.ht||{}, A=s.at||{};
+        if(IDL_SKIP.test(c.n||"")||IDL_SKIP.test(e.homeTeam||"")) continue;
+        const m={id:e.eventId, sp, ci:e.ci, comp:c.n||"", cc:c.cid||"", h:e.homeTeam, a:e.awayTeam, ts:e.eventDate*1000,
+          hs:+H.c||0, as:+A.c||0, h1:H.ht, a1:A.ht, min:s.min, sec:s.sec, t:s.t||Date.now(), st:s.s, got:Date.now(),
+          co:[H.co,A.co], yc:[H.yc,A.yc], rc:[+H.rc||0,+A.rc||0], hq:(H.qs||[]).map(q=>q.s), aq:(A.qs||[]).map(q=>q.s), odds:odds[e.eventId]||null};
+        out.push(m); by[m.id]=m;
+      }
+      out.sort((x,y)=>x.ts-y.ts || x.comp.localeCompare(y.comp,"tr") || x.h.localeCompare(y.h,"tr"));
+      this.live[sp]=out; this.byId[sp]=by; this.at[sp]=Date.now(); this.ok[sp]=true; this.failed=0;
+      idlBadge();
+    }catch(e){ this.failed++; }
+    finally{ this.busy[sp]=false; }
+  }
+};
+function idlOdds(e, sp){
+  const o={}; let ous=[];
+  for(const m of (e.m||[])){
+    const v={}; (m.o||[]).forEach(x=>{ if(x.odd>1.01) v[x.n]=x.odd; });
+    const lock=m.s!==1;
+    if(sp===1){
+      if(!o.ms && v["1"]&&v["0"]&&v["2"] && (m.st===4||m.st===1)) o.ms={v:[v["1"],v["0"],v["2"]],lock};
+      if(v["Alt"]&&v["Üst"]&&m.sov&&(m.st===14||m.st===101)) ous.push({l:+m.sov,alt:v["Alt"],ust:v["Üst"],lock});
+    } else {
+      if(!o.ms && v["1"]&&v["2"]&&!v["0"]&&!m.sov) o.ms={v:[v["1"],v["2"]],lock};
+      if(v["Alt"]&&v["Üst"]&&m.sov) ous.push({l:+m.sov,alt:v["Alt"],ust:v["Üst"],lock});
+    }
+  }
+  if(ous.length){ if(sp===2){ const mx=Math.max(...ous.map(x=>x.l)); ous=ous.filter(x=>x.l>=.85*mx); }
+    o.ou=ous.sort((x,y)=>Math.abs(x.alt-x.ust)-Math.abs(y.alt-y.ust))[0]; }
+  return o;
+}
+// Maç saati: son veri anından bu yana geçen süre eklenir (futbolda saat ileri işler)
+function idlSecs(m){
+  if(m.min==null) return null;
+  let s=m.min*60+(m.sec||0);
+  if(m.sp===1 && (m.st===2||m.st===3) && m.sec!=null){ const el=(Date.now()-m.t)/1000; if(el>0&&el<900) s+=el; }
+  return s;
+}
+function idlClockTxt(m){
+  if(m.sp===2){ const q=Math.max(m.hq.length,m.aq.length,1); return m.min!=null?`${q}.Ç ${m.min}:${String(m.sec||0).padStart(2,"0")}`:`${q}.Çeyrek`; }
+  const s=idlSecs(m);
+  if(s==null) return m.h1!=null&&m.st!==2&&m.st!==3?"İY":"Canlı";
+  if(m.st!==2&&m.st!==3&&m.min>=45&&m.min<=47) return "Devre arası";
+  const mm=Math.floor(s/60), ss=Math.floor(s%60);
+  if(m.st===2&&mm>=45) return `45+${mm-44}'`;
+  if(mm>=90) return `90+${mm-89}'`;
+  return `${mm}:${String(ss).padStart(2,"0")}'`;
+}
+function poisCdf(k,l){ if(k<0) return 0; let p=Math.exp(-l), c=p; for(let i=1;i<=k;i++){ p*=l/i; c+=p; } return Math.min(1,c); }
+// Maç içi tahmin: maç öncesi piyasa gol beklentisi (motor saatlik kaydeder) + kalan süre + skor durumu
+function idlPred(m){
+  if(m.sp!==1) return null;
+  let L=IDL.lam[String(m.id)], src="iddaa";
+  if(!L){ const f=FIXTURES.find(x=>x.iid===m.id); if(f){ try{ const p=quickPred({lg:f.lg,h:f.h,a:f.a},f); if(p&&p.lh!=null) L=[p.lh,p.la]; src="model"; }catch(e){} } }
+  if(!L){ L=[1.45,1.15]; src="ort"; }
+  const s=idlSecs(m), t=s==null?(m.h1!=null?46:30):Math.min(120,s/60);
+  const P=fbLive(L[0],L[1],m.hs,m.as,t); if(!P) return null;
+  // kırmızı kart: eksik takımın gol beklentisi düşer, rakibinki artar
+  const rem=fbRemShare(t), d=m.hs-m.as, st=t>=15?1:0, up=Math.exp(.1), dn=Math.exp(-.1);
+  let LH=L[0]*rem*(st?(d<0?up:dn):1), LA=L[1]*rem*(st?(d>0?up:dn):1);
+  LH*=Math.pow(.72,m.rc[0])*Math.pow(1.25,m.rc[1]); LA*=Math.pow(.72,m.rc[1])*Math.pow(1.25,m.rc[0]);
+  const tot=m.hs+m.as, ou=m.odds&&m.odds.ou;
+  const line=ou?ou.l:tot+.5, pOver=1-poisCdf(Math.floor(line)-tot, LH+LA);
+  return Object.assign(P,{line, pOver, src});
+}
+function idlPick(m,P){
+  if(!P) return null; const od=m.odds||{}, ms=od.ms&&!od.ms.lock?od.ms.v:null, ou=od.ou&&!od.ou.lock?od.ou:null;
+  const c=[{k:"1",n:"MS 1",p:P.H,o:ms&&ms[0]},{k:"X",n:"MS X",p:P.D,o:ms&&ms[1]},{k:"2",n:"MS 2",p:P.A,o:ms&&ms[2]},
+           {k:"A",n:`${lnF(P.line)} Alt`,p:1-P.pOver,o:ou&&ou.alt},{k:"U",n:`${lnF(P.line)} Üst`,p:P.pOver,o:ou&&ou.ust}];
+  c.forEach(x=>x.val=!!(x.o&&x.p*x.o>1.08));
+  const best=c.slice().sort((a,b)=>b.p-a.p)[0];
+  return {all:c, best};
+}
+function lnF(l){ return String(l).replace(".",","); }
+function pc9(p){ return Math.min(99,Math.max(1,Math.round(p*100))); }
+function idlRow(m){
+  const od=m.odds||{}, P=idlPred(m), K=idlPick(m,P), ms=od.ms, ou=od.ou;
+  const ob=(lab,v,lock,key)=>{ if(!v) return `<span class="na"><u>${lab}</u>–</span>`; const x=K&&K.all.find(z=>z.k===key);
+    const cls=[lock?"na":"", K&&K.best.k===key&&K.best.p>=.6?"pk":"", x&&x.val&&!lock?"val":""].join(" ");
+    return `<span class="${cls}"><u>${lab}</u>${lock?"🔒":v.toFixed(2)}</span>`; };
+  let odds="";
+  if(m.sp===1) odds=`<div class="lv-od">${ob("MS 1",ms&&ms.v[0],ms&&ms.lock,"1")}${ob("MS X",ms&&ms.v[1],ms&&ms.lock,"X")}${ob("MS 2",ms&&ms.v[2],ms&&ms.lock,"2")}${ob(ou?lnF(ou.l)+" Alt":"Alt",ou&&ou.alt,ou&&ou.lock,"A")}${ob(ou?lnF(ou.l)+" Üst":"Üst",ou&&ou.ust,ou&&ou.lock,"U")}</div>`;
+  else odds=`<div class="lv-od" style="grid-template-columns:repeat(4,1fr)">${ob("MS 1",ms&&ms.v[0],ms&&ms.lock,"1")}${ob("MS 2",ms&&ms.v[1],ms&&ms.lock,"2")}${ob(ou?lnF(ou.l)+" Alt":"Alt",ou&&ou.alt,ou&&ou.lock,"A")}${ob(ou?lnF(ou.l)+" Üst":"Üst",ou&&ou.ust,ou&&ou.lock,"U")}</div>`;
+  let pr="";
+  if(P){ const b=K.best, pc=pc9(b.p);
+    pr=`<div class="lv-pr">🔮 Tahmin: MS <b>${esc(P.ft)}</b> · 1 %${pc9(P.H)} · X %${pc9(P.D)} · 2 %${pc9(P.A)} · ${lnF(P.line)} Üst %${pc9(P.pOver)}<br>`+
+      `<span class="${pc>=70?"hit":"mid"}">${pc>=70?"🎯 Güçlü":"⚖️ En olası"}: ${esc(b.n)} %${pc}${b.o?` · oran ${b.o.toFixed(2)}`:""}${b.val?" 💎":""}</span></div>`; }
+  else if(m.sp===2){ const f=BK.data&&(BK.data.fixtures||[]).find(x=>x.iid===m.id); const p=f&&bkPredict(f);
+    if(p){ const r=bkLivePred({mar:p.mar,sm:p.sm,mh:p.mh,ma:p.ma,L:p.L},{state:"in",clock:`${Math.max(m.hq.length,1)}th ${m.min||0}:${String(m.sec||0).padStart(2,"0")}`,hs:m.hs,as:m.as});
+      if(r){ const pc=pc9(Math.max(r.pH,r.pA)); pr=`<div class="lv-pr">🔮 Tahmin: MS <b>${r.fh}-${r.fa}</b> · 1 %${pc9(r.pH)} · 2 %${pc9(r.pA)}<br><span class="${pc>=70?"hit":"mid"}">${pc>=70?"🎯 Güçlü":"⚖️ En olası"}: MS ${r.pH>=r.pA?"1":"2"} %${pc}</span></div>`; } } }
+  const st=m.sp===1?[m.h1!=null?`İY ${m.h1}-${m.a1}`:"", m.co[0]!=null?`Korner ${m.co[0]}-${m.co[1]}`:"", m.yc[0]!=null?`Sarı ${m.yc[0]}-${m.yc[1]}`:""].filter(Boolean).join(" · ")
+    : (m.hq.length?m.hq.map((q,i)=>`${i+1}.Ç ${q}-${m.aq[i]??0}`).join(" · "):"");
+  const rc=n=>n?`<i class="rc"></i>`.repeat(Math.min(n,3)):"";
+  return `<div class="lv-c" data-id="${m.id}">
+    <div class="lv-top"><span class="lv-ko">${esc(ist(new Date(m.ts),{hour:"2-digit",minute:"2-digit"}))}</span>
+      <span class="lv-tm"><span>${esc(m.h)}${rc(m.rc[0])}</span><span>${esc(m.a)}${rc(m.rc[1])}</span></span>
+      <span class="lv-sc"><b>${m.hs}-${m.as}</b><i class="lclk" data-id="${m.id}" data-sp="${m.sp}">${esc(idlClockTxt(m))}</i></span></div>
+    ${odds}${pr}${st?`<div class="lv-st">${esc(st)}</div>`:""}</div>`;
+}
+const IDLV={ sp:1, sort:(()=>{ try{ return localStorage.getItem("bx-lvsort")||"saat"; }catch(e){ return "saat"; } })() };
+function idlListHtml(sp, q){
+  let L=IDL.live[sp]||[];
+  if(q) L=L.filter(m=>qMatch(q,[m.h,m.a,m.comp]));
+  if(!L.length) return `<div class="panel idl-empty"><b>${IDL.ok[sp]?(q?"Aramaya uyan canlı maç yok":"Şu an canlı "+(sp===1?"futbol":"basketbol")+" maçı yok"):(IDL.failed?"Canlı bülten alınamadı, birazdan tekrar denenecek":"Canlı maçlar yükleniyor…")}</b></div>`;
+  if(IDLV.sort==="lig") L=L.slice().sort((x,y)=>x.comp.localeCompare(y.comp,"tr")||x.ts-y.ts);
+  const G=[]; for(const m of L){ const g=G[G.length-1]; if(g&&g.comp===m.comp) g.items.push(m); else G.push({comp:m.comp,cc:m.cc,items:[m]}); }
+  return G.map(g=>`<div class="idl-g"><div class="idl-gh"><span>${ccFlag(g.cc)}</span>${esc(g.comp||"Diğer")}<small>${g.items.length}</small></div>${g.items.map(idlRow).join("")}</div>`).join("");
+}
+function idlBoxHtml(){
+  const n1=IDL.live[1].length, n2=IDL.live[2].length;
+  return `<div class="idl-bar"><div class="sp" role="group" aria-label="Spor"><button type="button" data-sp="1" aria-pressed="${IDLV.sp===1}">⚽ Futbol (${n1})</button><button type="button" data-sp="2" aria-pressed="${IDLV.sp===2}">🏀 Basketbol (${n2})</button></div>
+    <div class="sp" role="group" aria-label="Sıralama"><button type="button" data-so="saat" aria-pressed="${IDLV.sort==="saat"}">Saat</button><button type="button" data-so="lig" aria-pressed="${IDLV.sort==="lig"}">Lig</button></div>
+    <span class="idl-up">${IDL.at[IDLV.sp]?"Güncellendi "+ist(new Date(IDL.at[IDLV.sp]),{hour:"2-digit",minute:"2-digit",second:"2-digit"}):""}</span></div>
+    <div class="idl-list">${idlListHtml(IDLV.sp)}</div>`;
+}
+function idlWire(box){
+  box.querySelectorAll("[data-sp]").forEach(b=>b.onclick=()=>{ IDLV.sp=+b.dataset.sp; Sound.tap(); buzz(6); idlRenderAll(); IDL.load(IDLV.sp,true).then(idlRenderAll); });
+  box.querySelectorAll("[data-so]").forEach(b=>b.onclick=()=>{ IDLV.sort=b.dataset.so; try{ localStorage.setItem("bx-lvsort",IDLV.sort); }catch(e){} Sound.tap(); idlRenderAll(); });
+}
+function idlCanliVisible(){ const v=$("v-canli"); return v&&!v.hidden&&!document.hidden; }
+function idlBultenLive(){ const v=$("v-bulten"); return v&&!v.hidden&&!document.hidden&&BT.f==="live"&&!BT.q; }
+function idlRenderAll(){
+  // Canlı sekmesi
+  const cw=document.querySelector("#v-canli .wrap");
+  if(cw){ let box=$("idlBox");
+    if(!box){ box=document.createElement("div"); box.id="idlBox"; box.className="idl"; cw.prepend(box); }
+    if(idlCanliVisible()||!box.innerHTML){ box.innerHTML=idlBoxHtml(); idlWire(box); }
+    const ok=IDL.ok[1]||IDL.ok[2];
+    cw.querySelectorAll(":scope > .seg, #liveList, #liveBk").forEach(x=>x.style.display=ok?"none":"");
+    const nt=cw.querySelector(":scope > p.note"); if(nt&&ok) nt.textContent="Canlı skor, dakika ve oranlar resmi iddaa bülteninden (Bilyoner, Nesine vb. ile aynı) 10 saniyede bir yenilenir. Tahminler BULUTOXX modelinindir; kesinlik içermez. 18+";
+    const sub=$("liveSub"); if(sub&&ok) sub.textContent=`${IDL.live[1].length} futbol · ${IDL.live[2].length} basketbol maçı şu an oynanıyor`;
+  }
+  if(idlBultenLive()) renderBulten();
+}
+function idlBadge(){
+  const n=IDL.live[1].length+IDL.live[2].length, b=$("liveBadge"), nb=document.querySelector('nav.tabs button[data-v="canli"]');
+  if(b){ b.hidden=!n; b.textContent=n>99?"99+":String(n); }
+  if(nb) nb.classList.toggle("nolive",!n);
+}
+// Bülten "Canlı" çipi: iddaa canlı listesi (futbol)
+const _rbIdl=renderBulten;
+renderBulten=function(){
+  if(BT.f==="live" && !BT.q && (IDL.ok[1]||IDL.failed<3)){
+    const list=$("btList"); if(!list) return _rbIdl();
+    btDays();
+    $("btSub").textContent=`🔴 ${IDL.live[1].length} canlı maç · resmi iddaa bülteni`;
+    list.innerHTML=`<div class="idl">${idlListHtml(1)}</div>`;
+    if(!IDL.ok[1]) IDL.load(1,true).then(()=>{ if(idlBultenLive()) renderBulten(); });
+    return;
+  }
+  const r=_rbIdl();
+  if(BT.q && IDL.ok[1]){ const h=IDL.live[1].filter(m=>qMatch(BT.q,[m.h,m.a,m.comp])); const list=$("btList");
+    if(h.length&&list){ const em=list.querySelector(".panel.empty"); if(em) em.remove();
+      const sb=$("btSub"); if(sb&&/^0 maç/.test(sb.textContent)) sb.textContent=`${h.length} canlı maç bulundu`;
+      list.insertAdjacentHTML("afterbegin",`<div class="idl" style="margin-bottom:12px"><div class="idl-gh" style="border-radius:12px">🔴 Şu an canlı · ${h.length}</div>${idlListHtml(1,BT.q)}</div>`); } }
+  return r;
+};
+// Bültendeki maçlara canlı durum (iddaa) ve lig adları
+const _plIdl=Pick.list;
+Pick.list=function(){ const L=_plIdl.call(Pick); const by=IDL.byId[1];
+  for(const m of L){ const x=m.iid&&by[m.iid]; if(x){ m.live=true; m.hs=x.hs; m.as=x.as; m.clock=idlClockTxt(x); m.detail=""; } }
+  return L; };
+function idlRegisterLeagues(){
+  for(const f of FIXTURES){ if(f.ln && !LEAGUES[f.lg]){ LEAGUES[f.lg]={n:f.ln,g:2.6,idd:true}; FLAG[f.lg]=ccFlag(f.cc); }
+    if(f.io && !f._io){ f._io=1; f.oddsAvg=f.odds; f.odds=f.io; if(f.iou){ f.ouAvg=f.ou; f.ou=f.iou; } } }   // bültende Bilyoner ile aynı oranlar
+}
+const _lfIdl=loadFixtures;
+loadFixtures=async function(...a){ const r=await _lfIdl.apply(this,a); idlRegisterLeagues(); try{ if(typeof PL_RESET==="function") PL_RESET(); }catch(e){} return r; };
+idlRegisterLeagues();
+// Basketbol: iddaa'daki tüm maçlar (Türkiye BSL dahil) + canlı skor
+const _bkListIdl=bkList;
+bkList=function(){ const D=BK.data; if(!D) return [];
+  const base=_bkListIdl(); if(PREFS.bkIddaa===false) return base;
+  const ext=(D.fixtures||[]).filter(f=>String(f.lg).startsWith("i")).map(f=>Object.assign({},f,{t:new Date(f.dt)}));
+  return base.concat(ext).sort((a,b)=>a.t-b.t); };
+const _bkLiveOfIdl=bkLiveOf;
+bkLiveOf=function(f){ const x=f.iid&&IDL.byId[2][f.iid];
+  if(x) return {state:"in", clock:idlClockTxt(x), hs:x.hs, as:x.as, hq:x.hq, aq:x.aq};
+  return _bkLiveOfIdl(f); };
+const _bkPredIdl=bkPredict;
+bkPredict=function(f){ const D=BK.data, L=D&&D.leagues[f.lg];
+  if(L&&L.syn&&D.market){ const w=D.market.w; D.market.w=1; try{ return _bkPredIdl(f); } finally{ D.market.w=w; } }
+  return _bkPredIdl(f); };
+const _bkLoadIdl=bkLoad;
+bkLoad=async function(...a){ const d=await _bkLoadIdl.apply(this,a); try{ for(const [lg,L] of Object.entries((BK.data||{}).leagues||{})) if(L.syn) BK_FLAG[lg]=ccFlag(L.cc); }catch(e){} return d; };
+// Saniye saniye maç saati
+setInterval(()=>{ if(document.hidden) return;
+  document.querySelectorAll(".lclk").forEach(el=>{ const m=IDL.byId[+el.dataset.sp][+el.dataset.id]; if(m) el.textContent=idlClockTxt(m); }); },1000);
+// Yenileme: Canlı sekmesi veya bülten canlı filtresi açıkken 10 sn'de bir; arka planda rozet için 60 sn'de bir
+setInterval(()=>{ if(document.hidden) return;
+  if(idlCanliVisible()) IDL.load(IDLV.sp).then(idlRenderAll);
+  else if(idlBultenLive()) IDL.load(1).then(()=>{ if(idlBultenLive()) renderBulten(); });
+  else if(!$("v-basket").hidden && BK.f==="live") IDL.load(2).then(()=>{ if(!$("v-basket").hidden) renderBasket(); }); },10000);
+setInterval(()=>{ if(!document.hidden) Promise.all([IDL.load(1),IDL.load(2)]); },60000);
+document.querySelector('nav.tabs button[data-v="canli"]').addEventListener("click",()=>{ idlRenderAll(); Promise.all([IDL.load(1,true),IDL.load(2,true)]).then(idlRenderAll); });
+setTimeout(()=>{ IDL.lamLoad(); Promise.all([IDL.load(1),IDL.load(2)]).then(()=>{ idlRenderAll(); if(!$("v-bulten").hidden) renderBulten(); }); },1500);
+setInterval(()=>IDL.lamLoad(),30*60e3);
 </script>
 
 </body>

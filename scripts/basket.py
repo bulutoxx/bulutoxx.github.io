@@ -417,6 +417,50 @@ def learn_market(plog):
     return bw, len(es)
 
 # ---------------------------------------------------------------- ana akış
+def iddaa_bk(fixtures, out_lg):
+    """Resmi iddaa basketbol bülteni: ESPN maçlarına iddaa oranı eklenir; bizde olmayan maçlar
+    (Türkiye BSL dahil) yarışma başına sentetik bir 'piyasa ligi' ile bültene girer. Tahmin tamamen orandan:
+    MS oranından beklenen fark, alt/üst çizgisinden beklenen toplam."""
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    import iddaa as ID
+    from statistics import NormalDist
+    N = NormalDist()
+    evs = ID.fetch(2)
+    def ts(f):
+        try: return datetime.fromisoformat(f["dt"].replace("Z", "+00:00")).timestamp()
+        except Exception: return None
+    fk = [(f, ts(f)) for f in fixtures]
+    used = set(); extra = []; syn = {}; nm = 0
+    comp_tot = {}
+    for e in evs:
+        if e["mk"].get("tot"): comp_tot.setdefault(e["ci"], []).append(e["mk"]["tot"][0])
+    for e in evs:
+        best, bs = None, 0
+        for j, (f, t) in enumerate(fk):
+            if j in used or t is None or abs(t - e["ts"]) > 3 * 3600: continue
+            sh, sa = ID.sim(e["h"], f["h"]), ID.sim(e["a"], f["a"])
+            if min(sh, sa) < 0.5 or sh + sa < 1.4: continue
+            if sh + sa > bs: best, bs = j, sh + sa
+        mk = e["mk"]; o1, o2 = mk["ms"]
+        p = (1 / o1) / (1 / o1 + 1 / o2)
+        tot = mk["tot"][0] if mk.get("tot") else (float(np.median(comp_tot[e["ci"]])) if comp_tot.get(e["ci"]) else None)
+        if best is not None:
+            used.add(best); f = fk[best][0]; nm += 1
+            f["io"] = mk["ms"]; f["iid"] = e["iid"]
+            if mk.get("tot"): f["itot"] = mk["tot"]
+            continue
+        if tot is None: tot = 160.0
+        sm = max(8.0, 0.075 * tot)                          # fark belirsizliği toplamla ölçeklenir (NBA ~15, Avrupa ~12)
+        mar = sm * N.inv_cdf(min(max(p, 0.02), 0.98))
+        lg = f"i{e['ci']}"
+        if lg not in syn:
+            syn[lg] = {"name": e["comp"], "syn": True, "cc": e["cc"], "qlen": 10, "halves": False, "mu": round(tot / 2, 1), "hca": 0.0,
+                       "sm": round(sm, 2), "st": round(max(10.0, 0.1 * tot), 2), "shares": [0.25, 0.25, 0.25, 0.25], "newp": [0.0, 0.0], "teams": {}}
+        extra.append({"id": f"i{e['iid']}", "lg": lg, "dt": datetime.fromtimestamp(e["ts"], timezone.utc).strftime("%Y-%m-%dT%H:%MZ"),
+                      "h": e["h"], "a": e["a"], "neutral": False, "odds": {"spread": round(-mar, 1), "ou": tot}, "io": mk["ms"], "iid": e["iid"], "src": "iddaa"})
+    print(f"iddaa basketbol: {len(evs)} maç · {nm} eşleşti · {len(extra)} yeni · {len(syn)} yarışma", flush=True)
+    return extra, syn
+
 def main():
     offline = "--offline" in sys.argv
     today = date.today()
@@ -511,11 +555,17 @@ def main():
                "mae_margin": round(float(np.mean([abs((r[0]["hs"] - r[0]["as_"]) - (r[1] - r[2])) for r in bt_all])), 2)}
     hist = old.get("history", [])
     if tot and not quick: hist = (hist + [{"t": now, "win": tot["win"], "n": tot["n"], "mae_total": tot["mae_total"]}])[-60:]
+    try:
+        bx, syn = iddaa_bk([f for f in fixtures if f.get("state") != "post"], out_lg)
+        for k, v in syn.items(): out_lg.setdefault(k, v)
+        fixtures = fixtures + bx
+    except Exception as e:
+        print("iddaa basketbol alınamadı:", e.__class__.__name__, str(e)[:120], flush=True)
     fx_out = []
     for f in sorted(fixtures, key=lambda x: x["dt"]):
         if f["lg"] not in out_lg: continue
         x = {k: f[k] for k in ("id", "lg", "dt", "h", "a", "hl", "al", "neutral") if k in f}
-        for k in ("odds", "phase", "round", "clock"):
+        for k in ("odds", "phase", "round", "clock", "io", "iid", "itot", "src"):
             if f.get(k): x[k] = f[k]
         if f.get("state") == "in": x["live"] = True; x["hs"] = f.get("hs"); x["as"] = f.get("as_")
         fx_out.append(x)

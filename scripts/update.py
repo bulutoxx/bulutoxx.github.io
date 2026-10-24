@@ -15,6 +15,7 @@ Sadece Python standart kütüphanesi ve numpy gerekir.
 import csv, io, json, math, os, re, sys, time, unicodedata, urllib.request, difflib
 from datetime import datetime, date, timezone, timedelta
 import collections
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import numpy as np
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -847,6 +848,86 @@ def download_fixtures(season, today):
     print(f"Yaklaşan maç: {len(out)} ({sum(1 for f in out if f.get('odds'))} oranlı)", flush=True)
     return out
 
+def merge_iddaa(fx, season, today):
+    """Resmi iddaa bülteni: Bilyoner'deki maçların tamamı. Bizdeki maçlara iddaa oranı eklenir,
+    bizde olmayanlar ayrı lig başlığıyla bültene girer. Her maç için piyasa gol beklentisi (lh, la) data/iddaa.json'a yazılır."""
+    import iddaa as ID
+    from zoneinfo import ZoneInfo
+    UK, TR = ZoneInfo("Europe/London"), ZoneInfo("Europe/Istanbul")
+    evs = ID.fetch(1)
+    known = {lg: sorted({m["h"] for m in d["matches"]} | {m["a"] for m in d["matches"]}) for lg, d in season.items() if not d.get("cup")}
+    def ko(f):
+        try:
+            hh, mm = (f.get("t") or "12:00").split(":")[:2]
+            return datetime.fromisoformat(f["d"]).replace(hour=int(hh), minute=int(mm), tzinfo=UK).timestamp()
+        except Exception: return None
+    fx_ko = [(f, ko(f)) for f in fx]
+    used = set(); comp_lg = collections.defaultdict(collections.Counter); matched = {}
+    for e in evs:
+        best, bs = None, 0
+        for j, (f, t) in enumerate(fx_ko):
+            if j in used or t is None or abs(t - e["ts"]) > 3 * 3600: continue
+            sh, sa = ID.sim(e["h"], f["h"]), ID.sim(e["a"], f["a"])
+            if min(sh, sa) < 0.55 or sh + sa < 1.45: continue
+            sc = sh + sa + (0.3 if abs(t - e["ts"]) <= 1800 else 0)
+            if sc > bs: best, bs = j, sc
+        if best is not None:
+            used.add(best); matched[e["iid"]] = best; comp_lg[e["ci"]][fx_ko[best][0]["lg"]] += 1
+    # lig eşlemesi: en az 2 maçı bizdeki ligle eşleşen yarışma; kadın yarışmaları erkek ligine bağlanmaz
+    women = lambda e: "(K)" in e["h"] or "(K)" in e["a"] or re.search(r"kad[ıi]n", e["comp"], re.I)
+    cl = {}
+    for e in evs:
+        c = comp_lg.get(e["ci"])
+        if c and not women(e):
+            lg_, n_ = c.most_common(1)[0]
+            if n_ >= 2 or sum(c.values()) == n_ == sum(1 for x in evs if x["ci"] == e["ci"]): cl[e["ci"]] = lg_
+    # 2. tur: aynı lig + yakın saat + bir takım adı çok benzer (Amed Sportif Faaliyetler ~ Amedspor)
+    for e in evs:
+        if e["iid"] in matched or e["ci"] not in cl: continue
+        best, bs = None, 0
+        for j, (f, t) in enumerate(fx_ko):
+            if j in used or t is None or f["lg"] != cl[e["ci"]] or abs(t - e["ts"]) > 3 * 3600: continue
+            sh, sa = ID.sim(e["h"], f["h"]), ID.sim(e["a"], f["a"])
+            if max(sh, sa) < 0.85 or min(sh, sa) < 0.25: continue
+            if sh + sa > bs: best, bs = j, sh + sa
+        if best is not None: used.add(best); matched[e["iid"]] = best
+    out_fx = list(fx); extra = []; lam = {}
+    def add_io(f, e):
+        mk = e["mk"]; f["io"] = mk["ms"]; f["iid"] = e["iid"]
+        if mk.get("ou"): f["iou"] = mk["ou"]
+        if mk.get("kg"): f["ikg"] = mk["kg"]
+        if not f.get("odds"): f["odds"] = mk["ms"]
+        if not f.get("ou") and mk.get("ou"): f["ou"] = mk["ou"]
+    for e in evs:
+        if e["iid"] in matched:
+            add_io(out_fx[matched[e["iid"]]], e); continue
+        dt = datetime.fromtimestamp(e["ts"], timezone.utc).astimezone(UK)
+        lg = cl.get(e["ci"])
+        h, a = e["h"], e["a"]
+        if lg and lg in known:
+            h = ID.best_name(h, known[lg]) or h; a = ID.best_name(a, known[lg]) or a
+        f = {"d": dt.date().isoformat(), "t": dt.strftime("%H:%M"), "lg": lg or f"i{e['ci']}", "h": h, "a": a, "src": "iddaa"}
+        if not lg: f["ln"] = e["comp"]; f["cc"] = e["cc"]
+        add_io(f, e); extra.append(f)
+    out_fx += extra
+    # piyasa gol beklentisi (canlı tahminin başlangıç noktası)
+    tmp = [dict({"odds": e["mk"]["ms"], "iid": e["iid"]}, **({"ou": e["mk"]["ou"]} if e["mk"].get("ou") else {})) for e in evs]
+    market_xg(tmp)
+    # başlamış maçlar bültenden düşer; canlı tahmin için maç öncesi beklenti 1 gün saklanır
+    try:
+        oldl = json.load(open(os.path.join(DATA, "iddaa.json"), encoding="utf-8")).get("lam", {})
+        cut = datetime.now(timezone.utc).timestamp() - 30 * 3600
+        lam.update({k: v for k, v in oldl.items() if len(v) >= 3 and v[2] > cut})
+    except Exception: pass
+    tsd = {e["iid"]: e["ts"] for e in evs}
+    for x in tmp:
+        if x.get("xg"): lam[str(x["iid"])] = [x["xg"][0], x["xg"][1], tsd[x["iid"]]]
+    json.dump({"updated": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%MZ"), "lam": lam,
+               "comp_lg": {str(k): v for k, v in cl.items()}},
+              open(os.path.join(DATA, "iddaa.json"), "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
+    print(f"iddaa bülteni: {len(evs)} maç · {len(matched)} bizdeki maçla eşleşti · {len(extra)} yeni maç eklendi", flush=True)
+    return out_fx
+
 def predict_fixtures(fx, all_ms, P, today):
     """Her yaklaşan maç için model ve piyasa tahminini önceden kaydet (gerçek ileriye dönük test için)."""
     fits = {}
@@ -1077,6 +1158,9 @@ def main():
         k = (f["lg"], f["d"], f["h"], f["a"])
         if k not in seen_fx: seen_fx.add(k); fx_u.append(f)
     fx = fx_u
+    if not offline:
+        try: fx = merge_iddaa([f for f in fx if f.get("src") != "iddaa"], season, today)
+        except Exception as e: print("iddaa bülteni alınamadı:", e.__class__.__name__, str(e)[:120], flush=True)
     json.dump([{k: v for k, v in f.items() if k != "xg"} for f in fx], open(fxp, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
     plog = json.load(open(plp, encoding="utf-8")) if os.path.exists(plp) else []
     have = {e["id"] for e in plog}
@@ -1089,7 +1173,7 @@ def main():
             return datetime.fromisoformat(f["d"]).replace(hour=int(hh), minute=int(mm), tzinfo=ZoneInfo("Europe/London"))
         except Exception:
             return datetime.fromisoformat(f["d"] + "T23:59:00+00:00")
-    fx_lock = [f for f in fx if kickoff(f) > now_utc and (f["lg"], f["h"], f["a"], f["d"]) not in played]
+    fx_lock = [f for f in fx if f.get("src") != "iddaa" and kickoff(f) > now_utc and (f["lg"], f["h"], f["a"], f["d"]) not in played]
     for e in predict_fixtures(fx_lock, all_ms, P, today):
         if e["id"] not in have:                           # maçtan önceki ilk tahmin kilitlenir, sonradan değiştirilmez
             e["v"] = ENGINE_V; e["ts"] = now_utc.strftime("%Y-%m-%dT%H:%MZ"); plog.append(e); have.add(e["id"])
