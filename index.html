@@ -5047,7 +5047,7 @@ if((location.hash||"")==="#sonuclar") setTimeout(()=>$("navRes").click(),200);
 // =====================================================================
 // BULUTOXX v35: Otomatik sürüm güncelleme — yeni sürüm yayınlanınca uygulama kendini yeniler
 // =====================================================================
-const APP_V="2026-10-24.57";
+const APP_V="2026-10-24.58";
 (function autoUpdate(){
   let shown=false;
   async function check(auto){
@@ -5928,6 +5928,22 @@ cpToggle=function(m,mk,odd,p){ const had=CP.items.some(c=>c.k===cpKey(m)&&c.mk==
 setInterval(()=>{ if(!document.hidden) oynGrade(); },2*60e3);
 document.addEventListener("visibilitychange",()=>{ if(!document.hidden) setTimeout(oynGrade,1500); });
 setTimeout(()=>{ oynGrade(); oynLearn(); },2500);
+
+// ---------- v58: "Maç tahmini yap" her girişte temiz form (son tahminde kalmaz) ----------
+function tahminReset(){ try{
+  ["hn","an","hf","af"].forEach(id=>{ const e=$(id); if(e) e.value=""; });
+  ["hma","hmd","ama","amd","hmo","amo"].forEach(id=>{ const e=$(id); if(e) e.value="0"; });
+  ["hgk","agk","hfa","afa"].forEach(id=>{ const e=$(id); if(e) e.checked=false; });
+  ["o1","ox","o2","oo","ou"].forEach(id=>{ const e=$(id); if(e){ e.value=""; delete e.dataset.auto; } });
+  ["hfi","afi"].forEach(id=>{ const e=$(id); if(e) e.innerHTML=""; });
+  const t=$("tarih"); if(t) t.value=istDay(new Date());
+  ligManual=false; try{ autoLeague(); }catch(e){} const lh=$("ligHint"); if(lh) lh.textContent="";
+  try{ updateCrest("h"); updateCrest("a"); }catch(e){}
+  const o=$("out"); if(o) o.innerHTML=""; last=null; PICKED=null;
+  document.querySelectorAll("#f details[open]").forEach(d=>d.open=false);
+  window.scrollTo({top:0});
+}catch(e){} }
+document.addEventListener("click",e=>{ if(e.target.closest('[data-go="tahmin"]')) tahminReset(); },true);
 </script>
 
 </body>
