@@ -1,0 +1,22 @@
+name: brain-probe
+on:
+  push:
+    branches: [lab]
+permissions:
+  contents: write
+jobs:
+  b:
+    if: contains(github.event.head_commit.message, '[brain]')
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install -q torch --index-url https://download.pytorch.org/whl/cpu && pip install -q -U transformers accelerate
+      - run: python lab/brain_probe.py Qwen/Qwen3.5-0.8B Qwen/Qwen3.5-2B Qwen/Qwen3-1.7B
+        continue-on-error: true
+      - if: always()
+        run: |
+          git config user.name bot; git config user.email bot@users.noreply.github.com
+          git add lab/brain_probe.json || true; git commit -qm "brain probe [skip ci]" || true; git pull -q --rebase || true; git push || true
