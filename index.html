@@ -781,6 +781,12 @@ body.ios-guide main,body.ios-guide .page{padding-bottom:40vh}
 .clockbar{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:2px 0 2px}
 .clockbar .clk{font:800 15px var(--round);color:var(--ink2)}
 .bt-head{position:relative!important;top:auto!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;background:none!important}
+.br-p.lvp{flex-wrap:wrap}
+.br-p.lvp i.lv1{background:rgba(255,69,58,.14);color:#FF8A80}
+.lvbox{padding:2px 12px 10px 12px}
+.lvbox .br-p{display:flex;gap:6px;flex-wrap:wrap}
+.lvbox .br-p i{font-style:normal;font-size:12px;font-weight:700;padding:4px 8px;border-radius:9px;background:rgba(255,255,255,.06);color:var(--ink2)}
+.lvbox .br-p i.lv1{background:rgba(255,69,58,.14);color:#FF8A80}
 </style>
 </head>
 <body>
@@ -2888,7 +2894,7 @@ function quickPred(m, f){
     const r0=predict(base);                                   // yalnız model
     const odds=f&&f.odds?{o1:f.odds[0],ox:f.odds[1],o2:f.odds[2],oo:f.ou?f.ou[0]:null,ou:f.ou?f.ou[1]:null}:{};
     const r1=f&&f.odds?predict(Object.assign({},base,{odds})):r0;   // model + piyasa
-    out={p:[r0.H,r0.D,r0.A], o25:r0.o25, ft:r1.topFT[0].s, ht:r1.topH1[0].s, best:markets(r1,odds).filter(x=>!/daha gollü/.test(x.n))[0], known:r0.source!=="form"};
+    out={p:[r0.H,r0.D,r0.A], o25:r0.o25, lh:r1.lh, la:r1.la, ft:r1.topFT[0].s, ht:r1.topH1[0].s, best:markets(r1,odds).filter(x=>!/daha gollü/.test(x.n))[0], known:r0.source!=="form"};
   }catch(e){ out=null; }
   BT.cache.set(k,out); return out;
 }
@@ -3660,6 +3666,82 @@ async function doRefresh(btn){
     if(d.getMinutes()!==lastMin){ lastMin=d.getMinutes(); if(!document.hidden){ if(!$("v-bulten").hidden&&TL.get()==="saat") renderBulten(); if(!$("v-basket").hidden&&TL.get()==="saat") renderBasket(); } } };
   tick(); setInterval(tick,1000);
 })();
+
+// =====================================================================
+// BULUTOXX v18: Canlı (maç içi) tahmin — dakika ve skora göre anlık olasılık
+// Futbol: kalan süredeki gol beklentisi + skor durumu etkisi (geride +%10, önde −%10, berabere −%10).
+// Laboratuvar: devre arası skoru bilinen 17.116 maçta 1X2 isabeti %50 → %61 (2024'te seçildi, 2025-26'da doğrulandı).
+// =====================================================================
+function fbMinute(clock, detail){
+  const c=String(clock||"")+" "+String(detail||"");
+  if(/\bHT\b|Halftime|Devre/i.test(c)) return 45;
+  if(/\bFT\b|Full/i.test(c)) return 90;
+  const m=String(clock||"").match(/(\d+)(?:'?\s*\+\s*(\d+))?/); if(!m) return null;
+  return Math.min(98, +m[1]+(+m[2]||0));
+}
+function fbRemShare(t){ const h1=(MODEL&&MODEL.params&&MODEL.params.h1)||.4428;
+  if(t<45) return (45-t)/45*h1+(1-h1); return Math.max(.012,(90-t)/45*(1-h1)); }
+function poisV(l,K){ const o=[]; let p=Math.exp(-l); for(let k=0;k<=K;k++){ o.push(p); p*=l/(k+1); } return o; }
+function fbLive(lh, la, hs, as, t){
+  if(lh==null||la==null||t==null) return null;
+  const rem=fbRemShare(t), d=hs-as, up=Math.exp(.1), dn=Math.exp(-.1);
+  const st=t>=15?1:0;                                  // skor durumu etkisi maçın ilk dakikalarında uygulanmaz
+  const fh=st?(d<0?up:dn):1, fa=st?(d>0?up:dn):1;     // geride olan hızlanır; önde olan ve berabere yavaşlar
+  const LH=lh*rem*fh, LA=la*rem*fa, PH=poisV(LH,8), PA=poisV(LA,8);
+  let H=0,D=0,A=0,best={p:-1}, more=0;
+  for(let i=0;i<=8;i++) for(let j=0;j<=8;j++){ const p=PH[i]*PA[j], fH=hs+i, fA=as+j;
+    if(fH>fA)H+=p; else if(fH===fA)D+=p; else A+=p; if(p>best.p) best={p,s:fH+"-"+fA}; if(fH+fA>2) more+=p; }
+  const z=H+D+A; const p0=Math.exp(-(LH+LA));
+  return {H:H/z, D:D/z, A:A/z, ft:best.s, ftp:best.p/z, nextH:(1-p0)*LH/(LH+LA||1), nextA:(1-p0)*LA/(LH+LA||1), none:p0, o25:more/z, t};
+}
+// Basketbol: kalan sürede beklenen sayı farkı + belirsizlik kalan sürenin kareköküyle küçülür
+function bkParseClock(clock, L){
+  const c=String(clock||""); const ql=(L&&L.qlen)||12, halves=L&&L.halves, per=halves?2:4, plen=halves?20:ql, total=per*plen;
+  if(/half\s*time|halftime|devre/i.test(c)) return {rem:.5};
+  if(/final|end of 4th|FT/i.test(c)) return {rem:0};
+  let q=null; const mq=c.match(/(\d)(?:st|nd|rd|th)?\s*(?:Qtr|Quarter|Half|Ç)/i)||c.match(/Q(\d)/i); if(mq) q=+mq[1];
+  const mt=c.match(/(\d{1,2}):(\d{2})/); const left=mt?(+mt[1]+(+mt[2])/60):null;
+  if(/end of (\d)/i.test(c)){ const e=+c.match(/end of (\d)/i)[1]; return {rem:Math.max(0,(per-e)*plen/total)}; }
+  if(/OT/i.test(c)) return {rem:Math.max(.01,(left||2.5)/total)};
+  if(q==null||left==null) return null;
+  return {rem:Math.max(0,((per-q)*plen+left)/total)};
+}
+function bkLivePred(p, lv){
+  if(!p||!lv||lv.state!=="in") return null;
+  const pc=bkParseClock(lv.clock,p.L); if(!pc) return null;
+  const r=pc.rem, cur=lv.hs-lv.as, expM=cur+p.mar*r, sd=Math.max(1.5,p.sm*Math.sqrt(Math.max(r,.003)));
+  const pH=bkPhi(expM/sd);
+  return {pH, pA:1-pH, fh:Math.round(lv.hs+p.mh*r), fa:Math.round(lv.as+p.ma*r), rem:r};
+}
+// Futbol bülteni: canlı maçta maç öncesi tahmin yerine anlık tahmin
+const _qp=quickPred;
+quickPred=function(m,f){ const out=_qp(m,f); if(!out) return out;
+  if(out.lh==null){ try{ const H=bestTeamName(m.h), A=bestTeamName(m.a); const r=predict({home:H,away:A,leagueKey:m.lg,league:"",leagueAvg:(LEAGUES[m.lg]||{g:2.7}).g,date:"",hForm:[],aForm:[],h:{ma:0,md:0,gk:false,mo:0,fa:false},a:{ma:0,md:0,gk:false,mo:0,fa:false},odds:f&&f.odds?{o1:f.odds[0],ox:f.odds[1],o2:f.odds[2]}:{}}); out.lh=r.lh; out.la=r.la; }catch(e){} }
+  return out; };
+function liveLine(m,p){
+  const t=fbMinute(m.clock,m.detail); const L=p&&fbLive(p.lh,p.la,+m.hs||0,+m.as||0,t==null?45:t); if(!L) return "";
+  const nx=L.nextH>=L.nextA?`${esc(shortTeam(m.h))} %${Math.round(L.nextH*100)}`:`${esc(shortTeam(m.a))} %${Math.round(L.nextA*100)}`;
+  return `<span class="br-p lvp"><i class="lv1">🔴 Canlı tahmin: MS ${esc(L.ft)}</i><i class="n">1 %${Math.round(L.H*100)} · X %${Math.round(L.D*100)} · 2 %${Math.round(L.A*100)}</i><i class="n">Sıradaki gol: ${nx} · gol yok %${Math.round(L.none*100)}</i></span>`;
+}
+function shortTeam(n){ const w=String(n).split(" "); return w.length>2?w.slice(0,2).join(" "):n; }
+const _rbL=renderBulten;
+renderBulten=function(){ _rbL(); try{
+  const L=Pick.list(), byK=new Map(L.filter(m=>m.live).map(m=>[cpKey(m),m]));
+  document.querySelectorAll("#btList .br.live").forEach(r=>{ const m=byK.get(r.dataset.ck); if(!m) return;
+    const f=m.src==="fx"?FIXTURES.find(x=>x.lg===m.lg&&x.h===m.h&&x.a===m.a):fxOdds(m); const p=quickPred(m,f); const html=liveLine(m,p); if(!html) return;
+    const old=r.querySelector(".br-p"); if(old) old.outerHTML=html; else r.querySelector(".br-l").insertAdjacentHTML("beforeend",html); });
+}catch(e){} };
+// Canlı sekmesi: her canlı karta anlık tahmin satırı
+const lvObs=new MutationObserver(()=>{ try{
+  const L=Pick.list(), byId=new Map(L.map(m=>[String(m.id),m]));
+  document.querySelectorAll("#liveList .fx.live").forEach(c=>{ if(c.querySelector(".lvp")) return; const m=byId.get(String(c.dataset.id)); if(!m) return;
+    const f=fxOdds(m), p=quickPred(m,f), html=liveLine(m,p); if(html) c.insertAdjacentHTML("beforeend",`<div class="lvbox">${html}</div>`); });
+}catch(e){} });
+if($("liveList")) lvObs.observe($("liveList"),{childList:true,subtree:false});
+// Basketbol: canlı satırda anlık kazanma olasılığı
+const _bkRow=bkRow;
+bkRow=function(f,i,showLg){ let h=_bkRow(f,i,showLg); try{ const lv=bkLiveOf(f), p=bkPredict(f), L=bkLivePred(p,lv);
+  if(L){ const fav=L.pH>=.5?f.h:f.a; h=h.replace(/<div class="bk-p">[\s\S]*?<\/div><\/div>$/,`<div class="bk-p"><i class="x">🔴 Canlı: ${esc(shortName(fav))} kazanır %${Math.round(Math.max(L.pH,L.pA)*100)}</i><i>Tahmini son skor ${L.fh}-${L.fa}</i></div></div>`); } }catch(e){} return h; };
 </script>
 
 </body>
