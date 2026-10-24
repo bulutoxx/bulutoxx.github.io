@@ -5133,7 +5133,7 @@ if((location.hash||"")==="#sonuclar") setTimeout(()=>$("navRes").click(),200);
 // =====================================================================
 // BULUTOXX v35: Otomatik sürüm güncelleme — yeni sürüm yayınlanınca uygulama kendini yeniler
 // =====================================================================
-const APP_V="2026-10-24.66";
+const APP_V="2026-10-24.67";
 (function autoUpdate(){
   let shown=false;
   async function check(auto){
@@ -5657,7 +5657,7 @@ async function botAnswer(raw){
     case "espri": R.html=bj("espri"); break;
     case "sohbet": R.html=I.cevap?esc(I.cevap)+`<br><small>🧠 Akıllı mod</small>`:bj("bilinmez"); R.chips=["Sıradaki maçı öner","3 maçlık liste yap","Canlı"]; break;
     case "kim": R.html=`Ben <b>Bulut</b> ☁️ — BULUTOXX'un sohbet asistanıyım. Hiçbir sunucuya bağlanmam, tamamen telefonunda çalışırım; bu yüzden bedava ve hızlıyım. Rakamlarım BULUTOXX modelinden, iddaa oranlarından ve maçtan önce kilitlenen arşivden gelir.${BRAIN.ready()?" Şu an 🧠 Akıllı mod açık: mesajlarını telefonundaki açık kaynak yapay zekâ ile anlıyorum.":" Üstteki 🧠 düğmesiyle telefonda çalışan açık kaynak yapay zekâyı (Akıllı mod) açabilirsin."}`; break;
-    case "yardim": R.html=`Bana şunları yazabilirsin (yazım hatası olsa da anlarım):<ul class="bt-ul"><li><b>sıradaki maçı öner</b> · <b>bu akşam hangi maçlar</b> · <b>yarın</b></li><li><b>3 maçlık liste yap</b> · <b>Süper Lig'den 2 maçlık liste</b> · <b>yarın için 3 maç</b></li><li><b>KG var olacak maçlar</b> · <b>gol olacak maç</b> · <b>az gollü maçlar</b> · <b>%80 üstü</b></li><li><b>canlı</b> → şu an oynanan maçlarda %72+ seçimler</li><li><b>banko</b> · <b>yüksek oran</b></li><li>takım adı: <b>Galatasaray maçında gol olur mu</b></li><li><b>neden?</b> → son önerinin gerekçesi · <b>başka</b> · <b>hepsini ekle</b> · <b>peki yarın?</b></li><li><b>dünkü karne</b> · <b>listem</b> · <b>adım Murat</b></li></ul>`; break;
+    case "yardim": R.html=`Bana şunları yazabilirsin (yazım hatası olsa da anlarım):<ul class="bt-ul"><li><b>sıradaki maçı öner</b> · <b>bu akşam hangi maçlar</b> · <b>yarın</b></li><li><b>3 maçlık liste yap</b> · <b>Süper Lig'den 2 maçlık liste</b> · <b>yarın için 3 maç</b></li><li><b>KG var olacak maçlar</b> · <b>gol olacak maç</b> · <b>az gollü maçlar</b> · <b>%80 üstü</b></li><li><b>canlı</b> → şu an oynanan maçlarda %72+ seçimler</li><li><b>banko</b> · <b>yüksek oran</b></li><li>takım adı: <b>Galatasaray maçında gol olur mu</b></li><li><b>neden?</b> → son önerinin gerekçesi · <b>başka</b> · <b>hepsini ekle</b> · <b>peki yarın?</b></li><li><b>dünkü karne</b> · <b>listem</b> · <b>adım Bulutoxx</b></li></ul>`; break;
     case "ekle": { const L=C.pre||[]; if(!L.length){ R.html="Ekleyecek bir öneri yok; önce \"maç öner\" ya da \"3 maçlık liste\" de 📋"; break; }
       const A=I.all?L:L.slice(0,1); let n=0; for(const x of A){ if(!CP.items.some(c=>c.k===cpKey(x.m)&&c.mk===x.R.k)){ cpToggle(x.m,x.R.k,+(x.R.o||(1/x.R.cp).toFixed(2)),x.R.cp); n++; botLearnPick(x.m); } }
       try{ paintCoupon(); }catch(e){} const st=cpStats(); R.html=n?`${n} seçim listeye eklendi 📋 Listende artık ${st.n} maç var.`:"Bunlar zaten listende 😉"; R.chips=["Listeyi aç","Listem"]; break; }
