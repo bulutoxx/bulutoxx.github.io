@@ -32,7 +32,7 @@ LEAGUES = {
 HIST_DAYS = 560          # yaklaşık iki sezon
 FIX_DAYS = 8
 KS = {}
-ENGINE_V = "2026-10-24.4"
+ENGINE_V = "2026-10-24.5"
 STORE_V = 2              # veri biçimi sürümü             # kaç gün sonrasına kadar fikstür
 
 def fetch(url, tries=3):
@@ -256,6 +256,7 @@ def tune(games, lg, prev=None):
     grid_n = [[0.0, 0.0], [-3.0, 3.0], [-6.0, 6.0]]
     P0 = {"decay": 0.008, "lam": 8.0, "newp": [0.0, 0.0]}
     if prev: P0.update({k: v for k, v in prev.items() if k in P0})
+    if P0.get("newp") is None: P0["newp"] = [0.0, 0.0]
     mt = 200 if lg in ("ncaa", "ncaaw") else 80
     rows0 = backtest(games, P0, mt)
     if not rows0: return P0, None, None
@@ -374,7 +375,7 @@ def lock_and_grade(plog, fixtures, fits, Ps, store_games, today):
         e = {"id": f["id"], "lg": f["lg"], "d": f["dt"][:10], "h": f["h"], "a": f["a"], "ph": round(pm[0], 1), "pa": round(pm[1], 1),
              "v": ENGINE_V, "ts": now_iso + "Z"}
         if f.get("odds"): e["odds"] = f["odds"]
-        plog.append(e)
+        plog.append(e); have.add(f["id"])
     res = {}
     for lg, st in store_games.items():
         for g in st["g"]: res[g["id"]] = g
@@ -445,7 +446,12 @@ def main():
         games = store.get(lg, {}).get("g", [])
         cnt_ = {}
         for g in games: cnt_[g["h"]] = cnt_.get(g["h"], 0) + 1; cnt_[g["a"]] = cnt_.get(g["a"], 0) + 1
-        games = [g for g in games if cnt_[g["h"]] >= 5 and cnt_[g["a"]] >= 5]   # All-Star ve gösteri maçları elenir
+        if src == "espn":   # All-Star/gösteri takımları: az maçlı VE son maçı 60 günden eski
+            lastd = {}
+            for g in games: lastd[g["h"]] = g["dt"]; lastd[g["a"]] = g["dt"]
+            old_cut = (today - timedelta(days=60)).isoformat()
+            bad = {t for t, c in cnt_.items() if c < 5 and lastd[t][:10] < old_cut}
+            games = [g for g in games if g["h"] not in bad and g["a"] not in bad]
         if len(games) < 40: continue
         if quick and lg in old["leagues"]:
             P = old["leagues"][lg]["params"]; fits[lg] = fit(games, today, P); Ps[lg] = P; out_lg[lg] = old["leagues"][lg]; continue

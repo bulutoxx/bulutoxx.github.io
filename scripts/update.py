@@ -12,7 +12,7 @@ GitHub Actions bu betiği her gün çalıştırır:
 Ağ yoksa veya kaynak cevap vermezse mevcut veriyle devam eder, hiçbir veriyi silmez.
 Sadece Python standart kütüphanesi ve numpy gerekir.
 """
-import csv, io, json, math, os, re, sys, unicodedata, urllib.request, difflib
+import csv, io, json, math, os, re, sys, time, unicodedata, urllib.request, difflib
 from datetime import datetime, date, timezone, timedelta
 import collections
 import numpy as np
@@ -80,9 +80,13 @@ def season_code(d):
     y = d.year if d.month >= 7 else d.year - 1
     return f"{y%100:02d}{(y+1)%100:02d}", y
 
+T_START = time.time()
+TIME_BUDGET = 1800   # sn: kaynaklar takılırsa iş 45 dk sınırına çarpmasın, eldekiyle devam etsin
+
 def fetch(url):
+    if time.time() - T_START > TIME_BUDGET: raise TimeoutError("süre bütçesi doldu")
     req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 BULUTOXX-updater"})
-    with urllib.request.urlopen(req, timeout=40) as r:
+    with urllib.request.urlopen(req, timeout=25) as r:
         return r.read().decode("utf-8-sig", errors="replace")
 
 def parse_date(s):
@@ -102,9 +106,6 @@ def resolve(name, known):
     n = norm(name)
     for k in known:
         if norm(k) == n: return k
-    for k in known:
-        kn = norm(k)
-        if min(len(kn), len(n)) >= 5 and (kn.startswith(n + " ") or n.startswith(kn + " ")): return k
     # bulanık eşleme yalnızca çok yakın ve aynı başlangıçlı adlarda (Antalyaspor ≠ Alanyaspor, Sheffield Weds ≠ Sheffield United)
     best = difflib.get_close_matches(n, [norm(k) for k in known], n=1, cutoff=0.9)
     if best and best[0][:4] == n[:4]:
@@ -283,7 +284,8 @@ def fit(ms, ref_day, P, init=None, iters=25):
     if init:
         for t, (a, d) in init.items():
             if t in ti: att[ti[t]] = a; de[ti[t]] = d
-    mu = (w * ag).sum() / w.sum(); gamma = min(max((w * hg).sum() / max((w * ag).sum(), .1), 1.0), 1.6)
+    G0, G1 = P.get("gmin", 1.0), P.get("gmax", 1.6)
+    mu = (w * ag).sum() / w.sum(); gamma = min(max((w * hg).sum() / max((w * ag).sum(), .1), G0), G1)
     K = P["prior"]
     for _ in range(iters):
         base = mu * math.sqrt(gamma)
@@ -295,7 +297,7 @@ def fit(ms, ref_day, P, init=None, iters=25):
         att = (gs + K * base) / (es + K * base); de = (gc + K * base) / (ec + K * base)
         att /= math.exp(np.log(att).mean()); de /= math.exp(np.log(de).mean())
         dh = (w * att[hi] * de[ai]).sum(); da = (w * att[ai] * de[hi]).sum()
-        mu = (w * ag).sum() / da; gamma = min(max(((w * hg).sum() / dh) / mu, 1.0), 1.6)
+        mu = (w * ag).sum() / da; gamma = min(max(((w * hg).sum() / dh) / mu, G0), G1)
     return {"t": {t: (float(att[ti[t]]), float(de[ti[t]])) for t in teams}, "mu": float(mu), "gamma": float(gamma)}
 
 def form_ratio(ms, team, upto, L):
@@ -463,7 +465,7 @@ def build_ck(season, today):
             ms = [dict(d=m["d"], h=m["h"], a=m["a"], ft=m[key]) for m in d["matches"] if key in m]
             if len(ms) < 120: continue
             try:
-                F = fit(ms, today, {"decay": 0.004, "prior": 3.0, "mkt": 0.0}, iters=25)
+                F = fit(ms, today, {"decay": 0.004, "prior": 3.0, "mkt": 0.0, "gmin": 0.6, "gmax": 1.6}, iters=25)
             except Exception:
                 continue
             lgo[key] = {"mu": round(F["mu"], 4), "g": round(F["gamma"], 4), "r": r,
@@ -564,8 +566,8 @@ def tune(all_ms, P0):
     return P, fin
 
 GUARD = None
-ENGINE_V = "2026-10-24.4"
-DATA_V = 2   # 2: aynı eşleşmenin sezonda birden çok oynanması + sıkı isim eşleme   # motor kodu değişince bir kez tam eğitim yapılır
+ENGINE_V = "2026-10-24.5"
+DATA_V = 3   # 3: kupalar ESPN, takvim yılı sezonları, önek eşleme kaldırıldı; 2: aynı eşleşmenin sezonda birden çok oynanması + sıkı isim eşleme   # motor kodu değişince bir kez tam eğitim yapılır
 CAL_INFO = {}
 NEW_TEAM = (0.95, 1.05)   # 3 ay önceden testte (3 sezon) en iyi çıkan: lige yeni gelen takım ortalamaya yakın, hafif zayıf
 
@@ -629,6 +631,9 @@ EXTRA = {
  "nlw": ("ned.w.1", "Hollanda Eredivisie Kadın"),
 }
 ESPN_UA = {"User-Agent": "Mozilla/5.0 (BULUTOXX)"}
+CAL_YEAR = {"col", "chi", "per", "ecu", "uru", "par", "ven", "bol", "ar2", "br2", "nwsl", "usl"}   # sezon = takvim yılı
+def season_for(lg, d):
+    return int(d[:4]) if lg in CAL_YEAR else season_of(d)
 
 def espn_month(slug, ym):
     j = json.loads(fetch(f"https://site.api.espn.com/apis/site/v2/sports/soccer/{slug}/scoreboard?dates={ym}&limit=900"))
@@ -675,16 +680,21 @@ def download_extra(season, today, log):
                 if (today - end).days > 5: done.add(ym)
             except Exception as e:
                 log[f"{lg}-{ym}"] = f"hata: {e.__class__.__name__}"
-        # başka ligde aynı adlı takım varsa (ör. "Nacional") karışmasın: ada ülke eki
+        # başka ligde aynı adlı takım varsa (ör. "Nacional") karışmasın: ada ülke eki. Atanan ad kalıcıdır (alias),
+        # sonradan değişmez; böylece takım geçmişi ve kilitli tahmin kimlikleri bölünmez.
+        alias = dict(cur.get("alias", {}))
         others = {n for k, d in season.items() if k != lg and not d.get("cup") for x in d["matches"] for n in (x["h"], x["a"])}
-        tag = lambda n: f"{n} ({lg.upper()})" if n in others else n
-        new = [dict(x, h=tag(x["h"]), a=tag(x["a"])) for x in new]
+        def tag(n):
+            if n not in alias: alias[n] = f"{n} ({lg.upper()})" if n in others else n
+            return alias[n]
+        new = [dict(x, h=tag(x["h"]), a=tag(x["a"]), season=season_for(lg, x["d"])) for x in new]
         fixtures = [dict(x, h=tag(x["h"]), a=tag(x["a"])) if x["lg"] == lg else x for x in fixtures]
         ms = [x for x in merge(cur.get("matches", []), new) if x["d"] >= start.isoformat()]
+        for x in ms: x["season"] = season_for(lg, x["d"])
         log[lg] = f"{len(new)} yeni, {n_req} istek"
         if len(ms) < 10: continue
         last_season = max(x["season"] for x in ms)
-        season[lg] = {"name": name, "espn": slug, "asOf": max(x["d"] for x in ms), "season": last_season, "matches": ms, "done": sorted(done), "src": "espn"}
+        season[lg] = {"name": name, "espn": slug, "asOf": max(x["d"] for x in ms), "season": last_season, "matches": ms, "done": sorted(done), "src": "espn", "alias": alias}
     return fixtures
 
 def fetch_logos(season):
@@ -697,6 +707,8 @@ def fetch_logos(season):
         if not code: continue
         names = sorted({m["h"] for m in d["matches"]} | {m["a"] for m in d["matches"]})
         if all(n in logos for n in names): continue
+        if logos.get("_tried_" + lg) == date.today().isoformat(): continue
+        logos["_tried_" + lg] = date.today().isoformat()
         try:
             j = json.loads(fetch(f"https://site.api.espn.com/apis/site/v2/sports/soccer/{code}/teams"))
             teams = [t["team"] for t in j["sports"][0]["leagues"][0]["teams"]]
@@ -923,24 +935,34 @@ def main():
     for ck, (cid, cname) in CUPS.items():
         old = season.get(ck, {}).get("matches", [])
         new = []
+        cdone = set(season.get(ck, {}).get("done", []))
         if not offline:
+            # Kupalar ESPN aylık sorgusundan (TheSportsDB ücretsiz anahtarı güncel sezonu vermiyordu)
             try:
-                for e in download_cup(cid, y):
-                    d = (e.get("dateEvent") or "")[:10]
-                    if not d or d < since: continue
-                    h = CUP_MAP.get(e["strHomeTeam"]) or resolve(e["strHomeTeam"], all_dom)
-                    a = CUP_MAP.get(e["strAwayTeam"]) or resolve(e["strAwayTeam"], all_dom)
-                    new.append({"d": d, "h": h, "a": a, "ft": [int(e["intHomeScore"]), int(e["intAwayScore"])], "ht": None,
-                                "season": season_of(d), "id": e["idEvent"]})
+                sd = date.fromisoformat(since); yy, mm = sd.year, sd.month
+                while (yy, mm) <= (today.year, today.month):
+                    ym = f"{yy}{mm:02d}"
+                    if ym not in cdone:
+                        try:
+                            res, _ = espn_month(ESPN[ck], ym)
+                            for e in res:
+                                h = CUP_MAP.get(e["h"]) or resolve(e["h"], all_dom); a = CUP_MAP.get(e["a"]) or resolve(e["a"], all_dom)
+                                new.append({"d": e["d"], "h": h, "a": a, "ft": e["ft"], "ht": None, "season": season_of(e["d"]), "id": f"{e['d']}|{h}|{a}"})
+                            end = date(yy + (mm == 12), mm % 12 + 1, 1) - timedelta(days=1)
+                            if (today - end).days > 5: cdone.add(ym)
+                        except Exception as ex:
+                            log[f"{ck}-{ym}"] = f"hata: {ex.__class__.__name__}"
+                    mm += 1
+                    if mm == 13: yy, mm = yy + 1, 1
                 log[ck] = len(new)
             except Exception as ex:
                 log[ck] = f"hata: {ex.__class__.__name__}"
-        byid = {m.get("id") or (m["d"], m["h"], m["a"]): m for m in old if m["d"] >= since}
+        byid = {f"{m['d']}|{m['h']}|{m['a']}": m for m in old if m["d"] >= since}
         for m in new: byid[m["id"]] = m
         ms = sorted(byid.values(), key=lambda m: (m["d"], m["h"]))
         for m in ms: m["hl"] = dom_names.get(m["h"]); m["al"] = dom_names.get(m["a"])
         if ms:
-            season[ck] = {"name": cname, "cup": True, "asOf": ms[-1]["d"], "season": max(m["season"] for m in ms), "matches": ms}
+            season[ck] = {"name": cname, "cup": True, "asOf": ms[-1]["d"], "season": max(m["season"] for m in ms), "matches": ms, "done": sorted(cdone)}
     print("Kupalar:", {k: log.get(k) for k in CUPS}, flush=True)
     json.dump(season, open(sp, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
 
@@ -956,6 +978,7 @@ def main():
     print(f"Piyasa beklenen golü hesaplanan yeni maç: {nx}", flush=True)
     json.dump(season, open(sp, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
     all_ms = {lg: d["matches"] for lg, d in season.items() if not d.get("cup")}
+    core_ms = {lg: ms for lg, ms in all_ms.items() if season[lg].get("src") != "espn"}   # ayar/kalibrasyon: oranlı ligler
     # Ayarlar az veriyle seçildiyse (ilk kurulum) veya haftanın ilk günüyse tam öğrenme
     # Sürekli öğrenme: her çalıştırmada ayarlar yeni veriyle baştan aranır (yaklaşık 1-2 dakika, ücretsiz)
     # Akıllı nöbet: motor saatte bir uyanır; yeni maç sonucu yoksa yeniden eğitmez (aynı veri = aynı model),
@@ -970,10 +993,10 @@ def main():
         P, bt = dict(model["params"]), None
     elif full:
         print("Yeni sonuç var: ayar aranıyor (tam öğrenme)…", flush=True)
-        P, bt = tune(all_ms, P0)
+        P, bt = tune(core_ms, P0)
     else:
         print("Günlük test (ayarlar korunuyor)…", flush=True)
-        P, bt = dict(P0), backtest(all_ms, P0)
+        P, bt = dict(P0), backtest(core_ms, P0)
     if not quick or not os.path.exists(os.path.join(DATA, "ck.json")):
         try: print("Korner/kart modeli:", build_ck(season, today), "lig", flush=True)
         except Exception as e: print("korner/kart atlandı:", e, flush=True)
@@ -1012,9 +1035,15 @@ def main():
     fxp = os.path.join(DATA, "fixtures.json"); plp = os.path.join(DATA, "predlog.json")
     fx = [] if offline else download_fixtures(season, today)
     if not fx and os.path.exists(fxp):
-        fx = [f for f in json.load(open(fxp, encoding="utf-8")) if f["d"] >= today.isoformat()]
-    elif extra_fx:
+        fx = [f for f in json.load(open(fxp, encoding="utf-8")) if f["d"] >= today.isoformat() and f["lg"] not in EXTRA]
+    if extra_fx:
         fx += [f for f in extra_fx if f["d"] <= (today + timedelta(days=10)).isoformat()]
+    # 6) tekilleştir
+    seen_fx = set(); fx_u = []
+    for f in fx:
+        k = (f["lg"], f["d"], f["h"], f["a"])
+        if k not in seen_fx: seen_fx.add(k); fx_u.append(f)
+    fx = fx_u
     json.dump([{k: v for k, v in f.items() if k != "xg"} for f in fx], open(fxp, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
     plog = json.load(open(plp, encoding="utf-8")) if os.path.exists(plp) else []
     have = {e["id"] for e in plog}
@@ -1030,7 +1059,7 @@ def main():
     fx_lock = [f for f in fx if kickoff(f) > now_utc and (f["lg"], f["h"], f["a"], f["d"]) not in played]
     for e in predict_fixtures(fx_lock, all_ms, P, today):
         if e["id"] not in have:                           # maçtan önceki ilk tahmin kilitlenir, sonradan değiştirilmez
-            e["v"] = ENGINE_V; e["ts"] = now_utc.strftime("%Y-%m-%dT%H:%MZ"); plog.append(e)
+            e["v"] = ENGINE_V; e["ts"] = now_utc.strftime("%Y-%m-%dT%H:%MZ"); plog.append(e); have.add(e["id"])
     plog = grade_predlog(plog, all_ms, today)
     json.dump(plog, open(plp, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
     live = live_report(plog, today)
