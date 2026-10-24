@@ -5370,7 +5370,7 @@ if((location.hash||"")==="#sonuclar") setTimeout(()=>$("navRes").click(),200);
 // =====================================================================
 // BULUTOXX v35: Otomatik sürüm güncelleme — yeni sürüm yayınlanınca uygulama kendini yeniler
 // =====================================================================
-const APP_V="2026-10-25.68";
+const APP_V="2026-10-25.69";
 (function autoUpdate(){
   let shown=false;
   async function check(auto){
@@ -6560,7 +6560,7 @@ function tpRow(x){ const m=x.m, lg=(x.f&&(x.f.cn||x.f.ln))||(LEAGUES[m.lg]||{n:"
 function renderTP(){ const v=$("v-tahmin"); if(!v) return; let box=$("tpBox");
   if(!box){ box=document.createElement("div"); box.id="tpBox"; box.className="tp-box"; const s=$("todayStrip"); s.parentNode.insertBefore(box,s); }
   const {G,S,lbl,maxDay}=tpPick(); TP.rows=[...G,...S];
-  const K=TP.karne, kl=K&&K.n>=10?`📒 Bu kurala uyan geçmiş tahminler (son 30 gün): <b>${K.h}/${K.n}</b> tuttu (%${Math.round(K.h/K.n*100)}).`:"";
+  const K=TP.karne, kl=K&&K.n>=10?`📒 Bu kurala uyan geçmiş tahminler (${K.g==null?"son 30 gün":K.g<=1?"kilitli kayıt, şimdilik 1 gün — örnek az":"kilitli kayıtlar, son "+K.g+" gün"}): <b>${K.h}/${K.n}</b> tuttu (%${Math.round(K.h/K.n*100)}).`:"";
   const ch=(k,t)=>`<button type="button" data-tpm="${k}" aria-pressed="${TP.mode===k}">${t}</button>`;
   box.innerHTML=`<div class="tp-h"><div><b>${GOLD_SEAL} Hazır tahminler</b><small>${esc(lbl)}</small></div></div>
     <div class="tp-ch">${ch("near","En yakın")}${ch("today","Bugün")}${ch("tom","Yarın")}<label class="tp-dt${TP.mode==="date"?" on":""}">📅 <span>${TP.mode==="date"?esc(ist(new Date(TP.day+"T12:00:00+03:00"),{day:"numeric",month:"short"})):"Tarih"}</span><input type="date" id="tpDate" min="${tpDay(0)}" max="${maxDay}" value="${TP.day||tpDay(2)}" aria-label="Tarih seç"></label></div>
@@ -6855,7 +6855,7 @@ setTimeout(()=>{ try{ renderTP(); }catch(e){} },1500);
     if(T&&T.n&&(!Lf||T.n!==Lf.n)) rows.push(`📒 Kilitli arşivde toplam ${T.n} öneri: <b>%${Math.round(T.hit*100)}</b> tuttu${T.guclu_n?`; güçlülerde <b>%${Math.round(T.guclu_hit*100)}</b>`:""}.`);
     if(GOLD.karne&&GOLD.karne.n) rows.push(`🥇 Altın kuralına uyan geçmiş tahminler: <b>${GOLD.karne.h}/${GOLD.karne.n}</b> tuttu (%${Math.round(GOLD.karne.h/GOLD.karne.n*100)})${GOLD.karne.n<20?" — örnek az, temkinli oku":""}.`);
     else if(/altin/.test(s)) rows.push(`🥇 Altın tahminlerin kilitli arşivde henüz yeterli puanlanmış örneği yok.`);
-    if(TP.karne&&TP.karne.n>=10) rows.push(`💪 Güçlü + anlamlı oranlı (1,20–2,00) tahminler, son 30 gün: <b>${TP.karne.h}/${TP.karne.n}</b> tuttu (%${Math.round(TP.karne.h/TP.karne.n*100)}).`);
+    if(TP.karne&&TP.karne.n>=10) rows.push(`💪 Güçlü + anlamlı oranlı (1,20–2,00) tahminler, ${TP.karne.g==null?"son 30 gün":TP.karne.g<=1?"şimdilik 1 günlük kilitli kayıt (örnek az)":"son "+TP.karne.g+" günün kilitli kayıtları"}: <b>${TP.karne.h}/${TP.karne.n}</b> tuttu (%${Math.round(TP.karne.h/TP.karne.n*100)}).`);
     if(C&&C.n) rows.push(`🔴 Canlı seçimler: ${C.n} seçimde isabet <b>%${Math.round(C.hit*100)}</b>.`);
     if(k.n) rows.push(`☁️ Sana önerdiklerim: ${Math.round(k.hit*k.n)}/${k.n} tuttu (%${Math.round(k.hit*100)}).`);
     try{ const O=oynStats(); if(O.n) rows.push(`📋 Takip ettiğin listeler: ${O.n} seçimden ${O.h} tanesi tuttu (%${Math.round(O.h/O.n*100)}), ${O.sl} listenin ${O.slw}'inde tüm tahminler tuttu.`); }catch(e){}
@@ -6991,6 +6991,20 @@ setTimeout(()=>{ try{ renderTP(); }catch(e){} },1500);
   // giriş kutusu ipucu
   const _botOpen69=botOpen; botOpen=function(){ _botOpen69(); const q=$("botQ"); if(q) q.placeholder="Sor: yarın en güvenli 3 maç, GS FB ne olur, KG ne demek…"; };
   const st=document.createElement("style"); st.id="bot-v69-css"; st.textContent=`.bt-msg .v69-g{display:block;opacity:.7;margin-top:6px;font-size:11px}.bt-msg .bt-ul li{margin:3px 0}`; document.head.appendChild(st);
+})();
+</script>
+<script id="core-v69">
+/* v69: canlı Platt kalibrasyonu (toplayıcı zaman sıralı sınamada kabul ettiyse) + karne gün sayısı dürüst */
+(function(){
+  const _lc=liveCal;
+  liveCal=function(pp){ try{ const P=DAILY&&DAILY.canli&&DAILY.canli.platt;
+      if(P&&P.kabul&&isFinite(P.a)&&isFinite(P.b)&&pp>0&&pp<1){ const x=Math.log(pp/(1-pp)); const q=1/(1+Math.exp(-(P.a+P.b*x))); return {p:q, n:P.n, h:null, platt:true}; } }catch(e){}
+    return _lc(pp); };
+  tpKarne=async function(){ try{ const days=(DAILY&&DAILY.gunler||[]).filter(g=>g.n>0).map(g=>g.d).slice(-30); let n=0,h=0,g=0;
+    for(const d of days){ let A=null; try{ const r=await fetch(`data/archive/${d}.json`,{cache:"no-cache"}); if(r.ok) A=await r.json(); }catch(e){} if(!A) continue; let had=0;
+      for(const v of Object.values(A)){ if(v.ok==null||v.rp==null||!v.ro) continue; if(v.rp>=.70&&v.ro>=GOLD.omin&&v.ro<=GOLD.omax){ n++; had=1; if(v.ok) h++; } } g+=had; }
+    TP.karne={n,h,g}; }catch(e){} };
+  (function kw(i){ if(DAILY&&DAILY.gunler){ if(!TP.karne||!TP.karne.n) tpKarne().then(()=>{ try{ const v=$("v-tahmin"); if(v&&!v.hidden) renderTP(); }catch(e){} }); return; } if(i<40) setTimeout(()=>kw(i+1),1500); })(0);
 })();
 </script>
 </body>
