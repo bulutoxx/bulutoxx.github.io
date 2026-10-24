@@ -29,6 +29,7 @@ LEAGUES = {
 }
 HIST_DAYS = 560          # yaklaşık iki sezon
 FIX_DAYS = 8
+KS = {}
 STORE_V = 2              # veri biçimi sürümü             # kaç gün sonrasına kadar fikstür
 
 def fetch(url, tries=3):
@@ -365,6 +366,7 @@ def lock_and_grade(plog, fixtures, fits, Ps, store_games, today):
         if f["id"] in have or f.get("state") == "in": continue
         F = fits.get(f["lg"]); pm = pred_means(F, f["h"], f["a"], f.get("neutral", False), Ps.get(f["lg"], {}).get("newp")) if F else None
         if not pm: continue
+        k_ = KS.get(f["lg"], 1.0); pm = (((pm[0] + pm[1]) + k_ * (pm[0] - pm[1])) / 2, ((pm[0] + pm[1]) - k_ * (pm[0] - pm[1])) / 2)
         e = {"id": f["id"], "lg": f["lg"], "d": f["dt"][:10], "h": f["h"], "a": f["a"], "ph": round(pm[0], 1), "pa": round(pm[1], 1)}
         if f.get("odds"): e["odds"] = f["odds"]
         plog.append(e)
@@ -442,6 +444,18 @@ def main():
         P, guard, _ = tune(games, lg, (old.get("leagues", {}).get(lg) or {}).get("params"))
         mt = 200 if lg == "ncaa" else 80
         rows = backtest(games, P, mt)
+        ks = 1.0; kinfo = None
+        if rows and len(rows) >= 150:
+            split = sorted(r[0]["dt"] for r in rows)[int(len(rows) * .7)]
+            def kerr(k, late):
+                e = [((r[0]["hs"] - r[0]["as_"]) - k * (r[1] - r[2])) ** 2 for r in rows if (r[0]["dt"] >= split) == late]
+                return sum(e) / max(1, len(e))
+            kc = min((.7, .8, .9, 1.0, 1.1, 1.2), key=lambda k: kerr(k, False))
+            ok = kerr(kc, True) < kerr(1.0, True) - .3
+            ks = kc if ok else 1.0
+            kinfo = {"aday": kc, "kabul": bool(ok), "son30_once": round(kerr(1.0, True), 2), "son30_sonra": round(kerr(kc, True), 2)}
+            if ks != 1.0:   # tahminleri ölçekle (fark küçülür/büyür, toplam aynı kalır)
+                rows = [(r[0], ((r[1] + r[2]) + ks * (r[1] - r[2])) / 2, ((r[1] + r[2]) - ks * (r[1] - r[2])) / 2) for r in rows]
         if rows:
             sm = float(np.std([(r[0]["hs"] - r[0]["as_"]) - (r[1] - r[2]) for r in rows]))
             stt = float(np.std([(r[0]["hs"] + r[0]["as_"]) - (r[1] + r[2]) for r in rows]))
@@ -461,11 +475,12 @@ def main():
         bt_all += rows
         out_lg[lg] = {"name": name, "qlen": qlen, "halves": halves, "n": len(games), "n_cur": len(cur), "asOf": store[lg].get("asOf", ""),
                       "mu": round(F["mu"], 2), "hca": round(F["hca"], 2), "sm": round(sm, 2), "st": round(stt, 2), "shares": shares,
-                      "params": P, "backtest": m, "dogrulama": guard, "uzun_vade": hz, "newp": P.get("newp"), "teams": team_table(games, cur, F, logos),
+                      "params": P, "backtest": m, "dogrulama": guard, "kscale": ks, "kscale_test": kinfo, "uzun_vade": hz, "newp": P.get("newp"), "teams": team_table(games, cur, F, logos),
                       "recent": [{"dt": g["dt"], "h": g["h"], "a": g["a"], "s": [g["hs"], g["as_"]], "hq": g.get("hq"), "aq": g.get("aq")} for g in games[-60:]][::-1]}
         print(f"{lg}: {len(games)} maç, ayar {P}, test {m}, {time.time()-t0:.0f} sn", flush=True)
 
     plog = json.load(open(pp, encoding="utf-8")) if os.path.exists(pp) else []
+    KS.clear(); KS.update({lg: L.get("kscale", 1.0) for lg, L in out_lg.items()})
     plog = lock_and_grade(plog, fixtures, fits, Ps, store, today)
     json.dump(plog, open(pp, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
     mw, mn = learn_market(plog)

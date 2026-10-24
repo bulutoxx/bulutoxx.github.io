@@ -406,6 +406,38 @@ def risk_test(bt):
         best = max(out, key=lambda x: x["son30"]["getiri"])
     return {"secilen": best["id"], "kural": {k: best[k] for k in ("id", "ad", "omin", "omax", "only", "pick")}, "kurallar": out}
 
+def calibrate(bt):
+    """Olasılık kalibrasyonu: keskinleştirme (T), gol ölçeği (g), beraberlik katsayısı (dk).
+    İlk %70 maçta seçilir, son %30'da doğrulanır; geçemezse etkisiz (1, 1, 1). Laboratuvarda 3 sezonda doğrulandı."""
+    rows = bt["rows"]; n = len(rows)
+    if n < 500: return {"T": 1.0, "g": 1.0, "dk": 1.0, "kabul": False}
+    split = sorted(r[1]["d"] for r in rows)[int(n * .7)]
+    late = np.array([r[1]["d"] >= split for r in rows])
+    lh = np.array([r[2] for r in rows]); la = np.array([r[3] for r in rows]); res = bt["res"]
+    tot = np.array([sum(r[1]["ft"]) for r in rows])
+    cache = {}
+    def ev(T, g, dk, mask):
+        if g not in cache: cache[g] = outcome_probs(lh * g, la * g, -0.06)[:2]
+        p, pO = cache[g]; q = p ** T; q /= q.sum(1, keepdims=True); q[:, 1] *= dk; q /= q.sum(1, keepdims=True)
+        idx = np.where(mask)[0]
+        l1 = -np.log(np.maximum(q[idx, res[idx]], 1e-9)).mean()
+        l2 = -np.mean(np.where(tot[idx] > 2, np.log(np.maximum(pO[idx], 1e-9)), np.log(np.maximum(1 - pO[idx], 1e-9))))
+        return l1 + .5 * l2
+    grid = [(T, g, dk) for T in (1.0, 1.05, 1.1, 1.15, 1.2, 1.25, 1.3) for g in (0.98, 1.0, 1.01, 1.02, 1.03, 1.04, 1.05) for dk in (0.97, 1.0, 1.03, 1.06, 1.1, 1.14)]
+    best = min(grid, key=lambda x: ev(*x, ~late))
+    b_late, n_late = ev(1.0, 1.0, 1.0, late), ev(*best, late)
+    ok = n_late < b_late - 1e-5
+    out = {"T": best[0] if ok else 1.0, "g": best[1] if ok else 1.0, "dk": best[2] if ok else 1.0, "kabul": bool(ok),
+           "son30_once": round(float(b_late), 5), "son30_sonra": round(float(n_late), 5), "aday": list(best)}
+    print("Kalibrasyon:", out, flush=True)
+    return out
+
+def apply_cal(p, P):
+    T, dk = P.get("calT", 1.0), P.get("dk", 1.0)
+    if T == 1.0 and dk == 1.0: return p
+    q = p ** T; q /= q.sum(1, keepdims=True); q[:, 1] *= dk; q /= q.sum(1, keepdims=True)
+    return q
+
 def metrics(bt, P):
     rows, p, res = bt["rows"], bt["p"], bt["res"]
     n = len(rows)
@@ -496,6 +528,7 @@ def tune(all_ms, P0):
     return P, fin
 
 GUARD = None
+CAL_INFO = {}
 NEW_TEAM = (0.95, 1.05)   # 3 ay önceden testte (3 sezon) en iyi çıkan: lige yeni gelen takım ortalamaya yakın, hafif zayıf
 
 def horizon_test(all_ms, P, H=90, decays=(None, 0.01)):
@@ -678,7 +711,9 @@ def predict_fixtures(fx, all_ms, P, today):
         rows.append((f, F["mu"] * F["gamma"] * ah * da, F["mu"] * aa * dh))
     if not rows: return []
     lh = np.array([r[1] for r in rows]); la = np.array([r[2] for r in rows])
-    p, pO, pB, g = outcome_probs(lh, la, P["rho"]); kk = g.shape[1]
+    gs_ = P.get("gscale", 1.0)
+    p, pO, pB, g = outcome_probs(lh * gs_, la * gs_, P["rho"]); kk = g.shape[1]
+    p = apply_cal(p, P)
     CS = pick_scores(g, p, pO) if P.get("scoreMode", "tutarli") == "tutarli" else None
     out = []
     for i, (f, a, b) in enumerate(rows):
@@ -822,6 +857,9 @@ def main():
     else:
         print("Günlük test (ayarlar korunuyor)…", flush=True)
         P, bt = dict(P0), backtest(all_ms, P0)
+    if not quick and bt:
+        cal = calibrate(bt); P["calT"], P["gscale"], P["dk"] = cal["T"], cal["g"], cal["dk"]
+        CAL_INFO.clear(); CAL_INFO.update(cal)
     if not quick:
         P["h1"] = h1_share(all_ms)
         mw, mstats = tune_market(bt) if bt else (0.6, None)
@@ -836,6 +874,7 @@ def main():
         now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
     mt = metrics(bt, P) if bt else dict(model.get("backtest", {}))
     if GUARD: mt["dogrulama"] = GUARD
+    if CAL_INFO: mt["kalibrasyon"] = dict(CAL_INFO)
     try:
         rk = risk_test(bt) if bt else mt.get("risk")
         if rk: mt["risk"] = rk; P["risk"] = rk["kural"]

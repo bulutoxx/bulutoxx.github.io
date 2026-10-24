@@ -1123,6 +1123,8 @@ function fitMarket(p1x2, pOver){
 // Bir maçın tüm dağılımı: ilk yarı ve ikinci yarı ayrı Poisson (Dixon-Coles), maç sonu ikisinin birleşimi
 function dist(lh, la, s, rho){
   const MX=7;
+  // Öğrenilen kalibrasyon (motor her eğitimde seçer, son %30 maçta doğrular): gol ölçeği, keskinleştirme, beraberlik
+  const CP=(typeof MODEL!=="undefined"&&MODEL&&MODEL.params)||{}; const GS=CP.gscale||1; lh*=GS; la*=GS;
   const g1=grid(lh*s, la*s, rho, MX), g2=grid(lh*(1-s), la*(1-s), rho*0.6, MX);
   const ft=Array.from({length:2*MX+1},()=>new Array(2*MX+1).fill(0));
   const htft={}; const R=(h,a)=>h>a?"1":h===a?"X":"2";
@@ -1132,6 +1134,7 @@ function dist(lh, la, s, rho){
   const top=(g,n)=>{ const a=[]; g.forEach((r,i)=>r.forEach((v,j)=>a.push({s:i+"-"+j,p:v}))); return a.sort((x,y)=>y.p-x.p).slice(0,n); };
   let H=0,D=0,A=0,o15=0,o25=0,o35=0,btts=0,h1o05=0,h1o15=0,h1btts=0,more1=0,more2=0;
   ft.forEach((r,i)=>r.forEach((v,j)=>{ if(i>j)H+=v; else if(i===j)D+=v; else A+=v; const t=i+j; if(t>1)o15+=v; if(t>2)o25+=v; if(t>3)o35+=v; if(i&&j)btts+=v; }));
+  { const T=CP.calT||1, dk=CP.dk||1; if(T!==1||dk!==1){ let h=Math.pow(H,T), d=Math.pow(D,T), a=Math.pow(A,T); let z=h+d+a; h/=z; d/=z; a/=z; d*=dk; z=h+d+a; H=h/z; D=d/z; A=a/z; } }
   g1.forEach((r,i)=>r.forEach((v,j)=>{ if(i+j>0)h1o05+=v; if(i+j>1)h1o15+=v; if(i&&j)h1btts+=v; }));
   const t1=[],t2=[]; for(let k=0;k<=2*MX;k++){t1[k]=0;t2[k]=0;}
   g1.forEach((r,i)=>r.forEach((v,j)=>t1[i+j]+=v)); g2.forEach((r,i)=>r.forEach((v,j)=>t2[i+j]+=v));
@@ -3287,6 +3290,7 @@ function bkPredict(f){
   const H=bkTeam(L,f.h)||NP, A=bkTeam(L,f.a)||NP; if(!H||!A) return null;
   const hh=f.neutral?0:L.hca/2;
   let mh=L.mu+hh+H.off+A.def, ma=L.mu-hh+A.off+H.def, mkt=false;
+  { const k=L.kscale||1; if(k!==1){ const t=mh+ma, d=(mh-ma)*k; mh=(t+d)/2; ma=(t-d)/2; } }   // öğrenilen fark ölçeği
   const od=f.odds;
   if(od && od.spread!=null && od.ou){ const w=(D.market&&D.market.w!=null)?D.market.w:.5;
     const mar=(1-w)*(mh-ma)+w*(-od.spread), tot=(1-w)*(mh+ma)+w*od.ou; mh=(tot+mar)/2; ma=(tot-mar)/2; mkt=true; }

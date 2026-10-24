@@ -389,6 +389,41 @@
  },
  "denenen": [
   {
+   "ad": "Olasılık kalibrasyonu (keskinleştirme + gol ölçeği + beraberlik)",
+   "sonuc": "kabul",
+   "not": "Model biraz temkinli ve golleri ~%2 eksik tahmin ediyordu. 2024'te seçildi; 2025 ve 2026'da log-kayıp −0,0009 / −0,0011, alt/üst %57,6 → %58,1. Motor her eğitimde yeniden öğrenip son %30'da doğruluyor."
+  },
+  {
+   "ad": "Lige özel kalibrasyon",
+   "sonuc": "ret",
+   "not": "2024'te seçilen lig ayarları 2025-2026'da açıkça kötüleştirdi (log-kayıp +0,0017/+0,0021): ezber"
+  },
+  {
+   "ad": "Dinlenme günü / fikstür yoğunluğu (futbol)",
+   "sonuc": "ret",
+   "not": "29.330 maçta etkisi sıfır çıktı"
+  },
+  {
+   "ad": "Kısa+orta+uzun hafıza topluluğu",
+   "sonuc": "ret",
+   "not": "Tek model zaten en iyisi"
+  },
+  {
+   "ad": "Lig gol trendi (son 60 gün)",
+   "sonuc": "ret",
+   "not": "Etkisi yok"
+  },
+  {
+   "ad": "Basketbol: arka arkaya maç yorgunluğu",
+   "sonuc": "beklemede",
+   "not": "NBA'de 2025'te tutmadı; NCAA'da küçük kazanç (tek doğrulama sezonu)"
+  },
+  {
+   "ad": "Basketbol: öğrenilen fark ölçeği",
+   "sonuc": "kabul",
+   "not": "Mekanizma eklendi: her lig kendi ölçeğini öğrenip son %30'da doğruluyor. Laboratuvarda NCAA 0,8 ile log-kayıp 0,632→0,608; canlı doğrulama şu an hiçbir ligde geçmediği için etkin değil"
+  },
+  {
    "ad": "Sakat/cezalı oyuncu sayısı (API-Football, 10 lig, 2022-24, 10.097 maç)",
    "sonuc": "beklemede",
    "not": "Ayar 2023'te seçildi, 2022 ve 2024'te doğrulandı: 1X2 log-kaybı üç sezonda da biraz iyileşti (−0,0013 / −0,0020 / −0,0023), ama alt/üst isabeti %1 düştü. Ücretsiz plan bu sezonu vermediği için canlı kullanılamıyor; tek başına ücretli plana değmez."
