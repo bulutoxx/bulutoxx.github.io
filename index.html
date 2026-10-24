@@ -5035,7 +5035,7 @@ if((location.hash||"")==="#sonuclar") setTimeout(()=>$("navRes").click(),200);
 // =====================================================================
 // BULUTOXX v35: Otomatik sürüm güncelleme — yeni sürüm yayınlanınca uygulama kendini yeniler
 // =====================================================================
-const APP_V="2026-10-24.54";
+const APP_V="2026-10-24.55";
 (function autoUpdate(){
   let shown=false;
   async function check(auto){
@@ -5456,7 +5456,7 @@ function bj(k){ return rnd(BOT_J[k]).replace(/\{ad\}/g,botName()); }
 // ---------- 🧠 Akıllı mod: telefonda çalışan açık kaynak dil modeli (WebLLM + Qwen 3.5, Apache 2.0) ----------
 // İsteğe bağlıdır; bir kez indirilir, sonra internetsiz ve ücretsiz çalışır. Rakamları ASLA model üretmez:
 // model yalnız mesajı anlar (niyet, takım, lig, gün...) ve serbest sohbete kısa cevap verir; öneriler BULUTOXX motorundan gelir.
-const BRAIN_MB={hafif:0,guclu:0};   // indirme boyutları (MB), sınama sonucuyla doldurulur
+const BRAIN_MB={hafif:424,guclu:1059};   // indirme boyutları (MB): GitHub Actions sınaması, mlc-ai tensor-cache toplamı
 const WEBLLM_URL="https://cdn.jsdelivr.net/npm/@mlc-ai/web-llm@0.2.85/+esm";
 const BRAIN={ st:"off", eng:null, prog:0, txt:"", id:"", err:"",
   M:{hafif:{n:"Hafif",b:"Qwen3.5-0.8B",mb:BRAIN_MB&&BRAIN_MB.hafif},guclu:{n:"Güçlü",b:"Qwen3.5-2B",mb:BRAIN_MB&&BRAIN_MB.guclu}},
@@ -5784,7 +5784,7 @@ renderKupon=function(){ _rkOyn();
   renderOyn(); oynGrade(); };
 // Maç sayfası ve ayrıntılı analiz: seçili kutuyu tek tıkla “oynadım” olarak kaydet
 function playBar(mm){ const it=CP.items.filter(c=>c.k===cpKey(mm));
-  return `<div class="oyn-bar">${it.length?`<span>Seçimin: <b>${it.map(c=>esc(mkName(c.mk))).join(", ")}</b></span><button type="button" class="btn sm" data-play="1">🎯 Oynadım, kaydet</button>`:`<span>Oynadığın seçeneğin kutusuna dokun, sonra <b>🎯 Oynadım</b> ile kaydet. İY 1/X/2, çifte şans, alt/üst, KG hepsi var.</span>`}</div>`; }
+  return `<div class="oyn-bar">${it.length?`<span>Seçimin: <b>${it.map(c=>esc(mkName(c.mk))).join(", ")}</b></span><button type="button" class="btn sm" data-play="1">🎯 Oynadım, kaydet</button>`:`<span>Kutuya dokun → kupona eklenir. Oynadıysan <b>🎯 Oynadım</b> ile kaydet.</span>`}</div>`; }
 function playBind(root,mm,re){ const b=root.querySelector("[data-play]"); if(b) b.onclick=()=>{ const it=CP.items.filter(c=>c.k===cpKey(mm)); oynAdd(it,`${mm.h} – ${mm.a}`); re&&re(); }; }
 // Maç sayfası Oranlar sekmesine kaydet çubuğu
 const _msOranO=msOran;
@@ -5817,5 +5817,479 @@ renderPrediction=function(inp,r){ _rpOyn(inp,r); try{ const out=$("out"); if(!ou
 })();
 </script>
 
+<!--UI2-->
+<style id="ui2css">
+/* ===================== BULUTOXX v55 · yeni arayüz (bahis sitesi düzeni) ===================== */
+:root{
+  --bg:#080C11; --bg2:#0B1016; --surface:#11171F; --surface2:#18202A; --elev:rgba(17,23,31,.92);
+  --line:rgba(255,255,255,.06); --line2:rgba(255,255,255,.1);
+  --ink:#EEF2F6; --ink2:#A7B2C0; --ink3:#6C7887;
+  --acc:#2F7BFF; --good:#22C55E; --live:#FF4D4F; --gold:#F5B301;
+  --x-r:12px; --x-h:44px; --ow:52px;
+}
+body{background:var(--bg)!important}
+body.x-on{padding-bottom:calc(70px + env(safe-area-inset-bottom,0px))}
+body.x-on.x-cp{padding-bottom:calc(128px + env(safe-area-inset-bottom,0px))}
+/* eski kalabalık parçalar gizlenir */
+body.x-on nav.tabs, body.x-on #botFab, body.x-on #cpBar, body.x-on .topbar .iconbtn, body.x-on .topbar .livechip, body.x-on .topbar .refresh, body.x-on .topbar button:not(.xb){display:none!important}
+/* üst çubuk */
+body.x-on .topbar{background:rgba(8,12,17,.9)!important;backdrop-filter:saturate(1.4) blur(14px);-webkit-backdrop-filter:saturate(1.4) blur(14px);border-bottom:1px solid var(--line)!important;box-shadow:none!important}
+body.x-on .topbar .in{min-height:52px;padding-top:4px;padding-bottom:4px}
+body.x-on .topbar .logo img{width:34px;height:24px}
+body.x-on .topbar .logo b{font-size:18px;letter-spacing:.06em}
+.xb{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:transparent;border:0;color:var(--ink);position:relative;padding:0;margin-left:2px}
+.xb:active{background:rgba(255,255,255,.08)}
+.xi{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.xb .dot{position:absolute;top:7px;right:7px;width:8px;height:8px;border-radius:50%;background:var(--good);box-shadow:0 0 0 2px var(--bg)}
+/* alt gezinme */
+.xnav{position:fixed;left:0;right:0;bottom:0;z-index:50;background:rgba(11,16,22,.96);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-top:1px solid var(--line);padding:6px 6px calc(6px + env(safe-area-inset-bottom,0px));display:grid;grid-template-columns:repeat(5,1fr);align-items:end}
+.xnav button{background:none;border:0;color:var(--ink3);display:flex;flex-direction:column;align-items:center;gap:3px;font:600 10.5px var(--font);padding:4px 0;position:relative;letter-spacing:0}
+.xnav button[aria-current="page"]{color:var(--ink)}
+.xnav button[aria-current="page"] .xi{stroke:var(--acc)}
+.xnav .bd{position:absolute;top:-2px;left:calc(50% + 6px);min-width:17px;height:17px;padding:0 4px;border-radius:9px;background:var(--live);color:#fff;font:700 10.5px/17px var(--font)}
+.xnav .bd.g{background:var(--good)}
+.xnav .cpb{width:48px;height:48px;margin-top:-18px;border-radius:16px;background:var(--acc);display:grid;place-items:center;color:#fff;box-shadow:0 6px 20px rgba(47,123,255,.45)}
+.xnav .cpb .xi{stroke:#fff!important;width:24px;height:24px}
+.xnav button.cp .bd{left:calc(50% + 12px);top:-22px;background:var(--gold);color:#111}
+/* kupon çubuğu */
+.xslipbar{position:fixed;left:10px;right:10px;bottom:calc(66px + env(safe-area-inset-bottom,0px));z-index:49;display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:14px;background:var(--acc);color:#fff;border:0;box-shadow:0 8px 24px rgba(0,0,0,.45);font:600 14px var(--font);text-align:left}
+.xslipbar .n{min-width:26px;height:26px;border-radius:8px;background:rgba(255,255,255,.22);display:grid;place-items:center;font-weight:800}
+.xslipbar .t{flex:1;line-height:1.2}.xslipbar .t small{display:block;font-weight:500;opacity:.85;font-size:12px}
+.xslipbar b{font-variant-numeric:tabular-nums}
+/* görünüm iskeleti */
+.xv{padding:0 0 12px;margin-left:calc(-1 * max(16px,env(safe-area-inset-left,0px)));margin-right:calc(-1 * max(16px,env(safe-area-inset-right,0px)))}
+body.x-on main.page{padding-top:0}
+body.x-on #v-power .pw-cp{display:none}
+.xsub{position:sticky;top:var(--x-top,60px);z-index:20;background:rgba(8,12,17,.96);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);padding:8px 12px 8px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:8px}
+.xseg{display:flex;background:var(--surface);border-radius:11px;padding:3px;gap:3px}
+.xseg button{flex:1;border:0;background:none;color:var(--ink2);font:600 13.5px var(--font);padding:8px 6px;border-radius:9px;display:flex;align-items:center;justify-content:center;gap:6px}
+.xseg button[aria-pressed="true"]{background:var(--surface2);color:var(--ink);box-shadow:0 1px 0 rgba(255,255,255,.05) inset}
+.xseg small{font-weight:600;color:var(--ink3);font-variant-numeric:tabular-nums}
+.xdays,.xchips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin:0 -12px;padding:0 12px}
+.xdays::-webkit-scrollbar,.xchips::-webkit-scrollbar{display:none}
+.xdays button{flex:none;border:1px solid var(--line2);background:none;color:var(--ink2);border-radius:10px;padding:6px 11px;font:600 13px var(--font);display:flex;flex-direction:column;align-items:center;line-height:1.15;min-width:58px}
+.xdays button small{font-weight:500;font-size:11px;color:var(--ink3)}
+.xdays button[aria-pressed="true"]{background:var(--ink);color:#0B1016;border-color:var(--ink)}
+.xdays button[aria-pressed="true"] small{color:#3B4655}
+.xdays button.lv{border-color:rgba(255,77,79,.45);color:#FF8A8C}
+.xdays button.lv b::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--live);margin-right:5px;vertical-align:1px;animation:xpulse 1.4s infinite}
+@keyframes xpulse{50%{opacity:.35}}
+.xchips button{flex:none;border:0;background:var(--surface);color:var(--ink2);border-radius:99px;padding:6px 12px;font:600 12.5px var(--font)}
+.xchips button[aria-pressed="true"]{background:rgba(47,123,255,.18);color:#8DB6FF}
+.xsearch{display:flex;align-items:center;gap:8px;background:var(--surface);border-radius:11px;padding:0 10px}
+.xsearch input{flex:1;background:none;border:0;color:var(--ink);font:500 15px var(--font);padding:10px 0;outline:none}
+.xsearch button{background:none;border:0;color:var(--ink3);padding:4px}
+/* öne çıkanlar */
+.xsec{display:flex;align-items:baseline;justify-content:space-between;padding:14px 14px 8px}
+.xsec h2{margin:0;font:700 16px var(--font);letter-spacing:-.01em}
+.xsec small{color:var(--ink3);font-size:12px}
+.xfeat{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;padding:0 12px 4px;scroll-snap-type:x mandatory}
+.xfeat::-webkit-scrollbar{display:none}
+.xfc{flex:none;width:236px;scroll-snap-align:start;background:linear-gradient(160deg,#14202E,#101720);border:1px solid var(--line2);border-radius:14px;padding:11px 12px;display:flex;flex-direction:column;gap:6px;cursor:pointer}
+.xfc .lg{font-size:11.5px;color:var(--ink3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.xfc .tm{font:600 14px/1.25 var(--font);display:flex;flex-direction:column}
+.xfc .tm span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.xfc .pk{display:flex;align-items:center;gap:8px;margin-top:2px}
+.xfc .pk .nm{flex:1;font-size:13px;color:var(--ink2)}.xfc .pk .nm b{color:var(--ink);font-weight:700}
+.xfc .pc{font:800 15px var(--font);color:var(--good);font-variant-numeric:tabular-nums}
+/* lig grubu ve maç satırı */
+.xlist{padding:6px 8px 0}
+.xg{background:var(--surface);border-radius:14px;margin:0 0 10px;overflow:hidden;border:1px solid var(--line)}
+.xg-h{display:flex;align-items:center;gap:8px;padding:10px 12px;font:700 13px var(--font);color:var(--ink);cursor:pointer;background:var(--bg2);border-bottom:1px solid var(--line)}
+.xg-h .fl{font-size:15px;width:20px;text-align:center}
+.xg-h .nm{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.xg-h .c{color:var(--ink3);font-weight:600;font-size:12px}
+.xg-h .xi{width:16px;height:16px;color:var(--ink3);transition:transform .2s}
+.xg.shut .xg-h .xi{transform:rotate(-90deg)}
+.xg.shut .xr,.xg.shut .xg-cols{display:none}
+.xg-cols{display:grid;grid-template-columns:minmax(0,1fr) repeat(3,var(--ow));gap:5px;padding:6px 10px 0;font:600 10.5px var(--font);color:var(--ink3);text-align:center}
+.xg-cols span:first-child{text-align:left}
+.xr{display:grid;grid-template-columns:38px minmax(0,1fr) repeat(3,var(--ow));gap:5px;align-items:center;padding:9px 10px;border-top:1px solid var(--line);cursor:pointer;position:relative}
+.xg-cols+.xr{border-top:0}
+.xr:active{background:rgba(255,255,255,.03)}
+.xr .tt{display:flex;flex-direction:column;align-items:flex-start;gap:3px;font:600 12.5px var(--font);color:var(--ink2);font-variant-numeric:tabular-nums}
+.xr .tt .lvm{color:var(--live);font-weight:700}
+.xr .tt .mbs{font:700 10px/1 var(--font);color:#111;background:var(--gold);border-radius:4px;padding:2px 4px}
+.xr .tms{min-width:0;display:flex;flex-direction:column;gap:2px}
+.xr .tms .t{display:flex;align-items:center;gap:6px;font:600 13.5px/1.25 var(--font);white-space:nowrap;overflow:hidden}
+.xr .tms .t span{overflow:hidden;text-overflow:ellipsis}
+.xr .tms .t b{margin-left:auto;font:800 14px var(--font);font-variant-numeric:tabular-nums;color:var(--ink)}
+.xr .tms .t .rc{width:8px;height:11px;background:#E53935;border-radius:1.5px;flex:none}
+.xtag{align-self:flex-start;margin-top:3px;border:0;font:600 11.5px var(--font);padding:3px 7px;border-radius:6px;display:inline-flex;gap:5px;align-items:center;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.xtag.g{background:rgba(34,197,94,.14);color:#4ADE80}
+.xtag.m{background:rgba(47,123,255,.14);color:#8DB6FF}
+.xtag.w{background:rgba(255,255,255,.05);color:var(--ink3)}
+.xtag.in{outline:1.5px solid currentColor}
+.xo{height:var(--x-h);border:0;border-radius:9px;background:var(--surface2);color:var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;font:700 14px var(--font);font-variant-numeric:tabular-nums;position:relative;padding:0}
+.xo small{font:600 10px var(--font);color:var(--ink3)}
+.xo.rk::after{content:"";position:absolute;top:5px;right:5px;width:6px;height:6px;border-radius:50%;background:var(--good)}
+.xo.sel{background:var(--acc);color:#fff}.xo.sel small{color:rgba(255,255,255,.8)}
+.xo.na{color:var(--ink3);font-weight:500}
+.xo.lk{color:var(--ink3)}
+.xo:disabled{opacity:1}
+.xmore{display:block;margin:4px auto 14px;background:none;border:0;color:var(--ink3);font:600 13px var(--font);padding:10px}
+.xempty{margin:24px 14px;padding:26px 18px;text-align:center;background:var(--surface);border-radius:16px;color:var(--ink2);font-size:14px}
+.xempty b{display:block;color:var(--ink);font-size:16px;margin-bottom:6px}
+.xempty .xbtn{margin-top:14px}
+/* düğmeler */
+.xbtn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;border:0;border-radius:12px;padding:13px 14px;font:700 15px var(--font);background:var(--acc);color:#fff}
+.xbtn.g{background:var(--good);color:#06240F}
+.xbtn.gh{background:var(--surface2);color:var(--ink)}
+.xbtn.sm{width:auto;padding:9px 12px;font-size:13.5px;border-radius:10px}
+.xrow2{display:flex;gap:8px}
+/* kupon */
+.xcard{background:var(--surface);border-radius:14px;border:1px solid var(--line);margin:10px 12px;overflow:hidden}
+.xsel{display:flex;align-items:center;gap:10px;padding:11px 12px;border-top:1px solid var(--line);cursor:pointer}
+.xsel:first-child{border-top:0}
+.xsel .l{flex:1;min-width:0}
+.xsel .l small{display:block;color:var(--ink3);font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.xsel .l b{display:block;font:600 14px/1.3 var(--font);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.xsel .l em{font-style:normal;color:#8DB6FF;font-weight:700;font-size:13px}
+.xsel .l .pp{color:var(--ink3);font-size:12px}
+.xsel .od{font:800 16px var(--font);font-variant-numeric:tabular-nums}
+.xsel .rm{background:rgba(255,255,255,.06);border:0;width:30px;height:30px;border-radius:9px;color:var(--ink2);display:grid;place-items:center;padding:0}
+.xsum{padding:12px}
+.xsum .r{display:flex;justify-content:space-between;align-items:center;padding:6px 0;font-size:14px;color:var(--ink2)}
+.xsum .r b{color:var(--ink);font-variant-numeric:tabular-nums}
+.xsum .r.big b{font-size:20px;color:var(--good)}
+.xsum .r .ok{color:#4ADE80;font-weight:700;font-size:13px}.xsum .r .no{color:#FF8A8C;font-weight:700;font-size:13px}
+.xstake{display:flex;gap:6px;align-items:center}
+.xstake input{width:84px;background:var(--surface2);border:1px solid var(--line2);border-radius:9px;color:var(--ink);font:700 15px var(--font);padding:7px 8px;text-align:right}
+.xstake button{border:0;background:var(--surface2);color:var(--ink2);border-radius:8px;padding:7px 9px;font:600 12.5px var(--font)}
+.xnote{color:var(--ink3);font-size:12px;line-height:1.45;padding:0 14px}
+/* menü */
+.xmh{padding:18px 16px 6px;display:flex;align-items:center;gap:12px}
+.xmh img{width:46px;height:33px}
+.xmh b{display:block;font:800 20px var(--font);letter-spacing:.04em}
+.xmh small{color:var(--ink3);font-size:12.5px}
+.xml{margin:12px 12px 0}
+.xml h3{margin:16px 4px 8px;font:700 12px var(--font);color:var(--ink3);text-transform:uppercase;letter-spacing:.06em}
+.xml .grp{background:var(--surface);border-radius:14px;border:1px solid var(--line);overflow:hidden}
+.xml .it{display:flex;align-items:center;gap:12px;width:100%;background:none;border:0;border-top:1px solid var(--line);padding:12px 12px;color:var(--ink);text-align:left;font:600 15px var(--font)}
+.xml .it:first-child{border-top:0}
+.xml .it .ic{width:32px;height:32px;border-radius:9px;display:grid;place-items:center;flex:none}
+.xml .it .ic .xi{width:18px;height:18px;stroke:#fff}
+.xml .it .tx{flex:1;min-width:0}.xml .it .tx small{display:block;color:var(--ink3);font-weight:500;font-size:12.5px;margin-top:1px}
+.xml .it>.xi{width:16px;height:16px;color:var(--ink3)}
+.xml .it .n{background:var(--live);color:#fff;border-radius:9px;padding:1px 7px;font:700 11.5px var(--font)}
+/* eski ekranlar yeni dile uyum */
+body.x-on .ltitle h1{font-size:24px;letter-spacing:-.02em}
+body.x-on .panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:none}
+body.x-on .page{padding-top:0}
+/* maç sayfası: bahis sitesi başlığı */
+body.x-on .msheet{background:var(--bg)}
+body.x-on .ms-hd{background:linear-gradient(180deg,#121B26,#0B1016);border-bottom:1px solid var(--line)}
+body.x-on .ms-tabs{position:sticky;top:0;z-index:5;background:rgba(8,12,17,.96);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+body.x-on .ms-tabs button[aria-selected="true"]{color:var(--ink);box-shadow:inset 0 -2px 0 var(--acc)}
+body.x-on .mo{background:var(--surface2);border:0;border-radius:10px}
+body.x-on .mo.sel{background:var(--acc)!important;color:#fff}
+body.x-on .mo.t3{box-shadow:inset 0 0 0 1.5px rgba(34,197,94,.75);background:rgba(34,197,94,.12)}
+body.x-on .mo.t2{box-shadow:inset 0 0 0 1px rgba(34,197,94,.35)}
+.xrecl{display:flex;align-items:center;gap:10px;margin:10px 0;padding:10px 12px;border-radius:12px;background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.25);font-size:13.5px;cursor:pointer}
+.xrecl.w{background:rgba(255,255,255,.04);border-color:var(--line2)}
+.xrecl b{color:var(--ink)}.xrecl .p{margin-left:auto;font:800 16px var(--font);color:#4ADE80}
+.xrecl.w .p{color:var(--ink3)}
+@media (min-width:700px){ .xlist,.xcard,.xml{max-width:720px;margin-left:auto;margin-right:auto} .xg{margin-bottom:12px} }
+@media (max-width:360px){ :root{--x-h:40px;--ow:47px} .xr{grid-template-columns:34px minmax(0,1fr) repeat(3,var(--ow));gap:4px;padding:8px 8px} .xr .tms .t{font-size:13px} }
+
+.xv,.xg,.xg-h,.xr,.xsel,.xml{text-align:left}
+.xr .tt span{white-space:nowrap;font-size:12px}
+.xr .tt .lvm{font-size:12.5px}
+body.x-on .ms-leg{display:none}
+body.x-on .oyn-bar{font-size:12.5px;padding:8px 10px;background:rgba(255,255,255,.04);border-color:var(--line2)}
+body.x-on [data-allm]{display:none!important}
+</style>
+<script id="ui2js">
+// ===================== BULUTOXX v55 · yeni arayüz (bahis sitesi düzeni) =====================
+// Motor, veri, kupon ve tahmin fonksiyonları aynen kullanılır; yalnız ekranlar yeniden düzenlenir.
+// Simgeler: Lucide (ISC lisansı, açık kaynak) — https://lucide.dev
+(function(){
+const XI={"home": "<path d=\"M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8\"/><path d=\"M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z\"/>", "live": "<path d=\"M4.9 19.1C1 15.2 1 8.8 4.9 4.9\"/><path d=\"M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.5\"/><circle cx=\"12\" cy=\"12\" r=\"2\"/><path d=\"M16.2 7.8c2.3 2.3 2.3 6.1 0 8.5\"/><path d=\"M19.1 4.9C23 8.8 23 15.1 19.1 19\"/>", "ticket": "<path d=\"M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z\"/><path d=\"M13 5v2\"/><path d=\"M13 17v2\"/><path d=\"M13 11v2\"/>", "zap": "<path d=\"M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z\"/>", "grid": "<rect width=\"7\" height=\"7\" x=\"3\" y=\"3\" rx=\"1\"/><rect width=\"7\" height=\"7\" x=\"14\" y=\"3\" rx=\"1\"/><rect width=\"7\" height=\"7\" x=\"14\" y=\"14\" rx=\"1\"/><rect width=\"7\" height=\"7\" x=\"3\" y=\"14\" rx=\"1\"/>", "search": "<circle cx=\"11\" cy=\"11\" r=\"8\"/><path d=\"m21 21-4.3-4.3\"/>", "chat": "<path d=\"M7.9 20A9 9 0 1 0 4 16.1L2 22Z\"/>", "star": "<path d=\"M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z\"/>", "chev": "<path d=\"m9 18 6-6-6-6\"/>", "down": "<path d=\"m6 9 6 6 6-6\"/>", "x": "<path d=\"M18 6 6 18\"/><path d=\"m6 6 12 12\"/>", "trash": "<path d=\"M3 6h18\"/><path d=\"M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6\"/><path d=\"M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2\"/><line x1=\"10\" x2=\"10\" y1=\"11\" y2=\"17\"/><line x1=\"14\" x2=\"14\" y1=\"11\" y2=\"17\"/>", "share": "<circle cx=\"18\" cy=\"5\" r=\"3\"/><circle cx=\"6\" cy=\"12\" r=\"3\"/><circle cx=\"18\" cy=\"19\" r=\"3\"/><line x1=\"8.59\" x2=\"15.42\" y1=\"13.51\" y2=\"17.49\"/><line x1=\"15.41\" x2=\"8.59\" y1=\"6.51\" y2=\"10.49\"/>", "set": "<path d=\"M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z\"/><circle cx=\"12\" cy=\"12\" r=\"3\"/>", "trophy": "<path d=\"M6 9H4.5a2.5 2.5 0 0 1 0-5H6\"/><path d=\"M18 9h1.5a2.5 2.5 0 0 0 0-5H18\"/><path d=\"M4 22h16\"/><path d=\"M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22\"/><path d=\"M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22\"/><path d=\"M18 2H6v7a6 6 0 0 0 12 0V2Z\"/>", "cal": "<path d=\"M8 2v4\"/><path d=\"M16 2v4\"/><rect width=\"18\" height=\"18\" x=\"3\" y=\"4\" rx=\"2\"/><path d=\"M3 10h18\"/><path d=\"m9 16 2 2 4-4\"/>", "list": "<path d=\"m3 17 2 2 4-4\"/><path d=\"m3 7 2 2 4-4\"/><path d=\"M13 6h8\"/><path d=\"M13 12h8\"/><path d=\"M13 18h8\"/>", "chart": "<path d=\"M3 3v16a2 2 0 0 0 2 2h16\"/><path d=\"M18 17V9\"/><path d=\"M13 17V5\"/><path d=\"M8 17v-3\"/>", "book": "<path d=\"M12 7v14\"/><path d=\"M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z\"/>", "spark": "<path d=\"M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z\"/><path d=\"M20 3v4\"/><path d=\"M22 5h-4\"/><path d=\"M4 17v2\"/><path d=\"M5 18H3\"/>", "dl": "<path d=\"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4\"/><polyline points=\"7 10 12 15 17 10\"/><line x1=\"12\" x2=\"12\" y1=\"15\" y2=\"3\"/>", "vol": "<path d=\"M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z\"/><path d=\"M16 9a5 5 0 0 1 0 6\"/><path d=\"M19.364 18.364a9 9 0 0 0 0-12.728\"/>", "ref": "<path d=\"M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8\"/><path d=\"M21 3v5h-5\"/><path d=\"M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16\"/><path d=\"M8 16H3v5\"/>", "ok": "<path d=\"M21.801 10A10 10 0 1 1 17 3.335\"/><path d=\"m9 11 3 3L22 4\"/>", "hist": "<path d=\"M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8\"/><path d=\"M3 3v5h5\"/><path d=\"M12 7v5l4 2\"/>", "flame": "<path d=\"M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z\"/>", "lock": "<rect width=\"18\" height=\"11\" x=\"3\" y=\"11\" rx=\"2\" ry=\"2\"/><path d=\"M7 11V7a5 5 0 0 1 10 0v4\"/>", "plus": "<path d=\"M5 12h14\"/><path d=\"M12 5v14\"/>", "ball": "<path d=\"M11.1 7.1a16.55 16.55 0 0 1 10.9 4\"/><path d=\"M12 12a12.6 12.6 0 0 1-8.7 5\"/><path d=\"M16.8 13.6a16.55 16.55 0 0 1-9 7.5\"/><path d=\"M20.7 17a12.8 12.8 0 0 0-8.7-5 13.3 13.3 0 0 1 0-10\"/><path d=\"M6.3 3.8a16.55 16.55 0 0 0 1.9 11.5\"/><circle cx=\"12\" cy=\"12\" r=\"10\"/>", "bk": "<circle cx=\"12\" cy=\"12\" r=\"10\"/><path d=\"M19.13 5.09C15.22 9.14 10 10.44 2.25 10.94\"/><path d=\"M21.75 12.84c-6.62-1.41-12.14 1-16.38 6.32\"/><path d=\"M8.56 2.75c4.37 6 6 9.42 8 17.72\"/>", "table": "<path d=\"M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18\"/>", "goal": "<path d=\"M12 13V2l8 4-8 4\"/><path d=\"M20.561 10.222a9 9 0 1 1-12.55-5.29\"/><path d=\"M8.002 9.997a5 5 0 1 0 8.9 2.02\"/>", "fl": "<path d=\"M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z\"/><path d=\"M14 2v4a2 2 0 0 0 2 2h4\"/><path d=\"M10 9H8\"/><path d=\"M16 13H8\"/><path d=\"M16 17H8\"/>", "clock": "<circle cx=\"12\" cy=\"12\" r=\"10\"/><polyline points=\"12 6 12 12 16 14\"/>", "bell": "<path d=\"M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9\"/><path d=\"M10.3 21a1.94 1.94 0 0 0 3.4 0\"/>", "user": "<circle cx=\"12\" cy=\"8\" r=\"5\"/><path d=\"M20 21a8 8 0 0 0-16 0\"/>", "info": "<circle cx=\"12\" cy=\"12\" r=\"10\"/><path d=\"M12 16v-4\"/><path d=\"M12 8h.01\"/>", "shield": "<path d=\"M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z\"/><path d=\"m9 12 2 2 4-4\"/>"};
+const ic=(k,c)=>`<svg class="xi${c?" "+c:""}" viewBox="0 0 24 24" aria-hidden="true">${XI[k]||""}</svg>`;
+const X={ day:null, f:"all", q:"", qOpen:false, lsp:1, slipTab:"cp", rows:[], groups:[], gi:0, obs:null,
+  shut:new Set((()=>{ try{ return JSON.parse(localStorage.getItem("bx-xshut")||"[]"); }catch(e){ return []; } })()) };
+const shutSave=()=>{ try{ localStorage.setItem("bx-xshut",JSON.stringify([...X.shut].slice(-200))); }catch(e){} };
+const od2=v=>(+v).toFixed(2);
+const trN=(v,d)=>(+v).toLocaleString("tr-TR",{minimumFractionDigits:d??2,maximumFractionDigits:d??2});
+const fxOf=m=>{ try{ return m.src==="fx"?FIXTURES.find(x=>x.lg===m.lg&&x.h===m.h&&x.a===m.a):fxOdds(m); }catch(e){ return null; } };
+const lgFx=lg=>{ try{ return FIXTURES.find(x=>x.lg===lg&&(x.ln||x.cn)); }catch(e){ return null; } };
+const lgName=lg=>{ const L=LEAGUES[lg]; if(L&&L.n) return L.n; const f=lgFx(lg); return f?(f.ln||f.cn):/^i\d/.test(lg||"")?"Diğer ligler":(lg||""); };
+const lgFlag=lg=>{ if(FLAG[lg]) return FLAG[lg]; const f=lgFx(lg); return f&&f.cc?ccFlag(f.cc):"⚽"; };
+const inCp=(m,k)=>CP.items.some(c=>c.k===cpKey(m)&&c.mk===k);
+const vis=id=>{ const v=$(id); return !!v&&!v.hidden&&!document.hidden; };
+
+// ---------- iskelet: görünümler, alt gezinme, üst çubuk ----------
+const main=document.querySelector("main.page")||document.querySelector("main");
+const mk=(id,html)=>{ if($(id)) return $(id); const s=document.createElement("section"); s.className="view xv"; s.id=id; s.hidden=true; s.innerHTML=html; main.appendChild(s); return s; };
+mk("v-xhome",`<div class="xsub" id="xhSub"></div><div id="xhFeat"></div><div class="xlist" id="xhList"></div>`);
+mk("v-xlive",`<div class="xsub" id="xlSub"></div><div class="xlist" id="xlList"></div>`);
+mk("v-xslip",`<div class="xsub" id="xsSub"></div><div id="xsBody"></div>`);
+mk("v-xmenu",`<div id="xmBody"></div>`);
+document.body.classList.add("x-on");
+
+const nav=document.createElement("nav"); nav.className="xnav"; nav.setAttribute("aria-label","Ana menü");
+nav.innerHTML=`<button type="button" data-x="xhome">${ic("home")}<span>Bülten</span></button>
+  <button type="button" data-x="xlive">${ic("live")}<span>Canlı</span><i class="bd" id="xbLive" hidden></i></button>
+  <button type="button" data-x="xslip" class="cp"><span class="cpb">${ic("ticket")}</span><span>Kuponum</span><i class="bd" id="xbCp" hidden></i></button>
+  <button type="button" data-x="power">${ic("zap")}<span>Power Now</span><i class="bd g" id="xbPw" hidden></i></button>
+  <button type="button" data-x="xmenu">${ic("grid")}<span>Menü</span><i class="bd" id="xbMenu" hidden></i></button>`;
+document.body.appendChild(nav);
+nav.onclick=e=>{ const b=e.target.closest("button[data-x]"); if(!b) return; const v=b.dataset.x;
+  if(b.getAttribute("aria-current")==="page"){ window.scrollTo({top:0,behavior:"smooth"}); return; }
+  if(v==="power"){ const p=$("navPow"); if(p){ p.click(); setTimeout(xSync,30); } return; }
+  xGo(v); };
+const bar=document.createElement("button"); bar.type="button"; bar.className="xslipbar"; bar.id="xSlipBar"; bar.hidden=true; document.body.appendChild(bar);
+bar.onclick=()=>xGo("xslip");
+// üst çubuk: arama ve sohbet
+const tin=document.querySelector(".topbar .in");
+if(tin&&!$("xbSearch")){ tin.insertAdjacentHTML("beforeend",`<button type="button" class="xb" id="xbSearch" aria-label="Takım veya lig ara">${ic("search")}</button><button type="button" class="xb" id="xbChat" aria-label="Bulut sohbet asistanı">${ic("chat")}<i class="dot" id="xbChatDot" hidden></i></button>`);
+  $("xbSearch").onclick=()=>{ X.qOpen=true; xGo("xhome"); setTimeout(()=>{ const i=$("xhQ"); if(i) i.focus(); },60); };
+  $("xbChat").onclick=()=>{ try{ botOpen(); }catch(e){} }; }
+const setTop=()=>{ const t=document.querySelector(".topbar"); document.documentElement.style.setProperty("--x-top",(t?t.getBoundingClientRect().height:56)+"px"); };
+setTop(); window.addEventListener("resize",setTop);
+
+// ---------- yönlendirme: eski sekmeler yeni ekranlara ----------
+const MAP={bulten:"xhome",canli:"xlive",kupon:"xslip",more:"xmenu"}, BACK={xhome:"bulten",xlive:"canli",xslip:"kupon",xmenu:"more"};
+document.addEventListener("click",e=>{ const b=e.target.closest("nav.tabs button"); if(!b||!MAP[b.dataset.v]) return; e.stopPropagation(); e.preventDefault(); xGo(MAP[b.dataset.v]); },true);
+const _gv=goView;
+goView=function(v,tab){ if(MAP[v]) v=MAP[v];
+  if(BACK[v]){ try{ if(window.MS&&MS.m) closeMatch(); }catch(e){} }
+  _gv(v,tab); if(BACK[v]){ try{ history.replaceState(null,"","#"+BACK[v]); }catch(e){} }
+  try{ if(v==="xhome") xHome(); if(v==="xlive") xLive(); if(v==="xslip") xSlip(); if(v==="xmenu") xMenu(); }catch(e){ console.error(e); }
+  xSync(); };
+function xGo(v){ if(MAP[v]) v=MAP[v]; goView(v);
+  if(v==="xhome"&&!Pick.loaded&&Pick.loadEspn) Pick.loadEspn().then(()=>{ if(vis("v-xhome")) xHomeKeep(); });
+  if(v==="xlive") Promise.all([IDL.load(1,true),IDL.load(2,true)]).then(()=>{ if(vis("v-xlive")) xLive(); }); }
+window.xGo=xGo;
+function xSync(){
+  const cur=[...document.querySelectorAll("section.view")].find(s=>!s.hidden), id=cur?cur.id.slice(2):"";
+  const key=({xhome:"xhome",bulten:"xhome",basket:"xhome",tahmin:"xhome",xlive:"xlive",canli:"xlive",xslip:"xslip",kupon:"xslip",power:"power"})[id]||"xmenu";
+  nav.querySelectorAll("button[data-x]").forEach(b=>{ if(b.dataset.x===key) b.setAttribute("aria-current","page"); else b.removeAttribute("aria-current"); });
+  const nL=(IDL.live[1]||[]).length+(IDL.live[2]||[]).length, bl=$("xbLive"); if(bl){ bl.hidden=!nL; bl.textContent=nL>99?"99+":nL; }
+  const pw=$("pwBadge"), bp=$("xbPw"); if(bp){ const n=pw&&!pw.hidden?+pw.textContent||0:0; bp.hidden=!n; bp.textContent=n; }
+  const wait=(typeof OYN!=="undefined")?OYN.L.filter(sl=>oynSt(sl)==="w").length:0, bm=$("xbMenu"); if(bm){ bm.hidden=true; }
+  xSlipBar(); }
+window.xSync=xSync;
+
+// ---------- kupon çubuğu ve rozetler ----------
+function xSlipBar(){ const st=cpStats(), b=$("xbCp"); if(b){ b.hidden=!st.n; b.textContent=st.n; }
+  const show=st.n>0&&!vis("v-xslip")&&!(window.MS&&MS.m);
+  bar.hidden=!show; document.body.classList.toggle("x-cp",show);
+  if(show){ let stake=50; try{ stake=+(localStorage.getItem("bx-stake")||50)||50; }catch(e){}
+    bar.innerHTML=`<span class="n">${st.n}</span><span class="t">Kuponum · Oran <b>${trN(st.odd)}</b><small>Olası kazanç ${trN(stake*st.odd)} ₺ · tutma olasılığı %${(st.p*100).toFixed(st.p<.1?1:0)}</small></span>${ic("chev")}`; } }
+const _pc=paintCoupon;
+paintCoupon=function(){ _pc(); try{ xSlipBar(); xMarkSel(); if(vis("v-xslip")&&X.slipTab==="cp") xSlip(); }catch(e){} };
+function xMarkSel(){ document.querySelectorAll(".xo[data-k]").forEach(o=>{ const m=o.closest("[data-i],[data-li]"); if(!m) return; const x=o.dataset.i!=null?X.rows[+o.dataset.i]:null; const mm=x?x.m:(o.dataset.li!=null?xLiveKey(X.live[+o.dataset.li]):null); if(mm) o.classList.toggle("sel",inCp(mm,o.dataset.k)); }); }
+
+// ---------- BÜLTEN ----------
+function xDays(){ const L=Pick.list(), now=Date.now(), today=istDay(new Date()), tom=istDay(new Date(Date.now()+864e5));
+  const up=L.filter(m=>!m.live&&m.dt.getTime()>now-5*60e3);
+  const days=[...new Set(up.map(m=>istDay(m.dt)))].sort().slice(0,7);
+  if(!X.day||!days.includes(X.day)) X.day=days.includes(today)?today:days[0]||today;
+  const nL=(IDL.live[1]||[]).length;
+  return `${nL?`<button type="button" class="lv" data-day="live"><b>Canlı</b><small>${nL} maç</small></button>`:""}`+days.map(d=>{ const dt=new Date(d+"T12:00:00+03:00"), n=up.filter(m=>istDay(m.dt)===d).length;
+    return `<button type="button" data-day="${d}" aria-pressed="${!X.q&&d===X.day}"><b>${d===today?"Bugün":d===tom?"Yarın":esc(ist(dt,{weekday:"short"}))}</b><small>${esc(ist(dt,{day:"numeric",month:"short"}))} · ${n}</small></button>`; }).join(""); }
+const CHIPS=[["all","Tümü"],["top","Popüler ligler"],["strong","✓ Güçlü tahmin"],["value","💎 Değerli oran"],["fav","★ Takip"]];
+function xHomeSub(){ const s=$("xhSub");
+  s.innerHTML=`<div class="xseg" role="group" aria-label="Spor"><button type="button" data-sp="fb" aria-pressed="true">⚽ Futbol</button><button type="button" data-sp="bk" aria-pressed="false">🏀 Basketbol</button></div>
+    ${X.qOpen||X.q?`<div class="xsearch">${ic("search")}<input id="xhQ" type="search" placeholder="Takım veya lig ara" value="${esc(X.q)}" autocomplete="off" enterkeyhint="search"><button type="button" data-qx="1" aria-label="Aramayı kapat">${ic("x")}</button></div>`:""}
+    <div class="xdays" id="xhDays">${xDays()}</div>
+    <div class="xchips">${CHIPS.map(([k,n])=>`<button type="button" data-f="${k}" aria-pressed="${X.f===k}">${n}</button>`).join("")}</div>`;
+  const q=$("xhQ"); if(q){ let t; q.oninput=()=>{ clearTimeout(t); t=setTimeout(()=>{ X.q=q.value.trim(); xHomeList(); s.querySelectorAll("#xhDays button[data-day]").forEach(b=>b.setAttribute("aria-pressed",!X.q&&b.dataset.day===X.day)); },220); }; }
+}
+function xRowsFor(){ const now=Date.now(); let L=Pick.list().filter(m=>!m.live&&m.dt.getTime()>now-5*60e3);
+  if(X.q) L=L.filter(m=>qMatch(X.q,[m.h,m.a,lgName(m.lg)])); else L=L.filter(m=>istDay(m.dt)===X.day);
+  if(X.f==="top") L=L.filter(m=>TOPL.includes(m.lg));
+  if(X.f==="fav") L=L.filter(m=>FOLLOW.has(fkey(m))||FAVT.has(bestTeamName(m.h))||FAVT.has(bestTeamName(m.a)));
+  let R=L.map(m=>{ const f=fxOf(m); let p=null; try{ p=quickPred(m,f); }catch(e){}
+    const pq=p&&p.pm?{H:p.pm[0],D:p.pm[1],A:p.pm[2],o25:p.o25m}:p?{H:p.p[0],D:p.p[1],A:p.p[2],o25:p.o25}:null;
+    let Rc=null; try{ Rc=pq?recOf(pq,f):null; }catch(e){}
+    return {m,f,p,pq,R:Rc}; });
+  if(X.f==="strong") R=R.filter(x=>x.R&&x.R.tier==="g");
+  if(X.f==="value") R=R.filter(x=>x.f&&x.f.odds&&x.pq&&[x.pq.H,x.pq.D,x.pq.A].some((pp,i)=>x.f.odds[i]&&pp*x.f.odds[i]>1.10));
+  return R; }
+function xGroup(R){ const G=new Map();
+  for(const x of R){ const k=x.m.lg; if(!G.has(k)) G.set(k,{lg:k,items:[],t:x.m.dt.getTime()}); const g=G.get(k); g.items.push(x); g.t=Math.min(g.t,x.m.dt.getTime()); }
+  const pr=lg=>{ const i=TOPL.indexOf(lg); return i<0?99:i; };
+  const A=[...G.values()]; A.forEach(g=>g.items.sort((a,b)=>a.m.dt-b.m.dt||a.m.h.localeCompare(b.m.h,"tr")));
+  return A.sort((a,b)=>pr(a.lg)-pr(b.lg)||a.t-b.t||lgName(a.lg).localeCompare(lgName(b.lg),"tr")); }
+function xTag(R,i,live){ if(!R) return "";
+  if(R.tier==="w") return `<span class="xtag w">Pas · en olası ${esc(R.n)} %${pc9(R.cp)}</span>`;
+  return `<button type="button" class="xtag ${R.tier}${R.inCp?" in":""}" ${live?`data-lt="${i}"`:`data-t="${i}"`}>${R.tier==="g"?"✓":"•"} ${esc(R.n)} <b>%${pc9(R.cp)}</b>${R.o?` · ${od2(R.o)}`:""}</button>`; }
+function xRow(x,i){ const {m,f,pq,R}=x, o=f&&f.odds;
+  if(R) R.inCp=inCp(m,R.k);
+  const cell=(k,v,p)=>v?`<button type="button" class="xo${R&&R.k===k&&R.tier!=="w"?" rk":""}${inCp(m,k)?" sel":""}" data-i="${i}" data-k="${k}" data-o="${v}" data-p="${p??""}">${od2(v)}${p!=null?`<small>%${pc9(p)}</small>`:""}</button>`:`<span class="xo na">–</span>`;
+  const t=X.q&&istDay(m.dt)!==istDay(new Date())?esc(ist(m.dt,{day:"numeric",month:"short"}))+"<br>":"";
+  return `<div class="xr" data-i="${i}"${omA(m)}><div class="tt"><span>${t}${esc(ist(m.dt,{hour:"2-digit",minute:"2-digit"}))}</span>${f&&f.mbs?`<span class="mbs" title="Minimum bahis sayısı">${f.mbs}</span>`:""}</div>
+    <div class="tms"><div class="t"><span>${esc(m.h)}</span></div><div class="t"><span>${esc(m.a)}</span></div>${xTag(R,i)}</div>
+    ${cell("1",o&&o[0],pq&&pq.H)}${cell("X",o&&o[1],pq&&pq.D)}${cell("2",o&&o[2],pq&&pq.A)}</div>`; }
+function xGroupHtml(g){ const shut=X.shut.has(g.lg);
+  return `<div class="xg${shut?" shut":""}" data-g="${esc(g.lg)}"><div class="xg-h"><span class="fl">${lgFlag(g.lg)}</span><span class="nm">${esc(lgName(g.lg))}</span><span class="c">${g.items.length}</span>${ic("down")}</div>
+    <div class="xg-cols"><span></span><span>1</span><span>X</span><span>2</span></div>${g.items.map(x=>xRow(x,x.i)).join("")}</div>`; }
+function xFeat(R){ const box=$("xhFeat"); if(X.q||X.f!=="all"){ box.innerHTML=""; return; }
+  const F=R.filter(x=>x.R&&x.R.tier==="g"&&x.R.o&&x.m.dt.getTime()>Date.now()).sort((a,b)=>b.R.cp-a.R.cp).slice(0,8);
+  if(!F.length){ box.innerHTML=""; return; }
+  box.innerHTML=`<div class="xsec"><h2>Öne çıkan tahminler</h2><small>en yüksek olasılık</small></div><div class="xfeat">${F.map(x=>`<div class="xfc" data-i="${x.i}"${omA(x.m)}>
+    <span class="lg">${lgFlag(x.m.lg)} ${esc(lgName(x.m.lg))} · ${esc(ist(x.m.dt,{hour:"2-digit",minute:"2-digit"}))}</span>
+    <span class="tm"><span>${esc(x.m.h)}</span><span>${esc(x.m.a)}</span></span>
+    <span class="pk"><span class="nm">Tahmin <b>${esc(x.R.n)}</b></span><span class="pc">%${pc9(x.R.cp)}</span><button type="button" class="xo${inCp(x.m,x.R.k)?" sel":""}" style="width:58px" data-i="${x.i}" data-k="${x.R.k}" data-o="${x.R.o}" data-p="${x.R.cp}">${od2(x.R.o)}</button></span></div>`).join("")}</div>`; }
+function xHomeList(){ const list=$("xhList"); const R=xRowsFor(); R.forEach((x,i)=>x.i=i); X.rows=R; X.groups=xGroup(R); X.gi=0;
+  xFeat(R);
+  if(!R.length){ list.innerHTML=`<div class="xempty"><b>${Pick.loaded||FIXTURES.length?(X.q?"Aramaya uyan maç yok":X.f==="fav"?"Takip ettiğin maç yok":"Bu seçimde maç yok"):"Bülten yükleniyor…"}</b>${X.f==="fav"?"Maç sayfasındaki ☆ ile maçları takibe al.":"Başka bir gün ya da filtre seç."}${X.f!=="all"||X.q?`<button type="button" class="xbtn gh" data-reset="1">Tüm maçları göster</button>`:""}</div>`; return; }
+  list.innerHTML=(X.f==="all"&&!X.q?`<div class="xsec" style="padding:8px 4px 8px"><h2>${X.day===istDay(new Date())?"Bugünün maçları":"Maçlar"}</h2><small>${R.length} maç · ${X.groups.length} lig</small></div>`:"")+`<div id="xhG"></div>`;
+  xMore(); }
+function xMore(){ const box=$("xhG"); if(!box) return; const end=Math.min(X.groups.length,X.gi+14); let h="";
+  for(;X.gi<end;X.gi++) h+=xGroupHtml(X.groups[X.gi]);
+  const s=$("xhMore"); if(s) s.remove(); box.insertAdjacentHTML("beforeend",h);
+  if(X.gi<X.groups.length){ box.insertAdjacentHTML("afterend",`<button type="button" class="xmore" id="xhMore">Daha fazla lig göster (${X.groups.length-X.gi})</button>`);
+    const m=$("xhMore"); m.onclick=xMore; if(X.obs) X.obs.disconnect(); X.obs="IntersectionObserver" in window?new IntersectionObserver(es=>{ if(es.some(e=>e.isIntersecting)) xMore(); },{rootMargin:"500px"}):null; if(X.obs) X.obs.observe(m); } }
+function xHome(){ if(!$("v-xhome")) return; const y=window.scrollY; xHomeSub(); xHomeList(); }
+// bülten etkileşimleri
+$("v-xhome").addEventListener("click",e=>{
+  const sp=e.target.closest("[data-sp]"); if(sp){ if(sp.dataset.sp==="bk"){ try{ showSport("bk"); }catch(_){} xSync(); } else window.scrollTo({top:0,behavior:"smooth"}); return; }
+  if(e.target.closest(".xg-cols")){ toast("1: ev sahibi kazanır · X: beraberlik · 2: deplasman kazanır. Küçük yüzde BULUTOXX olasılığı, yeşil nokta önerilen seçenek."); return; }
+  const d=e.target.closest("[data-day]"); if(d){ buzz(6); if(d.dataset.day==="live"){ xGo("xlive"); return; } X.day=d.dataset.day; X.q=""; X.qOpen=false; xHome(); window.scrollTo({top:0}); return; }
+  const f=e.target.closest("[data-f]"); if(f){ buzz(6); X.f=f.dataset.f; xHome(); return; }
+  if(e.target.closest("[data-qx]")){ X.q=""; X.qOpen=false; xHome(); return; }
+  if(e.target.closest("[data-reset]")){ X.q=""; X.f="all"; X.qOpen=false; xHome(); return; }
+  const gh=e.target.closest(".xg-h"); if(gh){ const g=gh.parentElement, k=g.dataset.g; const on=g.classList.toggle("shut"); X.shut[on?"add":"delete"](k); shutSave(); buzz(5); return; }
+  const o=e.target.closest(".xo[data-k]"); if(o){ e.stopPropagation(); const x=X.rows[+o.dataset.i]; if(!x) return;
+    cpToggle(x.m,o.dataset.k,+o.dataset.o,o.dataset.p===""?null:+o.dataset.p); try{ paintCoupon(); }catch(_){}
+    xRefreshRow(+o.dataset.i); return; }
+  const t=e.target.closest("[data-t]"); if(t){ e.stopPropagation(); const x=X.rows[+t.dataset.t]; if(!x||!x.R) return;
+    cpToggle(x.m,x.R.k,+(x.R.o||(1/x.R.cp).toFixed(2)),x.R.cp); try{ paintCoupon(); }catch(_){} xRefreshRow(+t.dataset.t); return; }
+});
+function xRefreshRow(i){ const x=X.rows[i]; if(!x) return; document.querySelectorAll(`#v-xhome .xr[data-i="${i}"]`).forEach(r=>{ r.outerHTML=xRow(x,i); });
+  document.querySelectorAll(`#v-xhome .xfc .xo[data-i="${i}"]`).forEach(o=>o.classList.toggle("sel",inCp(x.m,o.dataset.k))); }
+
+// ---------- CANLI ----------
+X.live=[];
+function xLiveKey(m){ return m?{lg:"i"+m.ci,h:m.h,a:m.a,dt:new Date(m.ts)}:null; }
+function xLiveRow(m,i){ const sp=m.sp, rc=n=>n?`<i class="rc"></i>`.repeat(Math.min(n,3)):"";
+  const tms=`<div class="tms"><div class="t"><span>${esc(m.h)}</span>${rc(m.rc&&m.rc[0])}<b>${m.hs}</b></div><div class="t"><span>${esc(m.a)}</span>${rc(m.rc&&m.rc[1])}<b>${m.as}</b></div>`;
+  const tt=`<div class="tt"><span class="lvm lclk" data-id="${m.id}" data-sp="${sp}">${esc(idlClockTxt(m))}</span>${sp===1&&m.h1!=null?`<span>İY ${m.h1}-${m.a1}</span>`:""}</div>`;
+  if(sp!==1) return `<div class="xr" data-li="${i}" style="grid-template-columns:42px 1fr auto"${omA(m)}>${tt}${tms}${m.hq&&m.hq.length?`<span class="xtag w">${m.hq.map((q,k)=>`${k+1}Ç ${q}-${(m.aq||[])[k]??""}`).join(" · ")}</span>`:""}</div><span class="xo na" style="width:54px">${ic("chev")}</span></div>`;
+  let P=null,K=null; try{ P=idlPred(m); K=idlPick(m,P); }catch(e){}
+  let tag=""; const tag0=()=>tag;
+  if(K){ const b=K.all.filter(c=>c.o&&c.o>=1.03).sort((a,b)=>b.p-a.p)[0]||K.best; let cp=b.p; try{ cp=Math.min(liveCal(b.p).p,.99); }catch(e){}
+    const tier=cp>=.70?"g":cp>=.58?"m":"w"; m._tip={k:b.k,n:b.n,o:b.o,p:cp};
+    tag=tier==="w"?`<span class="xtag w">Pas · en olası ${esc(b.n)} %${pc9(cp)}</span>`:`<button type="button" class="xtag ${tier}" data-lt="${i}">🎯 ${esc(b.n)} <b>%${pc9(cp)}</b>${b.o?` · ${od2(b.o)}`:""}</button>`; }
+  const od=m.odds||{}, ms=od.ms, mm=xLiveKey(m), lock=ms&&ms.lock;
+  const ou=od.ou&&!od.ou.lock?od.ou:null;
+  const btn=(k,o,p,lab)=>o?`<button type="button" class="xo${inCp(mm,k)?" sel":""}" data-li="${i}" data-k="${k}" data-o="${o}" data-p="${p??""}">${od2(o)}<small>${lab}</small></button>`:`<span class="xo na">–<small>${lab}</small></span>`;
+  const cell=(k,j,p)=>lock?`<span class="xo lk">${ic("lock")}</span>`:btn(k,ms.v[j],p,k);
+  if(!ms||(lock&&ou)){ const k1="A"+(ou?ou.l:""), k2="U"+(ou?ou.l:""); if(ou){ MKT_N[k1]=`${lnF(ou.l)} Alt`; MKT_N[k2]=`${lnF(ou.l)} Üst`; }
+    return `<div class="xr" data-li="${i}"${omA(m)}>${tt}${tms}${tag0()}</div>${ou?btn(k1,ou.alt,P&&1-P.pOver,lnF(ou.l)+" A")+btn(k2,ou.ust,P&&P.pOver,lnF(ou.l)+" Ü"):`<span class="xo na">–</span><span class="xo na">–</span>`}<span class="xo na">${ic("chev")}</span></div>`; }
+  return `<div class="xr" data-li="${i}"${omA(m)}>${tt}${tms}${tag}</div>${cell("1",0,P&&P.H)}${cell("X",1,P&&P.D)}${cell("2",2,P&&P.A)}</div>`; }
+function xLive(){ if(!$("v-xlive")) return; const n1=(IDL.live[1]||[]).length, n2=(IDL.live[2]||[]).length;
+  $("xlSub").innerHTML=`<div class="xseg" role="group" aria-label="Spor"><button type="button" data-lsp="1" aria-pressed="${X.lsp===1}">⚽ Futbol <small>${n1}</small></button><button type="button" data-lsp="2" aria-pressed="${X.lsp===2}">🏀 Basketbol <small>${n2}</small></button></div>`;
+  const L=(IDL.live[X.lsp]||[]); X.live=L; const box=$("xlList");
+  if(!L.length){ box.innerHTML=`<div class="xempty"><b>${IDL.ok[X.lsp]?"Şu an canlı "+(X.lsp===1?"futbol":"basketbol")+" maçı yok":IDL.failed?"Canlı bülten alınamadı":"Canlı maçlar yükleniyor…"}</b>${IDL.ok[X.lsp]?"Bültenden sıradaki maçlara göz at.":"Birazdan tekrar denenecek."}<button type="button" class="xbtn gh" data-go="xhome">Bültene git</button></div>`; return; }
+  const G=[]; L.forEach((m,i)=>{ const g=G[G.length-1]; if(g&&g.comp===m.comp) g.items.push([m,i]); else G.push({comp:m.comp,cc:m.cc,items:[[m,i]]}); });
+  box.innerHTML=`<div class="xsec" style="padding:8px 4px"><h2>Canlı</h2><small>${L.length} maç · 10 sn'de bir yenilenir</small></div>`+G.map(g=>{ const k="L:"+g.comp, shut=X.shut.has(k);
+    return `<div class="xg${shut?" shut":""}" data-g="${esc(k)}"><div class="xg-h"><span class="fl">${ccFlag(g.cc)}</span><span class="nm">${esc(g.comp||"Diğer")}</span><span class="c">${g.items.length}</span>${ic("down")}</div>${g.items.map(([m,i])=>xLiveRow(m,i)).join("")}</div>`; }).join("")+`<p class="xnote" style="margin-top:6px">Skor, dakika ve oranlar resmi iddaa bülteninden. 🔒: iddaa bu dakikada bahsi kapattı. Yüzdeler BULUTOXX canlı tahminidir.</p>`; }
+$("v-xlive").addEventListener("click",e=>{
+  const s=e.target.closest("[data-lsp]"); if(s){ X.lsp=+s.dataset.lsp; buzz(6); xLive(); IDL.load(X.lsp,true).then(()=>{ if(vis("v-xlive")) xLive(); }); return; }
+  if(e.target.closest("[data-go]")){ xGo(e.target.closest("[data-go]").dataset.go); return; }
+  const gh=e.target.closest(".xg-h"); if(gh){ const g=gh.parentElement, k=g.dataset.g; const on=g.classList.toggle("shut"); X.shut[on?"add":"delete"](k); shutSave(); return; }
+  const o=e.target.closest(".xo[data-k]"); if(o){ e.stopPropagation(); const m=X.live[+o.dataset.li]; if(!m) return; const mm=xLiveKey(m);
+    cpToggle(mm,o.dataset.k,+o.dataset.o,o.dataset.p===""?null:+o.dataset.p); try{ paintCoupon(); }catch(_){} o.classList.toggle("sel",inCp(mm,o.dataset.k)); return; }
+  const t=e.target.closest("[data-lt]"); if(t){ e.stopPropagation(); const m=X.live[+t.dataset.lt]; if(!m||!m._tip) return; const T=m._tip;
+    try{ pwAdd([{m,k:T.k,n:T.n,o:T.o||+(1/T.p).toFixed(2),p:T.p}]); }catch(_){} xSync(); return; }
+});
+setInterval(()=>{ if(vis("v-xlive")) IDL.load(X.lsp).then(()=>{ if(vis("v-xlive")) xLive(); }); },10000);
+const _ira=idlRenderAll; idlRenderAll=function(){ try{ if($("v-canli")&&!$("v-canli").hidden) _ira(); else _ira(); }catch(e){} try{ if(vis("v-xlive")) xLive(); const d=$("xhDays"); if(d&&vis("v-xhome")) d.innerHTML=xDays(); xSync(); }catch(e){} };
+
+// ---------- KUPONUM ----------
+function xSlip(){ const st=cpStats(), nO=(typeof OYN!=="undefined")?OYN.L.length:0;
+  $("xsSub").innerHTML=`<div class="xseg" role="group"><button type="button" data-st="cp" aria-pressed="${X.slipTab==="cp"}">Kuponum <small>${st.n}</small></button><button type="button" data-st="oyn" aria-pressed="${X.slipTab==="oyn"}">Oynadıklarım <small>${nO}</small></button></div>`;
+  const B=$("xsBody");
+  if(X.slipTab==="oyn"){ B.innerHTML=`<div class="xcard" style="border:0;background:none;margin-top:4px"><div id="xOynHost"></div></div>`;
+    let ob=$("oynBox"); if(!ob){ ob=document.createElement("div"); ob.id="oynBox"; } $("xOynHost").appendChild(ob); try{ renderOyn(); oynGrade(); }catch(e){} return; }
+  if(!st.n){ B.innerHTML=`<div class="xempty">${ic("ticket")}<b>Kuponun boş</b>Bültende bir orana dokun, seçim kuponuna eklensin. BULUTOXX her seçimin ve kuponun tutma olasılığını hesaplar.
+      <button type="button" class="xbtn" data-a="home">Bültene git</button><button type="button" class="xbtn gh" data-a="sug" style="margin-top:8px">${ic("spark")} BULUTOXX günün kuponunu önersin</button></div>`; return; }
+  let stake=50; try{ stake=+(localStorage.getItem("bx-stake")||50)||50; }catch(e){}
+  const mbs=Math.max(...CP.items.map(x=>x.mbs||1)), ev=st.ev;
+  B.innerHTML=`<div class="xcard">${CP.items.map((x,i)=>`<div class="xsel" data-cpi="${i}"><div class="l"><small>${esc(lgName(x.lg)||"Canlı")} · ${esc(ist(new Date(x.dt),{weekday:"short",hour:"2-digit",minute:"2-digit"}))}${x.mbs?` · MBS ${x.mbs}`:""}</small><b>${esc(x.h)} – ${esc(x.a)}</b><span><em>${esc(mkName(x.mk))}</em> <span class="pp">· BULUTOXX %${Math.round((x.p||0)*100)}</span></span></div><span class="od">${od2(x.odd)}</span><button type="button" class="rm" data-rm="${i}" aria-label="Çıkar">${ic("x")}</button></div>`).join("")}</div>
+    <div class="xcard xsum">
+      <div class="r"><span>Toplam oran</span><b>${trN(st.odd)}</b></div>
+      <div class="r"><span>BULUTOXX tutma olasılığı</span><b>%${(st.p*100).toFixed(st.p<.1?1:0)}</b></div>
+      <div class="r"><span>Değerlendirme</span><span class="${ev>=.92?"ok":"no"}">${ev>=1.05?"Değerli görünüyor":ev>=.92?"Adil":"Oran olasılığa göre düşük"}</span></div>
+      <div class="r"><span>MBS</span>${st.n>=mbs?`<span class="ok">Uygun (en az ${mbs})</span>`:`<span class="no">En az ${mbs} maç gerekli</span>`}</div>
+      <div class="r"><span>Kupon bedeli</span><span class="xstake"><button type="button" data-sk="-">−</button><input id="xStake" type="number" inputmode="decimal" min="1" value="${stake}"><button type="button" data-sk="+">+</button></span></div>
+      <div class="r big"><span>Olası kazanç</span><b id="xWin">${trN(stake*st.odd)} ₺</b></div>
+      <button type="button" class="xbtn g" data-a="play" style="margin-top:10px">${ic("ok")} Oynadım, kaydet</button>
+      <div class="xrow2" style="margin-top:8px"><button type="button" class="xbtn gh" data-a="share">${ic("share")} Paylaş</button><button type="button" class="xbtn gh" data-a="clear">${ic("trash")} Temizle</button></div>
+    </div>
+    <p class="xnote">BULUTOXX bahis almaz. Kuponu resmi iddaa bayisinde ya da uygulamasında oynadıktan sonra “Oynadım, kaydet”e bas; sonucunu biz takip ederiz. Olasılıklar kesinlik değildir · 18+</p>`;
+  const inp=$("xStake"); if(inp) inp.oninput=()=>{ const v=Math.max(0,+inp.value||0); try{ localStorage.setItem("bx-stake",v); }catch(_){} $("xWin").textContent=trN(v*st.odd)+" ₺"; xSlipBar(); };
+}
+$("v-xslip").addEventListener("click",e=>{
+  const t=e.target.closest("[data-st]"); if(t){ X.slipTab=t.dataset.st; buzz(6); xSlip(); return; }
+  const rm=e.target.closest("[data-rm]"); if(rm){ e.stopPropagation(); CP.items.splice(+rm.dataset.rm,1); cpSave(); xSlip(); return; }
+  const sk=e.target.closest("[data-sk]"); if(sk){ const i=$("xStake"); const steps=[5,10,20,25,50,100,150,200,250,500,1000,2000,5000]; let v=+i.value||0;
+    v=sk.dataset.sk==="+"?(steps.find(s=>s>v)||v+1000):([...steps].reverse().find(s=>s<v)||1); i.value=v; i.oninput(); return; }
+  const a=e.target.closest("[data-a]"); if(!a) return; const A=a.dataset.a;
+  if(A==="home") xGo("xhome");
+  if(A==="sug"){ try{ suggestCoupon(); }catch(_){} setTimeout(()=>{ xGo("xslip"); },60); }
+  if(A==="play"){ const n=CP.items.length; oynAdd(CP.items.slice(),""); CP.items=[]; cpSave(); X.slipTab="oyn"; xSlip(); xSync(); window.scrollTo({top:0}); }
+  if(A==="clear"){ CP.items=[]; cpSave(); toast("Kupon temizlendi"); xSlip(); }
+  if(A==="share"){ const st=cpStats(); const t=`🎫 BULUTOXX kuponu\n`+CP.items.map(x=>`⚽ ${x.h} – ${x.a}: ${mkName(x.mk)} @${od2(x.odd)} (BULUTOXX %${Math.round((x.p||0)*100)})`).join("\n")+`\nToplam oran ${trN(st.odd)} · tutma olasılığı %${(st.p*100).toFixed(1)}\n${location.origin+location.pathname}`;
+    if(navigator.share) navigator.share({text:t}).catch(()=>{}); else { try{ navigator.clipboard.writeText(t); toast("Kupon panoya kopyalandı"); }catch(_){ toast("Paylaşım desteklenmiyor"); } } }
+});
+
+// ---------- MENÜ ----------
+function xMenu(){ const nav0=v=>()=>{ const b=document.querySelector(`nav.tabs button[data-v="${v}"]`); if(b) b.click(); };
+  const nO=(typeof OYN!=="undefined")?OYN.L.filter(sl=>oynSt(sl)==="w").length:0;
+  X.MI=[
+   ["Tahmin araçları",[
+    ["chat","Bulut sohbet asistanı","“Yarın için 3 maç”, “KG var mı?” diye sor","#2F7BFF",()=>botOpen()],
+    ["spark","Maç analizi yap","İki takım seç, ayrıntılı tahmin","#7C3AED",()=>goView("tahmin")],
+    ["trophy","Ligler ve puan durumu","Tablo, fikstür, güç sıralaması","#D97706",nav0("ligler")],
+    ["cal","Sonuçlar","Biten maçlar ve tahmin isabeti","#0284C7",()=>{ const b=$("navRes"); if(b) b.click(); }],
+    ["bk","Basketbol","NBA, EuroLeague ve diğer ligler","#EA580C",()=>showSport("bk")]]],
+   ["Takibim",[
+    ["ok","Oynadıklarım",nO?`${nO} kupon sonuç bekliyor`:"Oynadığın kuponlar ve sonuçları","#16A34A",()=>{ X.slipTab="oyn"; xGo("xslip"); },nO],
+    ["list","Kayıtlı tahminlerim","Analizden kaydettiğin maçlar","#0D9488",()=>goView("sonuc")],
+    ["chart","Başarı karnesi","Modelin gerçek isabeti","#4F46E5",()=>goView("karne")],
+    ["hist","Gelişim günlüğü","Uygulamadaki yenilikler","#DB2777",()=>{ const c=$("moreGel"); if(c) c.click(); }]]],
+   ["Uygulama",[
+    ["set","Ayarlar","Ses, titreşim, bildirim, ligler","#475569",()=>{ const b=$("setBtn"); if(b) b.click(); }],
+    ["ref","Verileri yenile","En son bülten ve tahminler","#0891B2",()=>{ const b=$("refreshBtn"); if(b) b.click(); else location.reload(); }],
+    ["dl","Ana ekrana ekle","Uygulama gibi tek dokunuşla aç","#2563EB",()=>{ try{ doInstall(); }catch(_){} }],
+    ["share","Uygulamayı paylaş","Arkadaşlarına gönder","#22A06B",()=>{ try{ shareAppSheet(); }catch(_){} }],
+    ["book","Nasıl kullanılır","Kısa rehber","#0EA5E9",()=>goView("rehber")],
+    ["shield","Kullanım şartları","18+ · sorumlu oyun","#334155",()=>{ try{ showTerms(false); }catch(_){} }]]]];
+  $("xmBody").innerHTML=`<div class="xmh"><img src="icons/mark.png" alt=""><div><b>BULUTOXX</b><small>Ücretsiz maç tahmini · sürüm ${esc(String(typeof APP_V!=="undefined"?APP_V:""))}</small></div></div>
+    <div class="xml">${X.MI.map(([h,L],gi)=>`<h3>${h}</h3><div class="grp">${L.map(([icn,t,s,c,fn,n],ii)=>`<button type="button" class="it" data-mi="${gi}:${ii}"><span class="ic" style="background:${c}">${ic(icn)}</span><span class="tx">${esc(t)}<small>${esc(s)}</small></span>${n?`<span class="n">${n}</span>`:""}${ic("chev")}</button>`).join("")}</div>`).join("")}</div>
+    <p class="xnote" style="margin-top:16px;text-align:center">BULUTOXX bahis almaz; olasılıklar istatistiksel tahmindir, kesinlik içermez. 18 yaş altı bahis oynayamaz.</p>`;
+}
+$("v-xmenu").addEventListener("click",e=>{ const b=e.target.closest("[data-mi]"); if(!b) return; const [g,i]=b.dataset.mi.split(":").map(Number); const it=X.MI&&X.MI[g]&&X.MI[g][1][i]; if(it){ buzz(6); it[4](); setTimeout(xSync,60); } });
+
+// ---------- MAÇ SAYFASI: Bahisler önce, sade başlık ----------
+const _om=openMatch; openMatch=function(m,tab){ const r=_om(m,tab||"oran"); xSlipBar(); return r; };
+const _cm=closeMatch; closeMatch=function(){ const r=_cm(); setTimeout(xSlipBar,0); return r; };
+const _msR=msRender; msRender=function(){ _msR(); const el=$("msheet"); if(!el) return; const tb=el.querySelector(".ms-tabs"); if(!tb) return;
+  const L={oran:"Bahisler",tahmin:"Analiz",form:"Form"}; tb.querySelectorAll("button[data-t]").forEach(b=>{ if(L[b.dataset.t]) b.textContent=L[b.dataset.t]; });
+  const o=tb.querySelector('[data-t="oran"]'); if(o&&tb.firstElementChild!==o) tb.prepend(o);
+  const rl=el.querySelector(".xrecl"); if(rl) rl.onclick=()=>{ const k=rl.dataset.k, mo=k&&el.querySelector(`.mo[data-mk="${k}"]`); if(mo) mo.click(); else msGo&&msGo("tahmin"); }; };
+const _mo=msOran; msOran=function(m,f,r,lv){ const h=_mo(m,f,r,lv); let rec="";
+  try{ if(lv){ const P=idlPred(lv), K=idlPick(lv,P); if(K){ const b=K.best; let cp=b.p; try{ cp=Math.min(liveCal(b.p).p,.99); }catch(e){} const k=(b.k==="U"||b.k==="A")?b.k+P.line:b.k;
+        rec=`<div class="xrecl${cp<.58?" w":""}" data-k="${esc(k)}">${cp<.58?"⏸️":"🎯"}<span>${cp<.58?"Net canlı öneri yok · en olası":"BULUTOXX canlı tahmini"} <b>${esc(b.n)}</b></span><span class="p">%${pc9(cp)}</span></div>`; } }
+    else if(r){ const R=recOf(r,f); if(R) rec=`<div class="xrecl${R.tier==="w"?" w":""}" data-k="${esc(R.k)}">${R.tier==="w"?"⏸️":"✅"}<span>${R.tier==="w"?"Net öneri yok · en olası":"BULUTOXX tahmini"} <b>${esc(R.n)}</b>${R.o?` · oran ${od2(R.o)}`:""}</span><span class="p">%${pc9(R.cp)}</span></div>`; } }catch(e){}
+  return rec+h; };
+
+// ---------- veri güncellenince yeni ekranlar da tazelenir ----------
+const _rb=renderBulten; renderBulten=function(){ try{ if($("v-bulten")&&!$("v-bulten").hidden) _rb(); }catch(e){} try{ if(vis("v-xhome")) xHomeKeep(); }catch(e){} };
+function xHomeKeep(){ const y=window.scrollY, gi=X.gi; xHomeSub(); xHomeList(); while(X.gi<gi&&X.gi<X.groups.length) xMore(); window.scrollTo({top:y}); }
+setInterval(()=>{ if(vis("v-xhome")&&!document.querySelector("#xhQ:focus")) xHomeKeep(); },120000);
+setInterval(()=>{ if(!document.hidden) xSync(); },15000);
+window.addEventListener("popstate",()=>setTimeout(xSync,30));
+// açılış: eski sekme adresleri yeni ekranlara
+setTimeout(()=>{ const cur=[...document.querySelectorAll("section.view")].find(s=>!s.hidden), id=cur?cur.id.slice(2):"";
+  if(MAP[id]) xGo(MAP[id]); else if(!cur) xGo("xhome"); xSync(); },150);
+})();
+</script>
+<!--/UI2-->
 </body>
 </html>
