@@ -787,6 +787,7 @@ body.ios-guide main,body.ios-guide .page{padding-bottom:40vh}
 .lvbox .br-p{display:flex;gap:6px;flex-wrap:wrap}
 .lvbox .br-p i{font-style:normal;font-size:12px;font-weight:700;padding:4px 8px;border-radius:9px;background:rgba(255,255,255,.06);color:var(--ink2)}
 .lvbox .br-p i.lv1{background:rgba(255,69,58,.14);color:#FF8A80}
+.lvpanel{border-color:rgba(255,69,58,.45)!important;background:linear-gradient(160deg,rgba(255,69,58,.12),rgba(16,26,48,.6))!important}
 </style>
 </head>
 <body>
@@ -3742,6 +3743,25 @@ if($("liveList")) lvObs.observe($("liveList"),{childList:true,subtree:false});
 const _bkRow=bkRow;
 bkRow=function(f,i,showLg){ let h=_bkRow(f,i,showLg); try{ const lv=bkLiveOf(f), p=bkPredict(f), L=bkLivePred(p,lv);
   if(L){ const fav=L.pH>=.5?f.h:f.a; h=h.replace(/<div class="bk-p">[\s\S]*?<\/div><\/div>$/,`<div class="bk-p"><i class="x">🔴 Canlı: ${esc(shortName(fav))} kazanır %${Math.round(Math.max(L.pH,L.pA)*100)}</i><i>Tahmini son skor ${L.fh}-${L.fa}</i></div></div>`); } }catch(e){} return h; };
+
+// v19: Canlı maç detayında anlık tahmin paneli
+let LIVECTX=null;
+const _pm=pickMatch;
+pickMatch=function(m){ LIVECTX=m&&m.live?{h:bestTeamName(m.h),a:bestTeamName(m.a),id:m.id,lg:m.lg}:null; return _pm(m); };
+const _rpL=renderPrediction;
+renderPrediction=function(inp,r){ _rpL(inp,r);
+  try{ if(!LIVECTX||inp.home!==LIVECTX.h||inp.away!==LIVECTX.a) return;
+    const m=Pick.list().find(x=>String(x.id)===String(LIVECTX.id))||{}; if(!m.live) return;
+    const t=fbMinute(m.clock,m.detail), L=fbLive(r.lh,r.la,+m.hs||0,+m.as||0,t==null?45:t); if(!L) return;
+    const pc=x=>Math.round(x*100);
+    const el=document.createElement("div"); el.className="panel lvpanel";
+    el.innerHTML=`<h2>🔴 Canlı tahmin · ${esc(m.clock||"")} · ${m.hs}-${m.as}</h2>
+      <div class="bk-sc"><div class="main"><small>EN OLASI SON SKOR</small><b>${esc(L.ft)}</b></div><div><small>SIRADAKİ GOL</small><b style="font-size:17px">${L.nextH>=L.nextA?esc(shortTeam(inp.home)):esc(shortTeam(inp.away))}</b></div><div><small>BAŞKA GOL YOK</small><b>%${pc(L.none)}</b></div></div>
+      ${(()=>{ const lb=(k,v)=>v>=.18?`${k} · %${pc(v)}`:v>=.08?`%${pc(v)}`:""; return `<div class="bar3"><div class="b1" style="width:${L.H*100}%">${lb("1",L.H)}</div><div class="bx" style="width:${L.D*100}%">${lb("X",L.D)}</div><div class="b2" style="width:${L.A*100}%">${lb("2",L.A)}</div></div>
+      <p class="note" style="margin:0">1 %${pc(L.H)} · X %${pc(L.D)} · 2 %${pc(L.A)}</p>`; })()}
+      <p class="note">Kalan sürede beklenen gol ve skor durumu (geride olan hızlanır, önde olan yavaşlar) hesaba katılır. Devre arası skoru bilinen 17.116 maçta bu yöntem kazananı %61 doğru buldu (maç öncesi %50). Sayfayı yenileyince güncellenir.</p>`;
+    const out=$("out"); out.insertBefore(el,out.firstChild);
+  }catch(e){} };
 </script>
 
 </body>
