@@ -1156,6 +1156,15 @@ body.bt3 #v-bulten .tb-row{position:relative}
 .bt-pop button:active{background:rgba(255,255,255,.07)}
 #btMore{font-size:22px;line-height:1;font-weight:800;letter-spacing:1px}
 .lg-top{border:1px solid rgba(255,214,102,.35)!important;background:rgba(255,214,102,.07)!important}
+.kz h2{margin:0 0 6px}.kz h3{margin:14px 0 6px;font-size:14px}
+.kz-t{display:grid;grid-template-columns:repeat(auto-fit,minmax(74px,1fr));gap:8px;text-align:center;margin:8px 0}
+.kz-t>div{background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:12px;padding:10px 4px}
+.kz-t b{display:block;font:800 22px var(--round);color:#3BEA7E;font-variant-numeric:tabular-nums}.kz-t small{color:var(--ink3);font-size:11.5px;line-height:1.25}
+.kz-r p{margin:8px 0 0;font-size:13.5px;line-height:1.45}.kz-r a{color:var(--cyan);font-weight:700}
+.kz-g{font-size:13px;margin:6px 0;color:var(--ink2)}
+.kz-tech{margin-top:14px}.kz-tech>summary{cursor:pointer;padding:14px 16px;border-radius:14px;background:var(--surface2);border:1px solid var(--line);font-weight:700;color:var(--ink2)}
+.kz-tech[open]>summary{margin-bottom:12px}
+.pw-kz{width:100%;display:flex;align-items:center;gap:8px;background:none;border:0;color:var(--ink);font:600 14px var(--font);text-align:left;padding:2px 0}.pw-kz span{margin-left:auto;color:var(--cyan);font-size:13px;white-space:nowrap}
 </style>
 </head>
 <body>
@@ -1313,7 +1322,7 @@ body.bt3 #v-bulten .tb-row{position:relative}
 
   <!-- DAHA FAZLA -->
   <section class="view" id="v-more" hidden>
-    <div class="ltitle"><div><h1>Daha Fazla</h1><p>Motor, rehber ve ayarlar</p></div></div>
+    <div class="ltitle"><div><h1>Menü</h1><p>Kuponlar, analiz, karne ve ayarlar</p></div></div>
     <div class="wrap">
       <div class="group mlist">
         <button class="cell" data-go="tahmin"><span class="ic" style="background:linear-gradient(135deg,#22D3FF,#2F7BFF)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7.2l3.6 2.6-1.4 4.2H9.8L8.4 9.8z"/></svg></span><span class="tx"><b>Maç tahmini yap</b><small>İki takımı seç, İY · 2Y · MS tahmini</small></span><span class="ar">›</span></button>
@@ -3372,7 +3381,7 @@ document.querySelectorAll("#v-more [data-act]").forEach(b=>b.onclick=()=>{ const
   if(a==="settings") $("setBtn").click(); if(a==="share") shareAppSheet(); if(a==="install") doInstall(); if(a==="terms") showTerms(false); });
 // Alt sayfalara "geri" ve her sayfaya "Ana Sayfa" kısayolu
 ["karne","rehber"].forEach(v=>{ const t=document.querySelector("#v-"+v+" .ltitle"); if(!t) return;
-  const b=document.createElement("button"); b.className="backlink"; b.type="button"; b.innerHTML="‹ Daha Fazla"; b.onclick=()=>goView("more"); t.parentNode.insertBefore(b,t); });
+  const b=document.createElement("button"); b.className="backlink"; b.type="button"; b.innerHTML="‹ Menü"; b.onclick=()=>goView("more"); t.parentNode.insertBefore(b,t); });
 document.querySelector(".topbar .logo").style.cursor="pointer";
 document.querySelector(".topbar .logo").addEventListener("click",goHome);
 // Aynı sekmeye tekrar dokununca en üste kaydır
@@ -5062,7 +5071,7 @@ if((location.hash||"")==="#sonuclar") setTimeout(()=>$("navRes").click(),200);
 // =====================================================================
 // BULUTOXX v35: Otomatik sürüm güncelleme — yeni sürüm yayınlanınca uygulama kendini yeniler
 // =====================================================================
-const APP_V="2026-10-24.61";
+const APP_V="2026-10-24.62";
 (function autoUpdate(){
   let shown=false;
   async function check(auto){
@@ -6036,6 +6045,50 @@ menuOrganize(); oynBadge();
   try{ if(window.lgChipPaint) lgChipPaint(); }catch(e){}
   const fav=[...h.querySelectorAll('#btChips button[data-f="fav"]')][0]; if(fav) fav.textContent="⭐ Favori";
 })();
+// ---------- v62 Adım 4: isabet bilgisi tek yerde — Tahmin karnesi ----------
+function karneOzetHtml(){ const T=DAILY&&DAILY.toplam, C=DAILY&&DAILY.canli, L=lastFull(), k=BOT.st.karne||{n:0};
+  let O=null; try{ O=oynStats(); }catch(e){}
+  const pc=x=>Math.round((x||0)*100);
+  const tile=(v,l,s)=>`<div><b>${v}</b><small>${l}${s?`<br>${s}`:""}</small></div>`;
+  let h=`<div class="panel kz"><h2>📒 Karne özeti</h2><p class="note" style="margin-top:0">Tahminler maç başlamadan kilitlenir, sonuç gelince puanlanır. Aşağıdakiler gerçek sonuçlardır.</p><div class="kz-t">`;
+  h+=T&&T.n?tile(`%${pc(T.hit)}`,"maç öncesi öneri",`${T.n} öneri`):tile("–","maç öncesi öneri","veri birikiyor");
+  h+=T&&T.guclu_n?tile(`%${pc(T.guclu_hit)}`,"güçlü öneri (%70+)",`${T.guclu_n} öneri`):"";
+  h+=C&&C.n?tile(`%${pc(C.hit)}`,"canlı seçim",`${C.n} seçim`):"";
+  h+=O&&O.n?tile(`%${pc(O.h/O.n)}`,"senin oynadıkların",`${O.h}/${O.n} seçim`):"";
+  h+=`</div>`;
+  const rows=[];
+  if(L){ const g=L.guclu&&L.guclu.n?L.guclu:null; rows.push(`🗓️ <b>${L.d===istDay(new Date(Date.now()-864e5))?"Dün":esc(L.d)}</b>: ${L.n} öneri, <b>%${pc(L.hit)}</b> tuttu${g?` · güçlü önerilerde %${pc(g.hit)} (${Math.round(g.hit*g.n)}/${g.n})`:""}.`); }
+  if(C&&C.bins){ const hb=C.bins.filter(b=>b[0]>=.75&&b[2]); if(hb.length){ const n=hb.reduce((a,b)=>a+b[2],0), hh=hb.reduce((a,b)=>a+b[2]*b[3],0); rows.push(`🔴 Canlıda %75 ve üstü güvenli seçimler: <b>%${pc(hh/n)}</b> tuttu (${n} seçim).`); } }
+  if(k.n) rows.push(`☁️ Bulut'un sana önerdikleri: ${Math.round(k.hit*k.n)}/${k.n} tuttu (%${pc(k.hit)}).`);
+  if(O&&O.n) rows.push(`🎯 Senin kuponların: ${O.slw}/${O.sl} kazandı${O.ns?` · net ${O.ret-O.stake>=0?"+":""}${Math.round(O.ret-O.stake).toLocaleString("tr-TR")} ₺`:""}. <a href="#" data-kz="oyn">Oynadıklarım ›</a>`);
+  if(rows.length) h+=`<div class="kz-r">${rows.map(r=>`<p>${r}</p>`).join("")}</div>`;
+  const KR=(GELISIM&&GELISIM.olaylar||[]).filter(e=>e.tur==="karne").slice(-7).reverse();
+  if(KR.length) h+=`<h3>Günlük karneler</h3>${KR.map(e=>`<p class="kz-g"><b>${esc(e.baslik)}</b> ${esc(e.detay||"")}</p>`).join("")}`;
+  return h+`</div>`; }
+const _renderKarne4=renderKarne;
+renderKarne=function(){ _renderKarne4(); const box=$("karne"); if(!box) return;
+  const h1=document.querySelector("#v-karne .ltitle h1"), hp=document.querySelector("#v-karne .ltitle p"); if(h1) h1.textContent="Tahmin karnesi"; if(hp) hp.textContent="BULUTOXX ne kadar tuttu: maç öncesi, canlı ve senin kuponların";
+  let oz=$("kzBox"); if(!oz){ oz=document.createElement("div"); oz.id="kzBox"; box.prepend(oz); } oz.innerHTML=karneOzetHtml();
+  // canlı karne paneli özetin hemen altında; teknik paneller tek katlanır başlıkta
+  const panels=[...box.querySelectorAll(":scope > .panel, :scope > div > .panel")].filter(p=>!oz.contains(p));
+  const live=panels.find(p=>/Canlı karne/.test((p.querySelector("h2")||{}).textContent||""));
+  if(live) oz.after(live);
+  let det=$("kzTech"); if(!det){ det=document.createElement("details"); det.id="kzTech"; det.className="kz-tech"; det.innerHTML=`<summary>⚙️ Motorun içi: veri, öğrenme, laboratuvar, takım güçleri</summary>`; box.appendChild(det); }
+  panels.filter(p=>p!==live&&!det.contains(p)).forEach(p=>det.appendChild(p));
+  const a=oz.querySelector('[data-kz="oyn"]'); if(a) a.onclick=e=>{ e.preventDefault(); try{ openOyn(); }catch(_){} };
+};
+// Gelişim günlüğü yalnız yenilikler ve geliştirmeler; karneler Tahmin karnesinde
+const _renderGel4=renderGel;
+renderGel=function(){ const G=GELISIM; let saved=null; if(G&&G.olaylar){ saved=G.olaylar; G.olaylar=saved.filter(e=>e.tur!=="karne"); }
+  try{ _renderGel4(); } finally{ if(saved) G.olaylar=saved; }
+  const p=document.querySelector("#v-gelisim .ltitle p"); if(p) p.textContent="Yenilikler ve sistemin kendi yaptığı geliştirmeler (karneler Tahmin karnesinde)"; };
+// Power Now: canlı karne tek satır, ayrıntısı Tahmin karnesinde
+const _renderPower4=renderPower;
+renderPower=function(){ _renderPower4(); const v=$("v-power"); if(!v) return;
+  const c=[...v.querySelectorAll(".pw-card")].find(x=>/Canlı karne/.test(x.textContent)); if(!c) return; const C=DAILY&&DAILY.canli;
+  c.innerHTML=`<button type="button" class="pw-kz">📒 Canlı karne${C&&C.n?`: ${C.n} seçim, <b>%${Math.round(C.hit*100)}</b> tuttu`:""}<span>Tahmin karnesi ›</span></button>`;
+  c.querySelector(".pw-kz").onclick=()=>{ goView("karne","more"); }; };
+const ml4=$("moreGel"); if(ml4){ const s=ml4.querySelector(".tx small"); if(s) s.textContent="Yenilikler ve sistemin kendi geliştirmeleri"; }
 </script>
 
 </body>
