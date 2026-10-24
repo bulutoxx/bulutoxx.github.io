@@ -28,7 +28,7 @@ jobs:
           python-version: "3.12"
       - run: pip install numpy==2.1.3
       - name: Verileri indir ve modeli eğit
-        run: python scripts/update.py
+        run: python scripts/update.py || echo "::warning::Futbol motoru hata verdi (data/engine_error.txt)"
         env:
           APISPORTS_KEY: ${{ secrets.APISPORTS_KEY }}   # API-Football / API-Basketball (ücretsiz üyelik, günde 100 istek)
           ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}     # The Odds API (ücretsiz üyelik, ayda 500 kredi)

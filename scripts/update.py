@@ -1033,7 +1033,8 @@ def main():
     if mt.get("score_test"): P["scoreMode"] = mt["score_test"]["secilen"]
     # Yaklaşan maçlar: oranları kaydet, tahminleri önceden arşivle, geçmiş tahminleri gerçek sonuçla puanla
     fxp = os.path.join(DATA, "fixtures.json"); plp = os.path.join(DATA, "predlog.json")
-    fx = [] if offline else download_fixtures(season, today)
+    try: fx = [] if offline else download_fixtures(season, today)
+    except Exception as e: print("fikstür indirilemedi:", e, flush=True); fx = []
     if not fx and os.path.exists(fxp):
         fx = [f for f in json.load(open(fxp, encoding="utf-8")) if f["d"] >= today.isoformat() and f["lg"] not in EXTRA]
     if extra_fx:
@@ -1071,7 +1072,7 @@ def main():
                               "n": len([m for m in d["matches"] if m["season"] == d.get("season")]), "n_all": len(d["matches"]),
                               "avg": round(sum(sum(m["ft"]) for m in d["matches"] if m["season"] == d.get("season")) / max(1, len([m for m in d["matches"] if m["season"] == d.get("season")])), 2)}
                          for lg, d in season.items()}}
-    json.dump(model, open(mp, "w", encoding="utf-8"), ensure_ascii=False, indent=1, allow_nan=False)
+    json.dump(clean_nan(model), open(mp, "w", encoding="utf-8"), ensure_ascii=False, indent=1, allow_nan=False)
     hp = os.path.join(DATA, "history.json")
     hist = json.load(open(hp, encoding="utf-8")) if os.path.exists(hp) else []
     if mt and not quick:
@@ -1080,5 +1081,20 @@ def main():
     json.dump(hist, open(hp, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
     print("Bitti:", json.dumps({k: v for k, v in mt.items() if k != "by_league"}, ensure_ascii=False), "params", P)
 
+def clean_nan(o):
+    """JSON'a NaN/sonsuz yazılmasın (tarayıcı okuyamaz): None'a çevir."""
+    if isinstance(o, float): return o if math.isfinite(o) else None
+    if isinstance(o, dict): return {k: clean_nan(v) for k, v in o.items()}
+    if isinstance(o, (list, tuple)): return [clean_nan(v) for v in o]
+    return o
+
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+        try: os.remove(os.path.join(DATA, "engine_error.txt"))
+        except FileNotFoundError: pass
+    except Exception:
+        import traceback
+        tb = traceback.format_exc(); print(tb, flush=True)
+        open(os.path.join(DATA, "engine_error.txt"), "w", encoding="utf-8").write(datetime.now(timezone.utc).isoformat() + "\n" + tb)
+        sys.exit(1)

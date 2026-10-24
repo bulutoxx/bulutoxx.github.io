@@ -521,7 +521,12 @@ def main():
         fx_out.append(x)
     res = {"updated": now, "tuned": old.get("tuned", now) if quick else now, "fp": fp, "engine": ENGINE_V, "leagues": out_lg, "fixtures": fx_out, "backtest": tot, "history": hist,
            "live": live_report(plog, today), "market": {"w": mw if mw is not None else 0.5, "n": mn, "learned": mw is not None}, "sources": log}
-    json.dump(res, open(op, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"), allow_nan=False)
+    def _cn(o):
+        if isinstance(o, float): return o if math.isfinite(o) else None
+        if isinstance(o, dict): return {k: _cn(v) for k, v in o.items()}
+        if isinstance(o, (list, tuple)): return [_cn(v) for v in o]
+        return o
+    json.dump(_cn(res), open(op, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"), allow_nan=False)
     print("Bitti:", json.dumps(tot, ensure_ascii=False), "fikstür", len(fx_out), flush=True)
 
 if __name__ == "__main__":
