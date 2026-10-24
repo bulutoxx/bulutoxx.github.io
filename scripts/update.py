@@ -270,8 +270,18 @@ def power_devig(o):
         else: hi = k
     p = q ** k; return p / p.sum()
 
+def _rollback():
+    """🛡️ Koruyucu bot bir değişikliği geri aldıysa (data/rollback.json) süresi boyunca önceki yapılandırma kullanılır."""
+    try:
+        R = json.load(open(os.path.join(DATA, "rollback.json"), encoding="utf-8"))
+        if R.get("aktif") and R.get("bitis", "") >= date.today().isoformat(): return R
+    except Exception: pass
+    return None
+
 def _devig_method():
     """Araştırmacı bot (lab/research.py) kendi arşivimizde daha iyi bir marj ayırma yöntemi kanıtladıysa onu kullan."""
+    RB = _rollback()
+    if RB: return RB.get("devig", "power")
     try:
         R = json.load(open(os.path.join(DATA, "research.json"), encoding="utf-8"))
         if R.get("devig_kabul") and R.get("devig") in ("power", "prop", "shin"): return R["devig"]
@@ -1189,6 +1199,11 @@ def main():
                                          for lg, ms in all_ms.items())).encode()).hexdigest()[:16]
     quick = (model.get("fp") == fp and model.get("engine") == ENGINE_V and bool(model.get("backtest")) and "--force" not in sys.argv)
     full = "--no-tune" not in sys.argv and not quick
+    RB = _rollback()
+    if RB and RB.get("params"):
+        # geri alma süresince ayar araması yapılmaz; değişiklikten önceki ayarlarla çalışılır
+        P0.update({k: v for k, v in RB["params"].items() if v is not None and k in P0}); full = False
+        print("Koruyucu geri alma aktif:", RB.get("neden"), "→", RB.get("bitis"), flush=True)
     if quick:
         print("Yeni maç sonucu yok: eğitim atlandı, yalnızca oranlar ve fikstür tazeleniyor", flush=True)
         P, bt = dict(model["params"]), None
@@ -1215,6 +1230,10 @@ def main():
             mm = re.match(r"piyasa \+ bizim %(\d+)", kb)
             if mm: P["marketW"] = round(1 - int(mm.group(1)) / 100, 2); P["auto_lab"] = kb
         except Exception: pass
+        if RB and RB.get("params"):
+            for k in ("marketW", "calT", "gscale", "dk"):
+                if RB["params"].get(k) is not None: P[k] = RB["params"][k]
+            P.pop("auto_lab", None)
     else:
         mstats = model.get("market")
     cup = learn_strength(season, P, today)

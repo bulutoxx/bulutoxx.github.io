@@ -50,6 +50,10 @@ def main():
         out["zayif_ligler"] = [{"lig": c, **v} for c, v in zayif]
         out["aciklama"] = (f"Lig güven katsayıları ikinci yarıda tahmini iyileştirdi (Brier {b0:.4f} → {b1:.4f}); uygulanıyor." if out["kabul"]
                            else f"Lig katsayıları ikinci yarıda tahmini iyileştirmedi (Brier {b0:.4f} → {b1:.4f}); uygulanmıyor.")
+    try:
+        RB = json.load(open(os.path.join(ROOT, "data", "rollback.json"), encoding="utf-8"))
+        if RB.get("aktif") and not RB.get("analist"): out["kabul"] = False; out["ligler"] = {}; out["aciklama"] += " (Koruyucu geri alma süresince katsayılar dondurulmuş.)"
+    except Exception: pass
     json.dump(out, open(os.path.join(ROOT, "data", "analyst.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     print(out["aciklama"])
 

@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths: ["lab/research.py", "lab/analyst.py", "lab/qa.mjs", ".github/workflows/otonom-ekip.yml"]
+    paths: ["lab/research.py", "lab/analyst.py", "lab/qa.mjs", "lab/guardian.py", "lab/dq.py", ".github/workflows/otonom-ekip.yml"]
 permissions:
   contents: write
   issues: write
@@ -29,6 +29,10 @@ jobs:
         run: python lab/research.py || echo "araştırmacı atlandı"
       - name: 📊 Analist
         run: python lab/analyst.py || echo "analist atlandı"
+      - name: 🛡️ Koruyucu (değişiklik izleme, gerekirse geri alma)
+        run: python lab/guardian.py || echo "koruyucu atlandı"
+      - name: 🧹 Veri ve güvenlik denetçisi
+        run: python lab/dq.py || echo "denetçi atlandı"
       - name: 🎨 Tasarımcı / kalite
         run: |
           cd lab && npm init -y >/dev/null && npm i playwright@1.48.2 >/dev/null && npx playwright install --with-deps chromium >/dev/null
@@ -36,7 +40,7 @@ jobs:
       - name: Kaydet
         run: |
           git config user.name "bulutoxx-bot"; git config user.email "bulutoxx-bot@users.noreply.github.com"
-          git add data/research.json data/analyst.json data/qa.json data/qa 2>/dev/null || true
+          git add data/research.json data/analyst.json data/qa.json data/qa data/changes.json data/rollback.json data/dq.json 2>/dev/null || true
           git diff --cached --quiet && exit 0
           git commit -qm "Otonom ekip raporu $(date -u +%F)"
           for i in 1 2 3; do git pull -q --rebase -X theirs origin main && git push -q origin HEAD:main && break; sleep 8; done
@@ -47,11 +51,17 @@ jobs:
           import json
           try: q=json.load(open("data/qa.json"))
           except Exception: q={}
-          if q.get("alarm"): print("\n".join("- "+h for h in q.get("hatalar",[])[:30]))
+          if q.get("alarm"): print("\n".join("- Kalite: "+h for h in q.get("hatalar",[])[:30]))
+          try: d=json.load(open("data/dq.json"))
+          except Exception: d={}
+          if d.get("alarm"): print("\n".join("- Veri/güvenlik: "+h for h in d.get("ciddi",[])))
+          try: r=json.load(open("data/rollback.json"))
+          except Exception: r={}
+          if r.get("aktif") and r.get("baslangic")==__import__("datetime").date.today().isoformat(): print("- Koruyucu bir değişikliği geri aldı: "+r.get("neden",""))
           PY
           if [ -s /tmp/qa.txt ]; then
             gh label create bulutoxx-alarm --color B60205 2>/dev/null || true
             if [ -z "$(gh issue list --label bulutoxx-alarm --state open --json number -q '.[0].number')" ]; then
-              gh issue create --title "Kalite botu: uygulamada hata bulundu $(date -u +%F)" --label bulutoxx-alarm --body-file /tmp/qa.txt
+              gh issue create --title "Otonom ekip uyarısı $(date -u +%F)" --label bulutoxx-alarm --body-file /tmp/qa.txt
             fi
           fi

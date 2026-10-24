@@ -4923,7 +4923,7 @@ if((location.hash||"")==="#sonuclar") setTimeout(()=>$("navRes").click(),200);
 // =====================================================================
 // BULUTOXX v35: Otomatik sürüm güncelleme — yeni sürüm yayınlanınca uygulama kendini yeniler
 // =====================================================================
-const APP_V="2026-10-24.46";
+const APP_V="2026-10-24.47";
 (function autoUpdate(){
   let shown=false;
   async function check(auto){
@@ -5104,9 +5104,9 @@ function renderPower(){
 // =====================================================================
 // BULUTOXX v40: 🤖 Otonom ekip — araştırmacı, analist, tasarımcı/kalite, bekçi, laboratuvar; Motor sayfasında rapor, sorun varsa bültende uyarı
 // =====================================================================
-let ANALYST=null, RESEARCH=null, QA=null, HEALTH=null;
+let ANALYST=null, RESEARCH=null, QA=null, HEALTH=null, DQ=null, CHG=null, RBK=null;
 function teamLoad(){ const g=u=>fetch(u+"?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():null).catch(()=>null);
-  return Promise.all([g("data/analyst.json"),g("data/research.json"),g("data/qa.json"),g("data/health.json")]).then(([a,r,q,h])=>{ ANALYST=a; RESEARCH=r; QA=q; HEALTH=h;
+  return Promise.all([g("data/analyst.json"),g("data/research.json"),g("data/qa.json"),g("data/health.json"),g("data/dq.json"),g("data/changes.json"),g("data/rollback.json")]).then(([a,r,q,h,dq,ch,rb])=>{ ANALYST=a; RESEARCH=r; QA=q; HEALTH=h; DQ=dq; CHG=ch; RBK=rb;
     healthBanner(); if(!$("v-karne").hidden) renderKarne(); if(a&&a.kabul){ BT.cache.clear(); if(!$("v-bulten").hidden) renderBulten(); } }); }
 function healthBanner(){ const head=document.querySelector("#v-bulten .bt-head"); if(!head) return; let b=$("hlBan");
   const bad=HEALTH&&HEALTH.alarm; if(!bad){ if(b) b.remove(); return; }
@@ -5125,7 +5125,9 @@ renderKarne=function(){ _rkV40(); const k=$("karne"); if(!k) return; const old=$
     ${row("📊","Analist","her gün: lig bazında gerçek isabet, güven katsayısı",a?esc(a.aciklama)+(a.zayif_ligler&&a.zayif_ligler.length?`<br>En zayıf: ${a.zayif_ligler.slice(0,3).map(z=>`${esc(z.lig)} (%${Math.round(z.gercek*100)} / beklenen %${Math.round(z.beklenen*100)})`).join(", ")}`:""):"İlk rapor bu gece")}
     ${row("🎨","Tasarımcı / kalite","her gün: yayındaki uygulamayı telefonda açıp her düğmeyi dener",q?`${esc(ago(q.zaman))} · ${q.dugme.tiklanan} düğme denendi · ${q.hatalar.length?`<b style="color:#ff8a95">${q.hatalar.length} sorun</b>`:"hata yok ✓"} · açılış ${(q.acilis_ms/1000).toFixed(1)} sn`:"İlk rapor bu gece")}
     ${row("🛡️","Bekçi","15 dakikada bir: motor ve toplayıcı zamanında mı",h?(h.alarm?`<b style="color:#ff8a95">${esc(h.sorun.join(" · "))}</b>`:`Her şey zamanında ✓ (${esc(ago(h.zaman))})`):"–")}
-    ${row("🧪","Laboratuvar","her pazar: açık kaynak modellerle yarış",al?`${esc(al.tarih)} · ${esc(al.karar.aciklama)}`:"–")}`;
+    ${row("🧪","Laboratuvar","her pazar: açık kaynak modellerle yarış",al?`${esc(al.tarih)} · ${esc(al.karar.aciklama)}`:"–")}
+    ${row("🛟","Koruyucu","her gün: otomatik her değişikliği izler; isabet düşerse 14 gün geri alır",RBK&&RBK.aktif?`<b style="color:#ff8a95">Geri alma aktif (${esc(RBK.bitis)}'e kadar): ${esc(RBK.neden)}</b>`:CHG?`${(CHG.degisiklikler||[]).length} değişiklik kayıtlı · son: ${esc(((CHG.degisiklikler||[]).slice(-1)[0]||{}).durum||"–")} · geri alma yok ✓`:"İlk rapor bu gece")}
+    ${row("🧹","Veri ve güvenlik denetçisi","her gün: tekrar/hatalı kayıt, isim eşleme, eski lig, sızan anahtar",DQ?`${(DQ.bilgi||{}).mac?(DQ.bilgi.mac).toLocaleString("tr-TR")+" maç tarandı · ":""}güvenlik: ${esc((DQ.bilgi||{}).guvenlik_tarama||"–")}${DQ.ciddi&&DQ.ciddi.length?`<br><b style="color:#ff8a95">${DQ.ciddi.map(esc).join(" · ")}</b>`:""}${DQ.uyari&&DQ.uyari.length?`<br>${DQ.uyari.map(esc).join("<br>")}`:""}`:"İlk rapor bu gece")}`;
   k.prepend(el); };
 setTimeout(teamLoad,3000); setInterval(()=>{ if(!document.hidden) teamLoad(); },20*60e3);
 </script>
