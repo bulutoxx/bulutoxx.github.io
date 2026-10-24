@@ -1143,6 +1143,8 @@ nav.tabs .pw-btn .badge{top:-2px;left:auto;right:-6px;background:#FFB020;color:#
 .os-b{position:relative;height:8px;border-radius:5px;background:rgba(255,255,255,.08);overflow:visible}
 .os-b i{position:absolute;left:0;top:0;bottom:0;border-radius:5px;background:linear-gradient(90deg,#1FBF5B,#3BEA7E)}
 .os-b u{position:absolute;top:-3px;bottom:-3px;width:2px;background:#fff;opacity:.8;text-decoration:none}
+.mg-h{margin:18px 6px 8px;font:700 12.5px var(--font);color:var(--ink3);text-transform:uppercase;letter-spacing:.07em}
+#menuGroups .mg-h:first-child{margin-top:4px}
 </style>
 </head>
 <body>
@@ -5047,7 +5049,7 @@ if((location.hash||"")==="#sonuclar") setTimeout(()=>$("navRes").click(),200);
 // =====================================================================
 // BULUTOXX v35: Otomatik sürüm güncelleme — yeni sürüm yayınlanınca uygulama kendini yeniler
 // =====================================================================
-const APP_V="2026-10-24.58";
+const APP_V="2026-10-24.59";
 (function autoUpdate(){
   let shown=false;
   async function check(auto){
@@ -5944,6 +5946,33 @@ function tahminReset(){ try{
   window.scrollTo({top:0});
 }catch(e){} }
 document.addEventListener("click",e=>{ if(e.target.closest('[data-go="tahmin"]')) tahminReset(); },true);
+// ---------- v59 Adım 1: Menü 4 başlıkta, her özelliğin tek yeri ve anlaşılır adı ----------
+const MENU_PLAN=[
+  ["Kuponlarım",[["#moreCp","Kupon","Seçimlerin, tutar, olası kazanç"],["#moreOyn","Oynadıklarım",null]]],
+  ["Analiz",[["[data-go=\"tahmin\"]","Maç tahmini yap","İki takımı seç, ayrıntılı İY · 2Y · MS analizi"],["#moreLg","Ligler","Puan durumu, fikstür, takım güçleri"],["[data-go=\"sonuc\"]","Kayıtlı tahminler","Kaydettiğin analizler ve sonuçları"],["#moreBot",null,null]]],
+  ["Karne",[["[data-go=\"karne\"]","Tahmin karnesi","BULUTOXX ne kadar tuttu: günlük, canlı, lig lig"],["#moreGel","Gelişim günlüğü","Yenilikler ve sistemin kendi geliştirmeleri"]]],
+  ["Uygulama",[["[data-act=\"settings\"]","Ayarlar","Ses, titreşim, gol uyarısı, ligler"],["[data-act=\"share\"]","Arkadaşına gönder","WhatsApp, Telegram, SMS, QR"],["[data-act=\"install\"]","Uygulamayı yükle","Ana ekrana ekle"],["[data-go=\"rehber\"]","Rehber","Nasıl çalışır, telefona kurulum"],["[data-act=\"terms\"]","Kullanım koşulları","Sorumluluk reddi · 18+"]]]];
+const MENU_HIDE=["#moreBk"];   // Basketbol: Bülten'deki ⚽/🏀 seçiciden açılır (tek kapı)
+function menuOrganize(){ const v=$("v-more"); if(!v) return; const wrap=v.querySelector(".wrap"); if(!wrap) return;
+  const h1=v.querySelector(".ltitle h1"), p=v.querySelector(".ltitle p"); if(h1) h1.textContent="Menü"; if(p) p.textContent="Kuponlar, analiz, karne ve ayarlar";
+  let host=$("menuGroups"); if(!host){ host=document.createElement("div"); host.id="menuGroups"; wrap.prepend(host); }
+  for(const [title,items] of MENU_PLAN){ const id="mg-"+norm(title).replace(/\s+/g,"");
+    let g=$(id); if(!g){ host.insertAdjacentHTML("beforeend",`<h3 class="mg-h">${esc(title)}</h3><div class="group mlist" id="${id}"></div>`); g=$(id); }
+    for(const [sel,t,sub] of items){ const c=v.querySelector(sel); if(!c) continue;
+      if(t){ const b=c.querySelector(".tx b"); if(b&&b.firstChild) b.firstChild.nodeType===3?b.firstChild.textContent=t:b.textContent=t; }
+      if(sub){ const s=c.querySelector(".tx small"); if(s) s.textContent=sub; }
+      if(c.parentElement!==g) g.appendChild(c); } }
+  MENU_HIDE.forEach(sel=>{ const c=v.querySelector(sel); if(c) c.hidden=true; });
+  // eski boş gruplar kalkar
+  wrap.querySelectorAll(":scope > .group.mlist").forEach(g=>{ if(!g.querySelector(".cell:not([hidden])")) g.hidden=true; });
+  // ekran başlıkları yeni adlarla
+  const hs=document.querySelector("#v-sonuc .ltitle h1"); if(hs) hs.textContent="Kayıtlı tahminler";
+  const hk=document.querySelector("#v-karne .ltitle h1"); if(hk) hk.textContent="Tahmin karnesi";
+  const ht=document.querySelector("#v-tahmin .ltitle h1"); if(ht) ht.textContent="Maç tahmini";
+}
+TAB_NAMES.sonuc="Kayıtlı tahminler"; TAB_NAMES.karne="Tahmin karnesi"; TAB_NAMES.more="Menü";
+menuOrganize(); setTimeout(menuOrganize,1500); setTimeout(menuOrganize,5000);
+document.addEventListener("click",e=>{ if(e.target.closest('nav.tabs button[data-v="more"]')) setTimeout(menuOrganize,0); });
 </script>
 
 </body>
