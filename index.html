@@ -853,9 +853,21 @@ nav.tabs #liveBadge{background:#1FBF5B}
 .ib-od span.na{opacity:.35}
 .ib-od span.val{border-color:rgba(34,211,255,.5);background:rgba(34,211,255,.08)}
 .ib-od span.pk{border-color:#2BD46B;background:rgba(43,212,107,.12)}
+.ib-od span.sel{background:#FFD60A;color:#111;border-color:#FFD60A}.ib-od span.sel u,.ib-od span.sel small{color:#333}
+.lgpick{display:flex;flex-direction:column;gap:6px;max-height:60vh;overflow:auto}
+.lgpick button{display:flex;align-items:center;gap:8px;padding:11px 12px;border-radius:10px;background:rgba(255,255,255,.05);border:1px solid var(--line);text-align:left;font-weight:600}
+.lgpick button small{margin-left:auto;color:var(--ink3)}
+.lgpick button[aria-pressed="true"]{border-color:var(--cyan);background:rgba(34,211,255,.1)}
 .ib-p{font-size:12px;color:var(--ink2)}
 .ib-p b{color:var(--ink)}
 .ib-more{padding:14px;text-align:center;color:var(--ink3);font-size:13px}
+.mi{display:flex;flex-direction:column;gap:6px;margin:8px 0 4px;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.05);border:1px solid var(--line);font-size:13.5px;color:var(--ink2)}
+.mi-r{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center}
+.mi-r b{color:var(--ink)}
+.mi-o{font-size:12.5px}
+.mi-live{color:#3BEA7E;font-weight:700}
+.scn-i b.tm{font-size:15px;display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#installPill{font-size:0!important;gap:0!important}#installPill svg{width:18px;height:18px}
 </style>
 </head>
 <body>
@@ -1184,15 +1196,19 @@ function quickProbs(lh, la){
   for(let i=0;i<=10;i++) for(let j=0;j<=10;j++){ const v=g[i][j]; if(i>j) h+=v; else if(i===j) d+=v; else a+=v; if(i+j>2) o+=v; }
   return {h,d,a,o};
 }
+// Piyasa oranından gol beklentisi: olasılık tablosu bir kez kurulur, sonuçlar önbelleğe alınır (eskiden her maçta ~45 ms)
+const FM={tab:null, rho:null, memo:new Map()};
 function fitMarket(p1x2, pOver){
-  let best=null, bestE=1e9;
-  for(let lh=0.25; lh<=3.8; lh+=0.05) for(let la=0.2; la<=3.4; la+=0.05){
-    const q=quickProbs(lh, la);
-    let e=(q.h-p1x2[0])**2 + (q.d-p1x2[1])**2 + (q.a-p1x2[2])**2;
-    if(pOver!=null) e+=(q.o-pOver)**2;
-    if(e<bestE){ bestE=e; best=[lh,la]; }
-  }
-  return best;
+  const rho=S.params.rho;
+  if(!FM.tab||FM.rho!==rho){ FM.rho=rho; FM.memo.clear(); const t=[];
+    for(let lh=0.25; lh<=3.8; lh+=0.05) for(let la=0.2; la<=3.4; la+=0.05){ const q=quickProbs(lh, la); t.push(lh,la,q.h,q.d,q.a,q.o); }
+    FM.tab=new Float64Array(t); }
+  const key=p1x2.map(x=>x.toFixed(4)).join(",")+"|"+(pOver==null?"-":pOver.toFixed(4));
+  const c=FM.memo.get(key); if(c) return c;
+  const T=FM.tab; let best=null, bestE=1e9;
+  for(let i=0;i<T.length;i+=6){ let e=(T[i+2]-p1x2[0])**2+(T[i+3]-p1x2[1])**2+(T[i+4]-p1x2[2])**2; if(pOver!=null) e+=(T[i+5]-pOver)**2;
+    if(e<bestE){ bestE=e; best=[T[i],T[i+1]]; } }
+  if(FM.memo.size>5000) FM.memo.clear(); FM.memo.set(key,best); return best;
 }
 
 // Bir maçın tüm dağılımı: ilk yarı ve ikinci yarı ayrı Poisson (Dixon-Coles), maç sonu ikisinin birleşimi
@@ -1811,7 +1827,7 @@ $("f").addEventListener("submit", e=>{
   if(matchMedia("(prefers-reduced-motion: reduce)").matches){ renderPrediction(inp, r); return; }
   const btn=e.submitter||$("f").querySelector("button[type=submit]"); btn.disabled=true;
   $("out").innerHTML=`<div class="scan" id="scan"></div>`; $("out").scrollIntoView({behavior:"smooth",block:"start"});
-  let i=0; const tick=()=>{ $("scan").innerHTML=steps.map((t,k)=>`<div class="${k<i?"ok":k===i?"run":""}">${t}</div>`).join("");
+  let i=0; const tick=()=>{ if(!$("scan")){ btn.disabled=false; return; } $("scan").innerHTML=steps.map((t,k)=>`<div class="${k<i?"ok":k===i?"run":""}">${t}</div>`).join("");
     if(i++<steps.length) setTimeout(tick,140); else { btn.disabled=false; renderPrediction(inp, r); } };
   tick();
 });
@@ -4238,7 +4254,8 @@ function ibRow(x){
   const {m,f,p}=x, o=f&&f.odds?f.odds:null, ou=f&&f.ou?f.ou:null, k=fkey(m);
   const ob=(lab,v,pr,key)=>{ if(!v) return `<span class="na"><u>${lab}</u>–</span>`;
     const val=pr!=null&&pr*v>1.10, pk=p&&p.best&&p.best.k===key;
-    return `<span class="${val?"val":""} ${pk?"pk":""}"><u>${lab}</u>${v.toFixed(2)}${pr!=null?`<small>%${pc9(pr)}${val?" 💎":""}</small>`:""}</span>`; };
+    const inCp=CP.items.some(c=>c.k===cpKey(m)&&c.mk===key);
+    return `<span role="button" tabindex="0" data-mk="${key}" data-o="${v}" data-p="${pr==null?"":pr}" class="${val?"val":""} ${pk?"pk":""} ${inCp?"sel":""}"><u>${lab}</u>${v.toFixed(2)}${pr!=null?`<small>%${pc9(pr)}${val?" 💎":""}</small>`:""}</span>`; };
   const mbs=f&&f.mbs?`<span class="ib-mbs" title="Minimum bahis sayısı (MBS)">${f.mbs}</span>`:"";
   const t=m.started?"Başladı":ist(m.dt,{hour:"2-digit",minute:"2-digit"});
   return `<div class="ib-r" data-i="${x.idx}"><div class="ib-top">${starBtn(k)}<span class="ib-t">${esc(t)}</span>${mbs}<span class="ib-tm">${esc(m.h)} - ${esc(m.a)}</span></div>
@@ -4268,6 +4285,8 @@ renderBulten=function(){
   else if(BT.f==="fav") L=L.filter(favOk);
   else L=L.filter(m=>istDay(m.dt)===BT.day);
   if(BT.f==="top") L=L.filter(m=>TOPL.includes(m.lg));
+  IB.dayList=L.filter(m=>!m.live && m.dt.getTime()>now-5*60e3);
+  if(BT.lg) L=L.filter(m=>m.lg===BT.lg);
   L=L.filter(m=>!m.live && m.dt.getTime()>now-5*60e3);               // iddaa gibi: başlamış maçlar bültenden düşer, canlıda görünür
   L.sort((a,b)=>(a.dt-b.dt)||((TOPL.indexOf(a.lg)+99)%99-(TOPL.indexOf(b.lg)+99)%99)||String(a.lg).localeCompare(String(b.lg))||a.h.localeCompare(b.h,"tr"));
   let R=L.map(m=>{ const f=m.src==="fx"?FIXTURES.find(x=>x.lg===m.lg&&x.h===m.h&&x.a===m.a):fxOdds(m); const p=quickPred(m,f);
@@ -4293,8 +4312,66 @@ renderBulten=function(){
   if(IB.obs) IB.obs.disconnect();
   IB.obs="IntersectionObserver" in window?new IntersectionObserver(es=>{ if(es.some(e=>e.isIntersecting)) ibChunk(box); },{rootMargin:"600px"}):null;
   ibChunk(box); while(IB.i<IB.rows.length && (IB.i<keep || !IB.obs)) ibChunk(box);   // dakikalık tazelemede kaydırma yeri korunur
-  box.onclick=e=>{ const r=e.target.closest(".ib-r"); if(!r||e.target.closest(".ib-st")) return; const x=IB.rows[+r.dataset.i]; if(x){ buzz(8); pickMatch(x.m); } };
+  box.onclick=e=>{ const r=e.target.closest(".ib-r"); if(!r||e.target.closest(".ib-st")) return; const x=IB.rows[+r.dataset.i]; if(!x) return;
+    const ob=e.target.closest(".ib-od span[data-mk]");
+    if(ob){ const mk=ob.dataset.mk, pr=ob.dataset.p===""?null:+ob.dataset.p; cpToggle(x.m,mk,+ob.dataset.o,pr);
+      r.querySelectorAll(".ib-od span[data-mk]").forEach(z=>z.classList.toggle("sel",CP.items.some(c=>c.k===cpKey(x.m)&&c.mk===z.dataset.mk)));
+      if(typeof paintCoupon==="function") paintCoupon(); return; }
+    buzz(8); pickMatch(x.m); };
 };
+
+// =====================================================================
+// BULUTOXX v27: Maç detayında tarih, saat, lig, MBS ve iddaa oranları (bültenden seçilen maç)
+// =====================================================================
+let PICKED=null;
+const _pickV27=pickMatch;
+pickMatch=function(m){
+  const f=m.src==="fx"?FIXTURES.find(x=>x.lg===m.lg&&x.h===m.h&&x.a===m.a):(typeof fxOdds==="function"?fxOdds(m):null);
+  PICKED={m, f, h:bestTeamName(m.h), a:bestTeamName(m.a)};
+  _pickV27(m);
+  // iddaa oranlarını forma işle (tahmin piyasa bilgisiyle birleşir)
+  if(f&&f.odds){ const set=(id,v)=>{ if(v){ $(id).value=(+v).toFixed(2); $(id).dataset.auto="1"; } };
+    set("o1",f.odds[0]); set("ox",f.odds[1]); set("o2",f.odds[2]); if(f.ou){ set("oo",f.ou[0]); set("ou",f.ou[1]); } }
+};
+function matchInfoHtml(inp){
+  let dt=null, lg="", mbs=null, f=null, live=null;
+  if(PICKED && PICKED.h===inp.home && PICKED.a===inp.away){ dt=PICKED.m.dt; lg=LEAGUES[PICKED.m.lg]?LEAGUES[PICKED.m.lg].n:""; f=PICKED.f; mbs=f&&f.mbs; live=PICKED.m.live?PICKED.m:null; }
+  else if(inp.date){ dt=new Date(inp.date+"T12:00:00+03:00"); lg=inp.league||""; }
+  if(!dt) return "";
+  const day=ist(dt,{weekday:"long",day:"numeric",month:"long",year:"numeric"});
+  const tm=PICKED&&PICKED.h===inp.home?ist(dt,{hour:"2-digit",minute:"2-digit"}):"";
+  const left=dt-Date.now(); const rel=left>0&&left<48*3600e3?(left<3600e3?`${Math.round(left/60e3)} dk sonra`:`${Math.floor(left/3600e3)} sa ${Math.round(left%3600e3/60e3)} dk sonra`):"";
+  const o=f&&f.odds;
+  return `<div class="mi"><div class="mi-r"><span>📅 <b>${esc(day)}</b></span>${tm?`<span>⏰ <b>${esc(tm)}</b>${rel?` <small>(${esc(rel)})</small>`:""}</span>`:""}</div>
+    <div class="mi-r">${lg?`<span>${FLAG[PICKED&&PICKED.m.lg]||"🏆"} ${esc(lg)}</span>`:""}${mbs?`<span class="ib-mbs" title="MBS">${mbs}</span><small>MBS</small>`:""}${live?`<span class="mi-live">🔴 Canlı ${esc(live.clock||"")} · ${live.hs??0}-${live.as??0}</span>`:""}</div>
+    ${o?`<div class="mi-r mi-o"><span>iddaa: <b>1</b> ${(+o[0]).toFixed(2)} · <b>X</b> ${(+o[1]).toFixed(2)} · <b>2</b> ${(+o[2]).toFixed(2)}${f.ou?` · <b>2,5 Ü</b> ${(+f.ou[0]).toFixed(2)} · <b>A</b> ${(+f.ou[1]).toFixed(2)}`:""}</span></div>`:""}</div>`;
+}
+const _rpV27=renderPrediction;
+renderPrediction=function(inp,r){ _rpV27(inp,r);
+  try{ const b=document.querySelector("#out .board"); if(!b||b.querySelector(".mi")) return; const t=b.querySelector(".teamsline");
+    const h=matchInfoHtml(inp); if(h&&t) t.insertAdjacentHTML("afterend",h); }catch(e){} };
+
+// =====================================================================
+// BULUTOXX v28: iddaa gibi lig seçimi (o günün ligleri, maç sayılarıyla) + oranlara dokununca kupona ekleme
+// =====================================================================
+(function(){ const c=$("btChips"); if(!c||$("btLgChip")) return;
+  const b=document.createElement("button"); b.type="button"; b.id="btLgChip"; b.setAttribute("aria-pressed","false"); b.textContent="🏆 Lig seç";
+  c.insertBefore(b, c.children[1]||null);
+  const paint=()=>{ b.textContent=BT.lg?`🏆 ${(LEAGUES[BT.lg]||{n:BT.lg}).n} ✕`:"🏆 Lig seç"; b.setAttribute("aria-pressed",!!BT.lg); };
+  b.onclick=e=>{ e.stopPropagation(); Sound.tap();
+    if(BT.lg){ BT.lg=null; paint(); renderBulten(); return; }
+    const L=IB.dayList||[], cnt={}; L.forEach(m=>cnt[m.lg]=(cnt[m.lg]||0)+1);
+    const lgs=Object.keys(cnt).sort((a,b)=>((TOPL.indexOf(a)+99)%99)-((TOPL.indexOf(b)+99)%99)||(LEAGUES[a]||{n:a}).n.localeCompare((LEAGUES[b]||{n:b}).n,"tr"));
+    const sh=$("sheet");
+    sh.innerHTML=`<div class="box" role="dialog" aria-modal="true" aria-label="Lig seç"><div class="grab"></div><div class="pk-h"><h2>Lig seç · ${lgs.length} lig</h2><button class="ch-x" type="button" id="lgX" aria-label="Kapat">✕</button></div>
+      <input id="lgQ" type="search" placeholder="Lig ara" autocomplete="off"><div class="lgpick" id="lgList"></div></div>`;
+    const draw=q=>{ $("lgList").innerHTML=lgs.filter(l=>!q||qMatch(q,[(LEAGUES[l]||{n:l}).n])).map(l=>`<button type="button" data-l="${esc(l)}">${FLAG[l]||"⚽"} ${esc((LEAGUES[l]||{n:l}).n)}<small>${cnt[l]}</small></button>`).join("")||`<p class="note">Lig bulunamadı</p>`;
+      $("lgList").querySelectorAll("button").forEach(x=>x.onclick=()=>{ BT.lg=x.dataset.l; close(); paint(); if(TL.get()!=="saat"){ TL.set("saat"); document.querySelectorAll(".sortsw button").forEach(z=>z.setAttribute("aria-pressed",z.dataset.s==="saat")); } renderBulten(); window.scrollTo({top:0}); }); };
+    const close=()=>{ sh.hidden=true; sh.innerHTML=""; };
+    sh.hidden=false; draw(""); $("lgX").onclick=close; sh.onclick=ev=>{ if(ev.target===sh) close(); };
+    $("lgQ").oninput=ev=>draw(ev.target.value.trim()); };
+  // gün değişince lig seçimi korunur; seçili lig o gün yoksa liste boş görünür, çipten kaldırılabilir
+})();
 </script>
 
 </body>
