@@ -868,6 +868,31 @@ nav.tabs #liveBadge{background:#1FBF5B}
 .mi-live{color:#3BEA7E;font-weight:700}
 .scn-i b.tm{font-size:15px;display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #installPill{font-size:0!important;gap:0!important}#installPill svg{width:18px;height:18px}
+/* v29: Kompakt üst bölüm (Bilyoner/iddaa gibi): tek araç satırı + bilgi satırı + gün + filtre, yapışkan */
+.bt-head.cmp{position:sticky!important;top:calc(56px + env(safe-area-inset-top,0px))!important;z-index:25;margin:0 -16px 8px;padding:6px 16px 6px;
+  background:rgba(3,6,13,.94)!important;backdrop-filter:saturate(160%) blur(16px)!important;-webkit-backdrop-filter:saturate(160%) blur(16px)!important;border-bottom:1px solid var(--line)}
+.bt-head.cmp .ltitle,.bt-head.cmp .upd-bar,.bt-head.cmp .clockbar{display:none!important}
+.tb-row{display:flex;align-items:center;gap:6px}
+.tb-row .sport-sw{flex:1;margin:0;padding:3px;border-radius:12px;gap:3px}
+.tb-row .sport-sw button{padding:7px 6px;font-size:14px;border-radius:9px}
+.tb-ic{flex:none;width:38px;height:38px;border-radius:11px;display:grid;place-items:center;background:rgba(255,255,255,.06);border:1px solid var(--line);color:var(--ink);font-size:16px}
+.tb-ic svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.tb-ic.spin svg{animation:spin 1s linear infinite}
+.tb-ic[aria-pressed="true"]{background:rgba(47,123,255,.22);border-color:rgba(120,170,255,.5)}
+.tb-meta{display:flex;align-items:center;gap:6px;margin:5px 2px 2px;font-size:12px;color:var(--ink3);white-space:nowrap;overflow:hidden}
+.tb-meta b{color:var(--ink2);font-weight:700}
+.tb-meta .sub{display:block!important;margin:0!important;overflow:hidden;text-overflow:ellipsis;min-width:0;flex:0 1 auto;color:var(--ink2);font-size:12px}
+.tb-meta .clkv{margin-left:auto;font:700 12px var(--round);color:var(--ink2);font-variant-numeric:tabular-nums}
+.bt-head.cmp .bt-q{margin:6px 0 2px}
+.bt-head.cmp .bt-days{gap:6px;padding:4px 0 2px}
+.bt-head.cmp .bt-days button{flex-direction:row;gap:5px;min-width:0;padding:6px 11px;border-radius:99px;align-items:baseline}
+.bt-head.cmp .bt-days button b{font-size:13px}
+.bt-head.cmp .bt-days button small{font-size:11px}
+.bt-head.cmp .bt-chips{gap:6px;padding:4px 0 0}
+.bt-head.cmp .bt-chips button{padding:5px 11px;font-size:12.5px}
+@keyframes spin{to{transform:rotate(360deg)}}
+#v-canli .ltitle{margin:8px 2px 2px}#v-canli .ltitle h1{font-size:24px}#v-canli .ltitle p{font-size:12.5px;margin-top:2px}
+.idl-bar button{padding:6px 10px;font-size:13px}.idl-bar{flex-wrap:nowrap}.idl-up{display:none}
 </style>
 </head>
 <body>
@@ -4156,7 +4181,7 @@ function idlRenderAll(){
     const ok=IDL.ok[1]||IDL.ok[2];
     cw.querySelectorAll(":scope > .seg, #liveList, #liveBk").forEach(x=>x.style.display=ok?"none":"");
     const nt=cw.querySelector(":scope > p.note"); if(nt&&ok) nt.textContent="Canlı skor, dakika ve oranlar resmi iddaa bülteninden (Bilyoner, Nesine vb. ile aynı) 10 saniyede bir yenilenir. Tahminler BULUTOXX modelinindir; kesinlik içermez. 18+";
-    const sub=$("liveSub"); if(sub&&ok) sub.textContent=`${IDL.live[1].length} futbol · ${IDL.live[2].length} basketbol maçı şu an oynanıyor`;
+    const sub=$("liveSub"); if(sub&&ok) sub.textContent=`${IDL.live[1].length} futbol · ${IDL.live[2].length} basketbol maçı oynanıyor${IDL.at[IDLV.sp]?" · "+ist(new Date(IDL.at[IDLV.sp]),{hour:"2-digit",minute:"2-digit",second:"2-digit"}):""}`;
   }
   if(idlBultenLive()) renderBulten();
 }
@@ -4298,7 +4323,7 @@ renderBulten=function(){
   let lv=[];
   if(IDL.ok[1] && (BT.day===today||BT.q||BT.f==="fav")){
     lv=IDL.live[1].filter(m=>BT.q?qMatch(BT.q,[m.h,m.a,m.comp]):BT.f==="fav"?FOLLOW.has("i"+m.id):BT.f==="top"?false:true); }
-  $("btSub").textContent=`${R.length} maç${lv.length?` · 🔴 ${lv.length} canlı`:""} · maç saatine göre`;
+  $("btSub").textContent=`${R.length} maç${lv.length?` · 🔴 ${lv.length} canlı`:""}${BT.lg?" · "+((LEAGUES[BT.lg]||{n:""}).n):""}`;
   if(!R.length && !lv.length){ list.innerHTML=`<div class="panel empty"><b>${Pick.loaded||FIXTURES.length?(BT.f==="fav"?"Takip ettiğin maç yok":"Bu seçimde maç yok"):"Bülten yükleniyor…"}</b>${BT.f==="fav"?"Maçların yanındaki ☆ ile takibe al; gol olunca haber veririm.":"Başka bir gün veya filtre seç."}</div>`; return; }
   const lvHtml=lv.length?`<div class="idl" style="margin-bottom:12px"><button type="button" id="ibAllLive" class="idl-gh" style="border-radius:12px;width:100%;background:linear-gradient(135deg,#1FBF5B,#14984A)">🔴 Şu an ${lv.length} maç canlı oynanıyor<small style="color:#fff">Canlı ›</small></button>${
     (()=>{ const G=[]; for(const m of lv){ const g=G[G.length-1]; if(g&&g.comp===m.comp) g.items.push(m); else G.push({comp:m.comp,cc:m.cc,items:[m]}); }
@@ -4371,6 +4396,45 @@ renderPrediction=function(inp,r){ _rpV27(inp,r);
     sh.hidden=false; draw(""); $("lgX").onclick=close; sh.onclick=ev=>{ if(ev.target===sh) close(); };
     $("lgQ").oninput=ev=>draw(ev.target.value.trim()); };
   // gün değişince lig seçimi korunur; seçili lig o gün yoksa liste boş görünür, çipten kaldırılabilir
+})();
+
+// =====================================================================
+// BULUTOXX v29: Kompakt üst bölüm — spor seçimi, ara, sıralama ve güncelle tek satırda;
+// maç sayısı, model yaşı ve saat tek bilgi satırında; gün ve filtreler ince; başlık alanı kaydırırken yukarıda kalır
+// =====================================================================
+(function compactHeads(){
+  const IC_S='<svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>';
+  const IC_R='<svg viewBox="0 0 24 24"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7"/></svg>';
+  const sortIc=()=>TL.get()==="saat"?"🕒":"🏆";
+  const mk=(sec, subId, searchId)=>{
+    const h=document.querySelector(sec+" .bt-head"); if(!h||h.classList.contains("cmp")) return;
+    h.classList.add("cmp");
+    const row=document.createElement("div"); row.className="tb-row";
+    const sw=h.querySelector(".sport-sw"); if(sw) row.appendChild(sw);
+    const bS=document.createElement("button"); bS.type="button"; bS.className="tb-ic"; bS.setAttribute("aria-label","Ara"); bS.innerHTML=IC_S;
+    bS.onclick=()=>{ $(searchId).click(); };
+    const bO=document.createElement("button"); bO.type="button"; bO.className="tb-ic tb-sort"; bO.setAttribute("aria-label","Sıralama: saate / lige göre"); bO.textContent=sortIc();
+    bO.onclick=()=>{ const nx=TL.get()==="saat"?"lig":"saat"; const t=h.querySelector(`.sortsw button[data-s="${nx}"]`); if(t) t.click(); else { TL.set(nx); renderBulten(); }
+      document.querySelectorAll(".tb-sort").forEach(x=>x.textContent=sortIc()); toast(nx==="saat"?"🕒 Maç saatine göre sıralandı":"🏆 Lige göre gruplandı"); };
+    const bR=document.createElement("button"); bR.type="button"; bR.className="tb-ic upd-go"; bR.setAttribute("aria-label","Verileri güncelle"); bR.innerHTML=IC_R;
+    bR.onclick=()=>doRefresh();
+    row.append(bS,bO,bR);
+    h.prepend(row);
+    const meta=document.createElement("div"); meta.className="tb-meta";
+    const sub=$(subId); if(sub){ sub.classList.add("sub"); meta.appendChild(sub); }
+    const age=document.createElement("span"); age.className="tb-age"; meta.appendChild(age);
+    const ck=document.createElement("span"); ck.className="clkv"; meta.appendChild(ck);
+    row.after(meta);
+  };
+  mk("#v-bulten","btSub","btSearchBtn");
+  mk("#v-basket","bkSub","bkSearchBtn");
+  // bülten başlığında spor anahtarı yoksa (ilk açılış) sonradan eklendiğinde araç satırına taşı
+  const fix=()=>document.querySelectorAll(".bt-head.cmp").forEach(h=>{ const sw=h.querySelector(":scope > .sport-sw"); const row=h.querySelector(".tb-row"); if(sw&&row) row.prepend(sw); });
+  setTimeout(fix,0); setTimeout(fix,800);
+  const _sS=showSport; showSport=function(s){ const r=_sS.apply(this,arguments); fix(); return r; };
+  // model yaşı bilgi satırında
+  const _pu=paintUpd; paintUpd=function(){ _pu(); const ma=modelAge(); document.querySelectorAll(".tb-age").forEach(a=>a.textContent=ma!=null?"· model "+agoTxt(ma):""); };
+  paintUpd();
 })();
 </script>
 
