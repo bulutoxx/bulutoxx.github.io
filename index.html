@@ -1352,7 +1352,9 @@ function teamRating(name){
   const t=S.teams[slug(name)]; if(!t) return {att:1, def:1, n:0};
   return { att:Math.exp(t.att||0), def:Math.exp(t.def||0), n:t.n||0 };
 }
-function implied(o){ const inv=o.map(x=>1/x), s=inv.reduce((a,b)=>a+b,0); return inv.map(x=>x/s); }
+function implied(o){ // marj 'power' yöntemiyle ayrılır (motorla aynı; 2025-26'da oransal yöntemden iyi)
+  const q=o.map(x=>1/x); let lo=1,hi=3,k=1; for(let i=0;i<40;i++){ k=(lo+hi)/2; if(q.reduce((a,b)=>a+Math.pow(b,k),0)>1) lo=k; else hi=k; }
+  const p=q.map(x=>Math.pow(x,k)), s=p.reduce((a,b)=>a+b,0); return p.map(x=>x/s); }
 function quickProbs(lh, la){
   const g=grid(lh, la, S.params.rho, 10); let h=0,d=0,a=0,o=0;
   for(let i=0;i<=10;i++) for(let j=0;j<=10;j++){ const v=g[i][j]; if(i>j) h+=v; else if(i===j) d+=v; else a+=v; if(i+j>2) o+=v; }
@@ -4879,7 +4881,7 @@ if((location.hash||"")==="#sonuclar") setTimeout(()=>$("navRes").click(),200);
 // =====================================================================
 // BULUTOXX v35: Otomatik sürüm güncelleme — yeni sürüm yayınlanınca uygulama kendini yeniler
 // =====================================================================
-const APP_V="2026-10-24.40";
+const APP_V="2026-10-24.41";
 (function autoUpdate(){
   let shown=false;
   async function check(auto){
@@ -4914,6 +4916,18 @@ renderPrediction=function(inp,r){ _rpV36(inp,r);
     const R=recOf(r,f); if(!R) return;
     const h=`<div class="recbig rec-${R.tier}" style="margin:8px 0"><small>BULUTOXX ÖNERİSİ</small><b>${esc(R.n)}</b><div class="rb-p">Kazanma olasılığı <em>%${pc9(R.cp)}</em>${R.o?` · oran <em>${(+R.o).toFixed(2)}</em>`:""}</div>${R.cn?`<p>Geçmişte bu güvendeki ${R.cn.toLocaleString("tr-TR")} önerinin %${Math.round(R.ch*100)}'i tuttu.</p>`:""}</div>`;
     const anchor=b.querySelector(".mi")||b.querySelector(".teamsline"); if(anchor) anchor.insertAdjacentHTML("afterend",h); }catch(e){} };
+
+// v37: Motor sayfası — haftalık otomatik laboratuvar sonucu (açık kaynak modellerle yarış)
+let AUTOLAB=null;
+fetch("data/auto_lab.json",{cache:"no-cache"}).then(r=>r.ok?r.json():null).then(d=>{ AUTOLAB=d; if(!$("v-karne").hidden) renderKarne(); }).catch(()=>{});
+const _rkV37=renderKarne;
+renderKarne=function(){ _rkV37(); const k=$("karne"); if(!k||!AUTOLAB) return; const old=$("autoLab"); if(old) old.remove();
+  const A=AUTOLAB, ss=A.sezonlar||[]; const el=document.createElement("div"); el.className="panel"; el.id="autoLab";
+  const rows=Object.entries(A.sonuc||{}).map(([n,v])=>`<tr${(A.karar&&A.karar.kabul===n)||(!A.karar.kabul&&/mevcut/.test(n))?' style="color:#3BEA7E;font-weight:700"':""}><td>${esc(n)}</td>${ss.map(s=>`<td>${v[s]?v[s].logloss:"–"}</td><td>%${v[s]?Math.round(v[s].isabet*1000)/10:"–"}</td>`).join("")}</tr>`).join("");
+  el.innerHTML=`<h2>🤖 Otomatik laboratuvar</h2><p class="note">Her pazar GitHub üzerinde kendiliğinden çalışır: açık kaynak <b>penaltyblog</b> (MIT) modellerini ve kendi motorumuzu ${A.ligler.length} ligde, ${A.n.toLocaleString("tr-TR")} maçta hafta hafta "oynanmamış gibi" yarıştırır. İki sezonun ikisinde de kazanan aday motora otomatik uygulanır. Son çalışma: ${esc(A.tarih)}.</p>
+    <div class="tbl"><table class="bk-tb"><thead><tr><th>Aday</th>${ss.map(s=>`<th>${s} log-loss</th><th>isabet</th>`).join("")}</tr></thead><tbody>${rows}</tbody></table></div>
+    <p class="note"><b>Karar:</b> ${esc(A.karar.aciklama)} (Log-loss düşük = daha iyi.)</p>`;
+  k.appendChild(el); };
 </script>
 
 </body>

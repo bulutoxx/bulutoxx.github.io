@@ -261,10 +261,19 @@ def outcome_probs(lh, la, rho):
     return np.stack([pH, pD, pA], 1), pO, pB, g
 
 _TABLE = None
+def power_devig(o):
+    """Bahis marjını 'power' yöntemiyle ayır: p_i = (1/o_i)^k, toplam 1 olacak k bulunur (favori-sürpriz yanlılığını düzeltir)."""
+    q = 1 / np.asarray(o, float); lo, hi = 1.0, 3.0
+    for _ in range(40):
+        k = (lo + hi) / 2
+        if (q ** k).sum() > 1: lo = k
+        else: hi = k
+    p = q ** k; return p / p.sum()
+
 def market_xg(matches):
     """Kapanış oranlarından maç başına piyasa beklenen golü (xg) çıkar; bir kez hesaplanır, saklanır."""
     global _TABLE
-    todo = [m for m in matches if m.get("odds") and ("xg" not in m or m.get("xg_o") != m["odds"])]
+    todo = [m for m in matches if m.get("odds") and ("xg" not in m or m.get("xg_o") != m["odds"] or m.get("xg_m") != "pow")]
     if not todo: return 0
     if _TABLE is None:
         lam = np.arange(0.15, 4.01, 0.05)
@@ -274,13 +283,13 @@ def market_xg(matches):
     LH, LA, TH, TA, TO = _TABLE
     for i in range(0, len(todo), 1500):
         ch = todo[i:i + 1500]
-        inv = np.array([[1 / o for o in m["odds"]] for m in ch]); inv /= inv.sum(1, keepdims=True)
-        ou = np.array([(1 / m["ou"][0]) / (1 / m["ou"][0] + 1 / m["ou"][1]) if m.get("ou") else np.nan for m in ch])
+        inv = np.array([power_devig(m["odds"]) for m in ch])      # marj 'power' yöntemiyle ayrılır (2025 ve 2026'da oransaldan iyi)
+        ou = np.array([power_devig(m["ou"])[0] if m.get("ou") else np.nan for m in ch])
         d = (TH[None, :] - inv[:, :1]) ** 2 + (TA[None, :] - inv[:, 2:3]) ** 2
         has = ~np.isnan(ou)
         if has.any(): d[has] += (TO[None, :] - ou[has, None]) ** 2
         k = d.argmin(1)
-        for m, j in zip(ch, k): m["xg"] = [round(float(LH[j]), 2), round(float(LA[j]), 2)]; m["xg_o"] = list(m["odds"])
+        for m, j in zip(ch, k): m["xg"] = [round(float(LH[j]), 2), round(float(LA[j]), 2)]; m["xg_o"] = list(m["odds"]); m["xg_m"] = "pow"
     return len(todo)
 
 def targets(ms, P):
@@ -585,7 +594,7 @@ def tune(all_ms, P0):
     return P, fin
 
 GUARD = None
-ENGINE_V = "2026-10-24.5"
+ENGINE_V = "2026-10-24.6"
 DATA_V = 3   # 3: kupalar ESPN, takvim yılı sezonları, önek eşleme kaldırıldı; 2: aynı eşleşmenin sezonda birden çok oynanması + sıkı isim eşleme   # motor kodu değişince bir kez tam eğitim yapılır
 CAL_INFO = {}
 NEW_TEAM = (0.95, 1.05)   # 3 ay önceden testte (3 sezon) en iyi çıkan: lige yeni gelen takım ortalamaya yakın, hafif zayıf
@@ -1154,6 +1163,13 @@ def main():
         P["h1"] = h1_share(all_ms)
         mw, mstats = tune_market(bt) if bt else (0.6, None)
         P["marketW"] = mw
+        # Haftalık otomatik laboratuvar (lab/auto_lab.py) iki sezonda kanıtlanmış bir karışım bulduysa onu uygula
+        try:
+            AL = json.load(open(os.path.join(DATA, "auto_lab.json"), encoding="utf-8"))
+            kb = (AL.get("karar") or {}).get("kabul") or ""
+            mm = re.match(r"piyasa \+ bizim %(\d+)", kb)
+            if mm: P["marketW"] = round(1 - int(mm.group(1)) / 100, 2); P["auto_lab"] = kb
+        except Exception: pass
     else:
         mstats = model.get("market")
     cup = learn_strength(season, P, today)
