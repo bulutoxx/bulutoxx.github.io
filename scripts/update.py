@@ -534,7 +534,7 @@ def tune(all_ms, P0):
     return P, fin
 
 GUARD = None
-ENGINE_V = "2026-10-24.3"
+ENGINE_V = "2026-10-24.4"
 DATA_V = 2   # 2: aynı eşleşmenin sezonda birden çok oynanması + sıkı isim eşleme   # motor kodu değişince bir kez tam eğitim yapılır
 CAL_INFO = {}
 NEW_TEAM = (0.95, 1.05)   # 3 ay önceden testte (3 sezon) en iyi çıkan: lige yeni gelen takım ortalamaya yakın, hafif zayıf
@@ -585,13 +585,85 @@ ESPN = {"tr1":"tur.1","en":"eng.1","es":"esp.1","it":"ita.1","de":"ger.1","fr":"
   "pl":"pol.1","ro":"rou.1","ie":"irl.1","fi":"fin.1","cn":"chn.1","ru":"rus.1",
   "ucl":"uefa.champions","uel":"uefa.europa","uecl":"uefa.europa.conf"}
 
+# ESPN'den ek futbol ligleri (football-data'da olmayanlar). Sonuçlar aylık sorguyla, fikstür aynı sorgudan.
+EXTRA = {
+ "col": ("col.1", "Kolombiya Primera A"), "mx2": ("mex.2", "Meksika Expansion MX"), "nwsl": ("usa.nwsl", "ABD NWSL (Kadın)"),
+ "chi": ("chi.1", "Şili Primera División"), "per": ("per.1", "Peru Liga 1"), "ecu": ("ecu.1", "Ekvador LigaPro"),
+ "uru": ("uru.1", "Uruguay Primera"), "par": ("par.1", "Paraguay Primera"), "ven": ("ven.1", "Venezuela Primera"),
+ "bol": ("bol.1", "Bolivya Primera"), "ar2": ("arg.2", "Arjantin Primera Nacional"), "br2": ("bra.2", "Brezilya Serie B"),
+ "ksa": ("ksa.1", "Suudi Arabistan Pro Lig"), "aus": ("aus.1", "Avustralya A-League"), "ausw": ("aus.w.1", "Avustralya A-League Kadın"),
+ "nl2": ("ned.2", "Hollanda Eerste Divisie"), "usl": ("usa.usl.1", "ABD USL Championship"), "hon": ("hon.1", "Honduras Liga Nacional"),
+ "crc": ("crc.1", "Kosta Rika Primera"), "gua": ("gua.1", "Guatemala Liga Nacional"), "slv": ("slv.1", "El Salvador Primera"),
+ "ind": ("ind.1", "Hindistan Süper Lig"), "rsa": ("rsa.1", "Güney Afrika Premiership"), "wsl": ("eng.w.1", "İngiltere WSL (Kadın)"),
+ "esw": ("esp.w.1", "İspanya Liga F (Kadın)"), "frw": ("fra.w.1", "Fransa D1 (Kadın)"), "mxw": ("mex.w.1", "Meksika Liga MX Kadın"),
+ "nlw": ("ned.w.1", "Hollanda Eredivisie Kadın"),
+}
+ESPN_UA = {"User-Agent": "Mozilla/5.0 (BULUTOXX)"}
+
+def espn_month(slug, ym):
+    j = json.loads(fetch(f"https://site.api.espn.com/apis/site/v2/sports/soccer/{slug}/scoreboard?dates={ym}&limit=900"))
+    res, fx = [], []
+    for e in j.get("events", []):
+        try:
+            c = e["competitions"][0]; cs = {t["homeAway"]: t for t in c["competitors"]}
+            h, a = cs["home"]["team"]["displayName"], cs["away"]["team"]["displayName"]
+            st = e.get("status", {}).get("type", {}); dt = datetime.fromisoformat(e["date"].replace("Z", "+00:00"))
+            try:
+                from zoneinfo import ZoneInfo
+                uk = dt.astimezone(ZoneInfo("Europe/London"))
+            except Exception: uk = dt
+            d, t = uk.strftime("%Y-%m-%d"), uk.strftime("%H:%M")
+            if st.get("state") == "post" and st.get("completed", True) and cs["home"].get("score") not in (None, ""):
+                res.append({"d": d, "h": h, "a": a, "ft": [int(float(cs["home"]["score"])), int(float(cs["away"]["score"]))], "ht": None, "season": season_of(d)})
+            elif st.get("state") == "pre":
+                fx.append({"d": d, "t": t, "h": h, "a": a})
+        except Exception:
+            continue
+    return res, fx
+
+def download_extra(season, today, log):
+    """Ek ligler: son ~15 ayın sonuçları (biten aylar önbellekte), bu ve gelecek ayın fikstürü."""
+    fixtures = []
+    start = date.fromordinal(today.toordinal() - KEEP_DAYS)
+    for lg, (slug, name) in EXTRA.items():
+        cur = season.get(lg, {"matches": [], "done": []})
+        done = set(cur.get("done", [])); new = []
+        y, m = start.year, start.month
+        months = []
+        while (y, m) <= (today.year + (today.month == 12), today.month % 12 + 1):
+            months.append(f"{y}{m:02d}"); m += 1
+            if m == 13: y, m = y + 1, 1
+        n_req = 0
+        for ym in months:
+            if ym in done: continue
+            try:
+                r, f = espn_month(slug, ym); n_req += 1
+                new += r
+                fixtures += [dict(x, lg=lg) for x in f if x["d"] >= today.isoformat()]
+                yy, mm = int(ym[:4]), int(ym[4:])
+                end = date(yy + (mm == 12), mm % 12 + 1, 1) - timedelta(days=1)
+                if (today - end).days > 5: done.add(ym)
+            except Exception as e:
+                log[f"{lg}-{ym}"] = f"hata: {e.__class__.__name__}"
+        # başka ligde aynı adlı takım varsa (ör. "Nacional") karışmasın: ada ülke eki
+        others = {n for k, d in season.items() if k != lg and not d.get("cup") for x in d["matches"] for n in (x["h"], x["a"])}
+        tag = lambda n: f"{n} ({lg.upper()})" if n in others else n
+        new = [dict(x, h=tag(x["h"]), a=tag(x["a"])) for x in new]
+        fixtures = [dict(x, h=tag(x["h"]), a=tag(x["a"])) if x["lg"] == lg else x for x in fixtures]
+        ms = [x for x in merge(cur.get("matches", []), new) if x["d"] >= start.isoformat()]
+        log[lg] = f"{len(new)} yeni, {n_req} istek"
+        if len(ms) < 10: continue
+        last_season = max(x["season"] for x in ms)
+        season[lg] = {"name": name, "espn": slug, "asOf": max(x["d"] for x in ms), "season": last_season, "matches": ms, "done": sorted(done), "src": "espn"}
+    return fixtures
+
 def fetch_logos(season):
     """Her ligin takım logolarını ESPN'den indir ve uygulamadaki takım adlarıyla eşle."""
     lp = os.path.join(DATA, "logos.json")
     logos = json.load(open(lp, encoding="utf-8")) if os.path.exists(lp) else {}
     got = 0
     for lg, d in season.items():
-        code = ESPN.get(lg)
+        code = ESPN.get(lg) or d.get("espn")
         if not code: continue
         names = sorted({m["h"] for m in d["matches"]} | {m["a"] for m in d["matches"]})
         if all(n in logos for n in names): continue
@@ -804,6 +876,10 @@ def main():
         last_season = max(m["season"] for m in ms)
         cur_ms = [m for m in ms if m["season"] == last_season]
         season[lg] = {"name": lname, "asOf": max(m["d"] for m in cur_ms), "season": last_season, "matches": ms}
+    extra_fx = []
+    if not offline:
+        try: extra_fx = download_extra(season, today, log)
+        except Exception as e: log["extra"] = f"hata: {e}"
     print("İndirme:", json.dumps(log, ensure_ascii=False), flush=True)
     json.dump(season, open(sp, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
 
@@ -904,6 +980,8 @@ def main():
     fx = [] if offline else download_fixtures(season, today)
     if not fx and os.path.exists(fxp):
         fx = [f for f in json.load(open(fxp, encoding="utf-8")) if f["d"] >= today.isoformat()]
+    elif extra_fx:
+        fx += [f for f in extra_fx if f["d"] <= (today + timedelta(days=10)).isoformat()]
     json.dump([{k: v for k, v in f.items() if k != "xg"} for f in fx], open(fxp, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
     plog = json.load(open(plp, encoding="utf-8")) if os.path.exists(plp) else []
     have = {e["id"] for e in plog}

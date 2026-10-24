@@ -1486,6 +1486,7 @@ function buildSeason(){
   for(const [lg, d] of Object.entries(SEASON)){
     if(!LEAGUES[lg]) LEAGUES[lg]={n:d.name||lg, g:2.7};
     else if(d.name) LEAGUES[lg].n=d.name;
+    if(d.espn && typeof ESPN!=="undefined" && !ESPN[lg]) ESPN[lg]=d.espn;     // ESPN'den gelen ek ligler: canlı skor için
     d.matches=(d.matches||[]).filter(m=>m && m.ft && m.ft.length===2).sort((a,b)=>a.d<b.d?-1:1);
   }
   // 2) Yurt içi ligler: takımlar, form, model
@@ -1782,7 +1783,7 @@ const PREF_KEY="bulutoxx-prefs";
 const PREFS=Object.assign({sound:true, voice:false, voiceMenu:false, goals:true, vibrate:true, allLive:false,
   leagues:["tr1","en","es","it","de","fr","ucl","uel","uecl","nl","pt"]}, (()=>{ try{ return JSON.parse(localStorage.getItem(PREF_KEY)||"{}"); }catch(e){ return {}; } })());
 function savePrefs(){ try{ localStorage.setItem(PREF_KEY, JSON.stringify(PREFS)); }catch(e){} }
-const BK_NAMES={nba:"NBA",el:"EuroLeague",ec:"EuroCup",wnba:"WNBA",nbl:"NBL Avustralya",ncaa:"NCAA (Üniversite)"};
+const BK_NAMES={nba:"NBA",el:"EuroLeague",ec:"EuroCup",wnba:"WNBA",gl:"NBA G League",nbl:"NBL Avustralya",ncaa:"NCAA (Üniversite)",ncaaw:"NCAA Kadınlar"};
 if(!Array.isArray(PREFS.bkLeagues)){ PREFS.bkLeagues=Object.keys(BK_NAMES); savePrefs(); }
 
 // ---------- Ses (Web Audio ile sentezlenir, dosya gerekmez) ----------
@@ -2878,7 +2879,7 @@ setInterval(()=>{ if(!document.hidden) renderStrip(); },60000);
 // =====================================================================
 // BULUTOXX v10: Bülten (oranlar + model tahmini), arama, gün ve filtreler
 // =====================================================================
-const FLAG={tr1:"🇹🇷",tr2:"🇹🇷",en:"🏴",en2:"🏴",en3:"🏴",en4:"🏴",en5:"🏴",sc:"🏴",sc2:"🏴",sc3:"🏴",sc4:"🏴",es:"🇪🇸",es2:"🇪🇸",it:"🇮🇹",it2:"🇮🇹",de:"🇩🇪",de2:"🇩🇪",
+const FLAG={col:"🇨🇴",mx2:"🇲🇽",nwsl:"🇺🇸",chi:"🇨🇱",per:"🇵🇪",ecu:"🇪🇨",uru:"🇺🇾",par:"🇵🇾",ven:"🇻🇪",bol:"🇧🇴",ar2:"🇦🇷",br2:"🇧🇷",ksa:"🇸🇦",aus:"🇦🇺",ausw:"🇦🇺",nl2:"🇳🇱",usl:"🇺🇸",hon:"🇭🇳",crc:"🇨🇷",gua:"🇬🇹",slv:"🇸🇻",ind:"🇮🇳",rsa:"🇿🇦",wsl:"🏴",esw:"🇪🇸",frw:"🇫🇷",mxw:"🇲🇽",nlw:"🇳🇱",tr1:"🇹🇷",tr2:"🇹🇷",en:"🏴",en2:"🏴",en3:"🏴",en4:"🏴",en5:"🏴",sc:"🏴",sc2:"🏴",sc3:"🏴",sc4:"🏴",es:"🇪🇸",es2:"🇪🇸",it:"🇮🇹",it2:"🇮🇹",de:"🇩🇪",de2:"🇩🇪",
   fr:"🇫🇷",fr2:"🇫🇷",nl:"🇳🇱",pt:"🇵🇹",be:"🇧🇪",gr:"🇬🇷",ar:"🇦🇷",at:"🇦🇹",br:"🇧🇷",cn:"🇨🇳",dk:"🇩🇰",fi:"🇫🇮",ie:"🇮🇪",jp:"🇯🇵",mx:"🇲🇽",no:"🇳🇴",pl:"🇵🇱",
   ro:"🇷🇴",ru:"🇷🇺",se:"🇸🇪",ch:"🇨🇭",us:"🇺🇸",ucl:"⭐",uel:"🟠",uecl:"🟢"};
 const BT={ day:null, f:"all", q:"", cache:new Map(), open:new Set(["ucl","uel","uecl","tr1","en","es","it","de","fr"]) };
@@ -3283,9 +3284,9 @@ if(new URLSearchParams(location.search).get("kur")==="1" && !IS_STANDALONE()){
 // Veriler data/basket.json: günde 3 kez GitHub'da yeniden eğitilen hücum/savunma modeli
 // =====================================================================
 const BK={ data:null, day:null, f:"all", q:"", live:new Map(), loading:null, open:new Set(["nba","el","ec"]) };
-const BK_ESPN={nba:"nba",wnba:"wnba",nbl:"nbl",ncaa:"mens-college-basketball"};
-const BK_FLAG={nba:"🇺🇸",wnba:"🇺🇸",ncaa:"🎓",nbl:"🇦🇺",el:"🇪🇺",ec:"🇪🇺"};
-const BK_ORDER=["nba","el","ec","wnba","nbl","ncaa"];
+const BK_ESPN={nba:"nba",wnba:"wnba",nbl:"nbl",ncaa:"mens-college-basketball",ncaaw:"womens-college-basketball",gl:"nba-development"};
+const BK_FLAG={nba:"🇺🇸",wnba:"🇺🇸",ncaa:"🎓",ncaaw:"🎓",gl:"🇺🇸",nbl:"🇦🇺",el:"🇪🇺",ec:"🇪🇺"};
+const BK_ORDER=["nba","el","ec","wnba","gl","nbl","ncaa","ncaaw"];
 function bkLoad(fresh){
   if(BK.loading && !fresh) return BK.loading;
   BK.loading=fetch("data/basket.json"+(fresh?"?t="+Date.now():""),{cache:fresh?"no-store":"no-cache"})
@@ -3337,7 +3338,7 @@ async function bkLive(){
   const fx=(BK.data&&BK.data.fixtures)||[]; const lgs=[...new Set(fx.map(f=>f.lg))].filter(l=>BK_ESPN[l]&&fol.has(l));
   if(!lgs.includes("nba")&&fol.has("nba")) lgs.push("nba");
   await Promise.all(lgs.flatMap(lg=>[ymd,y2].map(async day=>{
-    try{ const u=`https://site.api.espn.com/apis/site/v2/sports/basketball/${BK_ESPN[lg]}/scoreboard?dates=${day}`+(lg==="ncaa"?"&groups=50&limit=400":"");
+    try{ const u=`https://site.api.espn.com/apis/site/v2/sports/basketball/${BK_ESPN[lg]}/scoreboard?dates=${day}`+(lg==="ncaa"||lg==="ncaaw"?"&groups=50&limit=400":"");
       const r=await fetch(u); if(!r.ok) return; const j=await r.json();
       (j.events||[]).forEach(e=>{ const c=e.competitions[0], cs={}; c.competitors.forEach(t=>cs[t.homeAway]=t); if(!cs.home||!cs.away) return;
         const s=e.status&&e.status.type||{};
@@ -3416,11 +3417,11 @@ function renderBkTable(){
   list.innerHTML=lgs.map(lg=>{ const L=D.leagues[lg];
     const T=Object.entries(L.teams).map(([n,t])=>Object.assign({n,pw:t.off-t.def},t)).filter(t=>t.w+t.l>0||lg!=="ncaa");
     T.sort((a,b)=>((b.w/(b.w+b.l||1))-(a.w/(a.w+a.l||1)))||b.pw-a.pw);
-    const show=lg==="ncaa"?T.sort((a,b)=>b.pw-a.pw).slice(0,40):T;
+    const show=(lg==="ncaa"||lg==="ncaaw")?T.sort((a,b)=>b.pw-a.pw).slice(0,40):T;
     return `<div class="bl ${BK.open.has(lg)?"open":""}"><button class="bl-h" type="button" data-lg="${lg}"><span class="fl">${BK_FLAG[lg]||"🏀"}</span><b>${esc(L.name)}</b><span class="cnt">${T.length} takım</span><span class="chev"></span></button>
       <div class="bl-b"><div class="tbl"><table class="bk-tb bk-st"><thead><tr><th>#  Takım</th><th>G-M</th><th>Sayı</th><th>Yediği</th><th>Güç</th></tr></thead><tbody>
       ${show.map((t,i)=>`<tr><td>${i+1}. ${t.logo?`<img src="${esc(t.logo)}" alt="" loading="lazy">`:""}${esc(t.n)}</td><td>${t.w}-${t.l}</td><td>${t.ppg??"–"}</td><td>${t.oppg??"–"}</td><td class="${t.pw>0?"hi":""}">${t.pw>0?"+":""}${t.pw.toFixed(1)}</td></tr>`).join("")}
-      </tbody></table></div>${lg==="ncaa"?`<p class="note" style="padding:0 12px 10px">En güçlü 40 takım gösteriliyor.</p>`:""}</div></div>`; }).join("")
+      </tbody></table></div>${(lg==="ncaa"||lg==="ncaaw")?`<p class="note" style="padding:0 12px 10px">En güçlü 40 takım gösteriliyor.</p>`:""}</div></div>`; }).join("")
     +`<p class="note" style="margin:8px 4px">Güç: takımın ortalama bir rakibe karşı maç başı beklenen sayı farkı (hücum − savunma), son maçlara daha fazla ağırlık verilerek hesaplanır.</p>`;
   list.querySelectorAll(".bl-h").forEach(h=>h.onclick=()=>{ const lg=h.dataset.lg, box=h.parentElement; box.classList.toggle("open"); box.classList.contains("open")?BK.open.add(lg):BK.open.delete(lg); Sound.tap(); });
 }
@@ -3804,6 +3805,12 @@ async function silentRefresh(){ try{ await Promise.all([loadData(true), Pick.loa
     if(QP.spent>250){ QP.pend.set(k,[m,f]); if(!QP.timer) QP.timer=setTimeout(fill,40); return null; }
     const a=performance.now(); const r=_q(m,f); QP.spent+=performance.now()-a; return r; };
 })();
+
+// v22: Yeni eklenen ligler (ESPN) kullanıcının takip listesine bir kez otomatik eklenir; kullanıcı kaldırırsa geri gelmez
+(function(){ const BASE=Object.keys(ESPN); const _bs=buildSeason; buildSeason=function(){ const r=_bs.apply(this,arguments); try{
+  const seen=new Set(PREFS.lgSeen||BASE); let ch=false;
+  for(const lg of Object.keys(ESPN)){ if(!seen.has(lg)){ seen.add(lg); if(!PREFS.leagues.includes(lg)) PREFS.leagues.push(lg); ch=true; } }
+  if(!PREFS.lgSeen||ch){ PREFS.lgSeen=[...seen]; savePrefs(); } }catch(e){} return r; }; })();
 </script>
 
 </body>

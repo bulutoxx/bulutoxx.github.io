@@ -26,11 +26,13 @@ LEAGUES = {
     "wnba": ("espn", "wnba", "WNBA", 10),
     "nbl":  ("espn", "nbl", "NBL Avustralya", 10),
     "ncaa": ("espn", "mens-college-basketball", "NCAA (ABD Üniversite)", 20),
+    "ncaaw": ("espn", "womens-college-basketball", "NCAA Kadınlar", 10),
+    "gl": ("espn", "nba-development", "NBA G League", 12),
 }
 HIST_DAYS = 560          # yaklaşık iki sezon
 FIX_DAYS = 8
 KS = {}
-ENGINE_V = "2026-10-24.3"
+ENGINE_V = "2026-10-24.4"
 STORE_V = 2              # veri biçimi sürümü             # kaç gün sonrasına kadar fikstür
 
 def fetch(url, tries=3):
@@ -77,13 +79,13 @@ def parse_espn_event(e, lg):
 
 def espn_month(slug, ym, lg):
     url = f"https://site.api.espn.com/apis/site/v2/sports/basketball/{slug}/scoreboard?dates={ym}&limit=1000"
-    if slug == "mens-college-basketball": url += "&groups=50"
+    if "college-basketball" in slug: url += "&groups=50"
     d = fetch(url)
     return [g for g in (parse_espn_event(e, lg) for e in d.get("events", [])) if g]
 
 def espn_day(slug, ymd, lg):
     url = f"https://site.api.espn.com/apis/site/v2/sports/basketball/{slug}/scoreboard?dates={ymd}&limit=500"
-    if slug == "mens-college-basketball": url += "&groups=50"
+    if "college-basketball" in slug: url += "&groups=50"
     d = fetch(url)
     return [g for g in (parse_espn_event(e, lg) for e in d.get("events", [])) if g]
 
@@ -134,7 +136,7 @@ def download(lg, store, today, log):
             month_end = date(y + (m == 12), m % 12 + 1, 1) - timedelta(days=1)
             if ym in done: continue
             try:
-                if code == "mens-college-basketball":
+                if "college-basketball" in code:
                     # NCAA çok kalabalık: ayı haftalık parçalar yerine gün gün çek (yalnızca sezon ayları)
                     if m in (5, 6, 7, 8, 9, 10): done.add(ym); continue
                     got = []
@@ -254,7 +256,7 @@ def tune(games, lg, prev=None):
     grid_n = [[0.0, 0.0], [-3.0, 3.0], [-6.0, 6.0]]
     P0 = {"decay": 0.008, "lam": 8.0, "newp": [0.0, 0.0]}
     if prev: P0.update({k: v for k, v in prev.items() if k in P0})
-    mt = 200 if lg == "ncaa" else 80
+    mt = 200 if lg in ("ncaa", "ncaaw") else 80
     rows0 = backtest(games, P0, mt)
     if not rows0: return P0, None, None
     split = sorted(r[0]["dt"] for r in rows0)[int(len(rows0) * .7)]
@@ -449,7 +451,7 @@ def main():
             P = old["leagues"][lg]["params"]; fits[lg] = fit(games, today, P); Ps[lg] = P; out_lg[lg] = old["leagues"][lg]; continue
         t0 = time.time()
         P, guard, _ = tune(games, lg, (old.get("leagues", {}).get(lg) or {}).get("params"))
-        mt = 200 if lg == "ncaa" else 80
+        mt = 200 if lg in ("ncaa", "ncaaw") else 80
         rows = backtest(games, P, mt)
         ks = 1.0; kinfo = None
         if rows and len(rows) >= 150:
