@@ -30,6 +30,7 @@ LEAGUES = {
 HIST_DAYS = 560          # yaklaşık iki sezon
 FIX_DAYS = 8
 KS = {}
+ENGINE_V = "2026-10-24.2"
 STORE_V = 2              # veri biçimi sürümü             # kaç gün sonrasına kadar fikstür
 
 def fetch(url, tries=3):
@@ -432,7 +433,7 @@ def main():
     # Akıllı nöbet: yeni maç sonucu yoksa yeniden eğitme, yalnızca fikstür ve canlı bilgiyi tazele
     import hashlib
     fp = hashlib.sha1(json.dumps(sorted((lg, len(st.get("g", [])), (st.get("g") or [{}])[-1].get("id", "")) for lg, st in store.items())).encode()).hexdigest()[:16]
-    quick = old.get("fp") == fp and bool(old.get("leagues")) and "--force" not in sys.argv
+    quick = old.get("fp") == fp and old.get("engine") == ENGINE_V and bool(old.get("leagues")) and "--force" not in sys.argv
     if quick: print("Basketbol: yeni sonuç yok, eğitim atlandı", flush=True)
     out_lg, fits, Ps, bt_all = {}, {}, {}, []
     for lg, (src, code, name, qlen) in LEAGUES.items():
@@ -504,7 +505,7 @@ def main():
             if f.get(k): x[k] = f[k]
         if f.get("state") == "in": x["live"] = True; x["hs"] = f.get("hs"); x["as"] = f.get("as_")
         fx_out.append(x)
-    res = {"updated": now, "tuned": old.get("tuned", now) if quick else now, "fp": fp, "leagues": out_lg, "fixtures": fx_out, "backtest": tot, "history": hist,
+    res = {"updated": now, "tuned": old.get("tuned", now) if quick else now, "fp": fp, "engine": ENGINE_V, "leagues": out_lg, "fixtures": fx_out, "backtest": tot, "history": hist,
            "live": live_report(plog, today), "market": {"w": mw if mw is not None else 0.5, "n": mn, "learned": mw is not None}, "sources": log}
     json.dump(res, open(op, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
     print("Bitti:", json.dumps(tot, ensure_ascii=False), "fikstür", len(fx_out), flush=True)

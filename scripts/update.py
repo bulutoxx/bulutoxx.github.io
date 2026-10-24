@@ -528,6 +528,7 @@ def tune(all_ms, P0):
     return P, fin
 
 GUARD = None
+ENGINE_V = "2026-10-24.2"   # motor kodu değişince bir kez tam eğitim yapılır
 CAL_INFO = {}
 NEW_TEAM = (0.95, 1.05)   # 3 ay önceden testte (3 sezon) en iyi çıkan: lige yeni gelen takım ortalamaya yakın, hafif zayıf
 
@@ -846,7 +847,7 @@ def main():
     import hashlib
     fp = hashlib.sha1(json.dumps(sorted((lg, len(ms), max((m["d"] for m in ms), default=""), sum(sum(m["ft"]) for m in ms))
                                          for lg, ms in all_ms.items())).encode()).hexdigest()[:16]
-    quick = (model.get("fp") == fp and bool(model.get("backtest")) and "--force" not in sys.argv)
+    quick = (model.get("fp") == fp and model.get("engine") == ENGINE_V and bool(model.get("backtest")) and "--force" not in sys.argv)
     full = "--no-tune" not in sys.argv and not quick
     if quick:
         print("Yeni maç sonucu yok: eğitim atlandı, yalnızca oranlar ve fikstür tazeleniyor", flush=True)
@@ -902,7 +903,7 @@ def main():
     json.dump(plog, open(plp, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
     live = live_report(plog, today)
     print("Canlı karne:", json.dumps(live, ensure_ascii=False), flush=True)
-    model = {"live": live, "cup": cup, "updated": now, "tuned": now if not quick else model.get("tuned", now), "fp": fp,
+    model = {"live": live, "cup": cup, "updated": now, "tuned": now if not quick else model.get("tuned", now), "fp": fp, "engine": ENGINE_V,
              "checks": (model.get("checks", 0) + 1), "trainings": model.get("trainings", 0) + (0 if quick else 1),
              "tuned_n": (bt["n"] if bt else 0) if not quick else model.get("tuned_n", 0), "params": P, "backtest": mt, "market": mstats, "sources": log,
              "leagues": {lg: {"name": d.get("name", LEAGUES.get(lg, ("", "", lg))[2]), "asOf": d["asOf"],
