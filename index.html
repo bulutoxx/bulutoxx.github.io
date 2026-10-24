@@ -893,6 +893,9 @@ nav.tabs #liveBadge{background:#1FBF5B}
 @keyframes spin{to{transform:rotate(360deg)}}
 #v-canli .ltitle{margin:8px 2px 2px}#v-canli .ltitle h1{font-size:24px}#v-canli .ltitle p{font-size:12.5px;margin-top:2px}
 .idl-bar button{padding:6px 10px;font-size:13px}.idl-bar{flex-wrap:nowrap}.idl-up{display:none}
+.bt-q .q-go{flex:none;display:flex;align-items:center;gap:6px;padding:0 16px!important;border-radius:12px;background:var(--grad);color:#fff!important;font-weight:700;font-size:15px}
+.bt-q .q-go svg{width:17px;height:17px;stroke:#fff;fill:none;stroke-width:2.4;stroke-linecap:round}
+.bt-q .q-go:disabled{opacity:.45}
 </style>
 </head>
 <body>
@@ -4282,7 +4285,7 @@ function ibRow(x){
     const inCp=CP.items.some(c=>c.k===cpKey(m)&&c.mk===key);
     return `<span role="button" tabindex="0" data-mk="${key}" data-o="${v}" data-p="${pr==null?"":pr}" class="${val?"val":""} ${pk?"pk":""} ${inCp?"sel":""}"><u>${lab}</u>${v.toFixed(2)}${pr!=null?`<small>%${pc9(pr)}${val?" 💎":""}</small>`:""}</span>`; };
   const mbs=f&&f.mbs?`<span class="ib-mbs" title="Minimum bahis sayısı (MBS)">${f.mbs}</span>`:"";
-  const t=m.started?"Başladı":ist(m.dt,{hour:"2-digit",minute:"2-digit"});
+  const t=m.started?"Başladı":((BT.q||BT.f==="fav")&&istDay(m.dt)!==istDay(new Date())?ist(m.dt,{day:"numeric",month:"short"})+" ":"")+ist(m.dt,{hour:"2-digit",minute:"2-digit"});
   return `<div class="ib-r" data-i="${x.idx}"><div class="ib-top">${starBtn(k)}<span class="ib-t">${esc(t)}</span>${mbs}<span class="ib-tm">${esc(m.h)} - ${esc(m.a)}</span></div>
     <div class="ib-od">${ob("MS 1",o&&o[0],p&&p.p[0],"1")}${ob("MS X",o&&o[1],p&&p.p[1],"X")}${ob("MS 2",o&&o[2],p&&p.p[2],"2")}${ob("2,5 Alt",ou&&ou[1],p&&1-p.o25,"A")}${ob("2,5 Üst",ou&&ou[0],p&&p.o25,"U")}</div>
     ${p?`<div class="ib-p">🔮 Tahmin <b>MS ${esc(p.ft)}</b> · İY ${esc(p.ht)}${p.best?` · ${esc(p.best.n)} %${pc9(p.best.p)}`:""}</div>`:""}</div>`;
@@ -4436,6 +4439,26 @@ renderPrediction=function(inp,r){ _rpV27(inp,r);
   const _pu=paintUpd; paintUpd=function(){ _pu(); const ma=modelAge(); document.querySelectorAll(".tb-age").forEach(a=>a.textContent=ma!=null?"· model "+agoTxt(ma):""); };
   paintUpd();
 })();
+
+// =====================================================================
+// BULUTOXX v30: Arama kutusunda "Ara" düğmesi (Enter ile de çalışır): sonuçları hemen getirir, klavyeyi kapatır
+// =====================================================================
+[["btQBox","btQ","bt"],["bkQBox","bkQ","bk"]].forEach(([boxId,inId,k])=>{
+  const box=$(boxId), inp=$(inId); if(!box||!inp||box.querySelector(".q-go")) return;
+  const go=document.createElement("button"); go.type="button"; go.className="q-go"; go.disabled=true;
+  go.innerHTML='<svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>Ara';
+  inp.after(go);
+  const run=()=>{ const q=inp.value.trim(); if(!q){ inp.focus(); return; }
+    if(k==="bt"){ BT.q=q; renderBulten(); } else { BK.q=q; renderBasket(); }
+    inp.blur(); buzz(8); Sound.tap();
+    const list=$(k==="bt"?"btList":"bkList"); if(list){ const y=list.getBoundingClientRect().top+window.scrollY-200; window.scrollTo({top:Math.max(0,y),behavior:"smooth"}); }
+    const n=k==="bt"?$("btList").querySelectorAll(".ib-r,.br,.lv-c").length:$("bkList").querySelectorAll(".bk-row").length;
+    toast(n?`"${q}" için ${n} maç bulundu`:`"${q}" için maç bulunamadı · yazımı kontrol et`); };
+  go.onclick=run;
+  inp.addEventListener("input",()=>{ go.disabled=!inp.value.trim(); });
+  inp.addEventListener("keydown",e=>{ if(e.key==="Enter"){ e.preventDefault(); run(); } });
+  inp.setAttribute("enterkeyhint","search");
+});
 </script>
 
 </body>
