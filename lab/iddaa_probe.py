@@ -1,31 +1,14 @@
-"""iddaa.com resmi bülten erişim denemesi: robots.txt + olası bülten uç noktaları. Yalnızca durum ve yapı kaydedilir."""
-import json, urllib.request
-UA = {"User-Agent": "Mozilla/5.0 (BULUTOXX bulten denemesi)", "Accept": "application/json, text/plain, */*"}
-URLS = ["https://www.iddaa.com/robots.txt", "https://sportsbookv2.iddaa.com/robots.txt", "https://www.iddaa.com/",
-        "https://sportsbookv2.iddaa.com/sportsbook/events?st=1&type=0&version=0",
-        "https://sportsbookv2.iddaa.com/sportsbook/events?st=2&type=0&version=0",
-        "https://sportsbookv2.iddaa.com/sportsbook/competitions",
-        "https://sportsbookv2.iddaa.com/sportsbook/get_markets_config"]
+import json, sys, collections
+sys.path.insert(0, "lab"); import iddaa as I
 out = {}
-for u in URLS:
-    try:
-        r = urllib.request.urlopen(urllib.request.Request(u, headers=UA), timeout=25); b = r.read()
-        e = {"status": r.status, "len": len(b), "ctype": r.headers.get("content-type")}
-        t = b.decode("utf-8", "replace")
-        if u.endswith("robots.txt"): e["text"] = t[:3000]
-        else:
-            try:
-                j = json.loads(t); e["keys"] = list(j)[:20] if isinstance(j, dict) else f"list[{len(j)}]"
-                d = j.get("data") if isinstance(j, dict) else None
-                if isinstance(d, dict):
-                    e["data_keys"] = list(d)[:20]
-                    evs = d.get("events") or []
-                    e["n_events"] = len(evs)
-                    if evs: e["ornek"] = json.dumps(evs[0], ensure_ascii=False)[:2500]
-                elif isinstance(d, list):
-                    e["n_data"] = len(d); e["ornek"] = json.dumps(d[0], ensure_ascii=False)[:1500] if d else None
-            except Exception: e["head"] = t[:400]
-        out[u] = e
-    except Exception as ex:
-        out[u] = {"hata": f"{ex.__class__.__name__}: {str(ex)[:200]}"}
+for sp in (1, 2):
+    ev = I._get(f"events?st={sp}&type=0&version=0")["events"]
+    # basketbol: ilk 3 maçın tüm sov'lu pazarları (st, sov, oranlar)
+    if sp == 2:
+        out["bk_markets"] = [{"h": e["hn"], "a": e["an"], "m": [(m.get("st"), m.get("t"), m.get("sov"), {o.get("n"): o.get("odd") for o in m.get("o", [])}) for m in e.get("m", [])]} for e in ev[:4]]
+    st = collections.Counter(m.get("st") for e in ev for m in e.get("m", []))
+    out[f"st_{sp}"] = st.most_common(40)
+    p = I.fetch(sp)
+    out[f"parsed_{sp}"] = {"n": len(p), "ornek": p[:12], "comps": collections.Counter(x["comp"] for x in p).most_common(200),
+                           "cc": collections.Counter(x["cc"] for x in p).most_common(60), "no_ou": sum(1 for x in p if "ou" not in x["mk"] and "tot" not in x["mk"])}
 json.dump(out, open("lab/iddaa_probe.json", "w"), ensure_ascii=False, indent=1)
