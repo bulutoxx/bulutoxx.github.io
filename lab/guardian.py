@@ -18,8 +18,11 @@ def jl(p, d=None):
 
 def config():
     m = jl("model.json", {}); P = m.get("params", {}); r = jl("research.json", {}) or {}; a = jl("analyst.json", {}) or {}
-    return {"engine": m.get("engine"), "params": {k: P.get(k) for k in KEYS if k in P},
-            "devig": r.get("devig", "power") if r.get("devig_kabul") else "power", "analist": bool(a.get("kabul")), "auto_lab": P.get("auto_lab")}
+    cfg = {"engine": m.get("engine"), "params": {k: P.get(k) for k in KEYS if k in P},
+           "devig": r.get("devig", "power") if r.get("devig_kabul") else "power", "analist": bool(a.get("kabul")), "auto_lab": P.get("auto_lab")}
+    pl = ((jl("daily.json", {}) or {}).get("canli") or {}).get("platt")
+    if pl is not None: cfg["canli_platt"] = bool(pl.get("kabul"))   # canlı Platt kalibrasyonu (toplayıcı, zaman sıralı sınama)
+    return cfg
 
 def recs_between(d0, d1):
     out = []
@@ -42,7 +45,7 @@ def main():
             for k in KEYS:
                 a, b = (last.get("params") or {}).get(k), cur["params"].get(k)
                 if a != b: diff[k] = [a, b]
-            for k in ("devig", "analist", "auto_lab"):
+            for k in ("devig", "analist", "auto_lab", "canli_platt"):
                 if last.get(k) != cur.get(k): diff[k] = [last.get(k), cur.get(k)]
         log["degisiklikler"].append({"tarih": today, "config": cur, "fark": diff, "durum": "izleniyor" if last else "başlangıç"})
         log["degisiklikler"] = log["degisiklikler"][-60:]
@@ -63,7 +66,7 @@ def main():
             ch["durum"] = "GERİ ALINDI"
             rb = {"aktif": True, "baslangic": today, "bitis": (date.fromisoformat(today) + timedelta(days=FREEZE_DAYS)).isoformat(),
                   "neden": f"{d} tarihli değişiklikten sonra isabet kötüleşti (Brier {b0:.4f} → {b1:.4f})", "params": prev.get("params"),
-                  "devig": prev.get("devig", "power"), "analist": prev.get("analist", False), "gecmis": (rb.get("gecmis") or [])[-10:] + [d]}
+                  "devig": prev.get("devig", "power"), "analist": prev.get("analist", False), "canli_platt": prev.get("canli_platt", False), "gecmis": (rb.get("gecmis") or [])[-10:] + [d]}
         elif len(after) >= MIN_N:
             ch["durum"] = "kalıcı (isabet korunuyor)"
     # 📈 Gelişim günlüğü: uygulamada gösterilen, sistemin kendi kendine yaptığı gelişmeler ve ölçümler
@@ -71,7 +74,7 @@ def main():
     def add(tur, baslik, detay, anahtar):
         if any(e.get("anahtar") == anahtar for e in ev): return
         ev.append({"tarih": today, "tur": tur, "baslik": baslik, "detay": detay, "anahtar": anahtar})
-    NM = {"devig": "Bahis marjı ayırma yöntemi", "analist": "Lig güven katsayıları", "auto_lab": "Laboratuvar karışımı", "motor sürümü": "Motor sürümü"}
+    NM = {"devig": "Bahis marjı ayırma yöntemi", "analist": "Lig güven katsayıları", "auto_lab": "Laboratuvar karışımı", "motor sürümü": "Motor sürümü", "canli_platt": "Canlı olasılık kalibrasyonu (Platt)"}
     for ch in log["degisiklikler"]:
         f = ch.get("fark") or {}
         for k, (a, b) in f.items():

@@ -58,9 +58,9 @@ Futbolda tek maçın sonucu doğası gereği belirsizdir; hiçbir model her maç
 | iddaa.json | Motor | Uygulama, canlı kayıt | Maç öncesi gol beklentisi (8 gün) |
 | archive/GGGG-AA-GG.json | Toplayıcı | Motor, analist, araştırmacı, koruyucu | Kilitli öneri + oran + sonuç |
 | archive/live/*.json | Canlı kayıt | Toplayıcı | Kilitli canlı seçimler ve sonuçları |
-| daily.json | Toplayıcı | Uygulama | Günlük karne, canlı kalibrasyon |
-| research.json | Araştırmacı | Motor, uygulama | Yeni ligler, kütüphane sürümü, marj yöntemi |
-| analyst.json | Analist | Uygulama | Lig güven katsayıları (doğrulanmışsa) |
+| daily.json | Toplayıcı | Uygulama, koruyucu | Günlük karne, canlı kalibrasyon (`canli.bins`; `canli.platt` = zaman sıralı sınamayı geçerse `kabul: true` olan logit-doğrusal canlı kalibrasyon) |
+| research.json | Araştırmacı | Motor, uygulama | Yeni ligler, kütüphane sürümü, marj yöntemi (power / prop / shin / hibrit: marj <%12 power, üstü oransal) |
+| analyst.json | Analist | Uygulama | Lig güven katsayıları (doğrulanmışsa; ampirik Bayes küçültme), `teshis`: pazar ve oran bandına göre sapma |
 | changes.json, rollback.json | Koruyucu | Motor, analist, uygulama | Değişiklik geçmişi, geri alma |
 | dq.json | Denetçi | Uygulama | Veri bütünlüğü ve güvenlik taraması |
 | qa.json, qa/*.jpg | Kalite | Uygulama | Düğme testi, açılış süresi, ekran görüntüleri |

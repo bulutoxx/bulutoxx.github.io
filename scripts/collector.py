@@ -118,10 +118,70 @@ def live_snapshot():
         b = max(cands, key=lambda c: c[1])
         key = f"{k}-{int(t)}"
         if key in log: continue
-        log[key] = {"id": k, "t": round(t, 1), "hs": hs, "as": as_, "rk": b[0], "p": round(b[1], 4), "o": b[2], "c": e.get("ci"), "h": e.get("hn"), "a": e.get("an")}
+        log[key] = {"id": k, "t": round(t, 1), "hs": hs, "as": as_, "rk": b[0], "p": round(b[1], 4), "o": b[2], "c": e.get("ci"), "h": e.get("hn"), "a": e.get("an"),
+                    "ts": int(now.timestamp())}   # kayıt anı: canlı kalibrasyonun zaman sıralı sınaması için
         n += 1
     json.dump(log, open(fp, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
     print(f"Canlı kayıt: {n} yeni seçim ({len(log)} bugün)", flush=True)
+
+LIVE_PLATT_LAM, LIVE_PLATT_MIN = 5.0, 300
+
+def _platt_fit(p, y, lam=LIVE_PLATT_LAM, prior=(0.0, 1.0)):
+    """Logit doğrusal kalibrasyon q = σ(a + b·logit p); (a, b) önsel (0, 1)'e L2 ile küçültülür (az veride kimliğe yakın kalır)."""
+    p = np.clip(np.asarray(p, float), 1e-4, 1 - 1e-4); y = np.asarray(y, float); x = np.log(p / (1 - p))
+    a, b = prior
+    for _ in range(30):
+        q = 1 / (1 + np.exp(-(a + b * x))); r = q - y; s = q * (1 - q)
+        g = np.array([r.sum() + lam * (a - prior[0]), (r * x).sum() + lam * (b - prior[1])])
+        H = np.array([[s.sum() + lam, (s * x).sum()], [(s * x).sum(), (s * x * x).sum() + lam]])
+        d = np.linalg.solve(H, g); a -= d[0]; b -= d[1]
+        if abs(d).max() < 1e-9: break
+    return float(a), float(b)
+
+def _platt(p, ab):
+    p = np.clip(np.asarray(p, float), 1e-4, 1 - 1e-4); return 1 / (1 + np.exp(-(ab[0] + ab[1] * np.log(p / (1 - p)))))
+
+def _bins_cal(p, B, nmin=30, s=50):
+    """Uygulamadaki liveCal (index.html) ile aynı: kova isabetine 50'lik küçültme, n≥30."""
+    q = np.array(p, float)
+    for lo, hi, n, h in B:
+        if n >= nmin and h is not None:
+            m = (q >= lo) & (q < hi); q[m] = (h * n + q[m] * s) / (n + s)
+    return np.minimum(q, .99)
+
+def live_platt(stats, edges):
+    """Canlı kalibrasyon adayı: havuz Platt. ZAMAN SIRALI genişleyen pencere: maçlar ilk kayıt anına göre 6 dilime ayrılır,
+    k. dilim yalnız önceki dilimlerle öğrenilip sınanır (aynı maçın anlık seçimleri aynı dilimde → sızıntı yok).
+    Kabul: birleşik sınamada Brier hem ham hem mevcut kova yönteminden iyi ve dilimlerin çoğunda kova yönteminden iyi.
+    Kanıt (2026-10-25, 584 seçim/116 maç, git kayıt saatleriyle): Brier ham 0,2463 · kova 0,2421 · Platt 0,2365; 5/5 dilimde iyi."""
+    if len(stats) < LIVE_PLATT_MIN: return {"kabul": False, "n": len(stats), "aciklama": f"en az {LIVE_PLATT_MIN} puanlanmış canlı seçim gerekli"}
+    first = {}
+    for r in stats:
+        o = (r.get("_d", ""), r.get("ts") or 0, str(r["id"]))
+        if r["id"] not in first or o < first[r["id"]]: first[r["id"]] = o
+    ids = sorted(first, key=first.get); fold = {m: min(5, j * 6 // len(ids)) for j, m in enumerate(ids)}
+    def bins_of(rs):
+        out = []
+        for lo, hi in zip(edges[:-1], edges[1:]):
+            s_ = [r for r in rs if lo <= r["p"] < hi]
+            out.append([lo, hi, len(s_), sum(r["ok"] for r in s_) / len(s_) if s_ else None])
+        return out
+    tot = {"ham": [], "kova": [], "platt": []}; ys = []; win = 0; nf = 0
+    for k in range(1, 6):
+        tr = [r for r in stats if fold[r["id"]] < k]; te = [r for r in stats if fold[r["id"]] == k]
+        if len(tr) < 50 or not te: continue
+        p = np.array([r["p"] for r in te]); y = np.array([float(r["ok"]) for r in te])
+        ab = _platt_fit([r["p"] for r in tr], [float(r["ok"]) for r in tr])
+        qk, qp = _bins_cal(p, bins_of(tr)), np.minimum(_platt(p, ab), .99)
+        tot["ham"].append(np.minimum(p, .99)); tot["kova"].append(qk); tot["platt"].append(qp); ys.append(y)
+        nf += 1; win += float(np.mean((qp - y) ** 2)) < float(np.mean((qk - y) ** 2))
+    if not nf: return {"kabul": False, "n": len(stats), "aciklama": "sınama dilimi oluşmadı"}
+    y = np.concatenate(ys); B = {k: round(float(np.mean((np.concatenate(v) - y) ** 2)), 5) for k, v in tot.items()}
+    ok = B["platt"] < B["kova"] - 1e-4 and B["platt"] < B["ham"] - 1e-4 and win * 2 > nf
+    a, b = _platt_fit([r["p"] for r in stats], [float(r["ok"]) for r in stats])
+    return {"a": round(a, 4), "b": round(b, 4), "kabul": bool(ok), "n": len(stats), "yontem": "havuz Platt (logit doğrusal, L2 λ=5)",
+            "dogrulama": {"sinama_n": int(len(y)), "dilim": nf, "kazanilan_dilim": int(win), "brier_ham": B["ham"], "brier_kova": B["kova"], "brier_platt": B["platt"]},
+            "aciklama": "p' = 1/(1+exp(-(a + b·ln(p/(1-p)))))  — kabul ise canlı yüzde bununla düzeltilir (kova yöntemi yerine)"}
 
 def live_grade():
     """Biten maçlarla canlı seçimleri puanla; olasılık dilimine göre gerçek isabet (Power Now kalibrasyonu)."""
@@ -156,12 +216,27 @@ def live_grade():
                     else: ok = None     # iki takım da attı: ilk golü kimin attığı bilinmiyor
                 r["ok"] = ok; changed = True
             if changed: json.dump(log, open(f, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
-        stats += [r for r in log.values() if r.get("ok") is not None]
+        stats += [dict(r, _d=d) for r in log.values() if r.get("ok") is not None]
     edges = [0.5, 0.6, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.01]; bins = []
     for lo, hi in zip(edges[:-1], edges[1:]):
         s_ = [r for r in stats if lo <= r["p"] < hi]
         bins.append([lo, hi, len(s_), round(sum(r["ok"] for r in s_) / len(s_), 4) if s_ else None])
-    return {"n": len(stats), "hit": round(sum(r["ok"] for r in stats) / len(stats), 4) if stats else None, "bins": bins}
+    out = {"n": len(stats), "hit": round(sum(r["ok"] for r in stats) / len(stats), 4) if stats else None, "bins": bins}
+    # 🎯 Canlı Platt kalibrasyonu (yeni alan, 'bins' biçimi değişmedi): zaman sıralı sınamayı geçerse kabul=true
+    try:
+        pl = live_platt(stats, edges)
+        if pl.get("kabul") and _rollback_frozen("canli_platt"): pl["kabul"] = False; pl["aciklama"] = "Koruyucu geri alma süresince dondurulmuş"
+        out["platt"] = pl
+    except Exception as ex:
+        print("canlı Platt atlandı:", ex.__class__.__name__, ex, flush=True)
+    return out
+
+def _rollback_frozen(key):
+    """🛡️ Koruyucu geri alma aktifse ve önceki yapılandırmada bu özellik kapalıysa → dondur."""
+    try:
+        RB = json.load(open(os.path.join(DATA, "rollback.json"), encoding="utf-8"))
+        return bool(RB.get("aktif")) and not RB.get(key)
+    except Exception: return False
 
 def main():
     now = datetime.now(timezone.utc); nts = now.timestamp()

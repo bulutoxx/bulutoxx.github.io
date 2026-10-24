@@ -14,8 +14,12 @@ UA = {"User-Agent": "Mozilla/5.0 (BULUTOXX research)", "Accept": "application/js
 def get(u):
     return json.loads(urllib.request.urlopen(urllib.request.Request(u, headers=UA), timeout=40).read().decode("utf-8"))
 
+HYB_MARGIN = 0.12   # scripts/update.py ile aynı eşik
+
 def devig(o, m):
     q = [1 / x for x in o]
+    if m == "hibrit":   # marja duyarlı: düşük marjlı (kapanış/Pinnacle tipi, <%12) oranlarda power, yüksek marjlı (iddaa ~%18) oranlarda oransal
+        return devig(o, "power" if sum(q) - 1 < HYB_MARGIN else "prop")
     if m == "prop": s = sum(q); return [x / s for x in q]
     if m == "power":
         lo, hi = 1.0, 3.0
@@ -62,7 +66,7 @@ def main():
     if len(recs) >= 1500:
         recs.sort(key=lambda x: x[0]); mid = recs[len(recs) // 2][0]
         res = {}
-        for m in ("power", "prop", "shin"):
+        for m in ("power", "prop", "shin", "hibrit"):
             for half, rs in (("1", [r for d, r in recs if d < mid]), ("2", [r for d, r in recs if d >= mid])):
                 ll = 0.0
                 for r in rs:

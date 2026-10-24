@@ -284,13 +284,19 @@ def _devig_method():
     if RB: return RB.get("devig", "power")
     try:
         R = json.load(open(os.path.join(DATA, "research.json"), encoding="utf-8"))
-        if R.get("devig_kabul") and R.get("devig") in ("power", "prop", "shin"): return R["devig"]
+        if R.get("devig_kabul") and R.get("devig") in ("power", "prop", "shin", "hibrit"): return R["devig"]
     except Exception: pass
     return "power"
 
+HYB_MARGIN = 0.12
 def devig(o, m):
     if m == "power": return power_devig(o)
     q = 1 / np.asarray(o, float)
+    if m == "hibrit":
+        # Marja duyarlı ayırma (2026-10-25 teşhisi): geçmişte (%8 marj, 15.080 maç) power en iyi (LL 1,0040 vs oransal 1,0048);
+        # kilitli iddaa arşivinde (%18 marj, 468 maç) oransal iki zaman yarısında da power'dan iyi (1X2 LL 1,0047→1,0034 / 1,0599→1,0443).
+        # Yalnız araştırmacı bot arşivde (≥1.500 maç, iki yarı) kanıtlarsa devreye girer.
+        return power_devig(o) if q.sum() - 1 < HYB_MARGIN else q / q.sum()
     if m == "prop": return q / q.sum()
     B = q.sum(); lo, hi = 0.0, 0.4
     for _ in range(50):
