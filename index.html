@@ -1131,6 +1131,18 @@ nav.tabs .pw-btn .badge{top:-2px;left:auto;right:-6px;background:#FFB020;color:#
 .oyn-s.st-g{box-shadow:inset 3px 0 0 #2BD46B}.oyn-s.st-x{box-shadow:inset 3px 0 0 #FF5A5F}
 .ap-h{margin:0 0 6px;font-size:16px}
 #cpPlay{margin:10px 0;background:linear-gradient(135deg,#2BD46B,#14A44D)}
+.oyn-st{margin:6px 0 10px;padding:10px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid var(--line)}
+.os-t{display:grid;grid-template-columns:repeat(auto-fit,minmax(64px,1fr));gap:6px;text-align:center}.os-t b{font-size:17px!important;white-space:nowrap}
+.os-t b{display:block;font:800 19px var(--round);font-variant-numeric:tabular-nums}.os-t small{color:var(--ink3);font-size:11.5px;line-height:1.25}
+.os-t .pos{color:#3BEA7E}.os-t .neg{color:#FF6B78}
+.os-ins{margin-top:10px;font-size:13px}.os-ins p{margin:6px 0 0;line-height:1.4}
+.os-d{margin-top:8px}.os-d summary{cursor:pointer;color:var(--cyan);font-weight:700;font-size:13px}
+.os-d h4{margin:10px 0 4px;font-size:12px;color:var(--ink3);text-transform:uppercase;letter-spacing:.05em}
+.os-r{display:grid;grid-template-columns:96px 1fr 84px;gap:8px;align-items:center;font-size:12.5px;padding:3px 0}
+.os-k{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.os-v{text-align:right;color:var(--ink2)}
+.os-b{position:relative;height:8px;border-radius:5px;background:rgba(255,255,255,.08);overflow:visible}
+.os-b i{position:absolute;left:0;top:0;bottom:0;border-radius:5px;background:linear-gradient(90deg,#1FBF5B,#3BEA7E)}
+.os-b u{position:absolute;top:-3px;bottom:-3px;width:2px;background:#fff;opacity:.8;text-decoration:none}
 </style>
 </head>
 <body>
@@ -5035,7 +5047,7 @@ if((location.hash||"")==="#sonuclar") setTimeout(()=>$("navRes").click(),200);
 // =====================================================================
 // BULUTOXX v35: Otomatik sürüm güncelleme — yeni sürüm yayınlanınca uygulama kendini yeniler
 // =====================================================================
-const APP_V="2026-10-24.56";
+const APP_V="2026-10-24.57";
 (function autoUpdate(){
   let shown=false;
   async function check(auto){
@@ -5815,6 +5827,107 @@ renderPrediction=function(inp,r){ _rpOyn(inp,r); try{ const out=$("out"); if(!ou
     const first=ml.querySelector(".cell"); first?first.before(c):ml.prepend(c); }
   oynBadge(); setTimeout(oynGrade,4000); setInterval(oynGrade,5*60e3);
 })();
+// ---------- v57 🎯 Oynadıklarım zekâsı: maç bitince otomatik sonuç, kişisel istatistik, öğrenip öneriye yansıtma ----------
+const OYN_G={"1":"MS","X":"MS","2":"MS","1X":"Çifte şans","12":"Çifte şans","X2":"Çifte şans","U":"Alt/Üst","A":"Alt/Üst","O15":"Alt/Üst","U15":"Alt/Üst","O35":"Alt/Üst","U35":"Alt/Üst",
+  "KGV":"KG","KGY":"KG","IY1":"İlk yarı","IYX":"İlk yarı","IY2":"İlk yarı","IO05":"İlk yarı","IU05":"İlk yarı","IO15":"İlk yarı","IU15":"İlk yarı","GG":"Canlı gol","G0":"Canlı gol","G1":"Canlı gol","G2":"Canlı gol"};
+function oynGrp(mk){ return OYN_G[mk]||(/^[UA]\d+\.\d+$/.test(mk||"")?"Alt/Üst":"Diğer"); }
+// kayıtta iddaa maç numarasını da sakla: sonuç takım adı yerine kesin numarayla bulunur
+const _oynItem0=oynItem;
+oynItem=function(x){ const it=_oynItem0(x);
+  try{ const m=findMatchByTeams(x.h,x.a);
+    if(m){ if(m.sp) it.iid=m.id; else { const f=m.src==="fx"?FIXTURES.find(y=>y.lg===m.lg&&y.h===m.h&&y.a===m.a):fxOdds(m); if(f&&f.iid) it.iid=f.iid; else if(m.iid) it.iid=m.iid; }
+      it.lgN=m.sp?m.comp:((LEAGUES[m.lg]||{}).n||""); } }catch(e){}
+  if(!it.lgN) it.lgN=(LEAGUES[x.lg]||{}).n||"";
+  return it; };
+const _oynAdd0=oynAdd;
+oynAdd=function(items,name){ _oynAdd0(items,name); try{ const sl=OYN.L[0]; if(sl&&!sl.stake){ sl.stake=+(localStorage.getItem("bx-stake")||0)||null; OYN.save(); } }catch(e){} };
+function oynNotify(sl){ const st=oynSt(sl), od=sl.items.reduce((a,i)=>a*(i.odd||1),1);
+  const t=st==="g"?`🎉 Kuponun kazandı! ${sl.items.length} maç · oran ${od.toFixed(2)}`:`Kuponun yattı · ${sl.items.filter(i=>i.ok).length}/${sl.items.length} tuttu`;
+  toast(t); try{ Sound.toggle(st==="g"); }catch(e){}
+  try{ if(document.hidden&&"Notification" in window&&Notification.permission==="granted"&&navigator.serviceWorker) navigator.serviceWorker.ready.then(r=>r.showNotification("BULUTOXX · Oynadıklarım",{body:t,icon:"icons/icon-192.png",tag:"oyn-"+sl.id})); }catch(e){} }
+// maç bitince sonucu tara: önce iddaa maç numarasıyla, yoksa takım adlarıyla; 30 saatte bulunamayan elle işaretlenir
+oynGrade=async function(){ if(oynBusy) return; oynBusy=true; let ch=0; const before=new Map(OYN.L.map(sl=>[sl.id,oynSt(sl)]));
+  try{ const now=Date.now(), due=[];
+    for(const sl of OYN.L) for(const it of sl.items) if(it.ok==null&&!it.man&&now-new Date(it.dt).getTime()>100*60e3) due.push(it);
+    const days=[...new Set(due.map(it=>istDay(new Date(it.dt))))].slice(0,8);
+    for(const d of days){ const R=await RS.load(d,d===istDay(new Date())); if(!R||!R.list) continue;
+      for(const it of due){ if(istDay(new Date(it.dt))!==d) continue;
+        const m=(it.iid&&R.list.find(x=>x.id===it.iid))||R.list.find(x=>tmEq(x.h,it.h)&&tmEq(x.a,it.a));
+        if(!m){ if(now-new Date(it.dt).getTime()>30*3600e3) it.need=1; continue; }
+        it.s=`${m.hs}-${m.as}`; it.s1=m.h1!=null?`${m.h1}-${m.a1}`:null; it.at=now;
+        const ok=mkHit(it.mk,m.hs,m.as,m.h1,m.a1,it.s0); if(ok!=null){ it.ok=ok; ch++; } else it.need=1; } }
+  }catch(e){}
+  oynBusy=false;
+  if(ch){ const fin=[]; for(const sl of OYN.L){ const b=before.get(sl.id), a=oynSt(sl); if(b==="w"&&a!=="w"&&!sl.done){ sl.done=Date.now(); fin.push(sl); } }
+    if(fin.length===1) oynNotify(fin[0]);
+    else if(fin.length>1){ const w=fin.filter(sl=>oynSt(sl)==="g").length, t=`${fin.length} kuponun sonuçlandı: ${w} kazandı, ${fin.length-w} kaybetti`; toast(t);
+      try{ if(document.hidden&&"Notification" in window&&Notification.permission==="granted"&&navigator.serviceWorker) navigator.serviceWorker.ready.then(r=>r.showNotification("BULUTOXX · Oynadıklarım",{body:t,icon:"icons/icon-192.png",tag:"oyn-toplu"})); }catch(e){} }
+    OYN.save(); oynBadge(); oynLearn(); if($("oynBox")) renderOyn(); } };
+// kişisel istatistik
+function oynStats(){ const I=OYN.L.flatMap(sl=>sl.items.map(i=>Object.assign({sl},i))).filter(i=>i.ok!=null);
+  const agg=(key)=>{ const M={}; for(const i of I){ const k=key(i); if(k==null) continue; const a=M[k]=M[k]||{n:0,h:0,ep:0,np:0,od:0}; a.n++; if(i.ok) a.h++; if(i.p){ a.ep+=i.p; a.np++; } if(i.odd) a.od+=i.odd; } return M; };
+  const band=o=>!o?null:o<1.4?"1,01–1,39":o<1.8?"1,40–1,79":o<2.5?"1,80–2,49":"2,50+";
+  const pb=p=>!p?null:p>=.7?"%70 ve üstü":p>=.58?"%58–69":"%58 altı";
+  const S={n:I.length,h:I.filter(i=>i.ok).length,grp:agg(i=>oynGrp(i.mk)),odd:agg(i=>band(i.odd)),pb:agg(i=>pb(i.p)),lg:agg(i=>i.lgN||null)};
+  const done=OYN.L.filter(sl=>oynSt(sl)!=="w"); S.sl=done.length; S.slw=done.filter(sl=>oynSt(sl)==="g").length;
+  let st=0,ret=0,ns=0; for(const sl of done){ if(!sl.stake) continue; ns++; st+=sl.stake; if(oynSt(sl)==="g") ret+=sl.stake*sl.items.reduce((a,i)=>a*(i.odd||1),1); }
+  S.stake=st; S.ret=ret; S.ns=ns;
+  // öğrendiklerim: en az 5 sonuçlanmış seçim olan gruplarda beklenenle gerçekleşeni kıyasla
+  const ins=[];
+  for(const [k,a] of Object.entries(S.grp)){ if(a.n<5) continue; const hit=a.h/a.n, ep=a.np?a.ep/a.np:null;
+    if(ep!=null&&hit<ep-.12) ins.push(`⚠️ <b>${esc(k)}</b> seçimlerinde ${a.h}/${a.n} tuttu (%${Math.round(hit*100)}); BULUTOXX ortalama %${Math.round(ep*100)} bekliyordu. Bu pazarda daha seçici ol ya da daha az oyna.`);
+    else if(ep!=null&&hit>ep+.08) ins.push(`💪 <b>${esc(k)}</b> senin güçlü yanın: ${a.h}/${a.n} (%${Math.round(hit*100)}), beklenen %${Math.round(ep*100)}.`); }
+  const hi=S.pb["%70 ve üstü"], lo=S.pb["%58 altı"];
+  if(hi&&hi.n>=4) ins.push(`🎯 BULUTOXX %70+ dediğinde oynadıklarının <b>${hi.h}/${hi.n}</b>'i tuttu.`);
+  if(lo&&lo.n>=4&&hi&&hi.n>=4&&lo.h/lo.n<hi.h/hi.n-.15) ins.push(`⏸️ Güveni %58'in altındaki (Pas) maçlarda ${lo.h}/${lo.n} tuttu; bu maçları pas geçmek sana kazandırır.`);
+  const big=S.odd["2,50+"]; if(big&&big.n>=5&&big.h/big.n<.3) ins.push(`📉 2,50 üstü oranlarda ${big.h}/${big.n} tuttu; yüksek oran cazip ama sana pahalıya geliyor.`);
+  const lgs=Object.entries(S.lg).filter(([,a])=>a.n>=4).sort((a,b)=>a[1].h/a[1].n-b[1].h/b[1].n);
+  if(lgs.length&&lgs[0][1].h/lgs[0][1].n<.4) ins.push(`🏳️ <b>${esc(lgs[0][0])}</b> maçlarında ${lgs[0][1].h}/${lgs[0][1].n} tuttu; bu ligde dikkatli ol.`);
+  const multi=done.filter(sl=>sl.items.length>=4), single=done.filter(sl=>sl.items.length<=2);
+  if(multi.length>=4&&single.length>=4){ const wm=multi.filter(sl=>oynSt(sl)==="g").length/multi.length, ws=single.filter(sl=>oynSt(sl)==="g").length/single.length; if(ws>wm+.2) ins.push(`🧩 1-2 maçlık kuponlarının %${Math.round(ws*100)}'i, 4+ maçlıların %${Math.round(wm*100)}'i kazandı. Az maçlı kupon sana daha uygun.`); }
+  S.ins=ins; return S; }
+function oynStatsHtml(){ const S=oynStats(); if(!S.n) return `<div class="oyn-st"><p class="note" style="margin:0">📊 İstatistik, ilk maçların sonuçlanınca burada otomatik oluşur.</p></div>`;
+  const pc=(h,n)=>n?Math.round(h/n*100):0;
+  const rows=(M,ord)=>Object.entries(M).sort((a,b)=>ord?ord.indexOf(a[0])-ord.indexOf(b[0]):b[1].n-a[1].n).map(([k,a])=>{ const ep=a.np?Math.round(a.ep/a.np*100):null;
+    return `<div class="os-r"><span class="os-k">${esc(k)}</span><span class="os-b"><i style="width:${pc(a.h,a.n)}%"></i>${ep!=null?`<u style="left:${ep}%" title="BULUTOXX beklentisi %${ep}"></u>`:""}</span><span class="os-v">${a.h}/${a.n} · <b>%${pc(a.h,a.n)}</b></span></div>`; }).join("");
+  const net=S.ns?S.ret-S.stake:null;
+  return `<div class="oyn-st"><div class="os-t"><div><b>%${pc(S.h,S.n)}</b><small>seçim isabeti<br>${S.h}/${S.n}</small></div><div><b>${S.slw}/${S.sl}</b><small>kazanan<br>kupon</small></div>${net!=null?`<div><b class="${net>=0?"pos":"neg"}">${net>=0?"+":""}${Math.round(net).toLocaleString("tr-TR")} ₺</b><small>net sonuç<br>${S.ns} kupon</small></div><div><b class="${net>=0?"pos":"neg"}">%${Math.round(net/S.stake*100)}</b><small>kazanç<br>oranı</small></div>`:""}</div>
+    ${S.ins.length?`<div class="os-ins"><b>🧠 Öğrendiklerim</b>${S.ins.map(t=>`<p>${t}</p>`).join("")}</div>`:`<p class="note" style="margin:8px 0 0">🧠 En az 5 sonuçlanmış seçim olan pazarlarda sana özel tespitler burada çıkar.</p>`}
+    <details class="os-d"><summary>Ayrıntılı istatistik</summary>
+      <h4>Pazar türüne göre</h4>${rows(S.grp)}
+      <h4>Oran aralığına göre</h4>${rows(S.odd,["1,01–1,39","1,40–1,79","1,80–2,49","2,50+"])}
+      <h4>BULUTOXX güvenine göre</h4>${rows(S.pb,["%70 ve üstü","%58–69","%58 altı"])}
+      ${Object.keys(S.lg).length?`<h4>Lige göre</h4>${rows(S.lg)}`:""}
+      <p class="note">Çubuk: tutma oranın · ince çizgi: BULUTOXX'un o seçimler için beklediği olasılık. Çizginin solunda kalıyorsan beklenenden kötü, sağındaysan iyi gidiyorsun.</p></details></div>`; }
+const _renderOyn0=renderOyn;
+renderOyn=function(){ _renderOyn0(); const box=$("oynBox"); if(!box||!OYN.L.length) return; const h=box.querySelector(".oyn-h"); if(h&&!box.querySelector(".oyn-st")) h.insertAdjacentHTML("afterend",oynStatsHtml()); };
+// öğrenme: kişisel sonuçlar Bulut'un öneri sıralamasına yansır (olasılık değişmez, yalnız sıra ve uyarılar)
+function oynLearn(){ try{ const S=oynStats(); const g={}, l={};
+    for(const [k,a] of Object.entries(S.grp)) g[k]={n:a.n,h:a.h,ep:a.np?a.ep/a.np:null};
+    for(const [k,a] of Object.entries(S.lg)) l[k]={n:a.n,h:a.h};
+    BOT.st.oyn={g,l,n:S.n,h:S.h,upd:Date.now()}; botSave(); }catch(e){} }
+function oynAdj(lgN,mk){ const O=BOT.st.oyn; if(!O) return 0; let d=0;
+  const a=O.g&&O.g[oynGrp(mk)]; if(a&&a.n>=6&&a.ep!=null) d+=Math.max(-.04,Math.min(.03,(a.h/a.n-a.ep)*.25));
+  const b=lgN&&O.l&&O.l[lgN]; if(b&&b.n>=5) d+=Math.max(-.03,Math.min(.02,(b.h/b.n-.55)*.1));
+  return d; }
+const _botPre0=botPre;
+botPre=function(o){ const L=_botPre0(o); if(!BOT.st.oyn) return L;
+  for(const x of L){ const lgN=(x.f&&(x.f.ln||x.f.cn))||((LEAGUES[x.m.lg]||{}).n)||""; x.sc+=oynAdj(lgN,x.R.k); }
+  return L.sort((a,b)=>b.sc-a.sc); };
+const _botAnswer0=botAnswer;
+botAnswer=async function(raw){ const R=await _botAnswer0(raw); try{ const q=norm(raw||"");
+    if(/karne|istatist|basari|oynadik|kuponlarim|nasil gidiyor|kazanc|kayip|zarar/.test(q)){ await oynGrade(); const S=oynStats();
+      if(S.n){ R.html=(R.html||"")+`<br><br>🎯 <b>Oynadıkların:</b> ${S.n} seçimin ${S.h}'i tuttu (%${Math.round(S.h/S.n*100)}), ${S.sl} kuponun ${S.slw}'i kazandı.${S.ns?` Net: <b>${S.ret-S.stake>=0?"+":""}${Math.round(S.ret-S.stake).toLocaleString("tr-TR")} ₺</b>.`:""}${S.ins.length?"<br>"+S.ins.slice(0,2).join("<br>"):""}`;
+        R.chips=Array.from(new Set([...(R.chips||[]),"Kuponu aç"])); } } }catch(e){} return R; };
+// kupona eklerken: o pazar türünde geçmişin zayıfsa nazikçe hatırlat (oturum başına bir kez)
+const _cpTogOyn=cpToggle, OYN_WARN=new Set();
+cpToggle=function(m,mk,odd,p){ const had=CP.items.some(c=>c.k===cpKey(m)&&c.mk===mk); const r=_cpTogOyn(m,mk,odd,p);
+  try{ const O=BOT.st.oyn, gN=oynGrp(mk), a=O&&O.g&&O.g[gN]; if(!had&&a&&a.n>=6&&a.ep!=null&&a.h/a.n<a.ep-.12&&!OYN_WARN.has(gN)){ OYN_WARN.add(gN); setTimeout(()=>toast(`Not: ${gN} seçimlerinde geçmişin ${a.h}/${a.n}. Emin değilsen BULUTOXX'un güçlü önerilerine bak.`),900); } }catch(e){}
+  return r; };
+// tarama sıklığı: 2 dakikada bir + uygulamaya her dönüşte
+setInterval(()=>{ if(!document.hidden) oynGrade(); },2*60e3);
+document.addEventListener("visibilitychange",()=>{ if(!document.hidden) setTimeout(oynGrade,1500); });
+setTimeout(()=>{ oynGrade(); oynLearn(); },2500);
 </script>
 
 </body>
