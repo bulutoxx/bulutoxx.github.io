@@ -1183,6 +1183,12 @@ body.bt3 #v-bulten .tb-row{position:relative}
 .bt-card.gold-row .gold-seal{margin:3px 0}
 #btGold[aria-pressed="true"]{background:var(--gold)!important;color:#3B2A05!important;border-color:#5A4310!important}
 .ib-mbs,.ms-lg .ib-mbs,.bt-head .ib-mbs{display:none!important}
+body #btChips button[data-f="value"]{display:none!important}
+.gneed{color:var(--amber);font-weight:600}
+.gchk input:disabled+span{opacity:.75}
+.lg-wipe{margin:16px 0 8px;display:flex;flex-direction:column;gap:6px}.lg-wipe small{color:var(--ink3);font-size:12px}
+.lg-wipe .btn.danger{border-color:#FF5A5F!important;color:#FF8A8C!important}
+#instGate .btn.ghost{margin-top:8px}
 </style>
 </head>
 <body>
@@ -1304,7 +1310,7 @@ body.bt3 #v-bulten .tb-row{position:relative}
       </div>
     </div>
     <div id="btList"></div>
-    <p class="disc">Oranlar resmi iddaa bülteninden piyasa beklentisi bilgisi olarak gösterilir; BULUTOXX bahis almaz. Alttaki yüzdeler BULUTOXX modelinin tahminidir. 💎 model olasılığı orana göre yüksekse işaretlenir · 18+</p>
+    <p class="disc">Hobi amaçlı istatistiksel tahmindir, bahis tavsiyesi değildir. Oranlar yalnız piyasa beklentisi bilgisidir. 18+ · Yasa dışı bahis suçtur · Destek: 115</p>
   </section>
 
   <!-- BASKETBOL -->
@@ -2837,7 +2843,7 @@ function predictionText(inp,r){
     `1 %${Math.round(r.H*100)} · X %${Math.round(r.D*100)} · 2 %${Math.round(r.A*100)}\n`+
     best.map(b=>`✅ ${b.n} %${Math.round(b.p*100)}`).join("\n")+`\nSen de tahmin et 👇`;
 }
-const APP_TEXT="⚽ BULUTOXX: ilk yarı, ikinci yarı ve maç sonu skor tahmini. 38 lig + Avrupa kupaları, canlı skor ve gol bildirimi. Ücretsiz 👇";
+const APP_TEXT="⚽ BULUTOXX: hobi amaçlı maç tahmini ve takip aracı. İlk yarı, ikinci yarı ve maç sonu skor tahmini, canlı skor ve gol bildirimi. Bahis amaçlı değildir · 18+ 👇";
 function shareAppSheet(){ openShare({title:"Link gönder", text:APP_TEXT, url:appLink()}); }
 
 // Üst bara paylaş düğmesi, rehberdeki düğmeyi yeni sayfaya bağla
@@ -2957,61 +2963,94 @@ loadFixtures().then(()=>{ applyFixtureOdds(); renderStrip(); renderKarne(); });
 // =====================================================================
 // BULUTOXX v7: Kullanım koşulları, sorumluluk reddi ve ilk açılışta onay
 // =====================================================================
-const TERMS_VER="1.0", TERMS_DATE="23 Ekim 2026";
+const TERMS_VER="2.0", TERMS_DATE="24 Ekim 2026";
+const LEGAL_DEV="BULUTOXX geliştiricisi", LEGAL_MAIL="";   // iletişim e-postası sahibin kararıyla eklenecek
+const LEGAL_CONTACT=()=>LEGAL_MAIL?`<a href="mailto:${LEGAL_MAIL}">${LEGAL_MAIL}</a>`:"iletişim adresi yakında bu sayfaya eklenecektir";
 const TERMS_HTML=`
-<h3>1. Hizmetin niteliği</h3>
-<p>BULUTOXX, geçmiş maç sonuçları ve bahis piyasası verilerinden istatistiksel model ile olasılık hesaplayan, <b>bilgilendirme ve eğlence amaçlı</b> ücretsiz bir uygulamadır. Gösterilen skorlar ve yüzdeler bir tahmindir; <b>kesinlik, garanti veya bahis tavsiyesi değildir</b>.</p>
-<h3>2. Garanti yoktur</h3>
-<p>Futbolda sonuçlar belirsizdir. En iyi modeller ve bahis şirketleri dahil hiçbir sistem maç sonuçlarını kesin olarak bilemez. Uygulamada gösterilen geçmiş isabet oranları gelecekteki sonuçları garanti etmez. Veriler üçüncü taraf kaynaklardan otomatik alınır; eksik, gecikmeli veya hatalı olabilir.</p>
-<h3>3. Sorumluluk reddi</h3>
-<p>Uygulamadaki bilgilere dayanarak verdiğin her karar, bahis ve harcama <b>tamamen senin sorumluluğundadır</b>. BULUTOXX ve geliştiricileri; tahminlerin doğruluğundan, veri hatalarından, kesintilerden veya uygulamanın kullanımından doğabilecek doğrudan ya da dolaylı hiçbir maddi veya manevi kayıptan sorumlu tutulamaz.</p>
-<h3>4. Yaş sınırı</h3>
-<p>Uygulama <b>18 yaşından küçükler için değildir</b>. 18 yaşından küçüksen uygulamayı kullanma.</p>
-<h3>5. Yasal bahis</h3>
-<p>BULUTOXX bahis almaz, para kabul etmez ve hiçbir bahis sitesine yönlendirmez. Bahis oynayacaksan yalnızca bulunduğun ülkede yasal ve lisanslı kanalları kullan. Türkiye'de yasa dışı bahis oynamak ve oynatmak 7258 sayılı Kanun kapsamında suçtur.</p>
-<h3>6. Sorumlu oyun</h3>
-<p>Kaybetmeyi göze alamayacağın parayla oynama, kayıplarını kovalamaya çalışma, borç alarak bahis yapma. Bahis isteğini kontrol etmekte zorlanıyorsan ücretsiz ve gizli destek alabilirsin: <b>Yeşilay Danışmanlık Merkezi (YEDAM) 115</b>.</p>
-<h3>7. Dolandırıcılık uyarısı</h3>
-<p>"Kesin maç", "şike bilgisi", "garantili kupon" satan hesaplar neredeyse her zaman dolandırıcılıktır. BULUTOXX hiçbir zaman para, kupon ücreti veya kişisel bilgi istemez.</p>
-<h3>8. Gizlilik</h3>
-<p>Üyelik yoktur; ad, telefon veya e-posta toplanmaz. Kaydettiğin tahminler ve ayarların yalnızca kendi cihazında saklanır. Kullanıcı ve yükleme sayıları kimliksiz bir sayaçla tutulur; seni tanımlayan bir bilgi içermez. Canlı skorlar, logolar ve oranlar üçüncü taraf servislerden yüklenir.</p>
-<h3>9. Marka ve logolar</h3>
-<p>Kulüp, lig ve turnuva adları ile logoları sahiplerine aittir ve yalnızca maçları tanıtmak amacıyla gösterilir. BULUTOXX hiçbir kulüp, federasyon, lig veya bahis şirketiyle bağlantılı değildir; onlar tarafından desteklenmez.</p>
-<h3>10. Değişiklikler</h3>
-<p>Bu koşullar güncellenebilir. Önemli bir değişiklik olduğunda uygulama yeniden onayını ister. Sürüm ${TERMS_VER} · ${TERMS_DATE}</p>`;
+<p><b>Son güncelleme:</b> ${TERMS_DATE} · <b>Sürüm:</b> ${TERMS_VER}</p>
+<h3>1. Nitelik</h3><p>BULUTOXX yalnızca <b>hobi amaçlı bir maç tahmini ve takip aracıdır. Bahis amaçlı değildir.</b> Bahis oynamayı önermez, teşvik etmez, tanıtmaz.</p>
+<h3>2. Sunan ve kabul</h3><p>BULUTOXX'u ${LEGAL_DEV} ücretsiz, reklamsız ve ticari amaç gütmeden sunar. Uygulamayı kullanarak bu koşulları kabul etmiş olursunuz. Kabul etmiyorsanız uygulamayı kullanmayın.</p>
+<h3>3. Yaş sınırı</h3><p><b>18 yaşını doldurmamış kişiler uygulamayı kullanamaz.</b></p>
+<h3>4. Uygulamanın yaptıkları</h3><p>Maçlar için istatistiksel olasılık hesaplar. Maç sonuçlarını ve canlı skorları gösterir. "Tahmin listem" ile "Sonuç takibim" listelerini yalnızca sizin cihazınızda tutar.</p>
+<h3>5. Uygulamanın yapmadıkları</h3><p>Bahis veya kupon almaz, iletmez, düzenlemez. Para, bakiye veya ödeme tutmaz. Hiçbir bahis sitesine, bayiye ya da uygulamaya bağlantı vermez ve yönlendirmez. Ödül, promosyon veya kazanç vaat etmez.</p>
+<h3>6. Tahminlerin niteliği</h3><p>Tahminler, geçmiş verilere dayanan istatistiksel olasılıklardır. <b>Kesin sonuç değildir ve yanılabilir.</b> "Güçlü tahmin", "Günün Altın Tahminleri" ve benzeri etiketler, modelin hesapladığı olasılığa dayanan istatistiksel işaretlerdir. Öneri veya tavsiye değildir.</p>
+<h3>7. Piyasa beklentisi bilgisi</h3><p>Gösterilen oranlar, modelin girdisi olarak ve piyasanın maç hakkındaki beklentisini anlatan bilgi olarak sunulur. Oynama çağrısı değildir. Oranlar gecikmeli, eksik ya da hatalı olabilir. Güncel ve bağlayıcı bilgi yalnızca resmî kaynaktadır.</p>
+<h3>8. Bağımsızlık</h3><p>BULUTOXX; Spor Toto Teşkilatı, iddaa, herhangi bir yetkili bayi, kulüp, lig, federasyon veya ESPN ile bağlantılı değildir. Bu kuruluşlar tarafından onaylanmamış ve desteklenmemiştir. Anılan ad ve markalar sahiplerine aittir ve yalnızca verinin kaynağını belirtmek için anılır.</p>
+<h3>9. Yasa dışı bahis</h3><p>Türkiye'de yasa dışı bahis oynatmak, buna aracılık etmek ve bunu teşvik etmek suçtur (7258 sayılı Kanun). Kumar da yasaktır. Uygulamayı ve içeriğini bu amaçlarla kullanmayın ve paylaşmayın. Destek için <b>115'i (YEDAM)</b> arayabilirsiniz.</p>
+<h3>10. Yasak kullanımlar</h3><p>Uygulamayı ve içeriğini şu amaçlarla kullanamazsınız: ticari amaç gütmek; tahmin veya kupon satmak, ücretli tahmin grupları kurmak; para veya ödül karşılığı yarışma düzenlemek; herhangi bir bahis hizmetinin reklamını yapmak; otomatik araçlarla toplu veri çekmek; uygulamanın işleyişini bozmak.</p>
+<h3>11. Veriler</h3><p>Hesap ve üyelik yoktur. ${LEGAL_DEV}nin sunucusu ve veri tabanı yoktur. Listeleriniz ve tercihleriniz yalnızca cihazınızın tarayıcı depolamasında tutulur. Tarayıcı verilerini silerseniz veya uygulamayı kaldırırsanız bu bilgiler kaybolabilir; yedekleri yoktur. Ayrıntılar için KVKK Aydınlatma Metni'ne bakın.</p>
+<h3>12. Üçüncü taraf hizmetler</h3><p>Veriler ve bazı bileşenler üçüncü taraf hizmetlerden gelir. Bu hizmetlerin çalışması, doğruluğu ve kendi veri işlemeleri ${LEGAL_DEV}nin denetiminde değildir.</p>
+<h3>13. Hizmetin durumu</h3><p>Uygulama "olduğu gibi" sunulur. Kesintisiz, hatasız veya güncel olacağı garanti edilmez. Uygulama önceden bildirim yapılmadan değiştirilebilir, durdurulabilir veya kaldırılabilir.</p>
+<h3>14. Sorumluluğun sınırı</h3><p>Kast ve ağır kusur hâlleri hariç olmak üzere, kanunun izin verdiği ölçüde ${LEGAL_DEV} şunlardan sorumlu değildir: tahmin, oran, skor veya bildirimlere dayanarak verdiğiniz kararlar ve bunların sonuçları (para kaybı dâhil); veri kaybı; üçüncü taraf hizmetlerden kaynaklanan sorunlar. <b>Kararlarınızın sorumluluğu size aittir.</b></p>
+<h3>15. Fikrî haklar</h3><p>Uygulamanın kodu, tasarımı, modeli ve metinleri ${LEGAL_DEV}ne aittir. Üçüncü taraf verileri, logolar ve markalar sahiplerine aittir. Hak sahibi olarak bir içeriğin kaldırılmasını istiyorsanız ${LEGAL_CONTACT()}. Talebiniz gecikmeden incelenir.</p>
+<h3>16. Değişiklikler</h3><p>Bu koşullar güncellenebilir. Önemli bir değişiklikte uygulama içinde yeniden onay istenir.</p>
+<h3>17. Uygulanacak hukuk ve iletişim</h3><p>Bu koşullara Türk hukuku uygulanır. İletişim: ${LEGAL_DEV}, ${LEGAL_CONTACT()}.</p>`;
+const KVKK_HTML=`
+<p><b>Son güncelleme:</b> ${TERMS_DATE}</p>
+<h3>1. Veri sorumlusu</h3><p>${LEGAL_DEV}. İletişim: ${LEGAL_CONTACT()}.</p>
+<h3>2. Geliştiricinin işlediği veriler</h3><p>${LEGAL_DEV} kişisel veri toplamaz, saklamaz ve paylaşmaz. Hesap, üyelik, çerez ve reklam yoktur. Uygulama sizden ad, telefon numarası, e-posta veya konum istemez. "Tahmin listem", "Sonuç takibim" ve tercihleriniz yalnızca cihazınızın tarayıcı depolamasında (localStorage) tutulur; geliştiriciye gönderilmez ve geliştirici bunlara erişemez. Bildirimler, cihazınızın kendi bildirim sistemiyle ve sizin izninizle gösterilir.</p>
+<h3>3. Dış hizmetlere bağlantılar</h3><p>Uygulamanın çalışması için cihazınız aşağıdaki hizmetlere doğrudan bağlanır. Her bağlantıda IP adresiniz, tarayıcı ve cihaz bilgisi ile isteğin zamanı, internetin işleyişi gereği ilgili hizmete iletilir. Bu hizmetler bu bilgileri kendi gizlilik politikalarına göre işler. Geliştirici bu bilgileri almaz ve göremez.</p>
+<ul><li><b>GitHub Pages (GitHub Inc., ABD):</b> uygulamanın kendisini sunar; her açılışta.</li>
+<li><b>iddaa sunucuları (Türkiye):</b> bülten, piyasa beklentisi bilgisi (oranlar) ve canlı skor; kullanım sırasında.</li>
+<li><b>ESPN (ABD):</b> canlı skor ve takım logoları; kullanım sırasında.</li>
+<li><b>abacus.jasoncameron.dev (yurt dışı):</b> yalnızca toplam kullanıcı ve yükleme sayısı; sizi tanımlayan bilgi gönderilmez.</li>
+<li><b>jsDelivr ve Hugging Face (yurt dışı):</b> yalnızca "Akıllı mod"u açarsanız yapay zekâ modeli indirilir; mesajlarınız cihazınızda kalır.</li>
+<li><b>cdnjs (Cloudflare, yurt dışı):</b> yalnızca paylaşım için QR kodu oluşturduğunuzda.</li></ul>
+<h3>4. Amaç ve hukuki sebep</h3><p>Bağlantılar, uygulamanın size sunulması için teknik olarak zorunludur (KVKK md. 5/2-c). Toplam kullanıcı sayısını ölçmek, geliştiricinin meşru menfaatine dayanır (KVKK md. 5/2-f). Açık rızaya dayanan bir işleme yoktur.</p>
+<h3>5. Yurt dışı</h3><p>Yurt dışındaki hizmetlere bağlantı, cihazınızın bu hizmetlere doğrudan istek göndermesiyle kurulur. Geliştirici tarafından yurt dışına veri aktarımı yapılmaz. "Akıllı mod" ve QR paylaşımı isteğe bağlıdır; kullanmazsanız bu hizmetlere bağlanılmaz.</p>
+<h3>6. Saklama</h3><p>Geliştirici veri saklamaz. Cihazınızdaki verileri istediğiniz zaman bu sayfadaki <b>"Bu cihazdaki BULUTOXX verilerini sil"</b> düğmesiyle veya tarayıcı verilerini temizleyerek silebilirsiniz.</p>
+<h3>7. Haklarınız (KVKK md. 11)</h3><ul><li>Kişisel verinizin işlenip işlenmediğini öğrenmek ve işlenmişse bilgi istemek;</li><li>işleme amacını ve amaca uygun kullanılıp kullanılmadığını öğrenmek;</li><li>verinin aktarıldığı üçüncü kişileri öğrenmek;</li><li>verinin düzeltilmesini, silinmesini veya yok edilmesini ve bunun aktarılan kişilere bildirilmesini istemek;</li><li>yalnızca otomatik sistemlerle yapılan analizin aleyhinize sonucuna itiraz etmek;</li><li>kanuna aykırı işleme yüzünden doğan zararın giderilmesini istemek.</li></ul>
+<h3>8. Başvuru</h3><p>Taleplerinizi ${LEGAL_CONTACT()} üzerinden yazılı olarak iletebilirsiniz. Başvurular en geç 30 gün içinde ücretsiz olarak sonuçlandırılır (KVKK md. 13). Yanıt alamazsanız veya yanıtı yetersiz bulursanız Kişisel Verileri Koruma Kurulu'na şikâyette bulunabilirsiniz (KVKK md. 14).</p>`;
 
 function termsAccepted(){ try{ const t=JSON.parse(localStorage.getItem("bx-terms")||"null"); return t && t.v===TERMS_VER; }catch(e){ return false; } }
+function legalWipeBtn(){ return `<div class="lg-wipe"><button type="button" class="btn ghost" data-wipe="1">🗑 Bu cihazdaki BULUTOXX verilerini sil</button><small>Listelerin, takip ettiklerin, tercihlerin ve onayın silinir; uygulama yeniden başlar.</small></div>`; }
+document.addEventListener("click",e=>{ const b=e.target.closest("[data-wipe]"); if(!b) return;
+  if(b.dataset.wipe==="1"){ b.dataset.wipe="2"; b.textContent="Emin misin? Silmek için tekrar dokun"; b.classList.add("danger"); setTimeout(()=>{ if(b.dataset.wipe==="2"){ b.dataset.wipe="1"; b.textContent="🗑 Bu cihazdaki BULUTOXX verilerini sil"; b.classList.remove("danger"); } },5000); return; }
+  try{ Object.keys(localStorage).filter(k=>k.startsWith("bx-")).forEach(k=>localStorage.removeItem(k)); }catch(_){}
+  toast("Bu cihazdaki BULUTOXX verileri silindi"); setTimeout(()=>location.reload(),900); });
 function showTerms(gate){
+  const old=$("gate"); if(old) old.remove();
   const el=document.createElement("div"); el.className="gate"; el.id="gate";
   el.innerHTML=`<div class="gbox" role="dialog" aria-modal="true" aria-labelledby="gT">
     <img class="glogo" src="icons/logo-full.png" alt="BULUTOXX">
-    <h2 id="gT">${gate?"Başlamadan önce":"Kullanım koşulları"}</h2>
+    <h2 id="gT">${gate?"BULUTOXX'a hoş geldin":"Kullanım koşulları ve KVKK"}</h2>
+    ${gate?`<p class="note" style="text-align:center;margin-top:-4px">Devam etmeden önce lütfen oku.</p>`:""}
     <div class="gsum">
-      <div><span>📊</span><p>Tahminler istatistiksel olasılıktır, <b>kesin sonuç veya bahis tavsiyesi değildir</b>.</p></div>
-      <div><span>⚖️</span><p>Verdiğin kararlar ve olası kayıplar <b>senin sorumluluğundadır</b>.</p></div>
-      <div><span>🔞</span><p><b>18 yaş</b> ve üzeri içindir. Yalnızca yasal bahis kanallarını kullan.</p></div>
-      <div><span>💙</span><p>Kontrolü kaybettiğini hissedersen: <b>YEDAM 115</b> (ücretsiz, gizli).</p></div>
+      <div><span>🧪</span><p>BULUTOXX yalnızca <b>hobi amaçlı bir maç tahmini ve takip aracıdır. Bahis amaçlı değildir.</b></p></div>
+      <div><span>🚫</span><p>Bahis almaz, para tutmaz. Hiçbir bahis sitesine veya bayiye yönlendirmez.</p></div>
+      <div><span>📊</span><p>Tahminler istatistiksel olasılıktır. <b>Yanılabilir ve tavsiye değildir.</b></p></div>
+      <div><span>📈</span><p>Oranlar yalnızca piyasa beklentisi bilgisidir. Oynama çağrısı değildir.</p></div>
+      <div><span>🔒</span><p>Hesap yok. Listelerin yalnızca bu cihazda kalır.</p></div>
+      <div><span>⚖️</span><p><b>Yasa dışı bahis suçtur.</b> Destek: <b>115 (YEDAM)</b>.</p></div>
     </div>
-    <details class="gfull"><summary>Koşulların tamamını oku</summary><div class="terms">${TERMS_HTML}</div></details>
-    ${gate?`<label class="gchk"><input type="checkbox" id="g18"><span>18 yaşından büyüğüm</span></label>
-    <label class="gchk"><input type="checkbox" id="gOk"><span>Kullanım koşullarını ve sorumluluk reddini okudum, kabul ediyorum</span></label>
-    <button class="btn" id="gGo" type="button" disabled>Kabul et ve devam et</button>
-    <p class="note" style="text-align:center">Kabul etmezsen uygulama kullanılamaz.</p>`
-    :`<p class="note">Kabul tarihi: ${(()=>{ try{ const t=JSON.parse(localStorage.getItem("bx-terms")); return new Date(t.at).toLocaleString("tr-TR"); }catch(e){ return "–"; } })()}</p>
+    <details class="gfull" id="gTerms"><summary>Kullanım Koşulları ve Sorumluluk Reddi (tam metin)</summary><div class="terms">${TERMS_HTML}</div></details>
+    <details class="gfull" id="gKvkk"><summary>KVKK Aydınlatma Metni (tam metin)</summary><div class="terms">${KVKK_HTML}</div></details>
+    ${gate?`<label class="gchk"><input type="checkbox" id="g18"><span>18 yaşını doldurdum.</span></label>
+    <label class="gchk"><input type="checkbox" id="gNb"><span>BULUTOXX'un bahis amaçlı olmadığını ve tahminlerin kesin olmadığını anladım. Kararlarımın sorumluluğu bana aittir.</span></label>
+    <label class="gchk"><input type="checkbox" id="gOk" disabled><span>Kullanım Koşulları'nı okudum ve kabul ediyorum. <small class="gneed" id="gOkN">(önce yukarıdaki tam metni aç)</small></span></label>
+    <label class="gchk"><input type="checkbox" id="gKv" disabled><span>KVKK Aydınlatma Metni'ni okudum ve anladım. <small class="gneed" id="gKvN">(önce yukarıdaki tam metni aç)</small></span></label>
+    <button class="btn" id="gGo" type="button" disabled>Devam et</button>
+    <p class="note" style="text-align:center">Ücretsiz · Reklamsız · Ticari değildir. Resmî kurumlar, kulüpler ve bahis şirketleriyle bağlantısı yoktur. Kabul etmezsen uygulama kullanılamaz.</p>`
+    :`<p class="note">Kabul ettiğin sürüm ve tarih: ${(()=>{ try{ const t=JSON.parse(localStorage.getItem("bx-terms")); return "v"+t.v+" · "+new Date(t.at).toLocaleString("tr-TR")+(t.inst?" · yükleme onayı "+new Date(t.inst).toLocaleString("tr-TR"):""); }catch(e){ return "–"; } })()}</p>
+    ${legalWipeBtn()}
     <button class="btn" id="gGo" type="button">Kapat</button>`}
   </div>`;
   document.body.appendChild(el);
   const go=$("gGo");
   if(gate){
-    const upd=()=>{ go.disabled=!($("g18").checked && $("gOk").checked); };
-    $("g18").onchange=upd; $("gOk").onchange=upd;
-    go.onclick=()=>{ try{ localStorage.setItem("bx-terms",JSON.stringify({v:TERMS_VER, at:Date.now()})); }catch(e){}
+    const upd=()=>{ go.disabled=!["g18","gNb","gOk","gKv"].every(id=>$(id).checked); };
+    ["g18","gNb","gOk","gKv"].forEach(id=>$(id).onchange=upd);
+    // koşullar görülmeden onay kutusu işaretlenemez (TBK 20-25 genel işlem koşulları)
+    $("gTerms").addEventListener("toggle",()=>{ if($("gTerms").open){ $("gOk").disabled=false; const n=$("gOkN"); if(n) n.remove(); } });
+    $("gKvkk").addEventListener("toggle",()=>{ if($("gKvkk").open){ $("gKv").disabled=false; const n=$("gKvN"); if(n) n.remove(); } });
+    go.onclick=()=>{ try{ localStorage.setItem("bx-terms",JSON.stringify({v:TERMS_VER, at:Date.now(), kvkk:true})); }catch(e){}
       Count.call("hit","accept"); buzz(10); Sound.ready(); el.classList.add("out"); setTimeout(()=>el.remove(),400);
       if(window._pendInst){ window._pendInst=false; setTimeout(()=>doInstall(),420); } };
   } else {
     go.onclick=()=>{ el.classList.add("out"); setTimeout(()=>el.remove(),300); };
   }
 }
+
 // İlk açılışta (veya koşullar değişince) onay zorunlu
 if(!termsAccepted()) setTimeout(()=>showTerms(true), 900);
 
@@ -3024,9 +3063,8 @@ document.querySelectorAll("#installBtn,#installPill,#rhInstall").forEach(b=>b&&(
 (function mountLegal(){
   const wrap=document.querySelector("#v-rehber .wrap"); if(!wrap) return;
   const p=document.createElement("div"); p.className="panel"; p.id="legal";
-  p.innerHTML=`<h2>Kullanım koşulları ve sorumluluk reddi</h2>
-    <p class="note">Sürüm ${TERMS_VER} · ${TERMS_DATE}</p>
-    <div class="terms">${TERMS_HTML}</div>`;
+  p.innerHTML=`<h2>Kullanım Koşulları ve Sorumluluk Reddi</h2>
+    <div class="terms">${TERMS_HTML}</div><h2 style="margin-top:18px">KVKK Aydınlatma Metni</h2><div class="terms">${KVKK_HTML}</div>${legalWipeBtn()}`;
   wrap.appendChild(p);
 })();
 
@@ -3900,7 +3938,7 @@ function bkOpen(f){
     <div class="actions"><button class="btn" type="button" id="bkShare">Arkadaşına gönder</button></div>`;
   }
   box.innerHTML=`<div class="wrap"><div class="bkd-top"><button type="button" id="bkBack" aria-label="Geri"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><b>${BK_FLAG[f.lg]||"🏀"} ${esc(f._comp||bkLg(f.lg))}${f.round?` · ${esc(f.round)}`:""}</b></div>${body}
-    <p class="disc">Tahminler istatistiksel olasılıktır, kesin sonuç veya bahis tavsiyesi değildir · 18+</p></div>`;
+    <p class="disc">Hobi amaçlı istatistiksel tahmindir, bahis tavsiyesi değildir. Oranlar yalnız piyasa beklentisi bilgisidir. 18+ · Yasa dışı bahis suçtur · Destek: 115</p></div>`;
   document.body.appendChild(box); document.body.style.overflow="hidden";
   const close=()=>{ box.remove(); document.body.style.overflow=""; };
   $("bkBack").onclick=()=>{ Sound.tap(); close(); };
@@ -4445,7 +4483,7 @@ function idlRow(m){
     : (m.hq.length?m.hq.map((q,i)=>`${i+1}Ç ${q}-${m.aq[i]??0}`).join(" "):"");
   let pr="";
   if(P){ const b=K.best, pc=pc9(b.p);
-    pr=`<div class="lv-pr">🔮 <b>${esc(P.ft)}</b> <span class="pp">1 %${pc9(P.H)} · X %${pc9(P.D)} · 2 %${pc9(P.A)}</span> <span class="${pc>=70?"hit":"mid"}">${pc>=70?"🎯":"⚖️"} ${esc(b.n)} %${pc}${b.val?" 💎":""}</span>${st?` <small>${esc(st)}</small>`:""}</div>`; }
+    pr=`<div class="lv-pr">🔮 <b>${esc(P.ft)}</b> <span class="pp">1 %${pc9(P.H)} · X %${pc9(P.D)} · 2 %${pc9(P.A)}</span> <span class="${pc>=70?"hit":"mid"}">${pc>=70?"🎯":"⚖️"} ${esc(b.n)} %${pc}</span>${st?` <small>${esc(st)}</small>`:""}</div>`; }
   else if(m.sp===2){ const f=BK.data&&(BK.data.fixtures||[]).find(x=>x.iid===m.id); const p=f&&bkPredict(f);
     let r=null; if(p) r=bkLivePred({mar:p.mar,sm:p.sm,mh:p.mh,ma:p.ma,L:p.L},{state:"in",clock:`${Math.max(m.hq.length,1)}th ${m.min||0}:${String(m.sec||0).padStart(2,"0")}`,hs:m.hs,as:m.as});
     if(r){ const pc=pc9(Math.max(r.pH,r.pA)); pr=`<div class="lv-pr">🔮 <b>${r.fh}-${r.fa}</b> <span class="${pc>=70?"hit":"mid"}">${pc>=70?"🎯":"⚖️"} MS ${r.pH>=r.pA?"1":"2"} %${pc}</span>${st?` <small>${esc(st)}</small>`:""}</div>`; }
@@ -4820,7 +4858,7 @@ const fair=p=>p>0.005?(1/p).toFixed(2):"–";
 function mOpt(key,name,p,o,m){
   const inCp=CP.items.some(c=>c.k===cpKey(m)&&c.mk===key), val=o&&p*o>1.08, t=ptier(p);
   return `<button type="button" class="mo ${inCp?"sel":""} ${val?"val":""} ${t}" data-mk="${key}" data-o="${o||(p>0.005?(1/p).toFixed(2):"")}" data-p="${p}" ${o?"":'data-fair="1"'}>
-    <span class="mo-n">${t==="t3"?"🔥 ":""}${esc(name)}</span><b>${o?(+o).toFixed(2):fair(p)}</b><small>%${pc9(p)}${o?"":" · adil"}${val?" 💎":""}</small></button>`;
+    <span class="mo-n">${t==="t3"?"🔥 ":""}${esc(name)}</span><b>${o?(+o).toFixed(2):fair(p)}</b><small>%${pc9(p)}${o?"":" · adil"}</small></button>`;
 }
 function mGroup(title,opts,cols){ return `<div class="mg"><h4>${esc(title)}</h4><div class="mg-o" style="grid-template-columns:repeat(${cols||opts.length},1fr)">${opts.join("")}</div></div>`; }
 const MS={m:null,f:null,tab:"tahmin",live:null};
@@ -4855,7 +4893,7 @@ function msRender(){
     </div>
     <div class="ms-tabs" role="tablist">${tabs.map(([t,n])=>`<button type="button" role="tab" data-t="${t}" aria-selected="${MS.tab===t}">${n}</button>`).join("")}</div>
     <div class="ms-body">${MS.tab==="tahmin"?msTahmin(m,f,r,lv):MS.tab==="oran"?msOran(m,f,r,lv):`<div id="msForm">${msFormHtml(FP)}</div>`}</div>
-    <p class="disc">Olasılıklar BULUTOXX modelinindir; kesinlik içermez. Oranlar resmi iddaa bülteninden · 18+</p>`;
+    <p class="disc">Hobi amaçlı istatistiksel tahmindir, bahis tavsiyesi değildir. Oranlar yalnız piyasa beklentisi bilgisidir. 18+ · Yasa dışı bahis suçtur · Destek: 115</p>`;
   el.querySelector(".ms-x").onclick=()=>{ try{ history.back(); }catch(e){ closeMatch(); } setTimeout(()=>{ if(MS.m) closeMatch(); },120); };
   el.querySelectorAll(".ms-tabs button").forEach(b=>b.onclick=()=>{ MS.tab=b.dataset.t; Sound.tap(); msRender(); if(MS.tab==="form"&&f&&f.iid) msForm(f.iid); });
   el.querySelectorAll(".mo").forEach(b=>b.onclick=()=>{ const mm=m.sp?{lg:"i"+m.ci,h:m.h,a:m.a,dt}:m; cpToggle(mm,b.dataset.mk,+b.dataset.o,+b.dataset.p); if(typeof paintCoupon==="function") paintCoupon(); msRender(); });
@@ -5090,7 +5128,7 @@ if((location.hash||"")==="#sonuclar") setTimeout(()=>$("navRes").click(),200);
 // =====================================================================
 // BULUTOXX v35: Otomatik sürüm güncelleme — yeni sürüm yayınlanınca uygulama kendini yeniler
 // =====================================================================
-const APP_V="2026-10-24.64";
+const APP_V="2026-10-24.65";
 (function autoUpdate(){
   let shown=false;
   async function check(auto){
@@ -6058,7 +6096,7 @@ menuOrganize(); oynBadge();
       b.after(m);
       m.onclick=ev=>{ const x=ev.target.closest("[data-o]"); if(!x) return; const o=x.dataset.o; m.remove();
         if(o==="upd"){ try{ doRefresh(); }catch(_){} return; }
-        if(o==="help"){ toast("✅ Güçlü tahmin: olasılık %70+ · 👍 Tahmin: %58+ · ⏸️ Pas: net tahmin yok · 💎 Piyasadan farklı: BULUTOXX olasılığı piyasa beklentisinden belirgin yüksek · 🥇 Altın: BULUTOXX'un en güvendiği seçim"); return; }
+        if(o==="help"){ toast("✅ Güçlü tahmin: olasılık %70+ · 👍 Tahmin: %58+ · ⏸️ Pas: net tahmin yok · 🥇 Altın: BULUTOXX'un en güvendiği seçim"); return; }
         if(TL.get()!==o){ const so=h.querySelector(".tb-sort"); if(so) so.click(); else { TL.set(o); renderBulten(); } } };
       setTimeout(()=>document.addEventListener("click",function cl(ev){ if(!ev.target.closest("#btMoreMenu")){ const mm=$("btMoreMenu"); if(mm) mm.remove(); document.removeEventListener("click",cl); } }),0); }; }
   try{ if(window.lgChipPaint) lgChipPaint(); }catch(e){}
@@ -6177,12 +6215,30 @@ karneOzetHtml=function(){ let h=_karneOzetG(); const K=GOLD.karne;
   return h.includes('<div class="kz-r">')?h.replace('<div class="kz-r">','<div class="kz-r">'+line):h.replace(/<\/div>$/,`<div class="kz-r">${line}</div></div>`); };
 
 // ---------- v64: yalnızca hobi amaçlı tahmin ve takip aracı — bahis çağrışımlı işlevler kapalı ----------
-const LEGAL_SHARE="BULUTOXX hobi amaçlı maç tahmini ve takip aracıdır; bahis amaçlı değildir, bahis almaz · Tahminler kesin değildir · 18+ · Yasa dışı bahis suçtur";
+const LEGAL_SHARE="BULUTOXX: hobi amaçlı maç tahmini ve takip aracı. Bahis amaçlı değildir. 18+";
 // Bulut: hedef orana göre kupon hazırlamaz
 const _botAnswerL=botAnswer;
 botAnswer=async function(raw){ let I=null; try{ I=botIntent(raw,BOT.ctx); }catch(e){}
   if(I&&I.target) return {html:`BULUTOXX bir bahis aracı değil${botName()}; hedef orana göre liste hazırlamıyorum. İstersen tutma olasılığı en yüksek tahminleri getireyim. ☁️`, chips:["Sıradaki maçı öner","3 maçlık liste yap"]};
   return _botAnswerL(raw); };
+
+// ---------- v65: ana ekrana ekleme (yükleme) her seferinde ayrı onay ----------
+const _doInstallL=doInstall;
+doInstall=function(){ if(!termsAccepted()){ window._pendInst=true; showTerms(true); return; }
+  const old=$("instGate"); if(old) old.remove();
+  const el=document.createElement("div"); el.className="gate"; el.id="instGate";
+  el.innerHTML=`<div class="gbox" role="dialog" aria-modal="true" aria-labelledby="iT"><img class="glogo" src="icons/logo-full.png" alt="BULUTOXX">
+    <h2 id="iT">BULUTOXX'u ana ekrana ekle</h2>
+    <p>BULUTOXX ana ekranına bir uygulama simgesi olarak eklenir. Çalışması için gereken dosyalar cihazında saklanır ve listelerin yalnızca bu cihazda kalır. Simgeyi kaldırmak veya tarayıcı verilerini silmek listelerini de silebilir. <b>BULUTOXX hobi amaçlı bir maç tahmini ve takip aracıdır; bahis amaçlı değildir.</b></p>
+    <label class="gchk"><input type="checkbox" id="iOk"><span>Anladım. BULUTOXX'u yalnızca maç tahmini ve takip amacıyla kullanacağım.</span></label>
+    <button class="btn" id="iGo" type="button" disabled>Ana ekrana ekle</button><button class="btn ghost" id="iNo" type="button">Şimdi değil</button></div>`;
+  document.body.appendChild(el);
+  $("iOk").onchange=()=>{ $("iGo").disabled=!$("iOk").checked; };
+  $("iNo").onclick=()=>{ el.classList.add("out"); setTimeout(()=>el.remove(),300); };
+  $("iGo").onclick=()=>{ try{ const t=JSON.parse(localStorage.getItem("bx-terms")||"{}"); t.inst=Date.now(); localStorage.setItem("bx-terms",JSON.stringify(t)); }catch(e){}
+    el.classList.add("out"); setTimeout(()=>el.remove(),300); buzz(10); return _doInstallL(); };
+};
+document.querySelectorAll("#installBtn,#installPill,#rhInstall").forEach(b=>b&&(b.onclick=()=>doInstall()));
 </script>
 
 </body>
