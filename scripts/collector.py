@@ -104,7 +104,7 @@ def live_snapshot():
         P = live_pred(L[0], L[1], hs, as_, t, rc, h1)
         cands = []
         for m in e.get("m") or []:
-            if m.get("s") != 1: continue
+            if m.get("s") != 1 or m.get("t") != 4: continue     # yalnız canlı pazarlar
             v = {o.get("n"): o.get("odd") for o in m.get("o") or [] if o.get("odd") and o["odd"] > 1.01}
             if m.get("st") in (4, 1) and all(x in v for x in ("1", "0", "2")):
                 cands += [("1", P["H"], v["1"], None), ("X", P["D"], v["0"], None), ("2", P["A"], v["2"], None)]

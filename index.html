@@ -4241,7 +4241,9 @@ const IDL={ live:{1:[],2:[]}, byId:{1:{},2:{}}, at:{1:0,2:0}, ok:{1:false,2:fals
 };
 function idlOdds(e, sp){
   const o={}; let ous=[];
+  const isLive=e.s===1;
   for(const m of (e.m||[])){
+    if(isLive && m.t!==4) continue;     // canlı maçta yalnız canlı pazarlar (t=4); maç öncesi pazarlar eski oranla listede kalabiliyor
     const v={}; (m.o||[]).forEach(x=>{ if(x.odd>1.01) v[x.n]=x.odd; });
     const lock=m.s!==1;
     if(sp===1){
@@ -4921,7 +4923,7 @@ if((location.hash||"")==="#sonuclar") setTimeout(()=>$("navRes").click(),200);
 // =====================================================================
 // BULUTOXX v35: Otomatik sürüm güncelleme — yeni sürüm yayınlanınca uygulama kendini yeniler
 // =====================================================================
-const APP_V="2026-10-24.45";
+const APP_V="2026-10-24.46";
 (function autoUpdate(){
   let shown=false;
   async function check(auto){
