@@ -8,13 +8,13 @@ jobs:
   b:
     if: contains(github.event.head_commit.message, '[brain]')
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 120
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: { python-version: "3.12" }
       - run: pip install -q torch --index-url https://download.pytorch.org/whl/cpu && pip install -q -U transformers accelerate
-      - run: python lab/brain_probe.py Qwen/Qwen3.5-0.8B Qwen/Qwen3.5-2B Qwen/Qwen3-1.7B
+      - run: timeout 75m python lab/brain_probe.py Qwen/Qwen3.5-0.8B Qwen/Qwen3.5-2B
         continue-on-error: true
       - if: always()
         run: |

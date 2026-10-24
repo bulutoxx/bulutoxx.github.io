@@ -16,6 +16,7 @@ def mlc_size(mid):
 
 for mid in ["Qwen3.5-0.8B-q4f16_1-MLC", "Qwen3.5-0.8B-q4f32_1-MLC", "Qwen3.5-2B-q4f16_1-MLC", "Qwen3-1.7B-q4f16_1-MLC", "gemma3-1b-it-q4f16_1-MLC", "Llama-3.2-1B-Instruct-q4f16_1-MLC"]:
     out["boyut"][mid] = mlc_size(mid); print(mid, out["boyut"][mid], flush=True)
+json.dump(out, open(os.path.join(HERE, "brain_probe.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
 
 import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM
@@ -40,6 +41,8 @@ for name in sys.argv[1:]:
         ok = j.get("niyet") == x["niyet"]
         res.append({"q": x["q"], "beklenen": x["niyet"], "cikti": txt[:220], "ok": ok, "sn": round(time.time() - t1, 1)})
         print(name, ok, x["q"], "→", txt[:160].replace("\n", " "), flush=True)
+        out["modeller"][name] = {"isabet": round(sum(r["ok"] for r in res) / len(res), 3), "n": len(res), "sure": round(time.time() - t0), "sonuclar": res}
+        json.dump(out, open(os.path.join(HERE, "brain_probe.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     out["modeller"][name] = {"isabet": round(sum(r["ok"] for r in res) / len(res), 3), "sure": round(time.time() - t0), "sonuclar": res}
     json.dump(out, open(os.path.join(HERE, "brain_probe.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
 json.dump(out, open(os.path.join(HERE, "brain_probe.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
