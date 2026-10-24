@@ -1,22 +1,22 @@
-import json, re, urllib.request
-H = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/130.0 Safari/537.36"}
-def get(u): return urllib.request.urlopen(urllib.request.Request(u, headers=H), timeout=30).read().decode("utf-8", "replace")
-out = {"hosts": set(), "paths": set(), "ws": set()}
-pages = ["https://www.iddaa.com/", "https://www.iddaa.com/program/canli/futbol", "https://www.iddaa.com/canli-skor"]
-js = set()
-for p in pages:
+import json, urllib.request
+H = {"User-Agent": "Mozilla/5.0 Chrome/130", "Accept": "application/json", "Origin": "https://bulutoxx.github.io"}
+def get(u):
+    r = urllib.request.urlopen(urllib.request.Request(u, headers=H), timeout=30); b = r.read()
+    return r.status, r.headers.get("access-control-allow-origin"), b.decode("utf-8", "replace")
+ev = json.loads(get("https://sportsbookv2.iddaa.com/sportsbook/events?st=1&type=1&version=0")[2])["data"]["events"]
+lv = [e for e in ev if e.get("s") == 1][:2]
+out = {"live": [{k: v for k, v in e.items() if k != "m"} for e in lv]}
+e = lv[0] if lv else ev[0]
+i, bri, bgi = e["i"], e.get("bri"), e.get("bgi")
+S, B = "https://statisticsv2.iddaa.com", "https://sportsbookv2.iddaa.com"
+urls = [f"{B}/sportsbook/live-events-for-widget", f"{B}/sportsbook/live-events-for-widget?st=1", f"{B}/sportsbook/upcoming-events-for-widget",
+        f"{B}/sportsbook/event/{i}", f"{B}/sportsbook/played-event-percentage",
+        f"{S}/live-results/sports", f"{S}/live-results/sports/1", f"{S}/statistics/live-results/sports/1", f"{B}/live-results/sports/1",
+        f"{S}/statistics/eventsummary/{i}", f"{S}/statistics/eventsummary/1/{i}", f"{S}/statistics/eventsummary/{bri}",
+        f"{S}/statistics/soccer/match-card/{i}", f"{S}/statistics/soccer/match-card/{bri}", f"{S}/statistics/eventcommentary/{i}",
+        f"https://commonv2.iddaa.com/live-results/sports", f"https://contentv2.iddaa.com/live-results/sports"]
+for u in urls:
     try:
-        h = get(p); out.setdefault("pages", {})[p] = len(h)
-        js |= {("https://www.iddaa.com" + s) if s.startswith("/") else s for s in re.findall(r'src="([^"]+\.js)"', h)}
-    except Exception as e: out.setdefault("pages", {})[p] = str(e)[:100]
-out["n_js"] = len(js)
-for u in sorted(js)[:80]:
-    try: t = get(u)
-    except Exception: continue
-    out["hosts"] |= set(re.findall(r'https?://[a-z0-9.-]*iddaa\.com', t))
-    out["ws"] |= set(re.findall(r'wss?://[a-z0-9./-]+', t))
-    for m in re.findall(r'["\'`](/[a-zA-Z0-9_\-/]*(?:score|live|canli|statistic|event|match)[a-zA-Z0-9_\-/]*)', t): out["paths"].add(m)
-    for m in re.finditer(r'.{80}(?:livescore|liveScore|scoreboard|matchTracker|getScores).{120}', t): out.setdefault("ctx", []).append(m.group(0)[:200])
-out = {k: sorted(v) if isinstance(v, set) else v for k, v in out.items()}
-out["ctx"] = out.get("ctx", [])[:40]
+        st, a, t = get(u); out[u] = {"st": st, "acao": a, "len": len(t), "head": t[:1500]}
+    except Exception as ex: out[u] = {"hata": str(ex)[:120]}
 json.dump(out, open("lab/iddaa_probe.json", "w"), ensure_ascii=False, indent=1)
