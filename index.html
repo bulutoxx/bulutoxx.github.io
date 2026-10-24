@@ -921,6 +921,80 @@ nav.tabs #liveBadge{background:#1FBF5B}
 .ib-p{font-size:11.5px}
 .ib-od span{white-space:nowrap;overflow:hidden}.ib-od span.val small{color:var(--cyan)}
 .ib-h{padding:6px 10px;font-size:12.5px}
+/* v32: maç sayfası */
+.msheet{position:fixed;inset:0;z-index:60;background:var(--bg);overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 0 calc(30px + env(safe-area-inset-bottom,0px));animation:msin .22s var(--ease)}
+@keyframes msin{from{transform:translateY(24px);opacity:0}to{transform:none;opacity:1}}
+body.ms-open{overflow:hidden}
+.ms-top{position:sticky;top:0;z-index:2;display:flex;align-items:center;gap:10px;padding:calc(10px + env(safe-area-inset-top,0px)) 14px 10px;background:rgba(3,6,13,.94);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+.ms-x{width:38px;height:38px;border-radius:11px;background:rgba(255,255,255,.07);border:1px solid var(--line);font-size:26px;line-height:1;color:var(--ink)}
+.ms-lg{flex:1;min-width:0;font-weight:700;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;gap:6px}
+.ms-hd{padding:14px 16px 8px;background:linear-gradient(180deg,#0B2A44,rgba(3,6,13,0))}
+.ms-when{text-align:center;font-size:13px;color:var(--ink2);margin-bottom:12px}
+.ms-when b{color:var(--ink)}.ms-live{color:#3BEA7E;font-weight:800}
+.ms-teams{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px}
+.ms-t{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;min-width:0}
+.ms-t img,.ms-t .ni{width:48px;height:48px;object-fit:contain;border-radius:50%}
+.ms-t .ni{display:grid;place-items:center;background:var(--surface2);font-style:normal;font-weight:800}
+.ms-t b{font-size:14.5px;line-height:1.2}
+.ms-sc{display:flex;flex-direction:column;align-items:center;min-width:84px;padding:8px 10px;border-radius:14px;background:rgba(255,255,255,.06);border:1px solid var(--line)}
+.ms-sc small{font-size:10.5px;color:var(--ink3);text-transform:uppercase;letter-spacing:.05em}
+.ms-sc b{font:800 26px var(--round)}.ms-sc i{font-style:normal;font-size:12px;color:var(--ink2)}
+.ms-sc.live{background:linear-gradient(135deg,#1FBF5B,#14984A);border-color:transparent;color:#fff}.ms-sc.live i{color:#fff}
+.ms-tabs{position:sticky;top:calc(58px + env(safe-area-inset-top,0px));z-index:1;display:flex;margin:6px 16px 10px;padding:3px;border-radius:12px;background:var(--surface);border:1px solid var(--line)}
+.ms-tabs button{flex:1;padding:9px;border-radius:9px;font-weight:700;font-size:14px;color:var(--ink2)}
+.ms-tabs button[aria-selected="true"]{background:var(--grad);color:#fff}
+.ms-body{padding:0 16px;display:flex;flex-direction:column;gap:10px}
+.ms-card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:10px}
+.ms-card h4,.mg h4{margin:0;font-size:12.5px;color:var(--ink3);text-transform:uppercase;letter-spacing:.05em}
+.ms-big{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center}
+.ms-big div{background:rgba(255,255,255,.04);border-radius:12px;padding:8px 4px;display:flex;flex-direction:column}
+.ms-big small{font-size:11px;color:var(--ink3)}.ms-big b{font:800 22px var(--round)}.ms-big i{font-style:normal;font-size:11.5px;color:var(--cyan)}
+.ms-bar{display:flex;height:30px;border-radius:9px;overflow:hidden;font-size:12px;font-weight:700}
+.ms-bar span{display:flex;align-items:center;justify-content:center;gap:4px;min-width:44px;white-space:nowrap}
+.ms-bar .h{background:#1F6FEB}.ms-bar .d{background:#5B6476}.ms-bar .a{background:#C2410C}
+.ms-kv{display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:13px;color:var(--ink2)}
+.ms-kv b{color:var(--ink)}
+.ms-pick{padding:8px 10px;border-radius:10px;background:rgba(255,176,32,.12);color:var(--amber);font-weight:700;font-size:13.5px}
+.ms-pick.g{background:rgba(43,212,107,.14);color:#3BEA7E}
+.mg{display:flex;flex-direction:column;gap:6px}
+.mg-o{display:grid;gap:6px}
+.mo{display:flex;flex-direction:column;align-items:center;padding:7px 4px;border-radius:10px;background:var(--surface);border:1px solid var(--line);line-height:1.15}
+.mo-n{font-size:11px;color:var(--ink3)}.mo b{font:800 16px var(--round)}.mo small{font-size:10.5px;color:var(--cyan)}
+.mo[data-fair] b{color:var(--ink2);font-weight:700}
+.mo.val{border-color:rgba(34,211,255,.5)}
+.mo.sel{background:#FFD60A;border-color:#FFD60A;color:#111}.mo.sel .mo-n,.mo.sel small,.mo.sel b{color:#111}
+.msc-w{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.msc{display:flex;justify-content:space-between;padding:7px 10px;border-radius:9px;background:var(--surface);border:1px solid var(--line);font-size:13px}
+.msc small{color:var(--cyan)}
+.ms-leg{margin:0}
+.ff{display:flex;align-items:center;justify-content:space-between;gap:8px}.ff b{font-size:14px}.ff span{display:flex;gap:4px}
+.fr{display:grid;grid-template-columns:auto 1fr auto auto;gap:8px;align-items:center;font-size:13px}.fr small{color:var(--ink3);font-size:11px}
+.msheet .disc{padding:0 16px}
+/* v33: ortada kupon düğmesi, Sonuçlar */
+nav.tabs .kc-btn{position:relative}
+nav.tabs .kc-btn .kc{position:absolute;left:50%;top:-22px;transform:translateX(-50%);width:66px;height:66px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background:var(--bg2);border:3px solid #2F7BFF;box-shadow:0 6px 22px -6px rgba(47,123,255,.8),0 0 0 4px var(--bg);color:var(--ink);line-height:1.1}
+nav.tabs .kc-btn .kc b{font:700 11px var(--round);color:var(--ink2)}
+nav.tabs .kc-btn .kc i{font:800 15px var(--round);font-style:normal;color:#fff}
+nav.tabs .kc-btn.has .kc{border-color:#2BD46B;background:linear-gradient(160deg,#103b24,#0a1f14);box-shadow:0 6px 22px -6px rgba(43,212,107,.8),0 0 0 4px var(--bg)}
+nav.tabs .kc-btn.has .kc i{color:#3BEA7E}
+nav.tabs .kc-btn[aria-current="page"]::before{display:none}
+nav.tabs .kc-btn #cpBadge{display:none!important}
+nav.tabs .kc-btn{min-height:52px}
+.cpbar{display:none!important}
+.rs-head .rs-title{flex:1;font:800 18px var(--round)}
+.rs-sum{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:4px 0 10px}
+.rs-sum div{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:8px 4px;text-align:center;display:flex;flex-direction:column}
+.rs-sum small{font-size:10.5px;color:var(--ink3)}.rs-sum b{font:800 18px var(--round)}.rs-sum i{font-style:normal;font-size:10px;color:var(--ink3)}
+.rs-r{padding:7px 10px 8px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:4px}
+.rs-sc{flex:none;min-width:48px;text-align:center;font:800 15px var(--round);background:rgba(255,255,255,.08);border-radius:8px;padding:3px 6px;display:flex;flex-direction:column;line-height:1.1}
+.rs-sc small{font:600 9.5px var(--font);color:var(--ink3)}
+.rs-p{font-size:11.5px;color:var(--ink2);display:flex;flex-wrap:wrap;gap:4px 6px;align-items:center}
+.rs-np{color:var(--ink3)}
+.rs-m{padding:1px 6px;border-radius:6px;font-weight:700;font-size:11px}
+.rs-m.y{background:rgba(43,212,107,.15);color:#3BEA7E}.rs-m.n{background:rgba(255,77,94,.13);color:#ff8a95}
+main.page{padding-bottom:calc(120px + env(safe-area-inset-bottom,0px))!important}
+.ib-od span.val{box-shadow:inset 0 -2px 0 var(--cyan)}
 </style>
 </head>
 <body>
@@ -3106,7 +3180,7 @@ function renderBulten(){
           ${oddBtn(ou&&ou[0],p&&p.o25,"2.5 Ü")}${oddBtn(ou&&ou[1],p&&1-p.o25,"2.5 A")}</div>
         </div>`; }).join("")}</div></div>`; }).join("");
   list.querySelectorAll(".bl-h").forEach(h=>h.onclick=()=>{ const lg=h.dataset.lg; const box=h.parentElement; box.classList.toggle("open"); if(box.classList.contains("open")) BT.open.add(lg); else BT.open.delete(lg); Sound.tap(); });
-  list.querySelectorAll(".br").forEach(r=>r.onclick=()=>{ const [lg,i]=r.dataset.k.split(":"); const x=by[lg].sort((a,b)=>(b.m.live-a.m.live)||(a.m.dt-b.m.dt))[+i]; buzz(8); pickMatch(x.m); });
+  list.querySelectorAll(".br").forEach(r=>r.onclick=()=>{ const [lg,i]=r.dataset.k.split(":"); const x=by[lg].sort((a,b)=>(b.m.live-a.m.live)||(a.m.dt-b.m.dt))[+i]; buzz(8); openMatch(x.m); });
 }
 $("btChips").querySelectorAll("button").forEach(b=>b.onclick=()=>{ BT.f=b.dataset.f; $("btChips").querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",x===b)); Sound.tap(); renderBulten(); });
 $("btSearchBtn").onclick=()=>{ const box=$("btQBox"); box.hidden=!box.hidden; if(!box.hidden) setTimeout(()=>$("btQ").focus(),50); else { BT.q=""; $("btQ").value=""; renderBulten(); } };
@@ -4318,7 +4392,7 @@ function ibRow(x){
   const ob=(lab,v,pr,key)=>{ if(!v) return `<span class="na"><u>${lab}</u>–</span>`;
     const val=pr!=null&&pr*v>1.10, pk=p&&p.best&&p.best.k===key;
     const inCp=CP.items.some(c=>c.k===cpKey(m)&&c.mk===key);
-    return `<span role="button" tabindex="0" data-mk="${key}" data-o="${v}" data-p="${pr==null?"":pr}" class="${val?"val":""} ${pk?"pk":""} ${inCp?"sel":""}"><u>${lab}</u>${v.toFixed(2)}${pr!=null?`<small>%${pc9(pr)}${val?" 💎":""}</small>`:""}</span>`; };
+    return `<span role="button" tabindex="0" data-mk="${key}" data-o="${v}" data-p="${pr==null?"":pr}" class="${val?"val":""} ${pk?"pk":""} ${inCp?"sel":""}"><u>${lab}</u>${v.toFixed(2)}${pr!=null?`<small>%${pc9(pr)}</small>`:""}</span>`; };
   const mbs=f&&f.mbs?`<span class="ib-mbs" title="Minimum bahis sayısı (MBS)">${f.mbs}</span>`:"";
   const t=m.started?"Başladı":((BT.q||BT.f==="fav")&&istDay(m.dt)!==istDay(new Date())?ist(m.dt,{day:"numeric",month:"short"})+" ":"")+ist(m.dt,{hour:"2-digit",minute:"2-digit"});
   return `<div class="ib-r" data-i="${x.idx}"><div class="ib-top">${starBtn(k)}<span class="ib-t">${esc(t)}</span>${mbs}<span class="ib-tm">${esc(m.h)} - ${esc(m.a)}</span></div>
@@ -4380,7 +4454,7 @@ renderBulten=function(){
     if(ob){ const mk=ob.dataset.mk, pr=ob.dataset.p===""?null:+ob.dataset.p; cpToggle(x.m,mk,+ob.dataset.o,pr);
       r.querySelectorAll(".ib-od span[data-mk]").forEach(z=>z.classList.toggle("sel",CP.items.some(c=>c.k===cpKey(x.m)&&c.mk===z.dataset.mk)));
       if(typeof paintCoupon==="function") paintCoupon(); return; }
-    buzz(8); pickMatch(x.m); };
+    buzz(8); openMatch(x.m); };
 };
 
 // =====================================================================
@@ -4494,6 +4568,250 @@ renderPrediction=function(inp,r){ _rpV27(inp,r);
   inp.addEventListener("keydown",e=>{ if(e.key==="Enter"){ e.preventDefault(); run(); } });
   inp.setAttribute("enterkeyhint","search");
 });
+
+// =====================================================================
+// BULUTOXX v32: Maç sayfası (iddaa/Bilyoner düzeni) — tek dokunuşla maçın her şeyi:
+// başlık (lig, tarih, saat, MBS, canlı skor), sekmeler: Tahmin · Oranlar (tüm pazarlar, kupona ekle) · Form.
+// Kupon: tutar, olası kazanç ve MBS kuralı kontrolü.
+// =====================================================================
+Object.assign(MKT_N,{"1X":"Çifte şans 1X","12":"Çifte şans 12","X2":"Çifte şans X2","O15":"1,5 Üst","U15":"1,5 Alt","O35":"3,5 Üst","U35":"3,5 Alt",
+  "KGV":"KG Var","KGY":"KG Yok","IY1":"İY 1","IYX":"İY X","IY2":"İY 2","IO05":"İY 0,5 Üst","IU05":"İY 0,5 Alt","IO15":"İY 1,5 Üst","IU15":"İY 1,5 Alt"});
+function fullPred(m,f){
+  const home=bestTeamName(m.h), away=bestTeamName(m.a), F1=formFor(home), F2=formFor(away);
+  const odds=f&&f.odds?{o1:f.odds[0],ox:f.odds[1],o2:f.odds[2],oo:f.ou?f.ou[0]:null,ou:f.ou?f.ou[1]:null}:{};
+  const inp={home, away, leagueKey:m.lg, league:(LEAGUES[m.lg]||{n:""}).n, leagueAvg:(LEAGUES[m.lg]||{g:2.7}).g, date:istDay(m.dt||new Date()),
+    hForm:F1?F1.list.map(x=>x.s.split("-").map(Number)):[], aForm:F2?F2.list.map(x=>x.s.split("-").map(Number)):[],
+    h:{ma:0,md:0,gk:false,mo:0,fa:false}, a:{ma:0,md:0,gk:false,mo:0,fa:false}, odds};
+  try{ return {inp, r:predict(inp), F1, F2}; }catch(e){ return null; }
+}
+const fair=p=>p>0.005?(1/p).toFixed(2):"–";
+function mOpt(key,name,p,o,m){
+  const inCp=CP.items.some(c=>c.k===cpKey(m)&&c.mk===key), val=o&&p*o>1.08;
+  return `<button type="button" class="mo ${inCp?"sel":""} ${val?"val":""}" data-mk="${key}" data-o="${o||(p>0.005?(1/p).toFixed(2):"")}" data-p="${p}" ${o?"":'data-fair="1"'}>
+    <span class="mo-n">${esc(name)}</span><b>${o?(+o).toFixed(2):fair(p)}</b><small>%${pc9(p)}${o?"":" · adil"}${val?" 💎":""}</small></button>`;
+}
+function mGroup(title,opts,cols){ return `<div class="mg"><h4>${esc(title)}</h4><div class="mg-o" style="grid-template-columns:repeat(${cols||opts.length},1fr)">${opts.join("")}</div></div>`; }
+const MS={m:null,f:null,tab:"tahmin",live:null};
+function openMatch(m, tab){
+  const f=m.src==="fx"?FIXTURES.find(x=>x.lg===m.lg&&x.h===m.h&&x.a===m.a):(m.sp?FIXTURES.find(x=>x.iid===m.id):fxOdds(m));
+  MS.m=m; MS.f=f; MS.tab=tab||"tahmin"; MS.live=m.sp?m:(m.iid&&IDL.byId[1][m.iid])||null;
+  let el=$("msheet"); if(!el){ el=document.createElement("div"); el.id="msheet"; el.className="msheet"; document.body.appendChild(el); }
+  el.hidden=false; document.body.classList.add("ms-open"); buzz(8);
+  try{ history.pushState({ms:1},"","#mac"); }catch(e){}
+  msRender(); el.scrollTop=0;
+  if(f&&f.iid) msForm(f.iid);
+}
+function closeMatch(){ const el=$("msheet"); if(el){ el.hidden=true; el.innerHTML=""; } document.body.classList.remove("ms-open"); MS.m=null; }
+window.addEventListener("popstate",()=>{ if(MS.m) closeMatch(); });
+function msRender(){
+  const el=$("msheet"), m=MS.m, f=MS.f; if(!el||!m) return;
+  const lg=m.sp?m.comp:(LEAGUES[m.lg]?LEAGUES[m.lg].n:""), flag=m.sp?ccFlag(m.cc):(FLAG[m.lg]||"⚽");
+  const dt=m.sp?new Date(m.ts):m.dt, lv=MS.live;
+  const pm=m.sp?{lg:"i"+m.ci,h:m.h,a:m.a,dt}:m;
+  const FP=fullPred(pm,f), r=FP&&FP.r;
+  const left=dt-Date.now(), rel=left>0&&left<72*3600e3?(left<3600e3?`${Math.round(left/60e3)} dk sonra`:`${Math.floor(left/3600e3)} sa ${Math.round(left%3600e3/60e3)} dk sonra`):"";
+  const im=n=>{ const u=logoFor(n); return u?`<img src="${esc(u)}" alt="" onerror="this.replaceWith(Object.assign(document.createElement('i'),{className:'ni',textContent:'${esc(initials(n))}'}))">`:`<i class="ni">${esc(initials(n))}</i>`; };
+  const k=fkey(m.sp?{sp:1,id:m.id}:m);
+  let center;
+  if(lv) center=`<div class="ms-sc live"><b>${lv.hs}-${lv.as}</b><i class="lclk" data-id="${lv.id}" data-sp="1">${esc(idlClockTxt(lv))}</i></div>`;
+  else center=`<div class="ms-sc"><small>Tahmin</small><b>${r?esc(r.topFT[0].s):"–"}</b><i>İY ${r?esc(r.topH1[0].s):"–"}</i></div>`;
+  const tabs=[["tahmin","Tahmin"],["oran","Oranlar"],["form","Form"]];
+  el.innerHTML=`<div class="ms-top"><button type="button" class="ms-x" aria-label="Kapat">‹</button><span class="ms-lg">${flag} ${esc(lg)}${f&&f.mbs?` <span class="ib-mbs">${f.mbs}</span>`:""}</span>${starBtn(k)}</div>
+    <div class="ms-hd">
+      <div class="ms-when">${lv?`<span class="ms-live">🔴 CANLI</span>`:`📅 ${esc(ist(dt,{weekday:"long",day:"numeric",month:"long"}))} · ⏰ <b>${esc(ist(dt,{hour:"2-digit",minute:"2-digit"}))}</b>${rel?` <small>(${rel})</small>`:""}`}</div>
+      <div class="ms-teams"><div class="ms-t">${im(m.h)}<b>${esc(m.h)}</b></div>${center}<div class="ms-t">${im(m.a)}<b>${esc(m.a)}</b></div></div>
+    </div>
+    <div class="ms-tabs" role="tablist">${tabs.map(([t,n])=>`<button type="button" role="tab" data-t="${t}" aria-selected="${MS.tab===t}">${n}</button>`).join("")}</div>
+    <div class="ms-body">${MS.tab==="tahmin"?msTahmin(m,f,r,lv):MS.tab==="oran"?msOran(m,f,r,lv):`<div id="msForm">${msFormHtml(FP)}</div>`}</div>
+    <p class="disc">Olasılıklar BULUTOXX modelinindir; kesinlik içermez. Oranlar resmi iddaa bülteninden · 18+</p>`;
+  el.querySelector(".ms-x").onclick=()=>{ try{ history.back(); }catch(e){ closeMatch(); } setTimeout(()=>{ if(MS.m) closeMatch(); },120); };
+  el.querySelectorAll(".ms-tabs button").forEach(b=>b.onclick=()=>{ MS.tab=b.dataset.t; Sound.tap(); msRender(); if(MS.tab==="form"&&f&&f.iid) msForm(f.iid); });
+  el.querySelectorAll(".mo").forEach(b=>b.onclick=()=>{ const mm=m.sp?{lg:"i"+m.ci,h:m.h,a:m.a,dt}:m; cpToggle(mm,b.dataset.mk,+b.dataset.o,+b.dataset.p); if(typeof paintCoupon==="function") paintCoupon(); msRender(); });
+  const det=$("msDetail"); if(det) det.onclick=()=>{ const mm=m.sp?{lg:"i"+m.ci,h:m.h,a:m.a,dt,src:"x"}:m; closeMatch(); pickMatch(mm); };
+}
+function bar3(H,D,A){ return `<div class="ms-bar"><span style="flex:${H}" class="h"><b>1</b> %${pc9(H)}</span><span style="flex:${D}" class="d"><b>X</b> %${pc9(D)}</span><span style="flex:${A}" class="a"><b>2</b> %${pc9(A)}</span></div>`; }
+function msTahmin(m,f,r,lv){
+  if(lv){ const P=idlPred(lv), K=idlPick(lv,P); if(!P) return `<p class="note">Canlı tahmin hesaplanamadı.</p>`;
+    return `<div class="ms-card"><h4>Canlı tahmin · ${esc(idlClockTxt(lv))}</h4><div class="ms-big"><div><small>Tahmini son skor</small><b>${esc(P.ft)}</b></div><div><small>${lnF(P.line)} Üst</small><b>%${pc9(P.pOver)}</b></div><div><small>Gol olmaz</small><b>%${pc9(P.none)}</b></div></div>
+      ${bar3(P.H,P.D,P.A)}<div class="ms-pick ${K.best.p>=.7?"g":""}">${K.best.p>=.7?"🎯 Güçlü":"⚖️ En olası"}: <b>${esc(K.best.n)}</b> %${pc9(K.best.p)}</div></div>`; }
+  if(!r) return `<p class="note">Bu maç için tahmin hesaplanamadı.</p>`;
+  const ms=markets(r,{}); const best=ms.filter(x=>!/daha gollü/.test(x.n))[0];
+  const SC=scenario({home:m.h,away:m.a},r);
+  return `<div class="ms-card"><div class="ms-big"><div><small>Maç sonu</small><b>${esc(r.topFT[0].s)}</b><i>%${pc9(r.topFT[0].p)}</i></div><div><small>İlk yarı</small><b>${esc(r.topH1[0].s)}</b><i>%${pc9(r.topH1[0].p)}</i></div><div><small>İY / MS</small><b>${esc(SC.hf)}</b><i>%${pc9(SC.hfp)}</i></div></div>
+    ${bar3(r.H,r.D,r.A)}
+    <div class="ms-kv"><span>2,5 Üst <b>%${pc9(r.o25)}</b></span><span>KG Var <b>%${pc9(r.btts)}</b></span><span>1,5 Üst <b>%${pc9(r.o15)}</b></span><span>İlk golü <b>${esc(shortTeam(SC.first))}</b> %${pc9(SC.firstP)}</span></div>
+    ${best?`<div class="ms-pick ${best.p>=.7?"g":""}">${best.p>=.7?"🎯 Güçlü seçim":"⚖️ En olası"}: <b>${esc(best.n)}</b> %${pc9(best.p)}</div>`:""}
+    <p class="note">Beklenen gol ${r.lh.toFixed(2)} – ${r.la.toFixed(2)}${f&&f.odds?" · iddaa oranlarıyla birleştirildi":""}.</p></div>
+    <button type="button" class="btn ghost" id="msDetail">🔬 Ayrıntılı analiz (kadro, eksik, senaryo)</button>`;
+}
+function msOran(m,f,r,lv){
+  const mm=m.sp?{lg:"i"+m.ci,h:m.h,a:m.a}:m;
+  if(lv){ const P=idlPred(lv), od=lv.odds||{}; if(!P) return `<p class="note">Canlı oran yok.</p>`; const G=[];
+    if(od.ms&&!od.ms.lock) G.push(mGroup("Maç sonucu (canlı)",[mOpt("1","1",P.H,od.ms.v[0],mm),mOpt("X","X",P.D,od.ms.v[1],mm),mOpt("2","2",P.A,od.ms.v[2],mm)]));
+    if(od.ou&&!od.ou.lock) G.push(mGroup(`${lnF(od.ou.l)} Alt/Üst (canlı)`,[mOpt("A","Alt",1-P.pOver,od.ou.alt,mm),mOpt("U","Üst",P.pOver,od.ou.ust,mm)]));
+    return G.join("")||`<p class="note">Şu an açık canlı oran yok (iddaa bu dakikada bahisleri kapatmış olabilir).</p>`; }
+  if(!r) return `<p class="note">Oran hesaplanamadı.</p>`;
+  const o=f&&f.odds||[], ou=f&&f.ou||[], kg=f&&f.ikg||[];
+  const ht={}; (r.htft||[]).forEach(([k,p])=>{ const a=k.split("/")[0]; ht[a]=(ht[a]||0)+p; });
+  const G=[
+    mGroup("Maç sonucu",[mOpt("1","1",r.H,o[0],mm),mOpt("X","X",r.D,o[1],mm),mOpt("2","2",r.A,o[2],mm)]),
+    mGroup("Çifte şans",[mOpt("1X","1-X",r.H+r.D,null,mm),mOpt("12","1-2",r.H+r.A,null,mm),mOpt("X2","X-2",r.D+r.A,null,mm)]),
+    mGroup("2,5 Alt / Üst",[mOpt("A","Alt",1-r.o25,ou[1],mm),mOpt("U","Üst",r.o25,ou[0],mm)]),
+    mGroup("1,5 Alt / Üst",[mOpt("U15","Alt",1-r.o15,null,mm),mOpt("O15","Üst",r.o15,null,mm)]),
+    mGroup("3,5 Alt / Üst",[mOpt("U35","Alt",1-r.o35,null,mm),mOpt("O35","Üst",r.o35,null,mm)]),
+    mGroup("Karşılıklı gol",[mOpt("KGV","Var",r.btts,kg[0],mm),mOpt("KGY","Yok",1-r.btts,kg[1],mm)]),
+    mGroup("İlk yarı sonucu",[mOpt("IY1","1",ht["1"]||0,null,mm),mOpt("IYX","X",ht["X"]||0,null,mm),mOpt("IY2","2",ht["2"]||0,null,mm)]),
+    mGroup("İlk yarı 0,5 / 1,5",[mOpt("IU05","0,5 Alt",1-r.h1o05,null,mm),mOpt("IO05","0,5 Üst",r.h1o05,null,mm),mOpt("IU15","1,5 Alt",1-r.h1o15,null,mm),mOpt("IO15","1,5 Üst",r.h1o15,null,mm)],4),
+  ];
+  const sc=(r.topFT||[]).slice(0,9).map(x=>`<span class="msc"><b>${esc(x.s)}</b><small>%${(x.p*100).toFixed(1)}</small></span>`).join("");
+  const hf=(r.htft||[]).slice().sort((a,b)=>b[1]-a[1]).slice(0,6).map(([k,p])=>`<span class="msc"><b>${esc(k)}</b><small>%${(p*100).toFixed(1)}</small></span>`).join("");
+  return `<p class="note ms-leg">Kalın sayı iddaa oranı; "adil" yazanlar iddaa'da bu pazar için oran alamadığımız seçeneklerde BULUTOXX olasılığından hesaplanan orandır. Dokun → kupona ekle.</p>${G.join("")}
+    <div class="mg"><h4>En olası skorlar</h4><div class="msc-w">${sc}</div></div><div class="mg"><h4>İlk yarı / Maç sonu</h4><div class="msc-w">${hf}</div></div>`;
+}
+const MSF=new Map();
+function msFormHtml(FP){
+  const d=MS.f&&MS.f.iid&&MSF.get(MS.f.iid);
+  const fx=l=>(l||[]).map(x=>`<span class="fm ${x==="G"?"G":x==="B"?"B":"M"}">${x}</span>`).join("");
+  const our=F=>F?F.list.map(x=>{ const [a,b]=x.s.split("-").map(Number), rr=a>b?"G":a===b?"B":"M"; return `<div class="fr"><span class="fm ${rr}">${rr}</span><span>${x.ha==="H"?"🏠":"✈️"} ${esc(x.opp||"")}</span><b>${esc(x.s)}</b><small>${esc(x.d||"")}</small></div>`; }).join(""):"";
+  const m=MS.m;
+  let h=`<div class="ms-card"><h4>Son 5 maç</h4>
+    <div class="ff"><b>${esc(m.h)}</b><span>${d&&d.h?fx(d.h):""}</span></div><div class="ff"><b>${esc(m.a)}</b><span>${d&&d.a?fx(d.a):""}</span></div>
+    ${d===undefined&&MS.f&&MS.f.iid?`<p class="note">iddaa istatistikleri yükleniyor…</p>`:""}</div>`;
+  if(FP&&(FP.F1||FP.F2)) h+=`<div class="ms-card"><h4>${esc(m.h)} · son maçlar</h4>${our(FP.F1)||'<p class="note">Kayıt yok</p>'}</div><div class="ms-card"><h4>${esc(m.a)} · son maçlar</h4>${our(FP.F2)||'<p class="note">Kayıt yok</p>'}</div>`;
+  else if(!d) h+=`<p class="note">Bu takımlar için form kaydı yok.</p>`;
+  return h;
+}
+async function msForm(iid){
+  if(MSF.has(iid)){ return; }
+  MSF.set(iid,undefined);
+  try{ const r=await fetch(`https://statisticsv2.iddaa.com/statistics/soccer/match-card/${iid}`,{cache:"no-store"}); const j=r.ok?await r.json():null; const d=j&&j.data;
+    MSF.set(iid, d?{h:(d.h&&d.h.lfive)||[], a:(d.a&&d.a.lfive)||[], hl:d.h&&d.h.lu, al:d.a&&d.a.lu}:null); }catch(e){ MSF.set(iid,null); }
+  if(MS.m&&MS.tab==="form"){ const b=$("msForm"); if(b){ const pm=MS.m.sp?{lg:"i"+MS.m.ci,h:MS.m.h,a:MS.m.a,dt:new Date(MS.m.ts)}:MS.m; b.innerHTML=msFormHtml(fullPred(pm,MS.f)); } }
+}
+// Bülten ve canlı satırlarına dokununca maç sayfası açılır
+
+document.addEventListener("click",e=>{
+  const lc=e.target.closest(".lv-c"); if(!lc||e.target.closest(".ib-st,button,a")) return;
+  const id=+lc.dataset.id; const m=IDL.byId[1][id]||IDL.byId[2][id]; if(m&&m.sp===1){ e.stopPropagation(); openMatch(m); } },true);
+// Kupon: tutar, olası kazanç, MBS kontrolü
+const _cpTogV32=cpToggle;
+cpToggle=function(m,mk,odd,p){ const r=_cpTogV32(m,mk,odd,p); try{ const it=CP.items.find(x=>x.k===cpKey(m)); if(it){ const f=FIXTURES.find(x=>x.lg===m.lg&&x.h===m.h&&x.a===m.a); it.mbs=(f&&f.mbs)||it.mbs||1; cpSave(); } }catch(e){} return r; };
+const _rkV32=renderKupon;
+renderKupon=function(){ _rkV32(); const box=$("cpBox"), st=cpStats(); if(!box||!st.n) return;
+  const sum=box.querySelector(".cpsum .list"); if(!sum||$("cpStake")) return;
+  let stake=50; try{ stake=+(localStorage.getItem("bx-stake")||50)||50; }catch(e){}
+  const mbs=Math.max(...CP.items.map(x=>x.mbs||1));
+  sum.insertAdjacentHTML("beforeend",`<div><span>Tutar (TL)</span><span><input id="cpStake" type="number" inputmode="decimal" min="1" step="1" value="${stake}" style="width:90px;padding:6px 8px;text-align:right"></span></div>
+    <div><span>Olası kazanç</span><span><b id="cpWin">${(stake*st.odd).toLocaleString("tr-TR",{maximumFractionDigits:2})} TL</b></span></div>
+    <div><span>MBS</span><span>${st.n>=mbs?`<span class="pill g">Uygun (en az ${mbs})</span>`:`<span class="pill x">En az ${mbs} maç gerekli</span>`}</span></div>`);
+  $("cpStake").oninput=e=>{ const v=Math.max(0,+e.target.value||0); try{ localStorage.setItem("bx-stake",v); }catch(_){} $("cpWin").textContent=(v*st.odd).toLocaleString("tr-TR",{maximumFractionDigits:2})+" TL"; };
+};
+
+// =====================================================================
+// BULUTOXX v33: Sade ve kapsamlı gezinme (iddaa/Bilyoner düzeni)
+// Alt menü: Canlı · Bülten · [KUPON ortada: maç sayısı + toplam oran] · Sonuçlar · Menü
+// Sonuçlar: biten maçlar, maç öncesi BULUTOXX tahmini ve tuttu/tutmadı; günlük isabet özeti.
+// =====================================================================
+(function navV33(){
+  const nav=document.querySelector("nav.tabs .in"); if(!nav||$("navRes")) return;
+  const bB=nav.querySelector('button[data-v="bulten"]'), bK=nav.querySelector('button[data-v="kupon"]'), bL=nav.querySelector('button[data-v="ligler"]'), bM=nav.querySelector('button[data-v="more"]');
+  // Ana Sayfa → Bülten
+  if(bB){ const t=[...bB.childNodes].find(n=>n.nodeType===3&&/Ana Sayfa/.test(n.textContent)); if(t) t.textContent="Bülten"; }
+  if(bM){ const t=[...bM.childNodes].find(n=>n.nodeType===3&&/Daha Fazla/.test(n.textContent)); if(t) t.textContent="Menü"; }
+  // Kupon ortada, büyük
+  if(bK){ bK.classList.add("kc-btn"); bK.innerHTML=`<span class="kc"><b id="kcN">0 Maç</b><i id="kcO">0,00</i></span><span class="badge" id="cpBadge" hidden></span>`; }
+  // Ligler alt menüden Menü'ye taşınır (gizli sekme olarak çalışmaya devam eder)
+  if(bL) bL.classList.add("hidtab");
+  const bR=document.createElement("button"); bR.id="navRes"; bR.dataset.v="sonuclar";
+  bR.innerHTML=`<svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="17" rx="3"/><path d="M8.5 12.5l2.5 2.5 4.5-5M8 2v4M16 2v4"/></svg>Sonuçlar`;
+  nav.insertBefore(bR, bM);
+  bR.addEventListener("click",()=>{ document.querySelectorAll("nav button").forEach(x=>x.removeAttribute("aria-current")); bR.setAttribute("aria-current","page");
+    document.querySelectorAll("section.view").forEach(s=>s.hidden=s.id!=="v-sonuclar"); window.scrollTo(0,0); try{ history.replaceState(null,"","#sonuclar"); }catch(e){} Sound.tab(); buzz(6); RS.load(RS.day).then(renderRes); renderRes(); });
+  // Menü'ye Ligler
+  const ml=document.querySelector("#v-more .mlist");
+  if(ml&&!$("moreLg")){ const c=document.createElement("button"); c.className="cell"; c.id="moreLg"; c.type="button";
+    c.innerHTML=`<span class="ic" style="background:linear-gradient(135deg,#FFD60A,#FF9F0A)"><svg viewBox="0 0 24 24"><path d="M8 4h8v5a4 4 0 0 1-8 0z"/><path d="M8 6H4v1a4 4 0 0 0 4 4M16 6h4v1a4 4 0 0 1-4 4M12 13v4M8 21h8M9 17h6"/></svg></span><span class="tx"><b>Ligler</b><small>Puan durumu, fikstür, takım güçleri</small></span><span class="ar">›</span>`;
+    c.onclick=()=>{ document.querySelector('nav.tabs button[data-v="ligler"]').click(); renderLigler(); }; ml.prepend(c); }
+  // Kupon sayısı ve oranı ortadaki düğmede; yüzen kupon şeridi kaldırıldı
+  const _pc=paintCoupon;
+  paintCoupon=function(){ _pc(); const bar=$("cpBar"); if(bar) bar.remove(); document.body.classList.remove("has-cp");
+    const st=cpStats(); const n=$("kcN"), o=$("kcO"); if(n){ n.textContent=`${st.n} Maç`; o.textContent=st.n?st.odd.toLocaleString("tr-TR",{minimumFractionDigits:2,maximumFractionDigits:2}):"0,00"; }
+    const kb=document.querySelector(".kc-btn"); if(kb) kb.classList.toggle("has",!!st.n); };
+  paintCoupon();
+  // Sonuçlar görünümü
+  const main=document.querySelector("main"); if(main&&!$("v-sonuclar")){ const s=document.createElement("section"); s.className="view"; s.id="v-sonuclar"; s.hidden=true;
+    s.innerHTML=`<div class="bt-head cmp rs-head"><div class="tb-row"><div class="rs-title">🏁 Sonuçlar</div><button type="button" class="tb-ic" id="rsSearch" aria-label="Ara"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg></button><button type="button" class="tb-ic upd-go" id="rsRef" aria-label="Yenile"><svg viewBox="0 0 24 24"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7"/></svg></button></div>
+      <div class="bt-q" id="rsQBox" hidden><input id="rsQ" type="search" placeholder="Takım veya lig ara" autocomplete="off" enterkeyhint="search"><button type="button" id="rsQX">Vazgeç</button></div>
+      <div class="bt-days" id="rsDays"></div><div class="bt-chips" id="rsChips"><button data-f="all" aria-pressed="true">Tümü</button><button data-f="hit" aria-pressed="false">✅ Tuttu</button><button data-f="miss" aria-pressed="false">❌ Tutmadı</button><button data-f="sure" aria-pressed="false">🎯 Güçlü tahminler</button></div></div>
+      <div id="rsSum"></div><div id="rsList"></div>
+      <p class="disc">Sonuçlar resmi iddaa canlı sonuç servisinden. Tahmin, maç başlamadan önce kaydedilen iddaa oranlarından BULUTOXX'in hesapladığı beklentidir; maçtan sonra değiştirilmez. Kesinlik içermez · 18+</p>`;
+    main.appendChild(s);
+    $("rsChips").querySelectorAll("button").forEach(b=>b.onclick=()=>{ RS.f=b.dataset.f; $("rsChips").querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",x===b)); Sound.tap(); renderRes(); });
+    $("rsSearch").onclick=()=>{ const q=$("rsQBox"); q.hidden=!q.hidden; if(!q.hidden) setTimeout(()=>$("rsQ").focus(),50); else { RS.q=""; $("rsQ").value=""; renderRes(); } };
+    $("rsQX").onclick=()=>{ $("rsQBox").hidden=true; RS.q=""; $("rsQ").value=""; renderRes(); };
+    let t; $("rsQ").oninput=e=>{ clearTimeout(t); t=setTimeout(()=>{ RS.q=e.target.value.trim(); renderRes(); },200); };
+    $("rsRef").onclick=()=>{ $("rsRef").classList.add("spin"); RS.cache.delete(RS.day); RS.load(RS.day,true).then(()=>{ $("rsRef").classList.remove("spin"); renderRes(); }); };
+  }
+})();
+const RS={day:istDay(new Date()), f:"all", q:"", cache:new Map(), busy:{}};
+RS.load=async function(day, force){
+  const c=this.cache.get(day); if(c&&!force&&(day!==istDay(new Date())||Date.now()-c.at<60e3)) return c;
+  if(this.busy[day]) return this.busy[day];
+  this.busy[day]=(async()=>{ try{
+    const r=await fetch(`https://statisticsv2.iddaa.com/live-results?sportId=1&date=${day}`,{cache:"no-store"}); const j=r.ok?await r.json():null; const d=j&&j.data; if(!d) throw 0;
+    const comps=d.competitions||{}, sc=d.sc||{}; const out=[];
+    for(const e of d.events||[]){ if(e.phase!==2) continue; const s=sc[String(e.eventId)]; if(!s||!s.ht||s.ht.c==null) continue; const c=comps[String(e.ci)]||{};
+      if(IDL_SKIP.test(c.n||"")||IDL_SKIP.test(e.homeTeam||"")) continue;
+      out.push({id:e.eventId, comp:c.n||"", cc:c.cid||"", h:e.homeTeam, a:e.awayTeam, ts:e.eventDate*1000, hs:+s.ht.c, as:+s.at.c, h1:s.ht.ht, a1:s.at.ht}); }
+    out.sort((x,y)=>x.ts-y.ts||x.comp.localeCompare(y.comp,"tr"));
+    const v={at:Date.now(), list:out}; this.cache.set(day,v); return v;
+  }catch(e){ const v={at:Date.now(), list:null}; return v; } finally{ delete this.busy[day]; } })();
+  return this.busy[day];
+};
+// maç öncesi beklentiden tahmin (tek tip, tutarlı): MS, skor, 2,5, KG
+function rsPred(l){
+  if(!l) return null; const PH=poisV(l[0],8), PA=poisV(l[1],8); let H=0,D=0,A=0,o=0,kg=0; const sc=[];
+  for(let i=0;i<=8;i++) for(let j=0;j<=8;j++){ const p=PH[i]*PA[j]; if(i>j)H+=p; else if(i===j)D+=p; else A+=p; if(i+j>2)o+=p; if(i&&j)kg+=p; sc.push([i,j,p]); }
+  const z=H+D+A, pk=H>=D&&H>=A?"1":A>=D?"2":"X";
+  const ok=s=>pk==="1"?s[0]>s[1]:pk==="2"?s[1]>s[0]:s[0]===s[1];
+  const best=sc.filter(ok).sort((a,b)=>b[2]-a[2])[0];
+  return {H:H/z,D:D/z,A:A/z,o25:o/z,kg:kg/z,pk,pp:Math.max(H,D,A)/z,score:best?`${best[0]}-${best[1]}`:"1-1"};
+}
+function rsEval(m){
+  const P=rsPred(IDL.lam[String(m.id)]); if(!P) return {P:null};
+  const res=m.hs>m.as?"1":m.hs<m.as?"2":"X", tot=m.hs+m.as;
+  return {P, ms:P.pk===res, ou:(P.o25>=.5)===(tot>2), kg:(P.kg>=.5)===(m.hs>0&&m.as>0), sc:P.score===`${m.hs}-${m.as}`};
+}
+function rsDays(){
+  const box=$("rsDays"); if(!box) return; const out=[];
+  for(let k=0;k<7;k++){ const d=new Date(Date.now()-k*864e5), key=istDay(d); out.push(`<button data-d="${key}" aria-pressed="${key===RS.day}"><b>${k===0?"Bugün":k===1?"Dün":esc(ist(d,{weekday:"short"}))}</b><small>${esc(ist(d,{day:"numeric",month:"short"}))}</small></button>`); }
+  box.innerHTML=out.join("");
+  box.querySelectorAll("button").forEach(b=>b.onclick=()=>{ RS.day=b.dataset.d; Sound.tap(); renderRes(); RS.load(RS.day).then(renderRes); });
+}
+function renderRes(){
+  const list=$("rsList"); if(!list) return; rsDays();
+  const c=RS.cache.get(RS.day);
+  if(!c){ list.innerHTML=`<div class="panel empty"><b>Sonuçlar yükleniyor…</b></div>`; $("rsSum").innerHTML=""; return; }
+  if(!c.list){ list.innerHTML=`<div class="panel empty"><b>Sonuçlar alınamadı</b>İnternet bağlantını kontrol edip ↻ ile tekrar dene.</div>`; $("rsSum").innerHTML=""; return; }
+  let L=c.list.map(m=>Object.assign({},m,rsEval(m)));
+  const withP=L.filter(x=>x.P);
+  // günlük özet
+  const n=withP.length, r=k=>n?Math.round(withP.filter(x=>x[k]).length/n*100):0;
+  const strong=withP.filter(x=>x.P.pp>=.6), sr=strong.length?Math.round(strong.filter(x=>x.ms).length/strong.length*100):0;
+  $("rsSum").innerHTML=n?`<div class="rs-sum"><div><small>Biten maç</small><b>${L.length}</b></div><div><small>MS tuttu</small><b>%${r("ms")}</b></div><div><small>2,5 A/Ü</small><b>%${r("ou")}</b></div><div><small>🎯 Güçlü</small><b>%${sr}</b><i>${strong.length} maç</i></div></div>`
+    :`<p class="note" style="margin:6px 2px">${L.length} maç bitti. Bu günün maç öncesi tahmin kaydı yok (kayıtlar son 8 günü kapsar).</p>`;
+  if(RS.q) L=L.filter(m=>qMatch(RS.q,[m.h,m.a,m.comp]));
+  if(RS.f==="hit") L=L.filter(x=>x.P&&x.ms); else if(RS.f==="miss") L=L.filter(x=>x.P&&!x.ms); else if(RS.f==="sure") L=L.filter(x=>x.P&&x.P.pp>=.6);
+  if(!L.length){ list.innerHTML=`<div class="panel empty"><b>${c.list.length?"Bu seçimde maç yok":"Bu gün için biten maç yok"}</b></div>`; return; }
+  const G=[]; for(const m of L){ const g=G[G.length-1]; if(g&&g.comp===m.comp) g.items.push(m); else G.push({comp:m.comp,cc:m.cc,items:[m]}); }
+  const mark=(ok,t)=>`<span class="rs-m ${ok?"y":"n"}">${ok?"✓":"✗"} ${t}</span>`;
+  list.innerHTML=`<div class="ib">`+G.map(g=>`<div class="ib-h"><span>${ccFlag(g.cc)}</span>${esc(g.comp||"Diğer")}</div>`+g.items.map(m=>`<div class="rs-r">
+      <div class="ib-top"><span class="ib-t">${esc(ist(new Date(m.ts),{hour:"2-digit",minute:"2-digit"}))}</span><span class="ib-tm">${esc(m.h)} - ${esc(m.a)}</span><span class="rs-sc">${m.hs}-${m.as}${m.h1!=null?`<small>İY ${m.h1}-${m.a1}</small>`:""}</span></div>
+      ${m.P?`<div class="rs-p">🔮 <b>MS ${m.P.pk}</b> %${pc9(m.P.pp)} · ${esc(m.P.score)} · ${m.P.o25>=.5?"2,5 Üst":"2,5 Alt"} ${mark(m.ms,"MS")}${mark(m.ou,"2,5")}${mark(m.kg,"KG")}${m.sc?`<span class="rs-m y">🎯 Skor</span>`:""}</div>`:`<div class="rs-p rs-np">Maç öncesi tahmin kaydı yok</div>`}
+    </div>`).join("")).join("")+`</div>`;
+}
+setInterval(()=>{ const v=$("v-sonuclar"); if(v&&!v.hidden&&!document.hidden&&RS.day===istDay(new Date())) RS.load(RS.day,true).then(renderRes); },90000);
+if((location.hash||"")==="#sonuclar") setTimeout(()=>$("navRes").click(),200);
 </script>
 
 </body>

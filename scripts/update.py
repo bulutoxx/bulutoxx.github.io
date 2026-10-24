@@ -914,10 +914,10 @@ def merge_iddaa(fx, season, today):
     # piyasa gol beklentisi (canlı tahminin başlangıç noktası)
     tmp = [dict({"odds": e["mk"]["ms"], "iid": e["iid"]}, **({"ou": e["mk"]["ou"]} if e["mk"].get("ou") else {})) for e in evs]
     market_xg(tmp)
-    # başlamış maçlar bültenden düşer; canlı tahmin için maç öncesi beklenti 1 gün saklanır
+    # başlamış maçlar bültenden düşer; canlı tahmin ve Sonuçlar için maç öncesi beklenti 8 gün saklanır
     try:
         oldl = json.load(open(os.path.join(DATA, "iddaa.json"), encoding="utf-8")).get("lam", {})
-        cut = datetime.now(timezone.utc).timestamp() - 30 * 3600
+        cut = datetime.now(timezone.utc).timestamp() - 8 * 86400   # Sonuçlar sayfası son 8 günü gösterir
         lam.update({k: v for k, v in oldl.items() if len(v) >= 3 and v[2] > cut})
     except Exception: pass
     tsd = {e["iid"]: e["ts"] for e in evs}
