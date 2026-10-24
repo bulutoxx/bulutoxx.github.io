@@ -158,7 +158,7 @@ details[open] summary{margin-bottom:12px}
 .sc{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:12px 6px;text-align:center}
 .sc:nth-child(2){background:rgba(47,123,255,.18);border-color:rgba(120,170,255,.4)}
 .sc .lb{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:rgba(255,255,255,.65)}
-.sc .v{font:800 44px/1 var(--round);letter-spacing:-.02em;margin:8px 0 6px;font-variant-numeric:tabular-nums;text-shadow:0 0 24px rgba(34,211,255,.45)}
+.sc .v{white-space:nowrap;font:800 clamp(28px,9.5vw,44px)/1 var(--round);letter-spacing:-.02em;margin:8px 0 6px;font-variant-numeric:tabular-nums;text-shadow:0 0 24px rgba(34,211,255,.45)}
 .sc .p{font-size:12px;color:var(--cyan);font-variant-numeric:tabular-nums;font-weight:600}
 .xg{font-size:12.5px;color:rgba(255,255,255,.7);text-align:center;font-variant-numeric:tabular-nums;position:relative;line-height:1.5}
 .bar3{display:flex;height:40px;border-radius:12px;overflow:hidden;font:700 13px var(--round);gap:2px}
@@ -788,6 +788,7 @@ body.ios-guide main,body.ios-guide .page{padding-bottom:40vh}
 .lvbox .br-p i{font-style:normal;font-size:12px;font-weight:700;padding:4px 8px;border-radius:9px;background:rgba(255,255,255,.06);color:var(--ink2)}
 .lvbox .br-p i.lv1{background:rgba(255,69,58,.14);color:#FF8A80}
 .lvpanel{border-color:rgba(255,69,58,.45)!important;background:linear-gradient(160deg,rgba(255,69,58,.12),rgba(16,26,48,.6))!important}
+@media (max-width:420px){.logo b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}#installPill span{display:none}#installPill{padding-left:10px;padding-right:10px}}
 </style>
 </head>
 <body>
@@ -1141,6 +1142,7 @@ function dist(lh, la, s, rho){
   const top=(g,n)=>{ const a=[]; g.forEach((r,i)=>r.forEach((v,j)=>a.push({s:i+"-"+j,p:v}))); return a.sort((x,y)=>y.p-x.p).slice(0,n); };
   let H=0,D=0,A=0,o15=0,o25=0,o35=0,btts=0,h1o05=0,h1o15=0,h1btts=0,more1=0,more2=0;
   ft.forEach((r,i)=>r.forEach((v,j)=>{ if(i>j)H+=v; else if(i===j)D+=v; else A+=v; const t=i+j; if(t>1)o15+=v; if(t>2)o25+=v; if(t>3)o35+=v; if(i&&j)btts+=v; }));
+  const H0=H, D0=D, A0=A;
   { const T=CP.calT||1, dk=CP.dk||1; if(T!==1||dk!==1){ let h=Math.pow(H,T), d=Math.pow(D,T), a=Math.pow(A,T); let z=h+d+a; h/=z; d/=z; a/=z; d*=dk; z=h+d+a; H=h/z; D=d/z; A=a/z; } }
   g1.forEach((r,i)=>r.forEach((v,j)=>{ if(i+j>0)h1o05+=v; if(i+j>1)h1o15+=v; if(i&&j)h1btts+=v; }));
   const t1=[],t2=[]; for(let k=0;k<=2*MX;k++){t1[k]=0;t2[k]=0;}
@@ -1166,7 +1168,7 @@ function dist(lh, la, s, rho){
     tF=lead(bf,tF); tH1=lead(bh,tH1); tH2=lead(b2,tH2);
   }
   return { lh, la, s, H, D, A, o15, o25, o35, btts, h1o05, h1o15, h1btts, more1, more2, eq,
-    topFT:tF, topH1:tH1, topH2:tH2, htft:Object.entries(htft).sort((a,b)=>b[1]-a[1]) };
+    topFT:tF, topH1:tH1, topH2:tH2, htft:Object.entries(htft).map(([k,v])=>[k, v*(k.endsWith("/1")?H/(H0||1):k.endsWith("/X")?D/(D0||1):A/(A0||1))]).sort((a,b)=>b[1]-a[1]) };
 }
 
 const STRENGTH_PRIOR={en:0,es:-.05,it:-.08,de:-.1,fr:-.18,pt:-.25,nl:-.28,be:-.33,tr1:-.33,gr:-.38,at:-.4,ch:-.4,sc:-.42,dk:-.42,ru:-.4,no:-.45,se:-.5,pl:-.5,ro:-.55,en2:-.35,de2:-.45,it2:-.55,es2:-.5,fr2:-.6};
@@ -1400,7 +1402,7 @@ function renderPrediction(inp, r){
 async function saveMatch(){
   if(!last) return;
   const {inp, r}=last;
-  const id=(inp.date||new Date().toISOString().slice(0,10))+"_"+slug(inp.home).slice(0,30)+"_"+slug(inp.away).slice(0,30);
+  const id=(inp.date||new Date().toLocaleDateString("sv-SE",{timeZone:"Europe/Istanbul"}))+"_"+slug(inp.home).slice(0,30)+"_"+slug(inp.away).slice(0,30);
   const doc={ home:inp.home, away:inp.away, league:inp.league, date:inp.date||"", created:Date.now(),
     lh:r.lh, la:r.la, s:r.s,
     pred:{ ht:r.topH1[0].s, h2:r.topH2[0].s, ft:r.topFT[0].s, H:r.H, D:r.D, A:r.A, o25:r.o25, btts:r.btts, htft:r.htft[0][0] },
@@ -1765,7 +1767,7 @@ document.querySelectorAll("nav button").forEach(b=>b.addEventListener("click",()
 }));
 
 // Örnek doldurma
-$("tarih").value=new Date().toISOString().slice(0,10);
+$("tarih").value=new Date().toLocaleDateString("sv-SE",{timeZone:"Europe/Istanbul"});
 $("hn").value="Galatasaray"; $("hf").value="3-1 2-0 1-1 2-1 0-1";
 $("an").value="Fenerbahçe"; $("af").value="2-1 1-1 3-0 0-2 2-2";
 (async()=>{ await initStore(); renderAll(); await loadData(); autoLeague(); fillForm("h"); fillForm("a");
@@ -2493,8 +2495,9 @@ function applyFixtureOdds(){
     const vals=[...f.odds, ...(f.ou||["",""])];
     const userTyped=ids.some(id=>$(id).value && !$(id).dataset.auto);
     if(!userTyped){ ids.forEach((id,i)=>{ $(id).value=vals[i]||""; $(id).dataset.auto="1"; }); autoOdds=true; }
-    if(f.d) $("tarih").value=f.d;
-    if(hint){ hint.hidden=false; hint.innerHTML=`<span class="cdot"></span>Piyasa oranları otomatik eklendi · ${esc(new Date(f.d+"T12:00").toLocaleDateString("tr-TR",{day:"numeric",month:"long"}))}${f.t?" "+esc(f.t):""}`; }
+    const kd=f.d?ukToDate(f.d,f.t||"12:00"):null;
+    if(kd) $("tarih").value=istDay(kd);
+    if(hint){ hint.hidden=false; hint.innerHTML=`<span class="cdot"></span>Piyasa oranları otomatik eklendi · ${kd?esc(ist(kd,{day:"numeric",month:"long"})+(f.t?" "+ist(kd,{hour:"2-digit",minute:"2-digit"}):"")):""}`; }
   } else {
     if(autoOdds){ ids.forEach(id=>{ if($(id).dataset.auto){ $(id).value=""; delete $(id).dataset.auto; } }); autoOdds=false; }
     if(hint) hint.hidden=true;
@@ -2750,7 +2753,9 @@ const istDay=dt=>dt.toLocaleDateString("sv-SE",{timeZone:"Europe/Istanbul"});
 // Sıradaki maçlar için ESPN'den bugün + yarın
 const Pick={ extra:{}, loaded:false,
   async loadEspn(){
-    const lgs=Object.keys(ESPN).filter(l=>PREFS.leagues.includes(l)||["tr1","en","es","it","de","fr","ucl","uel","uecl"].includes(l));
+    // yalnızca bugün/yarın maçı olan takip edilen ligler (+ fikstür dosyasında olmayan kupalar)
+    const soon=new Set((typeof FIXTURES!=="undefined"?FIXTURES:[]).filter(f=>{ const dd=Date.parse(f.d)-Date.now(); return dd>-2*864e5&&dd<3*864e5; }).map(f=>f.lg));
+    const lgs=Object.keys(ESPN).filter(l=>(PREFS.leagues.includes(l)||["tr1","en","es","it","de","fr","ucl","uel","uecl"].includes(l)) && (soon.has(l)||["ucl","uel","uecl","us","br","ar","mx","jp"].includes(l)||!soon.size));
     const days=[0,1].map(o=>new Date(Date.now()+o*864e5).toLocaleDateString("sv-SE",{timeZone:"Europe/Istanbul"}).replace(/-/g,""));
     const jobs=[]; for(const lg of lgs) for(const d of days) jobs.push(fetch(`https://site.api.espn.com/apis/site/v2/sports/soccer/${ESPN[lg]}/scoreboard?dates=${d}`,{cache:"no-store"})
       .then(r=>r.ok?r.json():null).then(j=>({lg,j})).catch(()=>null));
@@ -2969,7 +2974,7 @@ $("btQX").onclick=()=>{ $("btQBox").hidden=true; BT.q=""; $("btQ").value=""; ren
 let btT; $("btQ").oninput=e=>{ clearTimeout(btT); btT=setTimeout(()=>{ BT.q=e.target.value.trim(); renderBulten(); },180); };
 // Bülten sekmesi açıldığında ve veriler yenilendiğinde çiz
 document.querySelector('nav.tabs button[data-v="bulten"]').addEventListener("click",()=>{ renderBulten(); if(!Pick.loaded) Pick.loadEspn().then(renderBulten); });
-setInterval(()=>{ if(!document.hidden && !$("v-bulten").hidden){ Pick.loadEspn().then(renderBulten); } },45000);
+setInterval(()=>{ if(!document.hidden && !$("v-bulten").hidden){ Pick.loadEspn().then(renderBulten); } },120000);
 $("refreshBtn").addEventListener("click",()=>{ BT.cache.clear(); setTimeout(renderBulten,1500); });
 // Açılış: bağlantıda başka bir sekme yoksa Bülten ile aç
 setTimeout(()=>{ const h=(location.hash||"").slice(1), q=new URLSearchParams(location.search);
@@ -3315,7 +3320,7 @@ function bkPredict(f){
   const spreads=[-6,-3,0,3,6].map(d=>{ const l=(od&&od.spread!=null?od.spread:hcap)+d; return {l, h:bkPhi((mar+l)/sm)}; });
   // İlk yarı
   const m1=mar*s1, sd1=sm*Math.sqrt(s1)*1.05, t1=tot*s1, st1=st*Math.sqrt(s1)*1.05;
-  const pD1=bkPhi(.5/sd1)-bkPhi(-.5/sd1), pH1=1-bkPhi((.5-m1)/sd1), pA1=bkPhi((-.5-m1)/sd1);
+  const pD1=bkPhi((.5-m1)/sd1)-bkPhi((-.5-m1)/sd1), pH1=1-bkPhi((.5-m1)/sd1), pA1=bkPhi((-.5-m1)/sd1);
   const line1=Math.floor(t1)+.5, o1=1-bkPhi((line1-t1)/st1);
   const quarters=sh.map((s,k)=>{ const m=mar*s, sd=sm*Math.sqrt(s)*1.1; return {h:1-bkPhi((.5-m)/sd), a:bkPhi((-.5-m)/sd), t:tot*s}; });
   return {L,H,A,mh,ma,mar,tot,pH,pA:1-pH,ms:[H_,A_],iy:[h1,a1],y2:[H_-h1,A_-a1],q,line,totals,spreads,hcap,
@@ -3647,7 +3652,7 @@ async function doRefresh(btn){
   paintUpd(); setTimeout(paintUpd,1500); setTimeout(paintUpd,4000); setInterval(paintUpd,30000);
   window.addEventListener("focus",paintUpd);
   // Uygulama 10 dk'dan uzun arka planda kaldıysa açılınca kendiliğinden güncelle
-  document.addEventListener("visibilitychange",()=>{ if(!document.hidden && Date.now()-UPD.at>10*60e3) doRefresh(); });
+  document.addEventListener("visibilitychange",()=>{ if(!document.hidden && Date.now()-UPD.at>10*60e3) silentRefresh(); });
 })();
 
 // =====================================================================
@@ -3762,6 +3767,43 @@ renderPrediction=function(inp,r){ _rpL(inp,r);
       <p class="note">Kalan sürede beklenen gol ve skor durumu (geride olan hızlanır, önde olan yavaşlar) hesaba katılır. Devre arası skoru bilinen 17.116 maçta bu yöntem kazananı %61 doğru buldu (maç öncesi %50). Sayfayı yenileyince güncellenir.</p>`;
     const out=$("out"); out.insertBefore(el,out.firstChild);
   }catch(e){} };
+
+// =====================================================================
+// v20: Denetim düzeltmeleri — takım arama önbelleği (donma), ESPN istek kilidi, sessiz arka plan yenilemesi, geç veri sonrası yeniden çizim
+// =====================================================================
+(function(){
+  const ver=()=>TEAMS.length+":"+Object.keys(S.teams||{}).length;
+  let atV=null, atC=null; const _at=allTeams;
+  allTeams=function(){ const v=ver(); if(v!==atV){ atV=v; atC=_at(); ftC.clear(); btC.clear(); } return atC; };
+  const ftC=new Map(), btC=new Map(); const _ft=findTeam, _bt=bestTeamName;
+  findTeam=function(n){ allTeams(); const k=String(n||""); if(ftC.has(k)) return ftC.get(k); const r=_ft(n); ftC.set(k,r); return r; };
+  bestTeamName=function(n){ allTeams(); const k=String(n||""); if(btC.has(k)) return btC.get(k); const r=_bt(n); btC.set(k,r); return r; };
+  // ESPN: aynı anda tek istek turu
+  const _le=Pick.loadEspn.bind(Pick); let inflight=null;
+  Pick.loadEspn=function(){ if(inflight) return inflight; inflight=_le().finally(()=>{ setTimeout(()=>{ inflight=null; },15000); }); return inflight; };
+  // Pick.list: kısa süreli önbellek (aynı çizim turunda tekrar hesaplanmasın)
+  const _pl=Pick.list.bind(Pick); let plT=0, plC=null;
+  Pick.list=function(){ const now=Date.now(); if(plC&&now-plT<1500) return plC.map(x=>Object.assign({},x)); plC=_pl(); plT=now; return plC.map(x=>Object.assign({},x)); };
+  // geç gelen veriden sonra çubuk ve bülten tazelensin
+  const _ld=loadData; loadData=async function(f){ const r=await _ld(f); try{ paintUpd(); if(!$("v-bulten").hidden){ BT.cache.clear(); renderBulten(); } }catch(e){} return r; };
+  if(typeof loadFixtures==="function"){ const _lf=loadFixtures; loadFixtures=async function(f){ const r=await _lf(f); try{ BT.cache.clear(); if(!$("v-bulten").hidden) renderBulten(); }catch(e){} return r; }; }
+})();
+// Arka plandan dönüş: sessiz yenileme (bildirim, ses, form gönderimi yok)
+async function silentRefresh(){ try{ await Promise.all([loadData(true), Pick.loadEspn().catch(()=>{}), bkLoad(true).then(()=>bkLive()).catch(()=>{})]); UPD.at=Date.now(); BT.cache.clear(); if(!$("v-bulten").hidden) renderBulten(); if(!$("v-basket").hidden) renderBasket(); paintUpd(); }catch(e){} }
+
+// v21: Bülten tahminleri arka planda parça parça (ilk açılışta donma yok)
+(function(){
+  const QP={t0:0, spent:0, pend:new Map(), timer:null};
+  const _q=quickPred;
+  const key=m=>m.lg+"|"+m.h+"|"+m.a+"|"+(MODEL&&MODEL.updated);
+  function fill(){ QP.timer=null; const t0=performance.now(); QP.t0=t0; QP.spent=0;
+    for(const [k,[m,f]] of QP.pend){ if(performance.now()-t0>120) break; QP.pend.delete(k); try{ _q(m,f); }catch(e){} }
+    if(QP.pend.size) QP.timer=setTimeout(fill,30); else { try{ if(!$("v-bulten").hidden) renderBulten(); }catch(e){} } }
+  quickPred=function(m,f){ const k=key(m); if(BT.cache.has(k)) return _q(m,f);
+    const now=performance.now(); if(now-QP.t0>800){ QP.t0=now; QP.spent=0; }
+    if(QP.spent>250){ QP.pend.set(k,[m,f]); if(!QP.timer) QP.timer=setTimeout(fill,40); return null; }
+    const a=performance.now(); const r=_q(m,f); QP.spent+=performance.now()-a; return r; };
+})();
 </script>
 
 </body>
