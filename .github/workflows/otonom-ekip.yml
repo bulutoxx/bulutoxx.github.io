@@ -11,7 +11,6 @@ on:
     paths: ["lab/research.py", "lab/analyst.py", "lab/qa.mjs", "lab/guardian.py", "lab/dq.py", ".github/workflows/otonom-ekip.yml"]
 permissions:
   contents: write
-  issues: write
 concurrency:
   group: otonom-ekip
   cancel-in-progress: false
@@ -40,28 +39,7 @@ jobs:
       - name: Kaydet
         run: |
           git config user.name "bulutoxx-bot"; git config user.email "bulutoxx-bot@users.noreply.github.com"
-          git add data/research.json data/analyst.json data/qa.json data/qa data/changes.json data/rollback.json data/dq.json 2>/dev/null || true
+          git add data/research.json data/analyst.json data/qa.json data/qa data/changes.json data/rollback.json data/dq.json data/gelisim.json 2>/dev/null || true
           git diff --cached --quiet && exit 0
           git commit -qm "Otonom ekip raporu $(date -u +%F)"
           for i in 1 2 3; do git pull -q --rebase -X theirs origin main && git push -q origin HEAD:main && break; sleep 8; done
-      - name: Sorun varsa uyarı kaydı aç
-        env: { GH_TOKEN: "${{ github.token }}" }
-        run: |
-          python3 - <<'PY' > /tmp/qa.txt
-          import json
-          try: q=json.load(open("data/qa.json"))
-          except Exception: q={}
-          if q.get("alarm"): print("\n".join("- Kalite: "+h for h in q.get("hatalar",[])[:30]))
-          try: d=json.load(open("data/dq.json"))
-          except Exception: d={}
-          if d.get("alarm"): print("\n".join("- Veri/güvenlik: "+h for h in d.get("ciddi",[])))
-          try: r=json.load(open("data/rollback.json"))
-          except Exception: r={}
-          if r.get("aktif") and r.get("baslangic")==__import__("datetime").date.today().isoformat(): print("- Koruyucu bir değişikliği geri aldı: "+r.get("neden",""))
-          PY
-          if [ -s /tmp/qa.txt ]; then
-            gh label create bulutoxx-alarm --color B60205 2>/dev/null || true
-            if [ -z "$(gh issue list --label bulutoxx-alarm --state open --json number -q '.[0].number')" ]; then
-              gh issue create --title "Otonom ekip uyarısı $(date -u +%F)" --label bulutoxx-alarm --body-file /tmp/qa.txt
-            fi
-          fi

@@ -1275,6 +1275,12 @@ def main():
     if not offline:
         try: fx = merge_iddaa([f for f in fx if f.get("src") != "iddaa"], season, today)
         except Exception as e: print("iddaa bülteni alınamadı:", e.__class__.__name__, str(e)[:120], flush=True)
+    # Robot arenası konseyi bir pazarda kanıtlandıysa yaklaşan maçlara konsey olasılığı eklenir (onay beklemeden; koruyucu izler)
+    try:
+        import konsey
+        nk = konsey.apply(fx, season, P, today)
+        if nk: print(f"Konsey tahmini eklenen maç: {nk}", flush=True)
+    except Exception as e: print("konsey atlandı:", e.__class__.__name__, e, flush=True)
     json.dump([{k: v for k, v in f.items() if k != "xg"} for f in fx], open(fxp, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
     plog = json.load(open(plp, encoding="utf-8")) if os.path.exists(plp) else []
     have = {e["id"] for e in plog}

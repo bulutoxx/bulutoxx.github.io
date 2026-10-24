@@ -6,7 +6,6 @@ on:
   workflow_dispatch:
 permissions:
   contents: write
-  issues: write
 concurrency:
   group: live-log
   cancel-in-progress: false
@@ -28,13 +27,3 @@ jobs:
           git diff --cached --quiet && exit 0
           git commit -qm "Canlı seçim kaydı $(date -u +%FT%H:%M) [skip ci]"
           for i in 1 2 3; do git pull -q --rebase -X theirs origin main && git push -q origin HEAD:main && break; sleep 8; done
-      - name: Sorun sürerse uyarı kaydı aç
-        env: { GH_TOKEN: "${{ github.token }}" }
-        run: |
-          A=$(python3 -c "import json;h=json.load(open('data/health.json'));print('\n'.join('- '+x for x in h.get('sorun',[])))" 2>/dev/null)
-          if [ -n "$A" ]; then
-            gh label create bulutoxx-alarm --color B60205 2>/dev/null || true
-            if [ -z "$(gh issue list --label bulutoxx-alarm --state open --json number -q '.[0].number')" ]; then
-              printf "Bekçi botu sorun tespit etti:\n%s\n" "$A" | gh issue create --title "Bekçi: sistem gecikiyor $(date -u +%FT%H:%M)" --label bulutoxx-alarm --body-file -
-            fi
-          fi

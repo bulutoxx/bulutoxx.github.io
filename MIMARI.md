@@ -29,7 +29,7 @@ Hiçbir yapay zekâ servisine (Claude vb.) bağlı değildir; tüm botlar GitHub
    isabet belirgin düşerse (Brier +0,01) 14 gün boyunca önceki yapılandırmaya döner.
 3. **Tahminler maçtan önce kilitlenir.** Toplayıcı ve canlı kayıt, sonradan değiştirilemeyen kayıt tutar; tüm isabet raporları bu kayıtlardan gelir.
 4. **Hata sistemi durdurmaz.** Her bot kendi adımında çalışır; biri hata verirse diğerleri ve yayın devam eder.
-   Motor hatası `data/engine_error.txt`'e, sorunlar GitHub uyarı kaydına (issue, `bulutoxx-alarm` etiketi) yazılır.
+   Motor hatası `data/engine_error.txt`'e yazılır; sorunlar ve gelişmeler e-posta/bildirim yerine uygulama içinde gösterilir (Motor sayfası, ana ekran uyarısı, Gelişim günlüğü).
 5. **Gizlilik ve lisans.** Depoya anahtar/şifre yazılmaz (denetçi her gün tarar); ham ücretli veri yayınlanmaz;
    açık kaynak bileşenler yalnız uygun lisanslı (penaltyblog: MIT) ve laboratuvarda yarıştırılarak kullanılır.
 6. **Ücretsiz kalır.** Depo herkese açık olduğundan GitHub Actions ve Pages ücretsizdir; ücretli API gerekmez.
@@ -41,7 +41,7 @@ Futbolda tek maçın sonucu doğası gereği belirsizdir; hiçbir model her maç
 1. **Doğru referans:** Bahis piyasası en güçlü tek tahmincidir. Robot arenası her hafta beş bağımsız robotu
    (piyasa, Poisson, Elo, form, momentum) ve onları birleştiren öğrenen konseyi piyasaya karşı yarıştırır.
    İlk ölçümde (15.000+ maç) konsey ağırlığın tamamını piyasaya verdi: diğer robotlar piyasaya bilgi eklemiyor.
-   Sistem bu yüzden piyasa + kalibrasyon üzerine kuruludur; bir robot iki sezonda da piyasayı geçerse arena bildirir.
+   Sistem bu yüzden piyasa + kalibrasyon üzerine kuruludur. Konsey bir pazarda iki sezonda da piyasayı geçerse onay beklemeden devreye girer (scripts/konsey.py yaklaşan maçlara konsey olasılığını ekler); koruyucu sonrasını izler.
 2. **Kalibrasyon:** Gösterilen yüzde, geçmişte o güvendeki önerilerin gerçek tutma oranına göre düzeltilir
    (maç öncesi: 9.000+ maç; canlı: kilitli canlı seçimler; lig bazında: analist).
 3. **Seçicilik (pas geçme):** Güven %58'in altındaysa öneri verilmez ("⏸️ Pas"). Güçlü öneri %70+, Power Now canlı %80+.
@@ -66,7 +66,8 @@ Futbolda tek maçın sonucu doğası gereği belirsizdir; hiçbir model her maç
 | qa.json, qa/*.jpg | Kalite | Uygulama | Düğme testi, açılış süresi, ekran görüntüleri |
 | health.json | Bekçi | Uygulama | Nabız; gecikmede uyarı |
 | auto_lab.json | Laboratuvar | Motor, uygulama | Açık kaynak modellerle yarış sonucu |
-| arena.json | Robot arenası | Uygulama | 5 robot + konsey: sezon sezon isabet, ağırlıklar, oy birliği analizi |
+| arena.json | Robot arenası | Motor (konsey), uygulama | 5 robot + konsey: sezon sezon isabet, ağırlıklar, kabul edilen pazarlar (uygula) |
+| gelisim.json | Koruyucu | Uygulama | Gelişim günlüğü: otomatik uygulanan gelişmeler, geri almalar, ölçümler, karneler |
 
 ## Yeni bot eklemek
 

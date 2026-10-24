@@ -1065,6 +1065,10 @@ nav.tabs .pw-btn .badge{top:-2px;left:auto;right:-6px;background:#FFB020;color:#
 .hlban{margin:0 0 8px;padding:9px 12px;border-radius:12px;background:rgba(255,176,32,.12);border:1px solid rgba(255,176,32,.5);color:var(--amber);font-size:12.5px;font-weight:600}
 .tm-r{display:flex;gap:10px;padding:9px 0;border-top:1px solid var(--line)}.tm-ic{font-size:22px;line-height:1.2}
 .tm-r b{font-size:14.5px}.tm-r small{display:block;color:var(--ink3);font-size:11.5px}.tm-r p{margin:4px 0 0;font-size:12.5px;color:var(--ink2);line-height:1.45}
+.gel-d{margin:14px 2px 6px}.gel-e{display:flex;gap:10px;padding:10px 12px;margin-bottom:6px;border-radius:12px;background:var(--surface);border:1px solid var(--line)}
+.gel-e>span{font-size:20px;line-height:1.3}.gel-e b{font-size:14.5px}.gel-e p{margin:3px 0 0;font-size:12.5px;color:var(--ink2);line-height:1.45}
+.gel-gelisme{border-color:rgba(59,234,126,.45)}.gel-geri{border-color:rgba(255,176,32,.5)}
+#moreGel{position:relative}#moreGel .gel-n{position:static;margin-left:auto;margin-right:6px}
 </style>
 </head>
 <body>
@@ -4468,6 +4472,9 @@ function recCal(pp){ const B=MODEL&&MODEL.oneri&&MODEL.oneri.dogrulama&&MODEL.on
   return {p:pp}; }
 function recOf(P, f){
   if(!P) return null; const o=f&&f.odds, ou=f&&f.ou;
+  // Robot konseyi kanıtlanıp devreye girdiyse (motor fixtures.json'a ekler) onun olasılıkları kullanılır
+  if(f&&f.kp&&f.kp.length===3) P=Object.assign({},P,{H:f.kp[0],D:f.kp[1],A:f.kp[2]});
+  if(f&&f.ko!=null) P=Object.assign({},P,{o25:f.ko});
   const c=[{k:"1",n:"MS 1",p:P.H,o:o&&o[0]},{k:"X",n:"MS X",p:P.D,o:o&&o[1]},{k:"2",n:"MS 2",p:P.A,o:o&&o[2]},
            {k:"U",n:"2,5 Üst",p:P.o25,o:ou&&ou[0]},{k:"A",n:"2,5 Alt",p:1-P.o25,o:ou&&ou[1]}].filter(x=>x.p!=null&&!isNaN(x.p));
   const hasOdds=c.some(x=>x.o); const ok=c.filter(x=>hasOdds?(x.o&&x.o>=1.15):true);   // oran varsa yalnız oranı olan seçenekler (motor ve arşivle aynı kural)
@@ -4926,7 +4933,7 @@ if((location.hash||"")==="#sonuclar") setTimeout(()=>$("navRes").click(),200);
 // =====================================================================
 // BULUTOXX v35: Otomatik sürüm güncelleme — yeni sürüm yayınlanınca uygulama kendini yeniler
 // =====================================================================
-const APP_V="2026-10-24.49";
+const APP_V="2026-10-24.50";
 (function autoUpdate(){
   let shown=false;
   async function check(auto){
@@ -5134,6 +5141,30 @@ renderKarne=function(){ _rkV40(); const k=$("karne"); if(!k) return; const old=$
     ${row("🧹","Veri ve güvenlik denetçisi","her gün: tekrar/hatalı kayıt, isim eşleme, eski lig, sızan anahtar",DQ?`${(DQ.bilgi||{}).mac?(DQ.bilgi.mac).toLocaleString("tr-TR")+" maç tarandı · ":""}güvenlik: ${esc((DQ.bilgi||{}).guvenlik_tarama||"–")}${DQ.ciddi&&DQ.ciddi.length?`<br><b style="color:#ff8a95">${DQ.ciddi.map(esc).join(" · ")}</b>`:""}${DQ.uyari&&DQ.uyari.length?`<br>${DQ.uyari.map(esc).join("<br>")}`:""}`:"İlk rapor bu gece")}`;
   k.prepend(el); };
 setTimeout(teamLoad,3000); setInterval(()=>{ if(!document.hidden) teamLoad(); },20*60e3);
+
+// =====================================================================
+// BULUTOXX v41: 📈 Gelişim günlüğü — sistemin onay beklemeden kendi yaptığı gelişmeler, ölçümler ve karneler
+// =====================================================================
+let GELISIM=null;
+function gelLoad(){ return fetch("data/gelisim.json?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():null).then(d=>{ GELISIM=d; const v=$("v-gelisim"); if(v&&!v.hidden) renderGel(); gelBadge(); }).catch(()=>{}); }
+function gelBadge(){ const c=$("moreGel"); if(!c||!GELISIM) return; let seen=""; try{ seen=localStorage.getItem("bx-gel-seen")||""; }catch(e){}
+  const n=(GELISIM.olaylar||[]).filter(e=>e.tarih>seen&&e.tur!=="olcum").length; const b=c.querySelector(".gel-n"); if(b){ b.hidden=!n; b.textContent=n; } }
+function renderGel(){ const box=$("gelList"); if(!box) return;
+  const IC={gelisme:"🚀",ogrenme:"🧠",onay:"✅",geri:"🛟",olcum:"🔬",karne:"📒"};
+  const E=(GELISIM&&GELISIM.olaylar||[]).slice().reverse();
+  if(!E.length){ box.innerHTML=`<div class="panel empty"><b>Henüz kayıt yok</b></div>`; return; }
+  let last=""; box.innerHTML=E.map(e=>{ const h=e.tarih!==last?`<h3 class="gel-d">${esc(ist(new Date(e.tarih+"T12:00:00+03:00"),{day:"numeric",month:"long",weekday:"long"}))}</h3>`:""; last=e.tarih;
+    return h+`<div class="gel-e gel-${esc(e.tur)}"><span>${IC[e.tur]||"•"}</span><div><b>${esc(e.baslik)}</b><p>${esc(e.detay||"")}</p></div></div>`; }).join("");
+  try{ localStorage.setItem("bx-gel-seen",istDay(new Date())); }catch(e){} gelBadge(); }
+(function(){ const main=document.querySelector("main"); if(main&&!$("v-gelisim")){ const s=document.createElement("section"); s.className="view"; s.id="v-gelisim"; s.hidden=true;
+    s.innerHTML=`<div class="ltitle"><div><h1>Gelişim günlüğü</h1><p>BULUTOXX kendi kendine öğrenir; her gelişme önce sınanır, sonra onay beklemeden uygulanır</p></div></div><div class="wrap"><div id="gelList"></div>
+    <p class="note">🚀 gelişme · 🧠 yeniden öğrenme · ✅ kalıcı oldu · 🛟 geri alındı · 🔬 ölçüm · 📒 karne. Hiçbir değişiklik kanıtsız uygulanmaz; uygulanan her değişikliği Koruyucu izler, isabet düşerse kendiliğinden geri alır.</p></div>`; main.appendChild(s); }
+  const ml=document.querySelector("#v-more .mlist");
+  if(ml&&!$("moreGel")){ const c=document.createElement("button"); c.className="cell"; c.id="moreGel"; c.type="button";
+    c.innerHTML=`<span class="ic" style="background:linear-gradient(135deg,#3BEA7E,#118A43)"><svg viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 8-8M14 7h7v7"/></svg></span><span class="tx"><b>Gelişim günlüğü</b><small>Sistemin kendi yaptığı gelişmeler ve karneler</small></span><span class="badge gel-n" hidden></span><span class="ar">›</span>`;
+    c.onclick=()=>{ goView("gelisim","more"); renderGel(); gelLoad(); }; ml.prepend(c); }
+  setTimeout(gelLoad,3500); setInterval(()=>{ if(!document.hidden) gelLoad(); },30*60e3);
+})();
 </script>
 
 </body>

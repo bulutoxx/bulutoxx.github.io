@@ -129,6 +129,13 @@ def main():
                      "kazanc_1x2": [round(g, 5) for g in g1], "kazanc_ou": [round(g, 5) for g in g2]}
     out["karar"] = ("Konsey " + " ve ".join([x for x, ok in (("maç sonucunda", out["konsey"]["kabul_1x2"]), ("alt/üstte", out["konsey"]["kabul_ou"])) if ok]) + " iki sezonda da piyasayı geçti."
                     if out["konsey"]["kabul_1x2"] or out["konsey"]["kabul_ou"] else "Konsey iki sezonda da piyasayı geçemedi; mevcut sistem (piyasa + kalibrasyon) korunur.")
+    # Kabul edilen pazar için konsey ağırlıkları motora otomatik geçer (iki katlamanın ortalaması); Elo eşlemesi tüm veride öğrenilir
+    AG = out.get("agirliklar", {})
+    def avg(key, names): return {n: round(float(np.mean([AG[s][key][n] for s in AG])), 3) for n in names}
+    We_all = fit_stacker(elo_feat(rows), y(rows), 3)
+    out["uygula"] = {"1x2": avg("1x2", ["Piyasa", "Poisson", "Form", "Momentum", "Elo"]) if out["konsey"]["kabul_1x2"] else None,
+                     "ou": avg("ou", ["Piyasa", "Poisson", "Form", "Momentum"]) if out["konsey"]["kabul_ou"] else None,
+                     "elo_W": We_all.round(5).tolist(), "tarih": out["tarih"]}
     json.dump(out, open(os.path.join(ROOT, "data", "arena.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     print(json.dumps({k: out[k] for k in ("konsey", "karar", "agirliklar")}, ensure_ascii=False))
     for nm, v in res.items(): print(f"{nm:20s}", " | ".join(f"{s}: 1X2 ll {x['ll_1x2']} %{x['isabet_1x2']*100:.1f}" + (f" · A/Ü ll {x['ll_ou']} %{x['isabet_ou']*100:.1f}" if "ll_ou" in x else "") for s, x in v.items()))

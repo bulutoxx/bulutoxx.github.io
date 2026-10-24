@@ -9,7 +9,6 @@ on:
     paths: ["lab/auto_lab.py", ".github/workflows/auto-lab.yml"]
 permissions:
   contents: write
-  issues: write
 concurrency:
   group: auto-lab
   cancel-in-progress: false
@@ -31,18 +30,12 @@ jobs:
       - name: 🤖 Robot arenası (5 robot + öğrenen konsey)
         env: { ARENA_BUDGET: "1500" }
         run: python lab/arena.py || echo "arena atlandı"
+      - name: 📈 Gelişim günlüğü
+        run: python lab/guardian.py || true
       - name: Sonucu kaydet
         run: |
           git config user.name "bulutoxx-bot"; git config user.email "bulutoxx-bot@users.noreply.github.com"
-          git add data/auto_lab.json data/arena.json
+          git add data/auto_lab.json data/arena.json data/gelisim.json data/changes.json data/rollback.json
           git diff --cached --quiet && exit 0
           git commit -qm "Otomatik laboratuvar sonucu $(date -u +%F) [guncelle]"
           for i in 1 2 3; do git pull -q --rebase -X theirs origin main && git push -q origin HEAD:main && break; sleep 10; done
-      - name: Konsey piyasayı geçtiyse bildir
-        env: { GH_TOKEN: "${{ github.token }}" }
-        run: |
-          K=$(python3 -c "import json;a=json.load(open('data/arena.json'));k=a.get('konsey',{});print('evet' if k.get('kabul_1x2') or k.get('kabul_ou') else '')" 2>/dev/null)
-          if [ -n "$K" ]; then
-            gh label create bulutoxx-gelisme --color 0E8A16 2>/dev/null || true
-            python3 -c "import json;a=json.load(open('data/arena.json'));print(a['karar']);print(json.dumps(a.get('agirliklar'),ensure_ascii=False))" | gh issue create --title "Robot arenası: piyasayı geçen konsey bulundu $(date -u +%F)" --label bulutoxx-gelisme --body-file -
-          fi

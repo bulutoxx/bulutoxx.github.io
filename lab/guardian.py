@@ -66,6 +66,36 @@ def main():
                   "devig": prev.get("devig", "power"), "analist": prev.get("analist", False), "gecmis": (rb.get("gecmis") or [])[-10:] + [d]}
         elif len(after) >= MIN_N:
             ch["durum"] = "kalıcı (isabet korunuyor)"
+    # 📈 Gelişim günlüğü: uygulamada gösterilen, sistemin kendi kendine yaptığı gelişmeler ve ölçümler
+    G = jl("gelisim.json", {"olaylar": []}) or {"olaylar": []}; ev = G["olaylar"]
+    def add(tur, baslik, detay, anahtar):
+        if any(e.get("anahtar") == anahtar for e in ev): return
+        ev.append({"tarih": today, "tur": tur, "baslik": baslik, "detay": detay, "anahtar": anahtar})
+    NM = {"devig": "Bahis marjı ayırma yöntemi", "analist": "Lig güven katsayıları", "auto_lab": "Laboratuvar karışımı", "motor sürümü": "Motor sürümü"}
+    for ch in log["degisiklikler"]:
+        f = ch.get("fark") or {}
+        for k, (a, b) in f.items():
+            if k in NM: add("gelisme", f"{NM[k]} güncellendi", f"{a} → {b}", f"{ch['tarih']}-{k}-{b}")
+        pk = [k for k in f if k in KEYS]
+        if pk: add("ogrenme", "Motor ayarlarını yeni maçlarla yeniden öğrendi", ", ".join(f"{k} {f[k][0]}→{f[k][1]}" for k in pk[:4]), f"{ch['tarih']}-ayar")
+        if ch.get("durum") == "GERİ ALINDI": add("geri", "Koruyucu bir değişikliği geri aldı", rb.get("neden", ""), f"{ch['tarih']}-geri")
+        if ch.get("durum", "").startswith("kalıcı"): add("onay", "Değişiklik kalıcı oldu", f"{ch['tarih']} tarihli değişiklikten sonra isabet korundu", f"{ch['tarih']}-kalici")
+    A = jl("arena.json", {}) or {}
+    if A.get("tarih"):
+        u = A.get("uygula") or {}
+        if u.get("1x2") or u.get("ou"): add("gelisme", "Robot konseyi devreye girdi", A.get("karar", ""), f"{A['tarih']}-konsey-on")
+        else: add("olcum", "Robot arenası haftalık savaşı", A.get("karar", ""), f"{A['tarih']}-arena")
+    L = jl("auto_lab.json", {}) or {}
+    if L.get("tarih"): add("olcum", "Laboratuvar: açık kaynak modellerle yarış", (L.get("karar") or {}).get("aciklama", ""), f"{L['tarih']}-lab")
+    D = jl("daily.json", {}) or {}
+    for g in (D.get("gunler") or [])[-3:]:
+        if g.get("n", 0) >= 20 and g["d"] < today:
+            gu = g.get("guclu") or {}
+            add("karne", f"{g['d']} karnesi", f"{g['n']} kilitli öneri, %{round(g['hit'] * 100)} tuttu" + (f"; güçlü önerilerin %{round(gu['hit'] * 100)}'i ({gu['n']} öneri)" if gu.get("n") else ""), f"{g['d']}-karne")
+    C = (D.get("canli") or {})
+    if C.get("n", 0) >= 50: add("karne", "Canlı karne", f"{C['n']} kilitli canlı seçim, %{round(C['hit'] * 100)} tuttu", f"{today}-canli")
+    G["olaylar"] = ev[-150:]; G["guncel"] = today
+    json.dump(G, open(os.path.join(DATA, "gelisim.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     json.dump(log, open(os.path.join(DATA, "changes.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     json.dump(rb, open(os.path.join(DATA, "rollback.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     print(f"Koruyucu: {len(log['degisiklikler'])} kayıtlı değişiklik; geri alma {'AKTİF: ' + rb['neden'] if rb.get('aktif') else 'yok'}")
