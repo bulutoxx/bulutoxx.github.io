@@ -1113,6 +1113,24 @@ nav.tabs .pw-btn .badge{top:-2px;left:auto;right:-6px;background:#FFB020;color:#
 .br-b{display:flex;gap:8px;margin:8px 0 4px}.br-b button{flex:1;border:1px solid var(--line2);background:var(--surface2);color:var(--ink);border-radius:12px;padding:9px;font:700 13.5px var(--font)}
 .br-b button small{display:block;font-weight:500;font-size:11px;color:var(--ink3);margin-top:2px}
 .br-bar{height:8px;border-radius:9px;background:var(--surface2);overflow:hidden;margin:8px 0 4px}.br-bar i{display:block;height:100%;background:linear-gradient(90deg,#9B5BFF,#22D3FF);transition:width .3s}
+.pw-r[data-om],.bt-card[data-om],.cprow[data-cpi],tr[data-team]{cursor:pointer}
+.pw-r[data-om]:active,.cprow[data-cpi]:active,tr[data-team]:active{background:rgba(255,255,255,.06)}
+.idl-gh{cursor:pointer}.idl-g.shut>.lv-c{display:none}
+.idl-gh::after{content:"▾";margin-left:auto;padding-left:8px;opacity:.5}.idl-g.shut>.idl-gh::after{content:"▸"}
+.msheet .mtap{cursor:pointer;-webkit-tap-highlight-color:rgba(255,255,255,.08)}
+.msheet .ms-t.mtap:active,.msheet .ms-bar span:active,.msheet .ms-kv span:active,.msheet .fr:active{opacity:.75}
+@keyframes flashG{0%{box-shadow:0 0 0 0 rgba(59,234,126,.8)}100%{box-shadow:0 0 0 14px rgba(59,234,126,0)}}
+.flash{animation:flashG 1s ease-out 2}
+.oyn-bar{display:flex;align-items:center;gap:10px;justify-content:space-between;flex-wrap:wrap;margin:10px 0;padding:10px 12px;border-radius:12px;background:rgba(43,212,107,.08);border:1px solid rgba(43,212,107,.25);font-size:13px}
+.oyn-bar .btn.sm{margin:0;padding:8px 12px;width:auto}
+.oyn-h{display:flex;flex-direction:column;gap:2px;margin-bottom:8px}.oyn-h small{color:var(--ink3)}
+.oyn-s{border-top:1px solid var(--line);padding:8px 0}.oyn-t{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--ink2)}.oyn-t>span:first-child{flex:1}
+.oyn-del{background:none;border:0;font-size:15px;opacity:.6;padding:4px}
+.oyn-i{display:flex;align-items:center;gap:8px;padding:6px 0 6px 6px;cursor:pointer}.oyn-i .l{flex:1;min-width:0}.oyn-i b{display:block;font-size:13.5px}.oyn-i small{color:var(--ink3);font-size:12px}
+.oyn-m{display:flex;gap:4px}.oyn-m button{background:rgba(255,255,255,.08);border:0;border-radius:8px;padding:5px 7px;font-size:13px}
+.oyn-s.st-g{box-shadow:inset 3px 0 0 #2BD46B}.oyn-s.st-x{box-shadow:inset 3px 0 0 #FF5A5F}
+.ap-h{margin:0 0 6px;font-size:16px}
+#cpPlay{margin:10px 0;background:linear-gradient(135deg,#2BD46B,#14A44D)}
 </style>
 </head>
 <body>
@@ -1394,7 +1412,7 @@ const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">"
 const slug = s => s.toLocaleLowerCase("tr").trim()
   .replace(/ç/g,"c").replace(/ğ/g,"g").replace(/ı/g,"i").replace(/ö/g,"o").replace(/ş/g,"s").replace(/ü/g,"u")
   .normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,80) || "takim";
-function toast(msg){ const t=$("toast"); t.textContent=msg; t.hidden=false; clearTimeout(toast._t); toast._t=setTimeout(()=>t.hidden=true,2600); }
+function toast(msg){ const t=$("toast"); t.textContent=msg; t.hidden=false; clearTimeout(toast._t); toast._t=setTimeout(()=>t.hidden=true,Math.max(2600,String(msg).length*60)); }
 function parseForm(str){ const out=[]; const re=/(\d+)\s*[-:–]\s*(\d+)/g; let m; while((m=re.exec(str||"")) && out.length<5) out.push([+m[1],+m[2]]); return out; }
 
 // ---------- Hafıza (ortak db, yoksa bu cihaz) ----------
@@ -3369,7 +3387,7 @@ function tableHTML(lg, hl){
   const S=standings(lg); if(!S.length) return `<p class="note">Bu lig için puan durumu yok.</p>`;
   const n=S.length, cls=i=>i<1?"z1":i<4?"z2":i<6?"z3":i>=n-3?"z4":"";
   return `<div class="tbl"><table class="st-t"><thead><tr><th>#</th><th>Takım</th><th class="r">O</th><th class="r">AV</th><th class="r">P</th><th class="r fcol">Form</th><th></th></tr></thead><tbody>
-    ${S.map((t,i)=>`<tr class="${hl&&hl.includes(t.n)?"hl":""}"><td><span class="pos ${cls(i)}">${t.s}</span></td>
+    ${S.map((t,i)=>`<tr class="${hl&&hl.includes(t.n)?"hl":""}" data-team="${esc(t.n)}"><td><span class="pos ${cls(i)}">${t.s}</span></td>
       <td><span class="tn" data-team="${esc(t.n)}">${crest(t.n,18)}<b>${esc(t.n)}</b></span></td><td class="r">${t.o}</td><td class="r">${t.ag-t.yg>0?"+":""}${t.ag-t.yg}</td><td class="r"><b>${t.p}</b></td>
       <td class="r fcol"><span class="mf">${t.f.map(r=>`<i class="${r}">${r}</i>`).join("")}</span></td>
       <td><button class="fav" type="button" data-fav="${esc(t.n)}" aria-label="Favori">${starI(FAVT.has(t.n))}</button></td></tr>`).join("")}
@@ -3446,7 +3464,7 @@ function renderKupon(){
     <button class="btn" type="button" id="cpSuggest">🤖 BULUTOXX'ten günün kuponunu öner</button><button class="btn ghost" type="button" id="cpGo">Bültene git</button>`;
     $("cpGo").onclick=goHome; $("cpSuggest").onclick=suggestCoupon; return; }
   const rating = st.ev>=1.05?["Değerli görünüyor","g"]: st.ev>=.92?["Adil","m"]:["Oran olasılığa göre düşük","x"];
-  box.innerHTML=`<div class="panel">${CP.items.map((x,i)=>`<div class="cprow"><div class="l"><small>${FLAG[x.lg]||""} ${esc(LEAGUES[x.lg]?LEAGUES[x.lg].n:"")} · ${esc(ist(new Date(x.dt),{weekday:"short",hour:"2-digit",minute:"2-digit"}))}</small>
+  box.innerHTML=`<div class="panel">${CP.items.map((x,i)=>`<div class="cprow" data-cpi="${i}"><div class="l"><small>${FLAG[x.lg]||""} ${esc(LEAGUES[x.lg]?LEAGUES[x.lg].n:"")} · ${esc(ist(new Date(x.dt),{weekday:"short",hour:"2-digit",minute:"2-digit"}))}</small>
       <b>${esc(x.h)} – ${esc(x.a)}</b><span><em>${mkName(x.mk)}</em> · BULUTOXX %${Math.round((x.p||0)*100)}</span></div><span class="o">${x.odd.toFixed(2)}</span><button class="rm" type="button" data-i="${i}" aria-label="Çıkar">✕</button></div>`).join("")}</div>
     <div class="panel cpsum">
       <div class="list"><div><span>Seçim</span><span>${st.n} maç</span></div><div><span>Toplam oran</span><span><b>${st.odd.toFixed(2)}</b></span></div>
@@ -3782,7 +3800,7 @@ function bkOpen(f){
   const pc=x=>Math.round(x*100);
   const form=t=>t&&t.form&&t.form.length?`<div class="bk-form">${t.form.map(x=>`<span class="${x.r}" title="${esc(x.o)} ${esc(x.d)}">${x.r} ${esc(x.s)}</span>`).join("")}</div>`:`<p class="note">Bu sezon maç yok</p>`;
   let body="";
-  if(!p){ body=`<div class="panel empty"><b>Bu maç için yeterli veri yok</b>Takımlardan biri bu ligde yeni. Birkaç maç sonra tahmin otomatik açılır.</div>`; }
+  if(!p){ const lv2=f._lv; body=`<div class="panel"><div class="bk-vs"><div>${bkIm(f.hl,f.h)}<b>${esc(f.h)}</b></div><div class="mid">${lv2?`<b style="font-size:22px;color:var(--ink)">${lv2.hs}-${lv2.as}</b><br><small>🔴 ${esc(idlClockTxt(lv2))}</small>`:"vs"}</div><div>${bkIm(f.al,f.a)}<b>${esc(f.a)}</b></div></div>${lv2&&lv2.hq&&lv2.hq.length?`<p class="note" style="text-align:center;margin:8px 0 0">${lv2.hq.map((q,i)=>`${i+1}Ç ${q}-${(lv2.aq||[])[i]??""}`).join(" · ")}</p>`:""}</div><div class="panel empty"><b>Bu maç için yeterli veri yok</b>Takımlardan biri bu ligde yeni. Birkaç maç sonra tahmin otomatik açılır.</div>`; }
   else {
     const fav=p.pH>=.5?f.h:f.a, bt=L.backtest;
     body=`
@@ -3829,7 +3847,7 @@ function bkOpen(f){
       <p class="note">Hep ev sahibi dese %${pc(bt.home_base)} tutardı.</p></div>`:""}
     <div class="actions"><button class="btn" type="button" id="bkShare">Arkadaşına gönder</button></div>`;
   }
-  box.innerHTML=`<div class="wrap"><div class="bkd-top"><button type="button" id="bkBack" aria-label="Geri"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><b>${BK_FLAG[f.lg]||"🏀"} ${esc(bkLg(f.lg))}${f.round?` · ${esc(f.round)}`:""}</b></div>${body}
+  box.innerHTML=`<div class="wrap"><div class="bkd-top"><button type="button" id="bkBack" aria-label="Geri"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><b>${BK_FLAG[f.lg]||"🏀"} ${esc(f._comp||bkLg(f.lg))}${f.round?` · ${esc(f.round)}`:""}</b></div>${body}
     <p class="disc">Tahminler istatistiksel olasılıktır, kesin sonuç veya bahis tavsiyesi değildir · 18+</p></div>`;
   document.body.appendChild(box); document.body.style.overflow="hidden";
   const close=()=>{ box.remove(); document.body.style.overflow=""; };
@@ -3844,6 +3862,7 @@ function bkOpen(f){
 // Spor seçici: Futbol ⇄ Basketbol
 const SPORT={ get(){ return lsGet("bx-sport")||"fb"; }, set(v){ lsSet("bx-sport",v); } };
 function showSport(s){
+  if(SPORT.get&&SPORT.get()===s) try{ window.scrollTo({top:0,behavior:"smooth"}); }catch(e){}
   SPORT.set(s);
   document.querySelectorAll(".sport-sw button").forEach(b=>b.setAttribute("aria-pressed", b.dataset.s===s));
   if(s==="bk"){ goView("basket","bulten"); renderBasket(); bkLoad().then(()=>{ renderBasket(); bkLive().then(renderBasket); }); }
@@ -4393,7 +4412,7 @@ function idlListHtml(sp, q){
   if(!L.length) return `<div class="panel idl-empty"><b>${IDL.ok[sp]?(q?"Aramaya uyan canlı maç yok":"Şu an canlı "+(sp===1?"futbol":"basketbol")+" maçı yok"):(IDL.failed?"Canlı bülten alınamadı, birazdan tekrar denenecek":"Canlı maçlar yükleniyor…")}</b></div>`;
   if(IDLV.sort==="lig") L=L.slice().sort((x,y)=>x.comp.localeCompare(y.comp,"tr")||x.ts-y.ts);
   const G=[]; for(const m of L){ const g=G[G.length-1]; if(g&&g.comp===m.comp) g.items.push(m); else G.push({comp:m.comp,cc:m.cc,items:[m]}); }
-  return G.map(g=>`<div class="idl-g"><div class="idl-gh"><span>${ccFlag(g.cc)}</span>${esc(g.comp||"Diğer")}<small>${g.items.length}</small></div>${g.items.map(idlRow).join("")}</div>`).join("");
+  return G.map(g=>`<div class="idl-g${IDLV.shut&&IDLV.shut.has(g.comp)?" shut":""}" data-comp="${esc(g.comp||"")}"><div class="idl-gh"><span>${ccFlag(g.cc)}</span>${esc(g.comp||"Diğer")}<small>${g.items.length}</small></div>${g.items.map(idlRow).join("")}</div>`).join("");
 }
 function idlBoxHtml(){
   const n1=IDL.live[1].length, n2=IDL.live[2].length;
@@ -4787,6 +4806,29 @@ function msRender(){
   el.querySelectorAll(".ms-tabs button").forEach(b=>b.onclick=()=>{ MS.tab=b.dataset.t; Sound.tap(); msRender(); if(MS.tab==="form"&&f&&f.iid) msForm(f.iid); });
   el.querySelectorAll(".mo").forEach(b=>b.onclick=()=>{ const mm=m.sp?{lg:"i"+m.ci,h:m.h,a:m.a,dt}:m; cpToggle(mm,b.dataset.mk,+b.dataset.o,+b.dataset.p); if(typeof paintCoupon==="function") paintCoupon(); msRender(); });
   const det=$("msDetail"); if(det) det.onclick=()=>{ const mm=m.sp?{lg:"i"+m.ci,h:m.h,a:m.a,dt,src:"x"}:m; closeMatch(); pickMatch(mm); };
+  msWire(el,m);
+}
+// Maç sayfasında ölü hücre kalmasın: özet kutular ilgili oran grubuna, takım adı forma, lig adı puan durumuna götürür
+function msGo(tab,key){ MS.tab=tab; Sound.tap(); msRender(); if(tab==="form"&&MS.f&&MS.f.iid) msForm(MS.f.iid);
+  if(!key) return; const el=$("msheet"); const g=[...el.querySelectorAll(".mg,.ms-card")].find(x=>{ const h=x.querySelector("h4"); return h&&norm(h.textContent).includes(norm(key)); });
+  if(g){ g.scrollIntoView({behavior:"smooth",block:"center"}); g.classList.remove("flash"); void g.offsetWidth; g.classList.add("flash"); } }
+function msWire(el,m){
+  const on=(sel,fn)=>el.querySelectorAll(sel).forEach(x=>{ x.classList.add("mtap"); x.onclick=e=>{ if(e.target.closest("button,.mo,a")&&!x.matches("button")) return; buzz(6); fn(x,e); }; });
+  on(".ms-t",()=>msGo("form"));
+  on(".ms-sc",()=>msGo("oran",MS.live?"Maç sonucu":"En olası skorlar"));
+  on(".ms-lg",()=>{ if(!m.sp&&LEAGUES[m.lg]&&SEASON[m.lg]&&!SEASON[m.lg].cup){ closeMatch(); openLeague(m.lg); } else toast(`${m.sp?m.comp:(LEAGUES[m.lg]||{n:""}).n} · bu lig için puan durumu yok`); });
+  on(".ms-when",()=>{ const d=m.sp?new Date(m.ts):m.dt; toast(`Başlama: ${ist(d,{weekday:"long",day:"numeric",month:"long",hour:"2-digit",minute:"2-digit"})} (Türkiye saati)`); });
+  on(".recbig",x=>{ const ad=x.querySelector(".rb-add"); if(ad){ ad.click(); return; }
+    const nm=norm((x.querySelector("b")||{}).textContent||""); const mo=[...el.querySelectorAll(".mo")].find(b=>norm(mkName(b.dataset.mk))===nm);
+    if(mo){ mo.click(); return; }
+    if(x.classList.contains("rec-w")) toast("Pas: güven %58'in altında. Yine de oynamak istersen Oranlar sekmesinden seçebilirsin."); else msGo("oran"); });
+  on(".ms-bar span",x=>msGo("oran","Maç sonucu"));
+  on(".ms-kv span",x=>{ const t=norm(x.textContent); msGo("oran",t.includes("kg")?"Karşılıklı gol":t.includes("1,5")||t.includes("1 5")?"1,5 Alt":t.includes("ilk gol")?"Maç sonucu":"2,5 Alt"); });
+  on(".ms-pick",x=>{ const t=(x.querySelector("b")||{}).textContent||""; const n=norm(t); msGo("oran",/kg|karsilikli/.test(n)?"Karşılıklı gol":/(\d)[.,](\d)/.test(t)?t.match(/(\d)[.,](\d)/)[0].replace(".",",")+" Alt":/iy|ilk yari/.test(n)?"İlk yarı":"Maç sonucu"); });
+  on(".ms-big>div",x=>{ const t=norm(x.textContent); if(t.includes("ilk yari")) msGo("oran","İlk yarı"); else if(t.includes("gol ol")) msGo("tahmin","Maçta başka gol"); else msGo("oran",MS.live?"Maç sonucu":"En olası skorlar"); });
+  on(".msc",x=>{ toast(`Skor ${(x.querySelector("b")||{}).textContent||""}: olasılık ${(x.querySelector("small")||{}).textContent||""}. Kesin skor tek başına düşük olasılıklıdır; kupon için Maç sonucu veya Alt/Üst daha güvenli.`); });
+  on(".ff",x=>{ const t=(x.querySelector("b")||{}).textContent||""; msGo("form", t); });
+  on(".fr",x=>{ const sp=[...x.querySelectorAll("span")].map(s=>s.textContent).find(s=>/🏠|✈️/.test(s)); const n=sp?sp.replace(/🏠|✈️/g,"").trim():""; if(n) openTeam(n); });
 }
 function bar3(H,D,A){ return `<div class="ms-bar"><span style="flex:${H}" class="h"><b>1</b> %${pc9(H)}</span><span style="flex:${D}" class="d"><b>X</b> %${pc9(D)}</span><span style="flex:${A}" class="a"><b>2</b> %${pc9(A)}</span></div>`; }
 function msTahmin(m,f,r,lv){
@@ -4825,7 +4867,7 @@ function msOran(m,f,r,lv){
   const mm=m.sp?{lg:"i"+m.ci,h:m.h,a:m.a}:m;
   if(lv){ const P=idlPred(lv), od=lv.odds||{}; if(!P) return `<p class="note">Canlı oran yok.</p>`; const G=[];
     if(od.ms&&!od.ms.lock) G.push(mGroup("Maç sonucu (canlı)",[mOpt("1","1",P.H,od.ms.v[0],mm),mOpt("X","X",P.D,od.ms.v[1],mm),mOpt("2","2",P.A,od.ms.v[2],mm)]));
-    if(od.ou&&!od.ou.lock) G.push(mGroup(`${lnF(od.ou.l)} Alt/Üst (canlı)`,[mOpt("A","Alt",1-P.pOver,od.ou.alt,mm),mOpt("U","Üst",P.pOver,od.ou.ust,mm)]));
+    if(od.ou&&!od.ou.lock){ const kA="A"+od.ou.l, kU="U"+od.ou.l; MKT_N[kA]=`${lnF(od.ou.l)} Alt`; MKT_N[kU]=`${lnF(od.ou.l)} Üst`; G.push(mGroup(`${lnF(od.ou.l)} Alt/Üst (canlı)`,[mOpt(kA,"Alt",1-P.pOver,od.ou.alt,mm),mOpt(kU,"Üst",P.pOver,od.ou.ust,mm)])); }
     return G.join("")||`<p class="note">Şu an açık canlı oran yok (iddaa bu dakikada bahisleri kapatmış olabilir).</p>`; }
   if(!r) return `<p class="note">Oran hesaplanamadı.</p>`;
   const o=f&&f.odds||[], ou=f&&f.ou||[], kg=f&&f.ikg||[];
@@ -4863,13 +4905,13 @@ async function msForm(iid){
   MSF.set(iid,undefined);
   try{ const r=await fetch(`https://statisticsv2.iddaa.com/statistics/soccer/match-card/${iid}`,{cache:"no-store"}); const j=r.ok?await r.json():null; const d=j&&j.data;
     MSF.set(iid, d?{h:(d.h&&d.h.lfive)||[], a:(d.a&&d.a.lfive)||[], hl:d.h&&d.h.lu, al:d.a&&d.a.lu}:null); }catch(e){ MSF.set(iid,null); }
-  if(MS.m&&MS.tab==="form"){ const b=$("msForm"); if(b){ const pm=MS.m.sp?{lg:"i"+MS.m.ci,h:MS.m.h,a:MS.m.a,dt:new Date(MS.m.ts)}:MS.m; b.innerHTML=msFormHtml(fullPred(pm,MS.f)); } }
+  if(MS.m&&MS.tab==="form"){ const b=$("msForm"); if(b){ const pm=MS.m.sp?{lg:"i"+MS.m.ci,h:MS.m.h,a:MS.m.a,dt:new Date(MS.m.ts)}:MS.m; b.innerHTML=msFormHtml(fullPred(pm,MS.f)); msWire($("msheet"),MS.m); } }
 }
 // Bülten ve canlı satırlarına dokununca maç sayfası açılır
 
 document.addEventListener("click",e=>{
   const lc=e.target.closest(".lv-c"); if(!lc||e.target.closest(".ib-st,button,a")) return;
-  const id=+lc.dataset.id; const m=IDL.byId[1][id]||IDL.byId[2][id]; if(m&&m.sp===1){ e.stopPropagation(); openMatch(m); } },true);
+  const id=+lc.dataset.id; const m=IDL.byId[1][id]||IDL.byId[2][id]; if(m){ e.stopPropagation(); openAny(m); } },true);
 // Kupon: tutar, olası kazanç, MBS kontrolü
 const _cpTogV32=cpToggle;
 cpToggle=function(m,mk,odd,p){ const r=_cpTogV32(m,mk,odd,p); try{ const it=CP.items.find(x=>x.k===cpKey(m)); if(it){ const f=FIXTURES.find(x=>x.lg===m.lg&&x.h===m.h&&x.a===m.a); it.mbs=(f&&f.mbs)||it.mbs||1; cpSave(); } }catch(e){} return r; };
@@ -4993,7 +5035,7 @@ if((location.hash||"")==="#sonuclar") setTimeout(()=>$("navRes").click(),200);
 // =====================================================================
 // BULUTOXX v35: Otomatik sürüm güncelleme — yeni sürüm yayınlanınca uygulama kendini yeniler
 // =====================================================================
-const APP_V="2026-10-24.53";
+const APP_V="2026-10-24.54";
 (function autoUpdate(){
   let shown=false;
   async function check(auto){
@@ -5127,7 +5169,7 @@ function pwAdd(list){ let n=0;
 function renderPower(){
   const v=$("v-power"); if(!v) return;
   const st=cpStats(), L=pwLiveCands(), C=pwCoupon(L), pre=pwPreCands();
-  const row=(m,txt,p,o,clock)=>`<div class="pw-r"><div class="pw-m"><b>${esc(m.h)} - ${esc(m.a)}</b><small>${clock?`🔴 ${esc(clock)} · ${m.hs}-${m.as}`:esc(ist(m.dt,{hour:"2-digit",minute:"2-digit"}))+" · "+esc((LEAGUES[m.lg]||{n:""}).n)}</small></div><div class="pw-s"><span>${esc(txt)}</span><b>%${pc9(p)}</b>${o?`<i>${(+o).toFixed(2)}</i>`:""}</div></div>`;
+  const row=(m,txt,p,o,clock)=>`<div class="pw-r"${omA(m)}><div class="pw-m"><b>${esc(m.h)} - ${esc(m.a)}</b><small>${clock?`🔴 ${esc(clock)} · ${m.hs}-${m.as}`:esc(ist(m.dt,{hour:"2-digit",minute:"2-digit"}))+" · "+esc((LEAGUES[m.lg]||{n:""}).n)}</small></div><div class="pw-s"><span>${esc(txt)}</span><b>%${pc9(p)}</b>${o?`<i>${(+o).toFixed(2)}</i>`:""}</div></div>`;
   v.querySelector(".pw-body").innerHTML=`
     <button type="button" class="pw-cp" id="pwCp">🎫 Kuponum · <b>${st.n} maç</b> · oran <b>${st.n?st.odd.toLocaleString("tr-TR",{minimumFractionDigits:2,maximumFractionDigits:2}):"0,00"}</b><span>Aç ›</span></button>
     <div class="pw-card pw-star"><div class="pw-h"><span>⭐ Canlı yıldız kupon</span><small>${IDL.ok[1]?`${IDL.live[1].length} canlı maç tarandı`:"canlı maçlar yükleniyor…"}</small></div>
@@ -5250,7 +5292,7 @@ function botPre(o){ o=o||{}; const now=Date.now(), from=o.from||now, to=o.to||no
     if(o.cn&&!norm((f.cn||f.ln||"")+" "+((LEAGUES[m.lg]||{}).n||"")).includes(o.cn)) continue;
     let p=null; try{ p=quickPred(m,f); }catch(e){} if(!p||!p.pm) continue;
     const R=o.market?mktPick(p,f,o.market):recOf({H:p.pm[0],D:p.pm[1],A:p.pm[2],o25:p.o25m},f);
-    if(!R||R.tier==="w"||(!R.o&&!["IY05","U15"].includes(R.k))||(R.o&&R.o<minO)) continue;
+    if(!R||R.tier==="w"||(!R.o&&!["IO05","O15"].includes(R.k))||(R.o&&R.o<minO)) continue;
     if(o.minP&&R.cp<o.minP) continue;
     // kişiye özel sıralama: sevdiğin lig / takım ve takip ettiğin maçlar öne çıkar (olasılık asla değişmez, yalnız sıra)
     const lgW=Math.min(.04,(BOT.st.lg[m.lg]||0)*.01), tmW=Math.min(.05,((BOT.st.tm[norm(m.h)]||0)+(BOT.st.tm[norm(m.a)]||0))*.015), fw=FOLLOW.has(fkey(m))?.04:0;
@@ -5260,10 +5302,10 @@ function botPre(o){ o=o||{}; const now=Date.now(), from=o.from||now, to=o.to||no
   return out.sort((a,b)=>b.sc-a.sc);
 }
 // Belirli pazar (KG, alt/üst, MS, İY) için olasılık + iddaa oranı
-Object.assign(MKT_N,{KGV:"KG Var",KGY:"KG Yok",IY05:"İY 0,5 Üst",U15:"1,5 Üst"});
+Object.assign(MKT_N,{KGV:"KG Var",KGY:"KG Yok",IO05:"İY 0,5 Üst",O15:"1,5 Üst"});
 function mktPick(p,f,mk){ const r=p.r||{}, o=f&&f.odds||[], ou=f&&f.ou||[], kg=f&&f.ikg||[];
   const M={ms1:["1","MS 1",p.pm[0],o[0]], msx:["X","MS X",p.pm[1],o[1]], ms2:["2","MS 2",p.pm[2],o[2]], ust:["U","2,5 Üst",p.o25m,ou[0]], alt:["A","2,5 Alt",1-p.o25m,ou[1]],
-    kg_var:["KGV","KG Var",r.btts,kg[0]], kg_yok:["KGY","KG Yok",r.btts!=null?1-r.btts:null,kg[1]], iy05:["IY05","İY 0,5 Üst",r.h1o05,null], u15:["U15","1,5 Üst",r.o15,null]}[mk];
+    kg_var:["KGV","KG Var",r.btts,kg[0]], kg_yok:["KGY","KG Yok",r.btts!=null?1-r.btts:null,kg[1]], iy05:["IO05","İY 0,5 Üst",r.h1o05,null], u15:["O15","1,5 Üst",r.o15,null]}[mk];
   if(!M||M[2]==null||isNaN(M[2])) return null;
   let cp=M[2]; if(["1","X","2","U","A"].includes(M[0])){ try{ cp=recCal(cp).p; }catch(e){} }
   const tier=cp>=.70?"g":cp>=.58?"m":"w";
@@ -5277,11 +5319,11 @@ function botLive(min){ const out=[];
 // ---------- kartlar ----------
 function botCard(x,i){ const {m,R}=x, t=ist(m.dt,{weekday:"short",hour:"2-digit",minute:"2-digit"}), lg=(x.f&&(x.f.cn||x.f.ln))||botLgName(m.lg);
   const inCp=CP.items.some(c=>c.k===cpKey(m)&&c.mk===R.k);
-  return `<div class="bt-card t-${R.tier}"><div class="bt-cm"><b>${esc(m.h)} - ${esc(m.a)}</b><small>${esc(t)} · ${esc(lg)}</small></div>
+  return `<div class="bt-card t-${R.tier}"${omA(m)}><div class="bt-cm"><b>${esc(m.h)} - ${esc(m.a)}</b><small>${esc(t)} · ${esc(lg)}</small></div>
     <div class="bt-cp"><span class="bt-pick">${R.tier==="g"?"🔥 ":""}${esc(R.n)}</span><b>%${pc9(R.cp)}</b><i>${R.o?(+R.o).toFixed(2):"adil "+(1/R.cp).toFixed(2)}</i></div>
     <div class="bt-cb"><button type="button" data-ba="add" data-i="${i}" class="${inCp?"on":""}">${inCp?"✓ Kuponda":"+ Kupon"}</button><button type="button" data-ba="open" data-i="${i}">Maçı aç ›</button></div></div>`; }
 function botLiveCard(x,i){ const {m,c,cp}=x;
-  return `<div class="bt-card t-${cp>=.7?"g":"m"}"><div class="bt-cm"><b>${esc(m.h)} ${m.hs}-${m.as} ${esc(m.a)}</b><small>🔴 ${esc(idlClockTxt(m))} · ${esc(m.comp||"")}</small></div>
+  return `<div class="bt-card t-${cp>=.7?"g":"m"}"${omA(m)}><div class="bt-cm"><b>${esc(m.h)} ${m.hs}-${m.as} ${esc(m.a)}</b><small>🔴 ${esc(idlClockTxt(m))} · ${esc(m.comp||"")}</small></div>
     <div class="bt-cp"><span class="bt-pick">${cp>=.7?"🔥 ":""}${esc(c.n)}</span><b>%${pc9(cp)}</b><i>${(+c.o).toFixed(2)}</i></div>
     <div class="bt-cb"><button type="button" data-ba="ladd" data-i="${i}">+ Kupon</button><button type="button" data-ba="lopen" data-i="${i}">Maçı aç ›</button></div></div>`; }
 function botRemember(list){ const d=istDay(new Date());
@@ -5593,20 +5635,20 @@ function botEl(){ let el=$("botSheet"); if(el) return el;
   document.body.appendChild(el);
   $("botX").onclick=botClose;
   $("botBrainBtn").onclick=()=>{ const b=$("botBrain"); b.hidden=!b.hidden; brainUI(); };
-  $("botForm").onsubmit=e=>{ e.preventDefault(); const q=$("botQ").value.trim(); if(!q) return; $("botQ").value=""; botSend(q); };
+  $("botForm").onsubmit=e=>{ e.preventDefault(); const q=$("botQ").value.trim(); if(!q){ $("botQ").focus(); toast("Bir şey yaz ya da aşağıdaki hazır sorulardan birine dokun"); return; } $("botQ").value=""; botSend(q); };
   $("botLog").onclick=e=>{ const b=e.target.closest("[data-ba]"); if(!b) return; const a=b.dataset.ba, box=b.closest(".bt-msg"), C=box&&box._ctx||{}; buzz(8);
     const pre=C.pre||[], live=C.live||[], i=+b.dataset.i;
     if(a==="add"){ const x=pre[i]; if(!x) return; cpToggle(x.m,x.R.k,+(x.R.o||(1/x.R.cp).toFixed(2)),x.R.cp); const on=CP.items.some(c=>c.k===cpKey(x.m)&&c.mk===x.R.k); b.classList.toggle("on",on); b.textContent=on?"✓ Kuponda":"+ Kupon"; if(on) botLearnPick(x.m); }
     if(a==="all"){ let n=0; for(const x of pre){ if(!CP.items.some(c=>c.k===cpKey(x.m)&&c.mk===x.R.k)){ cpToggle(x.m,x.R.k,+(x.R.o||(1/x.R.cp).toFixed(2)),x.R.cp); n++; botLearnPick(x.m); } } toast(n?`${n} maç kupona eklendi 🎫`:"Hepsi zaten kuponda"); box.querySelectorAll('[data-ba="add"]').forEach(z=>{ z.classList.add("on"); z.textContent="✓ Kuponda"; }); }
-    if(a==="open"){ const x=pre[i]; if(x){ botClose(); openMatch(x.m); } }
+    if(a==="open"){ const x=pre[i]; if(x) botThen(()=>openMatch(x.m)); }
     if(a==="ladd"){ const x=live[i]; if(!x) return; const mm={lg:"i"+x.m.ci,h:x.m.h,a:x.m.a,dt:new Date(x.m.ts)}; const k=(x.c.k==="U"||x.c.k==="A")?x.c.k+((/[\d,]+/.exec(x.c.n)||["2.5"])[0].replace(",",".")):x.c.k;
       cpToggle(mm,k,+x.c.o,x.cp); b.classList.add("on"); b.textContent="✓ Kuponda"; }
-    if(a==="lopen"){ const x=live[i]; if(x){ botClose(); openMatch(x.m); } }
+    if(a==="lopen"){ const x=live[i]; if(x) botThen(()=>openMatch(x.m)); }
     if(typeof paintCoupon==="function") try{ paintCoupon(); }catch(e){} };
   $("botChips").onclick=e=>{ const b=e.target.closest("button"); if(!b) return; const t=b.dataset.q;
-    if(t==="Kuponu aç"){ botClose(); document.querySelector('nav.tabs button[data-v="kupon"]').click(); return; }
-    if(t==="Power Now"){ botClose(); $("navPow")&&$("navPow").click(); return; }
-    if(t==="Sonuçlar"){ botClose(); $("navRes")&&$("navRes").click(); return; }
+    if(t==="Kuponu aç"){ botThen(()=>document.querySelector('nav.tabs button[data-v="kupon"]').click()); return; }
+    if(t==="Power Now"){ botThen(()=>$("navPow")&&$("navPow").click()); return; }
+    if(t==="Sonuçlar"){ botThen(()=>$("navRes")&&$("navRes").click()); return; }
     if(t==="Bunlardan kupon yap") return botSend("3'lü kupon yap");
     if(t==="Sadece 🔥 olanlar") return botSend("banko");
     botSend(t); };
@@ -5626,6 +5668,8 @@ function botOpen(){ const el=botEl(); el.hidden=false; brainUI(); if(BRAIN.st===
     botPush("bot",`${sel}${botName()}! ☁️ Ben <b>Bulut</b>. Sana tutma olasılığı yüksek maçları bulurum, kupon hazırlarım, canlı maçları tararım.${BOT.st.n?"":" İstersen önce adını söyle: \"adım …\""}${k.n>=5?`<br><small>📒 Sana önerdiğim ${k.n} maçın %${Math.round(k.hit*100)}'i tuttu.</small>`:""}<div class="bt-note">Olasılıklar BULUTOXX modelinindir, kesinlik değildir · 18+</div>`);
     botChips(); botGrade().catch(()=>{}); }
   setTimeout(()=>{ try{ $("botQ").focus({preventScroll:true}); }catch(e){} },150); }
+// Sohbeti kapatıp sonra başka sayfa aç: kapanıştaki "geri" adımı yeni açılan sayfayı kapatmasın
+function botThen(fn){ const was=location.hash==="#bulut"; botClose(); if(!was){ fn(); return; } let done=false; const go=()=>{ if(done) return; done=true; window.removeEventListener("popstate",go); setTimeout(fn,0); }; window.addEventListener("popstate",go); setTimeout(go,400); }
 function botClose(){ const el=$("botSheet"); if(el) el.hidden=true; document.body.classList.remove("bt-open"); if(location.hash==="#bulut") try{ history.back(); }catch(e){} }
 window.addEventListener("popstate",()=>{ const el=$("botSheet"); if(el&&!el.hidden&&location.hash!=="#bulut"){ el.hidden=true; document.body.classList.remove("bt-open"); } });
 (function botInit(){
@@ -5636,6 +5680,140 @@ window.addEventListener("popstate",()=>{ const el=$("botSheet"); if(el&&!el.hidd
     c.innerHTML=`<span class="ic" style="background:linear-gradient(135deg,#22D3FF,#2F7BFF)"><svg viewBox="0 0 24 24"><path d="M4 5h16v10H8l-4 4z"/></svg></span><span class="tx"><b>Bulut · sohbet asistanı</b><small>"Sıradaki maçı öner", "3'lü kupon", "canlı" de</small></span><span class="ar">›</span>`;
     c.onclick=botOpen; ml.prepend(c); }
   if((location.hash||"")==="#bulut") setTimeout(botOpen,600);
+})();
+
+// ---------- Ölü hücre kalmasın: maç ya da takım adına dokununca o maçın sayfası açılır ----------
+const OMR=new Map();
+function omA(m){ if(!m) return ""; let k; try{ k=m.sp?`L${m.sp}:${m.id}`:fkey(m); }catch(e){ return ""; } OMR.set(k,m); return ` data-om="${esc(k)}"`; }
+const TM_GEN=new Set("fc cf ac as sc cd ud sk fk if bk afc club kulubu spor sport sporting united city real atletico athletic deportivo union racing olympique dinamo dynamo women kadin u19 u20 u21 u23 ii b de del la le cp sv vfl tsv".split(" "));
+function tmTok(x){ return norm(x||"").replace(/\(k\)/g," ").split(/[^a-z0-9]+/).filter(w=>w.length>=3&&!TM_GEN.has(w)); }
+function tmEq(x,y){ const nx=norm(x||""), ny=norm(y||""); if(!nx||!ny) return false; if(nx===ny) return true;
+  if(/\(k\)|women|kadin/.test(nx)!==/\(k\)|women|kadin/.test(ny)) return false;
+  if(/u1\d|u2\d/.test(nx+ny)&&(nx.match(/u\d\d/)||[""])[0]!==(ny.match(/u\d\d/)||[""])[0]) return false;
+  const a=tmTok(x), b=tmTok(y); if(!a.length||!b.length) return false;
+  const [s1,s2]=a.length<=b.length?[a,b]:[b,a]; if(s1.every(w=>s2.includes(w))) return true;
+  return a.some(w=>w.length>=5&&b.includes(w)); }
+function omPool(){ let L=[]; try{ L=L.concat(IDL.live[1]||[],IDL.live[2]||[]); }catch(e){} try{ L=L.concat(Pick.list()); }catch(e){} return L; }
+function findMatchByTeams(h,a){ return omPool().find(m=>tmEq(m.h,h)&&tmEq(m.a,a))||null; }
+function bkFromLive(m){ const F=(BK.data&&BK.data.fixtures)||[]; return F.find(x=>x.iid===m.id)||F.find(x=>tmEq(x.h,m.h)&&tmEq(x.a,m.a))||{h:m.h,a:m.a,t:new Date(m.ts),lg:"",iid:m.id,_comp:m.comp,_lv:m}; }
+function openAny(m){ if(!m) return; if($("botSheet")&&!$("botSheet").hidden){ botThen(()=>openAny(m)); return; }
+  if(m.sp===2){ try{ bkOpen(bkFromLive(m)); }catch(e){ toast("Bu basketbol maçı için tahmin verisi yok"); } return; }
+  openMatch(m); }
+function openTeam(n){
+  const L=omPool().filter(m=>tmEq(m.h,n)||tmEq(m.a,n)).sort((x,y)=>(!!(y.sp||y.live)-!!(x.sp||x.live))||((x.dt?x.dt.getTime():x.ts)-(y.dt?y.dt.getTime():y.ts)));
+  if(L.length){ buzz(8); openAny(L[0]); return; }
+  toast(`${n}: önümüzdeki günlerde bültende maçı yok`); }
+document.addEventListener("click",e=>{
+  if(e.target.closest("button,a,input,select,label,.mo,[data-star],[data-fav]")){
+    const r0=e.target.closest("[data-om],[data-cpi],[data-team]"); const inner=e.target.closest("button,a,input,select,label,.mo,[data-star],[data-fav]");
+    if(!r0||inner!==r0&&r0.contains(inner)) return; }
+  const r=e.target.closest("[data-om]");
+  if(r){ const m=OMR.get(r.dataset.om); if(m){ e.preventDefault(); buzz(8); openAny(m); } return; }
+  const c=e.target.closest("[data-cpi]");
+  if(c){ const x=CP.items[+c.dataset.cpi]; if(!x) return; buzz(8);
+    const m=findMatchByTeams(x.h,x.a)||{lg:x.lg,h:x.h,a:x.a,dt:new Date(x.dt),src:"x"}; openAny(m); return; }
+  const t=e.target.closest("[data-team]"); if(t&&!e.target.closest("#msheet")){ openTeam(t.dataset.team); return; }
+  const pt=e.target.closest(".pw-tot"); if(pt){ const ad=$("pwAddC"); if(ad){ ad.click(); return; } }
+  const tl=e.target.closest(".cpsum .list>div,.pw-h,.ltitle"); if(tl){ const k=norm(tl.textContent);
+    const T=[["secim","Kupondaki maç sayısı. Bir maça dokunursan o maçın sayfası açılır."],["toplam oran","Toplam oran, seçimlerin oranlarının çarpımıdır."],["tutma olasiligi","Her seçimin BULUTOXX olasılığının çarpımı; maçlar birbirinden bağımsız sayılır."],
+      ["degerlendirme","Oran × olasılık 1,05 üstündeyse değerli, 0,92–1,05 arası adil, altındaysa oran düşük demektir."],["mbs","MBS: o maçın oynanabilmesi için kupondaki en az maç sayısı."],["en az","MBS: kupondaki maç sayısı, en yüksek MBS kuralını karşılıyor mu?"],
+      ["tekli yildiz","Şu an %80 ve üzeri olasılıklı, oranı açık canlı seçimler. Satıra dokun: maç sayfası; + ile kupona ekle."],["en guclu","Önümüzdeki 24 saatte %75 üzeri maç öncesi öneriler. Satıra dokun: maç sayfası."],["yildiz kupon","En yüksek olasılıklı canlı seçimlerden kurulan kupon; toplam olasılık en az %75."],["canli karne","Kilitlenip sonuçlanan canlı seçimlerin gerçek isabeti."],
+      ["canli","Canlı maçlar 15 saniyede bir yenilenir. Maça dokun: maç sayfası ve canlı tahmin."],["kupon","Seçimlerini birleştir; BULUTOXX toplam olasılığı hesaplar."],["veriler","Veriler GitHub üzerinde otomatik güncellenir; elle yenilemek için üstteki ↻ düğmesi."]];
+    const f=T.find(([w])=>k.includes(w)); if(f){ toast(f[1]); return; } }
+  const g=e.target.closest(".idl-gh"); if(g){ const G=g.parentElement; const on=G.classList.toggle("shut"); IDLV.shut=IDLV.shut||new Set(); IDLV.shut[on?"add":"delete"](G.dataset.comp||""); buzz(5); }
+});
+
+// ---------- 🎯 Oynadıklarım: her maçta her seçeneği işaretle, kaydet, sonuç otomatik kontrol edilsin ----------
+const OYN={ L:(()=>{ try{ return JSON.parse(localStorage.getItem("bx-oyn")||"[]"); }catch(e){ return []; } })(),
+  save(){ try{ localStorage.setItem("bx-oyn",JSON.stringify(this.L.slice(0,200))); }catch(e){} } };
+function oynItem(x){ const it={h:x.h,a:x.a,lg:x.lg,dt:x.dt,mk:x.mk,odd:+x.odd||null,p:x.p||null,ok:null,s:null};
+  // canlı maçta oynandıysa o anki skoru sakla ("başka gol olur/olmaz" kontrolü için)
+  try{ const lv=(IDL.live[1]||[]).find(m=>tmEq(m.h,x.h)&&tmEq(m.a,x.a)); if(lv){ it.s0=`${lv.hs}-${lv.as}`; it.live=1; } }catch(e){}
+  return it; }
+function oynAdd(items,name){ if(!items.length) return;
+  const sl={id:Date.now().toString(36), at:Date.now(), n:name||"", items:items.map(oynItem)};
+  OYN.L.unshift(sl); OYN.save(); buzz([10,30,10]); try{ Sound.toggle(true); }catch(e){}
+  toast(`✅ Kaydedildi: ${items.length} seçim. Maç bitince sonuç otomatik kontrol edilir (Kupon › Oynadıklarım).`); oynBadge(); setTimeout(oynGrade,500); }
+// pazar sonucu: true tuttu, false yattı, null kontrol edilemez (elle işaretlenir)
+function mkHit(mk,hs,as,h1,a1,s0){ const t=hs+as, h=h1!=null&&a1!=null, ht=h?h1+a1:null;
+  const lm=/^([UA])(\d+\.\d+)$/.exec(mk||""); if(lm){ const l=+lm[2]; return lm[1]==="U"?t>l:t<l; }
+  const s0t=s0?s0.split("-").reduce((a,b)=>a+ +b,0):null;
+  switch(mk){
+    case "1": return hs>as; case "X": return hs===as; case "2": return hs<as;
+    case "1X": return hs>=as; case "12": return hs!==as; case "X2": return hs<=as;
+    case "U": return t>2.5; case "A": return t<2.5; case "O15": return t>1.5; case "U15": return t<1.5; case "O35": return t>3.5; case "U35": return t<3.5;
+    case "KGV": return hs>0&&as>0; case "KGY": return !(hs>0&&as>0);
+    case "IY1": return h?h1>a1:null; case "IYX": return h?h1===a1:null; case "IY2": return h?h1<a1:null;
+    case "IO05": return h?ht>0.5:null; case "IU05": return h?ht<0.5:null; case "IO15": return h?ht>1.5:null; case "IU15": return h?ht<1.5:null;
+    case "GG": return s0t!=null?t>s0t:null; case "G0": return s0t!=null?t===s0t:null;
+  } return null; }
+let oynBusy=false;
+async function oynGrade(){ if(oynBusy) return; oynBusy=true; let ch=0;
+  try{ const due=[]; for(const sl of OYN.L) for(const it of sl.items) if(it.ok==null&&!it.man&&Date.now()-new Date(it.dt).getTime()>100*60e3) due.push(it);
+    const days=[...new Set(due.map(it=>istDay(new Date(it.dt))))].slice(0,6);
+    for(const d of days){ const R=await RS.load(d); if(!R||!R.list) continue;
+      for(const it of due){ if(istDay(new Date(it.dt))!==d) continue; const m=R.list.find(x=>tmEq(x.h,it.h)&&tmEq(x.a,it.a)); if(!m) continue;
+        it.s=`${m.hs}-${m.as}`; it.s1=m.h1!=null?`${m.h1}-${m.a1}`:null; const ok=mkHit(it.mk,m.hs,m.as,m.h1,m.a1,it.s0); if(ok!=null){ it.ok=ok; ch++; } else it.need=1; } }
+  }catch(e){} oynBusy=false; if(ch){ OYN.save(); oynBadge(); if($("oynBox")) renderOyn(); } }
+function oynSt(sl){ const I=sl.items; if(I.some(x=>x.ok===false)) return "x"; if(I.every(x=>x.ok===true)) return "g"; return "w"; }
+function oynBadge(){ const n=OYN.L.filter(sl=>oynSt(sl)==="w").length; const c=$("moreOyn"); if(c){ const b=c.querySelector(".tx small"); if(b) b.textContent=n?`${n} kupon sonuç bekliyor`:"Oynadığın kuponlar ve sonuçları"; } }
+function renderOyn(){ const box=$("oynBox"); if(!box) return;
+  if(!OYN.L.length){ box.innerHTML=`<div class="panel oyn-e"><b>🎯 Oynadıklarım</b><p class="note">Henüz kayıt yok. Kuponunu kurunca aşağıdaki <b>“✅ Oynadım, kaydet”</b> düğmesine bas; ya da maç sayfasında seçtiğin kutunun altındaki <b>“🎯 Oynadım”</b> ile tek maçı kaydet. Sonuçlar maç bitince otomatik kontrol edilir.</p></div>`; return; }
+  const g=OYN.L.filter(sl=>oynSt(sl)==="g").length, x=OYN.L.filter(sl=>oynSt(sl)==="x").length, it=OYN.L.flatMap(sl=>sl.items).filter(i=>i.ok!=null), ih=it.filter(i=>i.ok).length;
+  const pill=i=>i.ok===true?`<span class="pill g">✅ Tuttu</span>`:i.ok===false?`<span class="pill x">❌ Yattı</span>`:`<span class="pill">⏳ ${Date.now()<new Date(i.dt).getTime()?"Başlamadı":i.need?"Elle işaretle":"Bekliyor"}</span>`;
+  box.innerHTML=`<div class="panel oyn"><div class="oyn-h"><b>🎯 Oynadıklarım</b><small>${OYN.L.length} kupon · ${g} kazandı · ${x} kaybetti${it.length?` · seçim isabeti %${Math.round(ih/it.length*100)}`:""}</small></div>
+    ${OYN.L.slice(0,30).map(sl=>{ const st=oynSt(sl), od=sl.items.reduce((a,i)=>a*(i.odd||1),1);
+      return `<div class="oyn-s st-${st}" data-sl="${sl.id}"><div class="oyn-t"><span>${esc(ist(new Date(sl.at),{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}))} · ${sl.items.length} maç · oran <b>${od.toFixed(2)}</b></span>${st==="g"?`<span class="pill g">KAZANDI</span>`:st==="x"?`<span class="pill x">KAYBETTİ</span>`:`<span class="pill">Devam ediyor</span>`}<button type="button" class="oyn-del" data-del="${sl.id}" aria-label="Sil">🗑</button></div>
+        ${sl.items.map((i,k)=>`<div class="oyn-i" data-oi="${sl.id}:${k}"><div class="l"><b>${esc(i.h)} – ${esc(i.a)}</b><small>${esc(mkName(i.mk))}${i.odd?` · ${(+i.odd).toFixed(2)}`:""}${i.s?` · Skor ${esc(i.s)}${i.s1?` (İY ${esc(i.s1)})`:""}`:""}${i.s0?` · oynarken ${esc(i.s0)}`:""}</small></div>${pill(i)}${i.ok==null&&(i.need||Date.now()-new Date(i.dt).getTime()>100*60e3)?`<span class="oyn-m"><button type="button" data-mo="${sl.id}:${k}:1">✅</button><button type="button" data-mo="${sl.id}:${k}:0">❌</button></span>`:""}</div>`).join("")}</div>`; }).join("")}
+    <p class="note">Sonuçlar resmi iddaa sonuçlarından otomatik kontrol edilir (İY seçimleri ilk yarı skoruyla). Kontrol edilemeyen seçimleri ✅/❌ ile elle işaretleyebilirsin. Kayıtlar yalnızca bu telefonda tutulur.</p></div>`;
+}
+document.addEventListener("click",e=>{
+  const d=e.target.closest("[data-del]"); if(d&&e.target.closest("#oynBox")){ OYN.L=OYN.L.filter(sl=>sl.id!==d.dataset.del); OYN.save(); renderOyn(); oynBadge(); toast("Kayıt silindi"); return; }
+  const mo=e.target.closest("[data-mo]"); if(mo){ const [id,k,v]=mo.dataset.mo.split(":"); const sl=OYN.L.find(x=>x.id===id); if(sl&&sl.items[+k]){ sl.items[+k].ok=v==="1"; sl.items[+k].man=1; OYN.save(); renderOyn(); oynBadge(); buzz(8); } return; }
+  const oi=e.target.closest("[data-oi]"); if(oi){ const [id,k]=oi.dataset.oi.split(":"); const sl=OYN.L.find(x=>x.id===id), i=sl&&sl.items[+k]; if(!i) return;
+    const m=findMatchByTeams(i.h,i.a); if(m){ buzz(8); openAny(m); return; }
+    toast(i.s?`${i.h} ${i.s} ${i.a}${i.s1?` (İY ${i.s1})`:""} · ${mkName(i.mk)} ${i.ok===true?"tuttu":i.ok===false?"yattı":"sonuç bekleniyor"}`:"Bu maç artık bültende değil; sonuç gelince burada görünür."); }
+});
+// Kupon sayfası: Oynadıklarım bölümü + “Oynadım, kaydet”
+const _rkOyn=renderKupon;
+renderKupon=function(){ _rkOyn();
+  const v=$("v-kupon"); if(!v) return; let ob=$("oynBox"); if(!ob){ ob=document.createElement("div"); ob.id="oynBox"; ($("cpBox")||v).after(ob); }
+  const box=$("cpBox"); if(box&&CP.items.length&&!$("cpPlay")){ const b=document.createElement("button"); b.className="btn"; b.type="button"; b.id="cpPlay"; b.textContent="✅ Oynadım, kaydet (sonucu takip et)";
+    const act=box.querySelector(".cpsum .actions"); (act||box).before(b);
+    b.onclick=()=>{ oynAdd(CP.items.slice(),""); CP.items=[]; cpSave(); try{ paintCoupon(); }catch(e){} renderKupon(); setTimeout(()=>{ const o=$("oynBox"); if(o) o.scrollIntoView({behavior:"smooth",block:"start"}); },150); }; }
+  renderOyn(); oynGrade(); };
+// Maç sayfası ve ayrıntılı analiz: seçili kutuyu tek tıkla “oynadım” olarak kaydet
+function playBar(mm){ const it=CP.items.filter(c=>c.k===cpKey(mm));
+  return `<div class="oyn-bar">${it.length?`<span>Seçimin: <b>${it.map(c=>esc(mkName(c.mk))).join(", ")}</b></span><button type="button" class="btn sm" data-play="1">🎯 Oynadım, kaydet</button>`:`<span>Oynadığın seçeneğin kutusuna dokun, sonra <b>🎯 Oynadım</b> ile kaydet. İY 1/X/2, çifte şans, alt/üst, KG hepsi var.</span>`}</div>`; }
+function playBind(root,mm,re){ const b=root.querySelector("[data-play]"); if(b) b.onclick=()=>{ const it=CP.items.filter(c=>c.k===cpKey(mm)); oynAdd(it,`${mm.h} – ${mm.a}`); re&&re(); }; }
+// Maç sayfası Oranlar sekmesine kaydet çubuğu
+const _msOranO=msOran;
+msOran=function(m,f,r,lv){ const h=_msOranO(m,f,r,lv); const mm=m.sp?{lg:"i"+m.ci,h:m.h,a:m.a,dt:new Date(m.ts)}:m; return playBar(mm)+h; };
+const _msTahO=msTahmin;
+msTahmin=function(m,f,r,lv){ const h=_msTahO(m,f,r,lv); const mm=m.sp?{lg:"i"+m.ci,h:m.h,a:m.a,dt:new Date(m.ts)}:m; return h+playBar(mm)+`<button type="button" class="btn ghost" data-allm="1">📋 Tüm seçenekler (İY, çifte şans, alt/üst, KG…)</button>`; };
+const _msRenO=msRender;
+msRender=function(){ _msRenO(); const el=$("msheet"), m=MS.m; if(!el||!m) return; const mm=m.sp?{lg:"i"+m.ci,h:m.h,a:m.a,dt:new Date(m.ts)}:m;
+  playBind(el,mm,msRender); const al=el.querySelector("[data-allm]"); if(al) al.onclick=()=>msGo("oran"); };
+// Ayrıntılı analiz sayfası: tüm pazarlar kutu kutu + oynadım
+const _rpOyn=renderPrediction;
+renderPrediction=function(inp,r){ _rpOyn(inp,r); try{ const out=$("out"); if(!out) return;
+  const dt=inp.date?new Date(inp.date+"T12:00:00+03:00"):new Date();
+  const real=(()=>{ try{ return Pick.list().find(m=>tmEq(m.h,inp.home)&&tmEq(m.a,inp.away)); }catch(e){ return null; } })();
+  const mm=real||{lg:inp.leagueKey||"x",h:inp.home,a:inp.away,dt};
+  const o=inp.odds||{}; const f=real&&!real.sp?(real.src==="fx"?FIXTURES.find(x=>x.lg===real.lg&&x.h===real.h&&x.a===real.a):fxOdds(real)):null;
+  const ff=f&&f.odds?f:{odds:[o.o1,o.ox,o.o2],ou:[o.oo,o.ou],ikg:[]};
+  let box=$("apBox"); if(!box){ box=document.createElement("div"); box.id="apBox"; box.className="panel ap"; const first=out.firstElementChild; first?first.after(box):out.appendChild(box); }
+  const draw=()=>{ box.innerHTML=`<h3 class="ap-h">🎯 Seçeneğini işaretle · Oynadım</h3>${_msOranO(mm,ff,r,null)}${playBar(mm)}`;
+    box.querySelectorAll(".mo").forEach(b=>b.onclick=()=>{ cpToggle(mm,b.dataset.mk,+b.dataset.o,+b.dataset.p); try{ paintCoupon(); }catch(e){} draw(); });
+    playBind(box,mm,draw); };
+  draw(); }catch(e){} };
+(function oynInit(){
+  const ml=document.querySelector("#v-more .mlist");
+  if(ml&&!$("moreOyn")){ const c=document.createElement("button"); c.className="cell"; c.id="moreOyn"; c.type="button";
+    c.innerHTML=`<span class="ic" style="background:linear-gradient(135deg,#2BD46B,#14A44D)"><svg viewBox="0 0 24 24"><path d="M5 12l5 5 9-11"/></svg></span><span class="tx"><b>Oynadıklarım</b><small>Oynadığın kuponlar ve sonuçları</small></span>`;
+    c.onclick=()=>{ document.querySelector('nav.tabs button[data-v="kupon"]').click(); setTimeout(()=>{ const b=$("oynBox"); if(b) b.scrollIntoView({behavior:"smooth",block:"start"}); },250); };
+    const first=ml.querySelector(".cell"); first?first.before(c):ml.prepend(c); }
+  oynBadge(); setTimeout(oynGrade,4000); setInterval(oynGrade,5*60e3);
 })();
 </script>
 
