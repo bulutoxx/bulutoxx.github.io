@@ -270,10 +270,30 @@ def power_devig(o):
         else: hi = k
     p = q ** k; return p / p.sum()
 
+def _devig_method():
+    """Araştırmacı bot (lab/research.py) kendi arşivimizde daha iyi bir marj ayırma yöntemi kanıtladıysa onu kullan."""
+    try:
+        R = json.load(open(os.path.join(DATA, "research.json"), encoding="utf-8"))
+        if R.get("devig_kabul") and R.get("devig") in ("power", "prop", "shin"): return R["devig"]
+    except Exception: pass
+    return "power"
+
+def devig(o, m):
+    if m == "power": return power_devig(o)
+    q = 1 / np.asarray(o, float)
+    if m == "prop": return q / q.sum()
+    B = q.sum(); lo, hi = 0.0, 0.4
+    for _ in range(50):
+        z = (lo + hi) / 2; p = (np.sqrt(z * z + 4 * (1 - z) * q * q / B) - z) / (2 * (1 - z))
+        if p.sum() > 1: lo = z
+        else: hi = z
+    return p / p.sum()
+
 def market_xg(matches):
     """Kapanış oranlarından maç başına piyasa beklenen golü (xg) çıkar; bir kez hesaplanır, saklanır."""
     global _TABLE
-    todo = [m for m in matches if m.get("odds") and ("xg" not in m or m.get("xg_o") != m["odds"] or m.get("xg_m") != "pow")]
+    DM = _devig_method(); tag = {"power": "pow"}.get(DM, DM)
+    todo = [m for m in matches if m.get("odds") and ("xg" not in m or m.get("xg_o") != m["odds"] or m.get("xg_m") != tag)]
     if not todo: return 0
     if _TABLE is None:
         lam = np.arange(0.15, 4.01, 0.05)
@@ -283,13 +303,13 @@ def market_xg(matches):
     LH, LA, TH, TA, TO = _TABLE
     for i in range(0, len(todo), 1500):
         ch = todo[i:i + 1500]
-        inv = np.array([power_devig(m["odds"]) for m in ch])      # marj 'power' yöntemiyle ayrılır (2025 ve 2026'da oransaldan iyi)
-        ou = np.array([power_devig(m["ou"])[0] if m.get("ou") else np.nan for m in ch])
+        inv = np.array([devig(m["odds"], DM) for m in ch])      # marj ayırma: varsayılan 'power' (2025 ve 2026'da oransaldan iyi), araştırmacı bot değiştirebilir
+        ou = np.array([devig(m["ou"], DM)[0] if m.get("ou") else np.nan for m in ch])
         d = (TH[None, :] - inv[:, :1]) ** 2 + (TA[None, :] - inv[:, 2:3]) ** 2
         has = ~np.isnan(ou)
         if has.any(): d[has] += (TO[None, :] - ou[has, None]) ** 2
         k = d.argmin(1)
-        for m, j in zip(ch, k): m["xg"] = [round(float(LH[j]), 2), round(float(LA[j]), 2)]; m["xg_o"] = list(m["odds"]); m["xg_m"] = "pow"
+        for m, j in zip(ch, k): m["xg"] = [round(float(LH[j]), 2), round(float(LA[j]), 2)]; m["xg_o"] = list(m["odds"]); m["xg_m"] = tag
     return len(todo)
 
 def targets(ms, P):
@@ -960,7 +980,7 @@ def merge_iddaa(fx, season, today):
         if best is not None: used.add(best); matched[e["iid"]] = best
     out_fx = list(fx); extra = []; lam = {}
     def add_io(f, e):
-        mk = e["mk"]; f["io"] = mk["ms"]; f["iid"] = e["iid"]
+        mk = e["mk"]; f["io"] = mk["ms"]; f["iid"] = e["iid"]; f["cn"] = e["comp"]
         if e.get("mbc"): f["mbs"] = e["mbc"]
         if mk.get("ou"): f["iou"] = mk["ou"]
         if mk.get("kg"): f["ikg"] = mk["kg"]

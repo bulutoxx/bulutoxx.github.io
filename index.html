@@ -1062,6 +1062,9 @@ nav.tabs .pw-btn .badge{top:-2px;left:auto;right:-6px;background:#FFB020;color:#
 .pw-tot{display:grid;grid-template-columns:1fr auto 1fr auto;gap:6px;align-items:center;padding:8px 10px;border-radius:10px;background:rgba(0,0,0,.25);font-size:12.5px;color:var(--ink2)}
 .pw-tot b{font:800 17px var(--round);color:#FFD60A}
 .pw-add{width:100%;padding:11px;border-radius:12px;background:linear-gradient(135deg,#FFD60A,#FF9F0A);color:#111;font-weight:900;font-size:15px}
+.hlban{margin:0 0 8px;padding:9px 12px;border-radius:12px;background:rgba(255,176,32,.12);border:1px solid rgba(255,176,32,.5);color:var(--amber);font-size:12.5px;font-weight:600}
+.tm-r{display:flex;gap:10px;padding:9px 0;border-top:1px solid var(--line)}.tm-ic{font-size:22px;line-height:1.2}
+.tm-r b{font-size:14.5px}.tm-r small{display:block;color:var(--ink3);font-size:11.5px}.tm-r p{margin:4px 0 0;font-size:12.5px;color:var(--ink2);line-height:1.45}
 </style>
 </head>
 <body>
@@ -4467,7 +4470,11 @@ function recOf(P, f){
            {k:"U",n:"2,5 Üst",p:P.o25,o:ou&&ou[0]},{k:"A",n:"2,5 Alt",p:1-P.o25,o:ou&&ou[1]}].filter(x=>x.p!=null&&!isNaN(x.p));
   const hasOdds=c.some(x=>x.o); const ok=c.filter(x=>hasOdds?(x.o&&x.o>=1.15):true);   // oran varsa yalnız oranı olan seçenekler (motor ve arşivle aynı kural)
   const b=(ok.length?ok:c).sort((a,b)=>b.p-a.p)[0]; if(!b) return null;
-  const C=recCal(b.p); const tier=C.p>=.70?"g":C.p>=.58?"m":"w";
+  const C=recCal(b.p);
+  // 📊 Analist botunun doğrulanmış lig güven katsayısı (kilitli öneri arşivinden)
+  const comp=f&&(f.cn||f.ln), AF=(typeof ANALYST!=="undefined"&&ANALYST&&ANALYST.kabul&&comp)?(ANALYST.ligler||{})[comp]:null;
+  if(AF&&AF.k) C.p=Math.min(.97,Math.max(.03,C.p*AF.k));
+  const tier=C.p>=.70?"g":C.p>=.58?"m":"w";
   return Object.assign({},b,{cp:C.p, cn:C.n, ch:C.h, tier, label:tier==="g"?"Güçlü öneri":tier==="m"?"Öneri":"Riskli öneri"});
 }
 function recLine(R, extra){ if(!R) return "";
@@ -4914,7 +4921,7 @@ if((location.hash||"")==="#sonuclar") setTimeout(()=>$("navRes").click(),200);
 // =====================================================================
 // BULUTOXX v35: Otomatik sürüm güncelleme — yeni sürüm yayınlanınca uygulama kendini yeniler
 // =====================================================================
-const APP_V="2026-10-24.44";
+const APP_V="2026-10-24.45";
 (function autoUpdate(){
   let shown=false;
   async function check(auto){
@@ -5091,6 +5098,34 @@ function renderPower(){
     c.onclick=()=>document.querySelector('nav.tabs button[data-v="kupon"]').click(); ml.prepend(c); }
   if((location.hash||"")==="#power") setTimeout(()=>b.click(),250);
 })();
+
+// =====================================================================
+// BULUTOXX v40: 🤖 Otonom ekip — araştırmacı, analist, tasarımcı/kalite, bekçi, laboratuvar; Motor sayfasında rapor, sorun varsa bültende uyarı
+// =====================================================================
+let ANALYST=null, RESEARCH=null, QA=null, HEALTH=null;
+function teamLoad(){ const g=u=>fetch(u+"?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():null).catch(()=>null);
+  return Promise.all([g("data/analyst.json"),g("data/research.json"),g("data/qa.json"),g("data/health.json")]).then(([a,r,q,h])=>{ ANALYST=a; RESEARCH=r; QA=q; HEALTH=h;
+    healthBanner(); if(!$("v-karne").hidden) renderKarne(); if(a&&a.kabul){ BT.cache.clear(); if(!$("v-bulten").hidden) renderBulten(); } }); }
+function healthBanner(){ const head=document.querySelector("#v-bulten .bt-head"); if(!head) return; let b=$("hlBan");
+  const bad=HEALTH&&HEALTH.alarm; if(!bad){ if(b) b.remove(); return; }
+  if(!b){ b=document.createElement("div"); b.id="hlBan"; b.className="hlban"; head.after(b); }
+  b.textContent="⚠️ Veriler gecikiyor: "+(HEALTH.sorun||[]).join(" · ")+". Otomatik sistem sorunu bildirdi; tahminler son güncel veriyle gösteriliyor."; }
+const _rkV40=renderKarne;
+renderKarne=function(){ _rkV40(); const k=$("karne"); if(!k) return; const old=$("teamPanel"); if(old) old.remove();
+  const el=document.createElement("div"); el.className="panel"; el.id="teamPanel";
+  const ago=s=>{ if(!s) return "–"; const t=Date.parse(s.length<=10?s+"T12:00:00Z":s.replace(" ","T")+(/Z|\+/.test(s)?"":":00+03:00")); return isNaN(t)?s:agoTxt(Date.now()-t); };
+  const row=(ic,ad,ne,durum)=>`<div class="tm-r"><span class="tm-ic">${ic}</span><div><b>${ad}</b><small>${ne}</small>${durum?`<p>${durum}</p>`:""}</div></div>`;
+  const h=HEALTH, a=ANALYST, r=RESEARCH, q=QA, al=typeof AUTOLAB!=="undefined"?AUTOLAB:null, d=typeof DAILY!=="undefined"?DAILY:null;
+  el.innerHTML=`<h2>🤖 Otonom ekip</h2><p class="note">Hepsi GitHub üzerinde kendiliğinden ve ücretsiz çalışır. Hiçbir bulgu doğrulanmadan sisteme girmez: önce eski veride öğrenilir, yeni veride sınanır.</p>
+    ${row("🧠","Motor","her saat: veri, eğitim, ayar seçimi",`Son eğitim ${MODEL?esc(agoTxt(modelAge()||0)):"–"} · geriye dönük test ${MODEL&&MODEL.backtest?MODEL.backtest.n.toLocaleString("tr-TR")+" maç":"–"}`)}
+    ${row("🗂️","Veri toplayıcı","her saat: öneriler maçtan önce kilitlenir, sonuçla puanlanır",d?`Arşivde ${((d.toplam||{}).n||0).toLocaleString("tr-TR")} puanlanmış öneri · canlıda ${((d.canli||{}).n||0).toLocaleString("tr-TR")} seçim · ${esc(ago(d.updated))}`:"")}
+    ${row("🔬","Araştırmacı","her gün: yeni ligler, açık kaynak sürümleri, marj ayırma deneyi",r?`${esc(r.tarih)} · iddaa'da ${r.yarisma_sayisi||"?"} yarışma · marj yöntemi: ${esc(r.devig||"power")}<br>${(r.bulgular||[]).map(esc).join("<br>")}`:"İlk rapor bu gece")}
+    ${row("📊","Analist","her gün: lig bazında gerçek isabet, güven katsayısı",a?esc(a.aciklama)+(a.zayif_ligler&&a.zayif_ligler.length?`<br>En zayıf: ${a.zayif_ligler.slice(0,3).map(z=>`${esc(z.lig)} (%${Math.round(z.gercek*100)} / beklenen %${Math.round(z.beklenen*100)})`).join(", ")}`:""):"İlk rapor bu gece")}
+    ${row("🎨","Tasarımcı / kalite","her gün: yayındaki uygulamayı telefonda açıp her düğmeyi dener",q?`${esc(ago(q.zaman))} · ${q.dugme.tiklanan} düğme denendi · ${q.hatalar.length?`<b style="color:#ff8a95">${q.hatalar.length} sorun</b>`:"hata yok ✓"} · açılış ${(q.acilis_ms/1000).toFixed(1)} sn`:"İlk rapor bu gece")}
+    ${row("🛡️","Bekçi","15 dakikada bir: motor ve toplayıcı zamanında mı",h?(h.alarm?`<b style="color:#ff8a95">${esc(h.sorun.join(" · "))}</b>`:`Her şey zamanında ✓ (${esc(ago(h.zaman))})`):"–")}
+    ${row("🧪","Laboratuvar","her pazar: açık kaynak modellerle yarış",al?`${esc(al.tarih)} · ${esc(al.karar.aciklama)}`:"–")}`;
+  k.prepend(el); };
+setTimeout(teamLoad,3000); setInterval(()=>{ if(!document.hidden) teamLoad(); },20*60e3);
 </script>
 
 </body>

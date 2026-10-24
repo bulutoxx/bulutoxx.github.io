@@ -1,0 +1,57 @@
+name: BULUTOXX otonom ekip
+# Her gün: 🔬 araştırmacı (kaynak keşfi, kütüphane takibi, marj deneyi), 📊 analist (lig güven katsayıları),
+# 🎨 tasarımcı/kalite (yayındaki uygulamayı telefonda açıp her düğmeyi dener, ekran görüntüsü alır).
+# Doğrulanan bulgular data/*.json üzerinden motora ve uygulamaya otomatik geçer; sorun varsa GitHub'da uyarı kaydı açılır.
+on:
+  schedule:
+    - cron: "7 3 * * *"
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ["lab/research.py", "lab/analyst.py", "lab/qa.mjs", ".github/workflows/otonom-ekip.yml"]
+permissions:
+  contents: write
+  issues: write
+concurrency:
+  group: otonom-ekip
+  cancel-in-progress: false
+jobs:
+  ekip:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - uses: actions/setup-node@v4
+        with: { node-version: "20" }
+      - name: 🔬 Araştırmacı
+        run: python lab/research.py || echo "araştırmacı atlandı"
+      - name: 📊 Analist
+        run: python lab/analyst.py || echo "analist atlandı"
+      - name: 🎨 Tasarımcı / kalite
+        run: |
+          cd lab && npm init -y >/dev/null && npm i playwright@1.48.2 >/dev/null && npx playwright install --with-deps chromium >/dev/null
+          cd .. && node lab/qa.mjs || echo "kalite botu atlandı"
+      - name: Kaydet
+        run: |
+          git config user.name "bulutoxx-bot"; git config user.email "bulutoxx-bot@users.noreply.github.com"
+          git add data/research.json data/analyst.json data/qa.json data/qa 2>/dev/null || true
+          git diff --cached --quiet && exit 0
+          git commit -qm "Otonom ekip raporu $(date -u +%F)"
+          for i in 1 2 3; do git pull -q --rebase -X theirs origin main && git push -q origin HEAD:main && break; sleep 8; done
+      - name: Sorun varsa uyarı kaydı aç
+        env: { GH_TOKEN: "${{ github.token }}" }
+        run: |
+          python3 - <<'PY' > /tmp/qa.txt
+          import json
+          try: q=json.load(open("data/qa.json"))
+          except Exception: q={}
+          if q.get("alarm"): print("\n".join("- "+h for h in q.get("hatalar",[])[:30]))
+          PY
+          if [ -s /tmp/qa.txt ]; then
+            gh label create bulutoxx-alarm --color B60205 2>/dev/null || true
+            if [ -z "$(gh issue list --label bulutoxx-alarm --state open --json number -q '.[0].number')" ]; then
+              gh issue create --title "Kalite botu: uygulamada hata bulundu $(date -u +%F)" --label bulutoxx-alarm --body-file /tmp/qa.txt
+            fi
+          fi
