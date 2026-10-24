@@ -4477,9 +4477,11 @@ function recOf(P, f){
   const comp=f&&(f.cn||f.ln), AF=(typeof ANALYST!=="undefined"&&ANALYST&&ANALYST.kabul&&comp)?(ANALYST.ligler||{})[comp]:null;
   if(AF&&AF.k) C.p=Math.min(.97,Math.max(.03,C.p*AF.k));
   const tier=C.p>=.70?"g":C.p>=.58?"m":"w";
-  return Object.assign({},b,{cp:C.p, cn:C.n, ch:C.h, tier, label:tier==="g"?"Güçlü öneri":tier==="m"?"Öneri":"Riskli öneri"});
+  return Object.assign({},b,{cp:C.p, cn:C.n, ch:C.h, tier, label:tier==="g"?"Güçlü öneri":tier==="m"?"Öneri":"Pas"});
 }
 function recLine(R, extra){ if(!R) return "";
+  // Yanılma payını düşürmek için pas geçme: güven %58'in altındaysa öneri verilmez, yalnız en olası seçenek bilgi olarak gösterilir
+  if(R.tier==="w") return `<div class="rec rec-w"><span class="rec-ic">⏸️</span><span class="rec-t">Pas · net öneri yok</span><small>en olası ${esc(R.n)} %${pc9(R.cp)}${extra?" · "+extra:""}</small></div>`;
   return `<div class="rec rec-${R.tier}"><span class="rec-ic">${R.tier==="g"?"✅":R.tier==="m"?"👍":"⚠️"}</span><span class="rec-t">${R.label}: <b>${esc(R.n)}</b></span><span class="rec-p">%${pc9(R.cp)}</span>${R.o?`<span class="rec-o">oran ${(+R.o).toFixed(2)}</span>`:""}${extra?`<small>${extra}</small>`:""}</div>`; }
 function ptier(pr){ return pr==null?"":pr>=.7?"t3":pr>=.55?"t2":""; }
 function ibRow(x){
@@ -4487,7 +4489,7 @@ function ibRow(x){
   const pq=p&&p.pm?{H:p.pm[0],D:p.pm[1],A:p.pm[2],o25:p.o25m}:p?{H:p.p[0],D:p.p[1],A:p.p[2],o25:p.o25}:null;   // oranla birleşmiş olasılık (maç sayfasıyla aynı)
   const R=pq?recOf(pq,f):null; x.rec=R;
   const ob=(lab,v,pr,key)=>{ if(!v) return `<span class="na"><u>${lab}</u>–</span>`;
-    const isR=R&&R.k===key; const inCp=CP.items.some(c=>c.k===cpKey(m)&&c.mk===key);
+    const isR=R&&R.k===key&&R.tier!=="w"; const inCp=CP.items.some(c=>c.k===cpKey(m)&&c.mk===key);
     return `<span role="button" tabindex="0" data-mk="${key}" data-o="${v}" data-p="${pr==null?"":pr}" class="${isR?"rk rk-"+R.tier:""} ${inCp?"sel":""}"><u>${isR?"✓ ":""}${lab}</u>${v.toFixed(2)}</span>`; };
   const mbs=f&&f.mbs?`<span class="ib-mbs" title="Minimum bahis sayısı (MBS)">${f.mbs}</span>`:"";
   const t=m.started?"Başladı":((BT.q||BT.f==="fav")&&istDay(m.dt)!==istDay(new Date())?ist(m.dt,{day:"numeric",month:"short"})+" ":"")+ist(m.dt,{hour:"2-digit",minute:"2-digit"});
@@ -4537,7 +4539,7 @@ renderBulten=function(){
     (()=>{ const G=[]; for(const m of lv){ const g=G[G.length-1]; if(g&&g.comp===m.comp) g.items.push(m); else G.push({comp:m.comp,cc:m.cc,items:[m]}); }
       const top=BT.q||BT.f==="fav"?G:[]; return top.map(g=>`<div class="idl-g"><div class="idl-gh"><span>${ccFlag(g.cc)}</span>${esc(g.comp)}<small>${g.items.length}</small></div>${g.items.map(idlRow).join("")}</div>`).join("")+""; })()}</div>`:"";
   const nowL=BT.day===today&&!BT.q?`<div class="ib-now">⏱ Şu an ${ist(new Date(),{hour:"2-digit",minute:"2-digit"})} · sıradaki maçlar</div>`:"";
-  const legend=`<div class="pleg"><span><i class="lg3"></i>✅ Güçlü öneri %70+</span><span><i class="lg2"></i>👍 Öneri %58+</span><span><i class="lgw"></i>⚠️ Riskli</span></div>`;
+  const legend=`<div class="pleg"><span><i class="lg3"></i>✅ Güçlü öneri %70+</span><span><i class="lg2"></i>👍 Öneri %58+</span><span>⏸️ Pas (net öneri yok)</span></div>`;
   list.innerHTML=lvHtml+(R.length?legend+`<div class="ib">${nowL}</div>`:"");
   const allL=$("ibAllLive"); if(allL) allL.onclick=()=>document.querySelector('nav.tabs button[data-v="canli"]').click();
   const sig=[BT.day,BT.f,BT.q].join("|"), keep=IB.sig===sig?IB.i:0; IB.sig=sig;
@@ -4739,7 +4741,8 @@ function msTahmin(m,f,r,lv){
       ${bar3(P.H,P.D,P.A)}<div class="ms-pick ${K.best.p>=.7?"g":""}">${K.best.p>=.7?"🎯 Güçlü":"⚖️ En olası"}: <b>${esc(K.best.n)}</b> %${pc9(K.best.p)}</div></div>`; }
   if(!r) return `<p class="note">Bu maç için tahmin hesaplanamadı.</p>`;
   const R=recOf(r,f), mm=m.sp?{lg:"i"+m.ci,h:m.h,a:m.a}:m, inCp=R&&CP.items.some(c=>c.k===cpKey(mm)&&c.mk===R.k);
-  const big=R?`<div class="recbig rec-${R.tier}"><small>BULUTOXX ÖNERİSİ</small><b>${esc(R.n)}</b><div class="rb-p">Kazanma olasılığı <em>%${pc9(R.cp)}</em>${R.o?` · iddaa oranı <em>${(+R.o).toFixed(2)}</em>`:""}</div>
+  const big=R&&R.tier==="w"?`<div class="recbig rec-w"><small>BULUTOXX</small><b>⏸️ Pas</b><div class="rb-p">Bu maçta güvenilir bir öneri yok. En olası seçenek <em>${esc(R.n)}</em> ancak olasılığı %${pc9(R.cp)}.</div><p>Yanılma payını düşük tutmak için güven %58'in altındaysa öneri vermiyoruz.</p></div>`
+    :R?`<div class="recbig rec-${R.tier}"><small>BULUTOXX ÖNERİSİ</small><b>${esc(R.n)}</b><div class="rb-p">Kazanma olasılığı <em>%${pc9(R.cp)}</em>${R.o?` · iddaa oranı <em>${(+R.o).toFixed(2)}</em>`:""}</div>
     ${R.cn?`<p>Geçmişte bu güvendeki ${R.cn.toLocaleString("tr-TR")} önerinin %${Math.round(R.ch*100)}'i tuttu.</p>`:""}
     ${R.o?`<button type="button" class="mo rb-add ${inCp?"sel":""}" data-mk="${R.k}" data-o="${R.o}" data-p="${R.p}">${inCp?"✓ Kuponda":"+ Kupona ekle"}</button>`:""}</div>`:"";
   const ms=markets(r,{}); const best=ms.filter(x=>!/daha gollü/.test(x.n))[0];
@@ -4923,7 +4926,7 @@ if((location.hash||"")==="#sonuclar") setTimeout(()=>$("navRes").click(),200);
 // =====================================================================
 // BULUTOXX v35: Otomatik sürüm güncelleme — yeni sürüm yayınlanınca uygulama kendini yeniler
 // =====================================================================
-const APP_V="2026-10-24.47";
+const APP_V="2026-10-24.49";
 (function autoUpdate(){
   let shown=false;
   async function check(auto){
@@ -5104,9 +5107,9 @@ function renderPower(){
 // =====================================================================
 // BULUTOXX v40: 🤖 Otonom ekip — araştırmacı, analist, tasarımcı/kalite, bekçi, laboratuvar; Motor sayfasında rapor, sorun varsa bültende uyarı
 // =====================================================================
-let ANALYST=null, RESEARCH=null, QA=null, HEALTH=null, DQ=null, CHG=null, RBK=null;
+let ANALYST=null, RESEARCH=null, QA=null, HEALTH=null, DQ=null, CHG=null, RBK=null, ARENA=null;
 function teamLoad(){ const g=u=>fetch(u+"?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():null).catch(()=>null);
-  return Promise.all([g("data/analyst.json"),g("data/research.json"),g("data/qa.json"),g("data/health.json"),g("data/dq.json"),g("data/changes.json"),g("data/rollback.json")]).then(([a,r,q,h,dq,ch,rb])=>{ ANALYST=a; RESEARCH=r; QA=q; HEALTH=h; DQ=dq; CHG=ch; RBK=rb;
+  return Promise.all([g("data/analyst.json"),g("data/research.json"),g("data/qa.json"),g("data/health.json"),g("data/dq.json"),g("data/changes.json"),g("data/rollback.json"),g("data/arena.json")]).then(([a,r,q,h,dq,ch,rb,ar])=>{ ANALYST=a; RESEARCH=r; QA=q; HEALTH=h; DQ=dq; CHG=ch; RBK=rb; ARENA=ar;
     healthBanner(); if(!$("v-karne").hidden) renderKarne(); if(a&&a.kabul){ BT.cache.clear(); if(!$("v-bulten").hidden) renderBulten(); } }); }
 function healthBanner(){ const head=document.querySelector("#v-bulten .bt-head"); if(!head) return; let b=$("hlBan");
   const bad=HEALTH&&HEALTH.alarm; if(!bad){ if(b) b.remove(); return; }
@@ -5126,6 +5129,7 @@ renderKarne=function(){ _rkV40(); const k=$("karne"); if(!k) return; const old=$
     ${row("🎨","Tasarımcı / kalite","her gün: yayındaki uygulamayı telefonda açıp her düğmeyi dener",q?`${esc(ago(q.zaman))} · ${q.dugme.tiklanan} düğme denendi · ${q.hatalar.length?`<b style="color:#ff8a95">${q.hatalar.length} sorun</b>`:"hata yok ✓"} · açılış ${(q.acilis_ms/1000).toFixed(1)} sn`:"İlk rapor bu gece")}
     ${row("🛡️","Bekçi","15 dakikada bir: motor ve toplayıcı zamanında mı",h?(h.alarm?`<b style="color:#ff8a95">${esc(h.sorun.join(" · "))}</b>`:`Her şey zamanında ✓ (${esc(ago(h.zaman))})`):"–")}
     ${row("🧪","Laboratuvar","her pazar: açık kaynak modellerle yarış",al?`${esc(al.tarih)} · ${esc(al.karar.aciklama)}`:"–")}
+    ${row("🤖","Robot arenası","her pazar: 5 bağımsız tahmin robotu (piyasa, Poisson, Elo, form, momentum) + öğrenen konsey",typeof ARENA!=="undefined"&&ARENA?`${esc(ARENA.tarih)} · ${ARENA.n.toLocaleString("tr-TR")} maç · ${esc(ARENA.karar)}<br>${Object.entries(ARENA.robotlar||{}).map(([n,v])=>{ const x=v[String(ARENA.sezonlar.slice(-1)[0])]; return x?`${esc(n)}: MS %${Math.round(x.isabet_1x2*1000)/10}${x.isabet_ou!=null?` · A/Ü %${Math.round(x.isabet_ou*1000)/10}`:""}`:""; }).filter(Boolean).join("<br>")}`:"İlk rapor pazar")}
     ${row("🛟","Koruyucu","her gün: otomatik her değişikliği izler; isabet düşerse 14 gün geri alır",RBK&&RBK.aktif?`<b style="color:#ff8a95">Geri alma aktif (${esc(RBK.bitis)}'e kadar): ${esc(RBK.neden)}</b>`:CHG?`${(CHG.degisiklikler||[]).length} değişiklik kayıtlı · son: ${esc(((CHG.degisiklikler||[]).slice(-1)[0]||{}).durum||"–")} · geri alma yok ✓`:"İlk rapor bu gece")}
     ${row("🧹","Veri ve güvenlik denetçisi","her gün: tekrar/hatalı kayıt, isim eşleme, eski lig, sızan anahtar",DQ?`${(DQ.bilgi||{}).mac?(DQ.bilgi.mac).toLocaleString("tr-TR")+" maç tarandı · ":""}güvenlik: ${esc((DQ.bilgi||{}).guvenlik_tarama||"–")}${DQ.ciddi&&DQ.ciddi.length?`<br><b style="color:#ff8a95">${DQ.ciddi.map(esc).join(" · ")}</b>`:""}${DQ.uyari&&DQ.uyari.length?`<br>${DQ.uyari.map(esc).join("<br>")}`:""}`:"İlk rapor bu gece")}`;
   k.prepend(el); };
