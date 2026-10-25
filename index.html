@@ -1623,6 +1623,14 @@ details.sx>.sx-in>.panel,details.sx>.sx-in>.pw-card{margin-top:0}
 .cv-q button{flex:none;width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.08);color:var(--ink2);font-size:16px}
 .cv-q:focus-within{border-color:rgba(34,211,255,.55)}
 </style>
+<style id="tahmin-canli-v85">
+.tc-live{border:1px solid rgba(255,69,58,.45)!important;background:linear-gradient(160deg,rgba(255,69,58,.12),var(--surface) 55%)!important}
+.tc-h{font:900 16px var(--font,system-ui);color:#FF8A80;margin-bottom:8px}
+.tc-s{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center;text-align:center}.tc-s span{font:900 30px var(--round,system-ui);padding:4px 12px;border-radius:12px;background:#1FBF5B;color:#fff}
+.tc-c{text-align:center;color:var(--ink2);font-size:13px;margin-top:6px}
+.tc-warn,.tc-tip{border:1px solid rgba(255,214,10,.4)!important;background:rgba(255,214,10,.08)!important;font-size:13.5px;line-height:1.5}
+.linkbtn{background:none;border:0;padding:0;color:#7FE3FF;font:inherit;font-weight:700;text-decoration:underline;cursor:pointer}
+</style>
 </head>
 <body>
 <div class="splash" id="splash" aria-hidden="true"><img src="icons/logo-full.png" alt=""></div>
@@ -5378,7 +5386,7 @@ function msTahmin(m,f,r,lv){
   const R=recOf(r,f), mm=m.sp?{lg:"i"+m.ci,h:m.h,a:m.a}:m, inCp=R&&CP.items.some(c=>c.k===cpKey(mm)&&c.mk===R.k);
   const big=R&&R.tier==="w"?`<div class="recbig rec-w"><small>BULUTOXX</small><b>⏸️ Pas</b><div class="rb-p">Bu maçta güvenilir bir öneri yok. En olası seçenek <em>${esc(R.n)}</em> ancak olasılığı %${pc9(R.cp)}.</div><p>Yanılma payını düşük tutmak için güven %58'in altındaysa öneri vermiyoruz.</p></div>`
     :R?`<div class="recbig rec-${R.tier}"><small>BULUTOXX TAHMİNİ</small><b>${esc(R.n)}</b><div class="rb-p">Kazanma olasılığı <em>%${pc9(R.cp)}</em>${R.o?` · iddaa oranı <em>${(+R.o).toFixed(2)}</em>`:""}</div>
-    ${R.cn?`<p>Geçmişte bu güvendeki ${R.cn.toLocaleString("tr-TR")} önerinin %${Math.round(R.ch*100)}'i tuttu.</p>`:""}
+    ${R.cn&&R.ch!=null?`<p>Geçmişte bu güvendeki ${R.cn.toLocaleString("tr-TR")} önerinin %${Math.round(R.ch*100)}'i tuttu.</p>`:""}
     ${R.o?`<button type="button" class="mo rb-add ${inCp?"sel":""}" data-mk="${R.k}" data-o="${R.o}" data-p="${R.p}">${inCp?"✓ Listede":"+ Listeye ekle"}</button>`:""}</div>`:"";
   const ms=markets(r,{}); const best=ms.filter(x=>!/daha gollü/.test(x.n))[0];
   const SC=scenario({home:m.h,away:m.a},r);
@@ -5562,7 +5570,7 @@ if((location.hash||"")==="#sonuclar") setTimeout(()=>$("navRes").click(),200);
 // =====================================================================
 // BULUTOXX v35: Otomatik sürüm güncelleme — yeni sürüm yayınlanınca uygulama kendini yeniler
 // =====================================================================
-const APP_V="2026-10-25.84";
+const APP_V="2026-10-25.85";
 (function autoUpdate(){
   let shown=false;
   async function check(auto){
@@ -5595,7 +5603,7 @@ renderPrediction=function(inp,r){ _rpV36(inp,r);
   try{ const b=document.querySelector("#out .board"); if(!b||b.querySelector(".recbig")) return;
     const o=inp.odds||{}, f={odds:o.o1&&o.ox&&o.o2?[o.o1,o.ox,o.o2]:null, ou:o.oo&&o.ou?[o.oo,o.ou]:null};
     const R=recOf(r,f); if(!R) return;
-    const h=`<div class="recbig rec-${R.tier}" style="margin:8px 0"><small>BULUTOXX TAHMİNİ</small><b>${esc(R.n)}</b><div class="rb-p">Kazanma olasılığı <em>%${pc9(R.cp)}</em>${R.o?` · oran <em>${(+R.o).toFixed(2)}</em>`:""}</div>${R.cn?`<p>Geçmişte bu güvendeki ${R.cn.toLocaleString("tr-TR")} önerinin %${Math.round(R.ch*100)}'i tuttu.</p>`:""}</div>`;
+    const h=`<div class="recbig rec-${R.tier}" style="margin:8px 0"><small>BULUTOXX TAHMİNİ</small><b>${esc(R.n)}</b><div class="rb-p">Kazanma olasılığı <em>%${pc9(R.cp)}</em>${R.o?` · oran <em>${(+R.o).toFixed(2)}</em>`:""}</div>${R.cn&&R.ch!=null?`<p>Geçmişte bu güvendeki ${R.cn.toLocaleString("tr-TR")} önerinin %${Math.round(R.ch*100)}'i tuttu.</p>`:""}</div>`;
     const anchor=b.querySelector(".mi")||b.querySelector(".teamsline"); if(anchor) anchor.insertAdjacentHTML("afterend",h); }catch(e){} };
 
 // v37: Motor sayfası — haftalık otomatik laboratuvar sonucu (açık kaynak modellerle yarış)
@@ -7345,7 +7353,7 @@ setTimeout(()=>{ try{ renderTP(); }catch(e){} },1500);
 (function(){
   const _lc=liveCal;
   liveCal=function(pp){ try{ const P=DAILY&&DAILY.canli&&DAILY.canli.platt;
-      if(P&&P.kabul&&isFinite(P.a)&&isFinite(P.b)&&pp>0&&pp<1){ const x=Math.log(pp/(1-pp)); const q=1/(1+Math.exp(-(P.a+P.b*x))); return {p:q, n:P.n, h:null, platt:true}; } }catch(e){}
+      if(P&&P.kabul&&isFinite(P.a)&&isFinite(P.b)&&pp>0&&pp<1){ const x=Math.log(pp/(1-pp)); const q=1/(1+Math.exp(-(P.a+P.b*x))); let bn=null,bh=null; try{ const B=DAILY.canli.bins||[]; const k=B.find(x=>q>=x[0]&&q<x[1]&&x[2]&&x[3]!=null); if(k){ bn=k[2]; bh=k[3]; } }catch(_){} return {p:q, n:bn, h:bh, platt:true}; } }catch(e){}
     return _lc(pp); };
   tpKarne=async function(){ try{ const days=(DAILY&&DAILY.gunler||[]).filter(g=>g.n>0).map(g=>g.d).slice(-30); let n=0,h=0,g=0;
     for(const d of days){ let A=null; try{ const r=await fetch(`data/archive/${d}.json`,{cache:"no-cache"}); if(r.ok) A=await r.json(); }catch(e){} if(!A) continue; let had=0;
@@ -7912,6 +7920,57 @@ setTimeout(()=>{ try{ renderTP(); }catch(e){} },1500);
   // arama kutusu her zaman altın kupon ile liste arasında kalsın
   const _ira=idlRenderAll; idlRenderAll=function(){ const r=_ira.apply(this,arguments); try{ mount(); const el=$("cvQ"), idl=$("idlBox"); if(el&&idl&&el.nextElementSibling!==idl) idl.before(el); if(IDLV.q) cvLegacy(); }catch(e){} return r; };
   mount();
+})();
+</script>
+<script id="tahmin-canli-v85">
+// =====================================================================
+// BULUTOXX v85: "Maç tahmini yap" ekranında oynanan/bitmiş maç koruması.
+// Hata: Gimnastic 4-1 öndeyken (devre arası) form, maç öncesi modelle "MS 2 · 1-2" veriyordu; takımlar lig listesinde
+// olmadığı için varsayılan lig (Süper Lig) ve sıfır form ile hesaplıyordu.
+// Çözüm: Tahmin et'e basıldığında iki takım bültende/canlıda aranır.
+//  • Maç oynanıyorsa: maç öncesi tahmin GÖSTERİLMEZ; skor + dakika ve canlı model tahmini (skoru hesaba katan) gösterilir.
+//  • Maç bitmişse: sonuç gösterilir, tahmin yapılmaz.
+//  • Maç bültendeyse (başlamamış): oranlı bülten tahmini önerilir; takımlar modelin liginde değilse uyarı gösterilir.
+// =====================================================================
+(function(){
+  const of2=o=>(+o).toFixed(2).replace(".",",");
+  function find(h,a){ try{ const L=omPool(); return L.find(m=>tmEq(m.h,h)&&tmEq(m.a,a))||L.find(m=>tmEq(m.h,a)&&tmEq(m.a,h))||null; }catch(e){ return null; } }
+  function liveInfo(m){ if(m.sp!==1) return null; try{ const P=idlPred(m), K=idlPick(m,P); if(!P||!K) return null; const C=liveCal(K.best.p); return {P,K,cp:Math.min(C.p,.99)}; }catch(e){ return null; } }
+  function isLive(m){ return !!(m.sp||m.live||m.started); }
+  function isDone(m){ return !!(m.done||m.finished||/bitti|ms$|ft/i.test(String(m.status||m.st||""))); }
+  let force=false;
+  document.addEventListener("submit",e=>{ if(e.target.id!=="f"||force) return;
+    const h=($("hn").value||"").trim(), a=($("an").value||"").trim(); if(!h||!a) return;
+    const m=find(h,a); if(!m) return;
+    const out=$("out"); if(!out) return;
+    if(isLive(m)||isDone(m)){
+      e.preventDefault(); e.stopImmediatePropagation();
+      const L=liveInfo(m), sc=(m.hs!=null?m.hs:"?")+"-"+(m.as!=null?m.as:"?"), clk=(()=>{ try{ return idlClockTxt(m); }catch(_){ return m.clock||"oynanıyor"; } })();
+      out.innerHTML=`<div class="panel tc-live"><div class="tc-h">${m.sp||m.live?"🔴 Bu maç şu an oynanıyor":"⏱ Bu maç başladı ya da bitti"}</div>
+        <div class="tc-s"><b>${esc(m.h)}</b><span>${esc(sc)}</span><b>${esc(m.a)}</b></div><div class="tc-c">${esc(clk)}${m.comp?" · "+esc(m.comp):""}</div>
+        ${L?`<div class="recbig rec-${L.cp>=.7?"g":L.cp>=.58?"m":"w"}" style="margin:10px 0"><small>BULUTOXX CANLI TAHMİNİ · skor ve dakika hesaba katıldı</small><b>${esc(L.K.best.n)}</b><div class="rb-p">Olasılık <em>%${pc9(L.cp)}</em>${L.K.best.o?` · oran <em>${of2(L.K.best.o)}</em>`:""}</div><p>Tahmini son skor: <b>${esc(L.P.ft)}</b> · 1 %${pc9(L.P.H)} · X %${pc9(L.P.D)} · 2 %${pc9(L.P.A)}</p></div>`
+          :`<p class="note">Canlı tahmin için resmi bülten verisi bekleniyor.</p>`}
+        <p class="note" style="margin:6px 0 10px">Maç başladığı için <b>maç öncesi tahmin geçerli değil</b>; oyundaki skor ve kalan süre sonucu belirler.</p>
+        <button type="button" class="btn" id="tcOpen">Canlı maç ekranını aç</button>
+        <button type="button" class="btn ghost" id="tcPre" style="margin-top:8px">Yine de maç öncesi hesabı göster (yalnız bilgi)</button></div>`;
+      $("tcOpen").onclick=()=>{ try{ buzz(8); openAny(m); }catch(_){} };
+      $("tcPre").onclick=()=>{ force=true; try{ $("f").requestSubmit(); }finally{ setTimeout(()=>{ force=false; const o=$("out"); if(o) o.insertAdjacentHTML("afterbegin",`<div class="panel tc-warn">⚠️ Aşağıdaki hesap maç başlamadan önceki duruma göredir; maç şu an ${esc(sc)} sürüyor.</div>`); },1400); } };
+      out.scrollIntoView({behavior:"smooth",block:"start"}); return; }
+    // başlamamış ve bültende var: oranlı bülten tahminini öner (form, lig listesinde olmayan takımlar için zayıf kalır)
+    setTimeout(()=>{ const o=$("out"); if(!o||o.querySelector(".tc-tip")) return; let R=null; try{ const f=m.src==="fx"?FIXTURES.find(x=>x.lg===m.lg&&x.h===m.h&&x.a===m.a):fxOdds(m); const p=quickPred(m,f); R=recOf({H:p.pm[0],D:p.pm[1],A:p.pm[2],o25:p.o25m},f); }catch(_){}
+      const unk=!(LEAGUES[$("lig").value]&&(m.lg===$("lig").value));
+      if(R) o.insertAdjacentHTML("afterbegin",`<div class="panel tc-tip">📋 Bu maç bültende var. Bültendeki oranlı tahmin: <b>${esc(R.n)} %${pc9(R.cp)}</b>${R.o?" · oran "+of2(R.o):""}.${unk?" <b>Not:</b> takımlar seçili ligde değil; aşağıdaki form hesabı yaklaşıktır, bülten tahmini daha güvenilirdir.":""} <button type="button" class="linkbtn" id="tcOpen2">Maç ekranını aç ›</button></div>`);
+      const b=$("tcOpen2"); if(b) b.onclick=()=>openAny(m); },2200);
+  },true);
+  // Bulut: canlı maç sorusunda maç öncesi değil canlı tahmin
+  const NZ=t=>String(t||"").toLocaleLowerCase("tr").replace(/ç/g,"c").replace(/ğ/g,"g").replace(/ı/g,"i").replace(/ö/g,"o").replace(/ş/g,"s").replace(/ü/g,"u").replace(/[^a-z0-9 ]/g," ").replace(/\s+/g," ").trim();
+  const key=n=>NZ(n).split(" ").filter(w=>w.length>=4&&!/^(club|futbol|sport|united|city|real|deportivo|atletico|sporting)$/.test(w));
+  if(typeof botAnswer==="function"){ const _ba=botAnswer; botAnswer=async function(raw){ try{ const n=" "+NZ(raw)+" ";
+      const L=(IDL.live[1]||[]).concat(IDL.live[2]||[]); let hit=null;
+      for(const m of L){ const kh=key(m.h), ka=key(m.a); const h=kh.some(w=>n.includes(" "+w+" ")), a=ka.some(w=>n.includes(" "+w+" ")); if(h&&a){ hit=m; break; } if(!hit&&(h||a)&&(kh.concat(ka)).some(w=>w.length>=6&&n.includes(" "+w+" "))) hit=m; }
+      if(hit){ const Li=liveInfo(hit), clk=(()=>{ try{ return idlClockTxt(hit); }catch(_){ return "oynanıyor"; } })();
+        return {html:`🔴 <b>${esc(hit.h)} ${hit.hs}-${hit.as} ${esc(hit.a)}</b> · ${esc(clk)}${hit.comp?" · "+esc(hit.comp):""}<br>`+(Li?`Canlı tahmin (skor ve dakika hesaba katıldı): <b>${esc(Li.K.best.n)} %${pc9(Li.cp)}</b>${Li.K.best.o?" · oran "+of2(Li.K.best.o):""} · tahmini son skor <b>${esc(Li.P.ft)}</b>.`:"Canlı tahmin için bülten verisi bekleniyor.")+`<br><small>Maç başladığı için maç öncesi tahmin geçerli değil. Garanti değildir.</small>`,chips:["Canlı maçlar","Canlı altın kupon"]}; }
+    }catch(e){} return _ba.apply(this,arguments); }; }
 })();
 </script>
 </body>
