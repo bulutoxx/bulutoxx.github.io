@@ -6993,6 +6993,161 @@ setTimeout(()=>{ try{ renderTP(); }catch(e){} },1500);
   const st=document.createElement("style"); st.id="bot-v69-css"; st.textContent=`.bt-msg .v69-g{display:block;opacity:.7;margin-top:6px;font-size:11px}.bt-msg .bt-ul li{margin:3px 0}`; document.head.appendChild(st);
 })();
 </script>
+<script id="bot-v70">
+// =====================================================================
+// BULUTOXX v70: Bulut her gün kendini geliştirir
+// • Gece koçu (lab/bot_coach.mjs, GitHub Actions, her gece): yalnız uygulama verisinden (fikstür, lig adları, karne) takım takma adları,
+//   lig adları, eş anlamlı kelimeler, yazım hataları, kalıp cümleler, terimler ve öne çıkan maçlar çıkarır; test kümesini büyütür,
+//   yeni bilgiyi telefondaki bu bot üzerinde sınar. Test başarısı (niyet ve faydalı cevap) düşmüyorsa data/bot_kb.json yayınlanır.
+// • Telefonda öğrenme (yalnız bu cihazda, localStorage "bx-bot70"; yazdıkların hiçbir yere gönderilmez):
+//   anlaşılmayan mesajdan sonra dokunulan çip / yeniden yazılan cümle eşlenir; 👍/👎 cevap tercihlerini ayarlar; favori takım hatırlanır.
+// • Komutlar: "ne öğrendin?", "öğrendiklerini sıfırla", "takımım Galatasaray".
+// =====================================================================
+(function(){
+  if(typeof botAnswer!=="function"||!window.BOT69) return;
+  const V=window.BOT69, X=window.BOT70={kb:null,kbState:"loading",coach:null,test:false,meta:null,lastT:null};
+  const N=s=>String(s||"").toLocaleLowerCase("tr").replace(/ç/g,"c").replace(/ğ/g,"g").replace(/ı/g,"i").replace(/ö/g,"o").replace(/ş/g,"s").replace(/ü/g,"u")
+    .normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^a-z0-9]+/g," ").trim();
+  const SUF=["","in","un","nin","nun","e","a","ye","ya","de","da","den","dan","te","ta","ten","tan","i","u","yi","yu","li","lu","la","le","yla","yle","nda","nde","ndan","nden",
+    "lar","ler","lari","leri","larin","lerin","lara","lere","larda","lerde","si","su","sini","sunu","ki","nin","daki","deki"];
+  const UNK=/tam anlayamadım|kafası biraz karıştı|anlayamadım|anlamadım/i;
+  const today=()=>istDay(new Date());
+  // ---------- 1) gece koçunun bilgi bankası (data/bot_kb.json) ----------
+  let W=Object.create(null), PH=[], PARA=Object.create(null), GL=[];
+  const LG0=Object.entries(BOT_LG);
+  function setLG(extra){ for(const k of Object.keys(BOT_LG)) delete BOT_LG[k];
+    const add=[]; for(const [k,v] of Object.entries(extra||{})){ const nk=N(k); if(nk&&typeof v==="string"&&!LG0.some(([a])=>N(a)===nk)) add.push([nk,v]); }
+    const multi=add.filter(x=>x[0].includes(" ")).sort((a,b)=>b[0].split(" ").length-a[0].split(" ").length||b[0].length-a[0].length), single=add.filter(x=>!x[0].includes(" "));
+    for(const [k,v] of multi.concat(single).concat(LG0)) BOT_LG[k]=v; }
+  function applyKB(kb){ W=Object.create(null); PH=[]; PARA=Object.create(null); GL=[];
+    const ok=(k,v)=>typeof v==="string"&&v.length&&v.length<=60&&k&&k.length<=40;
+    if(kb){ for(const sec of ["takim","esanlam","yazim"]) for(const [k,v] of Object.entries(kb[sec]||{})){ const nk=N(k); if(!ok(nk,v)) continue; if(nk.includes(" ")) PH.push([nk.split(" "),v]); else W[nk]=v; }
+      PH.sort((a,b)=>b[0].length-a[0].length);
+      for(const [k,v] of Object.entries(kb.para||{})){ const nk=N(k); if(ok(nk,v)) PARA[nk]=v; }
+      for(const g of (kb.sozluk||[])){ try{ if(g&&g.re&&g.html) GL.push({k:g.k,re:new RegExp(g.re),html:String(g.html)}); }catch(e){} } }
+    try{ setLG(kb&&kb.lig); }catch(e){}
+    V._stop=null; }
+  // kelime/ifade eşlemesi: "spurs" → "Tottenham Hotspur", Türkçe ekleriyle ("spurs'un", "karşılaşmaları")
+  function kbRewrite(raw){ raw=String(raw||""); if(!PH.length&&!Object.keys(W).length) return raw;
+    let words=raw.split(/\s+/).filter(Boolean);
+    if(PH.length){ let nw=words.map(N);
+      for(const [p,to] of PH){ for(let i=0;i+p.length<=nw.length;i++){ let hit=true;
+          for(let j=0;j<p.length;j++){ const a=nw[i+j]||"", b=p[j]; if(a===b) continue; if(j===p.length-1&&a.startsWith(b)&&SUF.includes(a.slice(b.length))) continue; hit=false; break; }
+          if(hit){ words.splice(i,p.length,to); nw.splice(i,p.length,N(to)); } } } }
+    words=words.map(w=>{ if(/\d/.test(w)) return w; const n=N(w); if(!n) return w; const parts=n.split(" "), base=parts[0];
+      if(parts.length>1&&!parts.slice(1).every(x=>SUF.includes(x))) return w;
+      if(W[base]) return W[base];
+      for(let L=base.length-1;L>=3;L--){ const k=base.slice(0,L); if(W[k]&&SUF.includes(base.slice(L))) return W[k]; }
+      return w; });
+    return words.join(" "); }
+  const _rw=V.rewrite; V.rewrite=function(raw){ return _rw(kbRewrite(raw)); };
+  const _parse=V.parse; V.parse=function(raw,ctx){ const r=_parse(raw,ctx); X.lastT=r?r.t:null; return r; };
+  // ---------- 2) bu telefonda öğrenilenler (yalnız localStorage) ----------
+  const KEY="bx-bot70";
+  const blank=()=>({v:1,map:{},neg:{},fb:{},fav:"",pend:null});
+  let ST=(()=>{ try{ return Object.assign(blank(),JSON.parse(localStorage.getItem(KEY)||"{}")); }catch(e){ return blank(); } })();
+  function save(){ try{
+      const M=Object.entries(ST.map); if(M.length>80){ M.sort((a,b)=>(b[1].ok||0)-(a[1].ok||0)||(b[1].at||0)-(a[1].at||0)); ST.map=Object.fromEntries(M.slice(0,80)); }
+      const G=Object.entries(ST.neg); if(G.length>80) ST.neg=Object.fromEntries(G.slice(-80));
+      let s=JSON.stringify(ST); while(s.length>16000&&Object.keys(ST.map).length){ delete ST.map[Object.keys(ST.map)[0]]; s=JSON.stringify(ST); }
+      localStorage.setItem(KEY,s); }catch(e){} }
+  function learn(p,q){ if(!p||!q||p.length>80||N(q)===p) return false; ST.map[p]={q:String(q).slice(0,120),at:Date.now(),ok:(ST.map[p]&&ST.map[p].q===q)?ST.map[p].ok||0:0,n:0}; delete ST.neg[p]; save(); return true; }
+  function favTeam(x){ const s=N(kbRewrite(x)); if(!s||s.length<3) return null;
+    try{ const t=findTeam(s); if(t&&t.name) return t.name; }catch(e){}
+    try{ const m=V.teams(s); if(m&&m.m) return m.hs>=m.as?m.m.h:m.m.a; }catch(e){}
+    return null; }
+  // ---------- 3) cevap katmanı ----------
+  const TERMQ=/\b(ne demek\w*|nedir|ne anlama|anlami\w*|ne ifade|aciklar misin|acikla\w*|ne demektir|manasi|nasil calisir|ne manaya)\b/;
+  function gloss(s){ if(!GL.length||!TERMQ.test(s)) return null; try{ if(V.term(s)) return null; }catch(e){}
+    for(const g of GL) if(g.re.test(s)) return {html:`📖 ${g.html}`,chips:["Başka bir terim: oran nedir","En güvenli maçlar","Yardım"],_t:"sozluk"};
+    return null; }
+  const ONQ=/\b(onemli mac\w*|buyuk mac\w*|gunun maci\w*|haftanin maci\w*|macin maci|dev mac\w*|one cikan mac\w*|kritik mac\w*|derbiler)\b/;
+  async function notable(s,_ans){ const L=X.kb&&X.kb.onemli; if(!L||!L.length||!ONQ.test(s)) return null;
+    const now=Date.now(), P=Pick.list().filter(m=>!m.started&&m.dt.getTime()>now-2*3600e3);
+    const hit=L.map(o=>P.find(m=>m.h===o.h&&m.a===o.a)).filter(Boolean); if(!hit.length) return null;
+    const m=hit[0], R=await _ans(`${m.h} ${m.a}`); if(!R||UNK.test(R.html||"")) return null;
+    const others=hit.slice(1,4).map(x=>`${x.h} ${x.a}`);
+    return Object.assign({},R,{html:`⭐ <b>Öne çıkan maç</b> (büyük takımlar / üst lig, gece koçunun seçimi):<br>${R.html}`,chips:others.length?others.concat(["En güvenli maçlar"]):R.chips,_t:"onemli"}); }
+  function alts(){ const ch=["Bugün hangi maçlar var","En güvenli 3 maç","Altın tahminler","Yardım"];
+    const best=Object.entries(ST.fb).filter(([k,v])=>v.u>v.d&&{oner:1,guvenli:1,altin:1,liste:1,karne:1}[k]).sort((a,b)=>b[1].u-a[1].u)[0];
+    if(best){ const q={oner:"Bugün hangi maçlar var",guvenli:"En güvenli 3 maç",altin:"Altın tahminler",liste:"3 maçlık liste yap",karne:"Dünkü karne"}[best[0]]; const i=ch.indexOf(q); if(i>0){ ch.splice(i,1); ch.unshift(q); } }
+    return ch; }
+  function nowKbLine(short){ const c=X.coach&&X.coach.son; if(!c) return "";
+    const gece=c.tarih===today()?"Bu gece":c.tarih===istDay(new Date(Date.now()-864e5))?"Dün gece":`${ist(new Date(c.tarih+"T12:00:00+03:00"),{day:"numeric",month:"long"})} gecesi`;
+    const y=X.coach.yayin||c; const b=`test başarısı <b>%${y.faydali}</b>${short?"":` <small>(${y.n} soru)</small>`}`;
+    return c.yayin?`🌙 ${gece} ${c.yeni?`<b>${c.yeni}</b> yeni şey öğrendim`:"yeni bir şey öğrenmedim"} · ${b}`:`🌙 ${gece} yeni bilgiler testi geçemedi, önceki sürümle devam · ${b}`; }
+  function view(){ const kb=X.kb, c=X.coach&&X.coach.son, rows=[];
+    if(c){ const y=X.coach.yayin||c; rows.push(`🌙 <b>Gece koçu</b> (yalnız uygulama verisinden, sunucuda): ${nowKbLine().replace(/^🌙 /,"")}.${kb&&kb.sayim?` Bilgi bankasında ${kb.sayim.toplam} kayıt var: ${kb.sayim.takim} takım adı, ${kb.sayim.lig} lig adı, ${kb.sayim.esanlam+kb.sayim.yazim} kelime, ${kb.sayim.para} kalıp cümle, ${kb.sayim.sozluk} terim.`:""} Testte niyet doğruluğu %${y.niyet}, faydalı cevap %${y.faydali}.`); }
+    else rows.push(`🌙 Gece koçunun raporu henüz yok; ilk rapor bu gece.`);
+    const M=Object.entries(ST.map);
+    rows.push(`📱 <b>Bu telefonda senden öğrendiklerim</b>: ${M.length?`${M.length} ifade (ör. ${M.slice(-3).map(([p,v])=>`"${esc(p)}" → "${esc(v.q)}"`).join(", ")})`:"henüz yok — anlamadığım bir şeyden sonra çiplerden birine dokunursan ya da başka türlü yazarsan öğrenirim"}.`);
+    const F=Object.values(ST.fb).reduce((a,v)=>(a.u+=v.u||0,a.d+=v.d||0,a),{u:0,d:0}); if(F.u||F.d) rows.push(`👍 ${F.u} · 👎 ${F.d} geri bildirim (beğenmediğin cevaplarda sana alternatif sunarım).`);
+    const tm=Object.entries(BOT.st.tm||{}).sort((a,b)=>b[1]-a[1]).slice(0,3).map(x=>x[0]), lg=Object.entries(BOT.st.lg||{}).sort((a,b)=>b[1]-a[1]).slice(0,2).map(x=>{ try{ return botLgName(x[0]); }catch(e){ return x[0]; } });
+    rows.push(`⭐ <b>Favorilerin</b>: ${ST.fav?`takımın <b>${esc(ST.fav)}</b>; `:""}${tm.length?`en çok sorduğun takımlar ${tm.map(esc).join(", ")}`:"henüz belirgin bir takım yok"}${lg.length?`; ligler ${lg.map(esc).join(", ")}`:""}.${ST.fav?"":` "takımım Galatasaray" yazarsan "takımımın maçı" dediğinde anlarım.`}`);
+    return {html:`<b>☁️ Bulut'un öğrendikleri</b><ul class="bt-ul">${rows.map(r=>`<li>${r}</li>`).join("")}</ul><small class="v70-g">Bu telefonda öğrendiklerim yalnız bu cihazda saklanır, hiçbir yere gönderilmez. "öğrendiklerini sıfırla" yazarsan silerim.</small>`,chips:["Öğrendiklerini sıfırla","Yardım","Bugün hangi maçlar var"]}; }
+  function command(s,raw){
+    if(/^(ne ogrendin|neler ogrendin|ne ogrendin bugun|bugun ne ogrendin|ogrendiklerin\w*( neler| ne)?|ogrendiklerini goster|bulutun ogrendikleri|hafizan|hafizani goster|beni ne kadar taniyorsun)$/.test(s)) return view();
+    if(/^(ogrendiklerini|ogrendiklerin\w*|hafizani|hafizan\w*)\s*(sifirla|sil|temizle|unut)\w*$|^(her seyi unut|beni unut)$/.test(s)){ X.confirm=Date.now(); return {html:`Bu telefonda senden öğrendiklerimi (ifade eşlemeleri, 👍/👎, favori takım ve ligler) silmemi istiyor musun? Gece koçunun herkes için öğrendikleri silinmez.`,chips:["Evet, sıfırla","Hayır"]}; }
+    if(/^evet sifirla$/.test(s)){ if(!X.confirm||Date.now()-X.confirm>5*60e3) return {html:`Neyi sıfırlayayım? "öğrendiklerini sıfırla" yazabilirsin.`,chips:["Ne öğrendin?"]};
+      X.confirm=0; ST=blank(); save(); try{ BOT.st.tm={}; BOT.st.lg={}; botSave(); }catch(e){} return {html:`Tamam 🧹 Bu telefonda senden öğrendiklerimi sildim. Baştan öğrenmeye hazırım.`,chips:["Bugün hangi maçlar var","Yardım"]}; }
+    if(/^hayir$/.test(s)&&X.confirm){ X.confirm=0; return {html:`Tamam, hiçbir şeyi silmedim 🙂`,chips:["Ne öğrendin?"]}; }
+    let m=/^(?:benim )?(?:takimim|tuttugum takim|favori takimim)(?: da| de)? (?!maci|macin|mac\b|ne|nin|in)(.{3,40})$/.exec(s)||/^(.{3,40}?) (?:taraftariyim|tutuyorum|liyim)$/.exec(s);
+    if(m){ const t=favTeam(m[1]); if(t){ ST.fav=t; save(); return {html:`Not aldım ⭐ Takımın <b>${esc(t)}</b>. Artık "takımımın maçı ne olur" dersen onu anlarım. (Yalnız bu telefonda saklanır.)`,chips:["Takımımın maçı ne olur","Ne öğrendin?"]}; } }
+    return null; }
+  const _ans=botAnswer;
+  botAnswer=async function(raw){ const q0=String(raw||""), n0=N(q0); X.lastT=null; X.meta=null;
+    const C=command(n0,q0); if(C){ X.meta={t:"komut",phrase:n0}; return C; }
+    let q=q0, via=null, L=null;
+    if(!X.test&&ST.fav&&/\b(benim )?takimim\w*\b/.test(n0)) q=n0.replace(/\b(benim )?takimim\w*\b/g,ST.fav);
+    else if(!X.test&&(L=ST.map[n0])&&L.q){ q=L.q; via="cihaz"; L.n=(L.n||0)+1; }
+    else if(PARA[n0]){ q=PARA[n0]; via="kb"; }
+    const nq=N(kbRewrite(q));
+    let R=gloss(nq); if(!R) R=await notable(nq,_ans);
+    if(R) X.lastT=R._t; else R=await _ans(q);
+    const t=X.lastT||null, ok=!!(R&&R.html&&!UNK.test(R.html));
+    let extra="", chips=null;
+    if(!X.test){
+      if(!ok){ if(/[a-z]{2}/.test(n0)&&!via) ST.pend={p:n0,at:Date.now()}; }
+      else if(ST.pend&&Date.now()-ST.pend.at<3*60e3&&ST.pend.p!==n0&&!via){ const p=ST.pend.p; ST.pend=null; if(learn(p,q0)) extra+=`<small class="v70-g">📌 Öğrendim: bundan sonra "${esc(p)}" yazınca bunu anlayacağım. ("ne öğrendin?" ile görebilirsin)</small>`; }
+      if(via==="cihaz") extra+=`<small class="v70-g">📌 Bunu senden öğrenmiştim: "${esc(L.q)}" olarak anladım. Yanlışsa 👎'ye dokun.</small>`;
+      else if(ok&&ST.neg[n0]){ extra+=`<small class="v70-g">Geçen sefer bu soruya verdiğim cevabı beğenmemiştin; istersen aşağıdan başka bir şey seç ya da farklı yaz, öğrenirim.</small>`; chips=alts(); ST.pend={p:n0,at:Date.now(),neg:1}; }
+      save(); }
+    X.meta={phrase:n0,q,via,t:t||(ok?"eski":"anlamadi"),ok};
+    return (extra||chips)?Object.assign({},R,{html:(R.html||"")+extra,chips:chips||R.chips}):R; };
+  // ---------- 4) arayüz: 👍/👎, başlıkta gece koçu satırı, Motor › Otonom ekip satırı ----------
+  const _send=botSend;
+  botSend=async function(q){ await _send(q);
+    try{ const log=$("botLog"), w=log&&log.lastElementChild, M=X.meta; if(!w||!M||M.t==="komut"||!w.classList.contains("bot")||w.querySelector(".v70-fb")) return;
+      const d=document.createElement("div"); d.className="v70-fb"; d.innerHTML=`<button type="button" data-fb="1" aria-label="Faydalı cevap">👍</button><button type="button" data-fb="-1" aria-label="Faydalı değil">👎</button>`; d._m=M; w.appendChild(d); }catch(e){} };
+  document.addEventListener("click",e=>{ const b=e.target.closest&&e.target.closest(".v70-fb button"); if(!b) return; e.stopPropagation(); const box=b.parentNode, M=box._m; if(!M||box.dataset.done) return;
+    box.dataset.done=1; b.classList.add("on"); box.querySelectorAll("button").forEach(x=>x.disabled=true); try{ buzz(8); }catch(_){}
+    const f=ST.fb[M.t]=ST.fb[M.t]||{u:0,d:0};
+    if(b.dataset.fb==="1"){ f.u++; if(M.via==="cihaz"&&ST.map[M.phrase]) ST.map[M.phrase].ok=(ST.map[M.phrase].ok||0)+1; delete ST.neg[M.phrase]; save(); try{ toast("Teşekkürler 👍 Not ettim"); }catch(_){} return; }
+    f.d++; if(M.via==="cihaz") delete ST.map[M.phrase]; ST.neg[M.phrase]=(ST.neg[M.phrase]||0)+1; ST.pend={p:M.phrase,at:Date.now(),neg:1}; save();
+    try{ botPush("bot",`Üzgünüm 😕 Ne demek istediğini aşağıdan seçersen ya da başka türlü yazarsan, bir dahaki sefere doğrudan onu anlarım. <small class="v70-g">(Bu öğrenme yalnız bu telefonda kalır.)</small>`); botChips(alts()); }catch(_){} },true);
+  function kbChip(){ const sh=$("botSheet"); if(!sh) return; let el=$("botKb"); const line=nowKbLine(true);
+    if(!line){ if(el) el.remove(); return; }
+    if(!el){ const h=sh.querySelector(".bt-h"); if(!h) return; el=document.createElement("button"); el.type="button"; el.id="botKb"; el.className="v70-kb"; el.setAttribute("aria-label","Bulut'un öğrendikleri"); h.after(el); el.onclick=()=>botSend("ne öğrendin?"); }
+    el.innerHTML=line; }
+  const _open=botOpen; botOpen=function(){ _open.apply(this,arguments); try{ kbChip(); }catch(e){} };
+  if(typeof renderKarne==="function"){ const _rk=renderKarne; renderKarne=function(){ _rk.apply(this,arguments);
+    try{ const p=$("teamPanel"), c=X.coach&&X.coach.son; if(!p||!c||p.querySelector(".v70-row")) return; const d=document.createElement("div"); d.className="tm-r v70-row";
+      d.innerHTML=`<span class="tm-ic">💬</span><div><b>Sohbet koçu</b><small>her gece: Bulut'a yeni takım adları, lig adları, kalıplar ve terimler öğretir; testi düşüren bilgi yayınlanmaz</small><p>${nowKbLine()}</p></div>`; p.appendChild(d); }catch(e){} }; }
+  // ---------- 5) yükleme (önbelleksiz; hata olursa sessizce eski bilgiyle devam) ----------
+  function load(){ const g=u=>fetch(u+"?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():null).catch(()=>null);
+    return Promise.all([g("data/bot_kb.json"),g("data/bot_coach.json")]).then(([kb,c])=>{ X.coach=c&&typeof c==="object"&&c.son?c:null;
+      if(kb&&typeof kb==="object"&&kb.v){ try{ applyKB(kb); X.kb=kb; }catch(e){ applyKB(X.kb); } }
+      X.kbState=X.kb?"ok":"none"; try{ kbChip(); }catch(e){} }).catch(()=>{ X.kbState=X.kb?"ok":"none"; }); }
+  X.ready=load(); setInterval(()=>{ if(!document.hidden) load(); },6*3600e3);
+  // test yardımcıları (gece koçu kullanır): bilgi bankasını değiştir, cihazda öğrenmeyi kapat
+  X.setKB=kb=>{ applyKB(kb||null); X.kb=kb||null; X.kbState=X.kb?"ok":"none"; };
+  X.testMode=b=>{ X.test=!!b; }; X.resetSession=()=>{ ST.pend=null; X.meta=null; X.confirm=0; }; X.store=()=>JSON.parse(JSON.stringify(ST)); X.N=N; X.rewrite=kbRewrite;
+  const st=document.createElement("style"); st.id="bot-v70-css";
+  st.textContent=`.bt-msg .v70-g{display:block;opacity:.72;margin-top:6px;font-size:11px}.v70-fb{display:flex;gap:6px;margin-top:6px}.v70-fb button{border:1px solid var(--line);background:transparent;border-radius:99px;padding:2px 9px;font-size:13px;line-height:1.5;opacity:.75;color:inherit}.v70-fb button.on{opacity:1;border-color:var(--cyan);background:rgba(34,211,255,.12)}.v70-fb button:disabled:not(.on){opacity:.35}
+.v70-kb{display:block;width:100%;text-align:left;border:0;border-bottom:1px solid var(--line);background:rgba(34,211,255,.07);color:var(--ink2,inherit);font:500 12px var(--font,inherit);padding:7px 14px;line-height:1.4}.v70-kb b{color:var(--cyan)}.v70-kb small{opacity:.7}`;
+  document.head.appendChild(st);
+})();
+</script>
 <script id="core-v69">
 /* v69: canlı Platt kalibrasyonu (toplayıcı zaman sıralı sınamada kabul ettiyse) + karne gün sayısı dürüst */
 (function(){

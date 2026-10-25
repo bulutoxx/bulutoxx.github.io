@@ -17,6 +17,7 @@ Hiçbir yapay zekâ servisine (Claude vb.) bağlı değildir; tüm botlar GitHub
                                             🛟 Koruyucu        her gece                    changes, rollback
                                             🧹 Denetçi         her gece                    dq
                                             🎨 Kalite          her gece                    qa, qa/*.jpg
+                                            💬 Sohbet koçu     her gece (kaliteden sonra)  bot_kb, bot_coach, bot_tests
                                             🧪 Laboratuvar     her pazar 02:41 UTC         auto_lab
                                             🤖 Robot arenası   her pazar (laboratuvarla)   arena
 ```
@@ -67,7 +68,27 @@ Futbolda tek maçın sonucu doğası gereği belirsizdir; hiçbir model her maç
 | health.json | Bekçi | Uygulama | Nabız; gecikmede uyarı |
 | auto_lab.json | Laboratuvar | Motor, uygulama | Açık kaynak modellerle yarış sonucu |
 | arena.json | Robot arenası | Motor (konsey), uygulama | 5 robot + konsey: sezon sezon isabet, ağırlıklar, kabul edilen pazarlar (uygula) |
-| gelisim.json | Koruyucu | Uygulama | Gelişim günlüğü: otomatik uygulanan gelişmeler, geri almalar, ölçümler, karneler |
+| gelisim.json | Koruyucu, sohbet koçu | Uygulama | Gelişim günlüğü: otomatik uygulanan gelişmeler, geri almalar, ölçümler, karneler |
+| bot_kb.json | Sohbet koçu | Uygulama (Bulut, `bot-v70`) | Bulut'un bilgi bankası: takım takma adları/okunuşları (`takim`), lig adları (`lig`), eş anlamlılar (`esanlam`), yazım hataları (`yazim`), kalıp cümleler (`para`), terimler (`sozluk`), öne çıkan maçlar (`onemli`), `sayim` |
+| bot_coach.json | Sohbet koçu | Uygulama (sohbet başlığı, Otonom ekip paneli) | Son gece: soru sayısı, niyet/faydalı %, önceki bankayla karşılaştırma, eklenenler, yayın kararı ve nedeni; `yayin` = yayındaki bankanın skoru; `gecmis` |
+| bot_tests.json | Sohbet koçu | Sohbet koçu | Her gece büyüyen test soruları (veriye bağlı olanlar 21 gün sonra emekli olur); sabit 224 soru `lab/bot/suite.cjs`'te |
+
+## 💬 Bulut'un kendini geliştirmesi (v70)
+
+Bulut (sohbet asistanı) tamamen telefonda çalışır; yapay zekâ servisi ve sunucu yoktur. **Kullanıcının yazdıkları hiçbir zaman telefondan çıkmaz.**
+
+1. **Gece koçu** (`lab/bot_coach.mjs`, otonom ekip iş akışında): yalnız uygulama verisinden (fikstür, lig adları, karne, uygulamanın kendi takım listesi)
+   aday bilgi üretir, uygulamayı başsız tarayıcıda açıp Bulut'a soru sorarak her adayı sınar (aday olmadan yanlış, adayla doğru → kabul).
+   Kabul edilen sorular test kümesine eklenir; küme her gün büyür (sabit 224 soru + üretilenler).
+2. **Kapı (tek yönlü iyileşme):** dünkü banka ve yeni banka aynı sorularla çalıştırılır. Yeni banka yalnız niyet doğruluğu ve faydalı cevap oranı
+   düşmüyorsa, dünkü bankanın doğru bildiği hiçbir soru yanlışa dönmüyorsa (iki kez sorularak doğrulanır) ve sayfa hatası yoksa yayınlanır.
+   Gerileme varsa suçlu bilgi tek tek çıkarılarak aranır; yine geçmezse dünkü banka kalır. Kararın nedeni `bot_coach.json`'da yazar.
+3. **Telefonda öğrenme** (`localStorage` "bx-bot70", ≤16 KB): anlaşılmayan mesajdan sonra dokunulan çip / yeniden yazılan cümle eşlenir,
+   👍/👎 ile beğenilmeyen cevapta alternatif sunulur, "takımım …" ile favori takım hatırlanır. "ne öğrendin?" gösterir, "öğrendiklerini sıfırla" siler.
+4. Sohbet başlığında "Bu gece X yeni şey öğrendim · test başarısı %Y" satırı `bot_coach.json`'dan gelir (yalnız ölçülmüş rakamlar).
+
+Yerel deneme: `node lab/bot_coach.mjs --dry` (dosya yazmaz) · `node lab/bot_coach.mjs --eval` (yalnız test kümesi) ·
+`BOT_COACH_TIME=2026-10-25T12:00:00+03:00` saati sabitler · `BOT_COACH_INDEX=<dosya>` başka bir index.html'i sınar.
 
 ## Yeni bot eklemek
 

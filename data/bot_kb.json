@@ -1,0 +1,215 @@
+{
+ "takim": {
+  "rize": "Çaykur Rizespor",
+  "athletic club": "Athletic Bilbao",
+  "munsen": "Bayern München",
+  "munken": "Bayern München",
+  "galatasarai": "Galatasaray",
+  "fenerbahse": "Fenerbahçe",
+  "naymegen": "Nijmegen",
+  "morayrense": "Moreirense",
+  "auxere": "Auxerre",
+  "auksere": "Auxerre",
+  "renes": "Rennes",
+  "lecse": "Lecce",
+  "sitard": "For Sittard",
+  "exselsior": "Excelsior",
+  "eksselsior": "Excelsior",
+  "burnemuth": "Bournemouth",
+  "burnemut": "Bournemouth",
+  "anderlest": "Anderlecht",
+  "anderlekt": "Anderlecht"
+ },
+ "esanlam": {
+  "karsilasmalar": "maçlar",
+  "aksamki": "akşam",
+  "riski az": "en güvenli",
+  "risksiz": "güvenli",
+  "dusuk riskli": "en güvenli"
+ },
+ "yazim": {
+  "cuartesi": "cumartesi",
+  "prsembe": "persembe"
+ },
+ "lig": {
+  "ispanya segunda rfef": "i91400",
+  "segunda rfef": "i91400",
+  "danimarka super lig": "dk",
+  "norvec eliteserien": "no",
+  "eliteserien": "no",
+  "caf sampiyonlar ligi": "i245009",
+  "arjantin primera lpf": "ar",
+  "faroe adalari premier lig": "i14408",
+  "iran pro ligi": "i16184",
+  "nijerya profesyonel futbol ligi": "i5593",
+  "norvec 1 lig": "i571",
+  "tayland 2 lig": "i22380",
+  "meksika primera ligi": "mx",
+  "ispanya primera rfef": "i90700",
+  "primera rfef": "i90700",
+  "jamaika premier lig": "i5591",
+  "kanada premier lig": "i22348",
+  "liga dimayor": "col",
+  "isvicre super lig": "ch",
+  "endonezya 1 lig": "i974",
+  "peru premier ligi": "per",
+  "tayland 1 lig": "i22381",
+  "polonya ekstraklasa": "pl",
+  "ekstraklasa": "pl",
+  "arjantin primera nacional": "ar2",
+  "primera nacional": "ar2",
+  "polonya 1 lig": "i997",
+  "sili premier lig": "chi"
+ },
+ "para": {},
+ "sozluk": [
+  {
+   "k": "xg",
+   "re": "\\bxg\\b|gol beklenti",
+   "html": "<b>Gol beklentisi (xG)</b>: bir takımın o maçta atması beklenen ortalama gol sayısı. BULUTOXX bunu lig gol ortalaması, iç/dış saha gücü ve piyasa oranlarından hesaplar; ör. 1,8'e 0,9 beklenti ev sahibini favori yapar ama sonucu garanti etmez."
+  },
+  {
+   "k": "form",
+   "re": "\\bform\\w*",
+   "html": "<b>Form</b>: takımın son maçlardaki gidişatı (son 5-6 maçın sonuçları ve golleri). BULUTOXX formu tek başına değil, lig gücü ve piyasa oranlarıyla birlikte kullanır; form tek başına yanıltıcı olabilir."
+  },
+  {
+   "k": "elo",
+   "re": "\\belo\\b",
+   "html": "<b>Elo puanı</b>: takımların güç puanı; her maçtan sonra kazanan, kaybedenden puan alır, sürpriz galibiyet daha çok puan getirir. BULUTOXX'un robot arenasında Elo robotu da yarışır; piyasaya bilgi eklemediği ölçüldüğü için ana tahminde ağırlığı yoktur."
+  },
+  {
+   "k": "kalibrasyon",
+   "re": "kalibr",
+   "html": "<b>Kalibrasyon</b>: gösterilen yüzdenin, geçmişte aynı güvendeki tahminlerin gerçek tutma oranına göre düzeltilmesi. Yani %80 dediğim seçimler, kilitli arşivde gerçekten yaklaşık %80 tutmuş seviyededir. Kilitli arşivde şimdiye kadar 605 öneri puanlandı; %57'i tuttu."
+  },
+  {
+   "k": "marj",
+   "re": "\\bmarj\\w*",
+   "html": "<b>Bahis marjı</b>: şirketin oranlara eklediği pay; oranların ters çevrilmiş toplamı %100'ü aşar (ör. toplam %107 → %7 marj). BULUTOXX piyasa olasılığını hesaplarken bu marjı ayıklar. Şu an kullanılan ayıklama yöntemi: <b>power</b> (araştırmacı bot her gece sınar)."
+  },
+  {
+   "k": "brier",
+   "re": "brier",
+   "html": "<b>Brier skoru</b>: olasılık tahminlerinin isabet ölçüsü; 0'a ne kadar yakınsa o kadar iyi. Koruyucu bot, otomatik bir değişiklikten sonra Brier skoru belirgin kötüleşirse (+0,01) değişikliği 14 gün geri alır."
+  },
+  {
+   "k": "mbs",
+   "re": "\\bmbs\\b|minimum bahis",
+   "html": "<b>MBS</b> (minimum bahis sayısı): iddaa'da bir maçın kuponda en az kaç maçla birlikte oynanabileceği. BULUTOXX bir bahis aracı olmadığı için MBS göstermez; yalnız tutma olasılığını gösterir."
+  },
+  {
+   "k": "powernow",
+   "re": "power ?now",
+   "html": "<b>Power Now</b>: canlı maçlarda tutma olasılığı %80 ve üstü olan anlık seçimlerin ekranı (alt menü). Canlı oranlar saniyeler içinde değişir; seçimler maç içinde kilitlenip sonradan puanlanır."
+  },
+  {
+   "k": "favori",
+   "re": "\\bfavori\\w*",
+   "html": "<b>Favori</b>: kazanma olasılığı en yüksek görülen taraf. Favori olmak kazanmak demek değildir: %60 favori, 10 benzer maçın yaklaşık 4'ünü kazanamaz."
+  },
+  {
+   "k": "surpriz",
+   "re": "\\bsurpriz\\w*",
+   "html": "<b>Sürpriz</b>: olasılığı düşük görülen sonucun gerçekleşmesi (ör. %20 görülen deplasman galibiyeti). Futbolda sık olur; bu yüzden tek maçta \"kesin\" yoktur."
+  },
+  {
+   "k": "evsahibi",
+   "re": "ev sahibi avantaj|saha avantaj|ic saha",
+   "html": "<b>Ev sahibi avantajı</b>: kendi sahasında oynayan takımın istatistiksel üstünlüğü. BULUTOXX modeli bunu iç/dış saha gücü olarak hesaba katar."
+  },
+  {
+   "k": "deplasman",
+   "re": "\\bdeplasman\\w*",
+   "html": "<b>Deplasman</b>: rakip sahada oynayan (konuk) takım; maç adında ikinci yazılan takımdır. <b>MS 2</b> deplasman galibiyeti demektir."
+  },
+  {
+   "k": "beraberlik",
+   "re": "\\bberaber\\w*",
+   "html": "<b>Beraberlik (MS X)</b>: maçın normal süre sonunda eşitlikle bitmesi (0-0, 1-1…). Dengeli maçlarda beraberlik olasılığı %30'u bulabilir."
+  },
+  {
+   "k": "kilitli",
+   "re": "kilitli|kilitlen\\w*",
+   "html": "<b>Kilitli tahmin</b>: maç başlamadan arşive yazılan ve sonradan değiştirilemeyen öneri. Karnedeki tüm isabet rakamları bu kilitli kayıtlardan hesaplanır. Kilitli arşivde şimdiye kadar 605 öneri puanlandı; %57'i tuttu."
+  },
+  {
+   "k": "korner",
+   "re": "\\bkorner\\w*|\\bkorner\\b",
+   "html": "<b>Korner</b> (köşe vuruşu) sayısı üzerine pazarlar vardır ama BULUTOXX korner tahmini üretmez; uydurmamak için bu pazarı önermem. Gol, MS, KG ve İY olasılıklarını sorabilirsin."
+  }
+ ],
+ "gor": {
+  "rize": "2026-10-25",
+  "athletic club": "2026-10-25",
+  "munsen": "2026-10-25",
+  "munken": "2026-10-25",
+  "galatasarai": "2026-10-25",
+  "fenerbahse": "2026-10-25",
+  "naymegen": "2026-10-25",
+  "morayrense": "2026-10-25",
+  "auxere": "2026-10-25",
+  "auksere": "2026-10-25",
+  "renes": "2026-10-25",
+  "lecse": "2026-10-25",
+  "sitard": "2026-10-25",
+  "exselsior": "2026-10-25",
+  "eksselsior": "2026-10-25",
+  "burnemuth": "2026-10-25",
+  "burnemut": "2026-10-25",
+  "anderlest": "2026-10-25",
+  "anderlekt": "2026-10-25"
+ },
+ "onemli": [
+  {
+   "h": "Beşiktaş",
+   "a": "Başakşehir",
+   "lg": "tr1",
+   "d": "2026-10-26"
+  },
+  {
+   "h": "Galatasaray",
+   "a": "Fenerbahçe",
+   "lg": "tr1",
+   "d": "2026-10-26"
+  },
+  {
+   "h": "Inter",
+   "a": "Fiorentina",
+   "lg": "it",
+   "d": "2026-10-25"
+  },
+  {
+   "h": "PSV Eindhoven",
+   "a": "Feyenoord",
+   "lg": "nl",
+   "d": "2026-10-25"
+  },
+  {
+   "h": "Liverpool",
+   "a": "Brighton",
+   "lg": "en",
+   "d": "2026-10-25"
+  }
+ ],
+ "karne": {
+  "n": 605,
+  "hit": 0.5736,
+  "guclu_n": 108,
+  "guclu_hit": 0.7222
+ },
+ "sayim": {
+  "takim": 19,
+  "lig": 28,
+  "esanlam": 5,
+  "yazim": 2,
+  "para": 0,
+  "sozluk": 15,
+  "toplam": 69
+ },
+ "v": "2026-10-25.1",
+ "tarih": "2026-10-25",
+ "uretim": "2026-10-25T12:08:14.796Z",
+ "not": "Bu dosya her gece lab/bot_coach.mjs tarafından yalnız uygulama verisinden üretilir; kullanıcı mesajı içermez.",
+ "surum_no": 1
+}
