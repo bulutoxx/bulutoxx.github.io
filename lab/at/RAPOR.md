@@ -1,6 +1,6 @@
 # BULUTOXX 🐎 At Yarışı Laboratuvarı — Rapor
 
-_Otomatik üretildi: 2026-10-25T13:41:22+00:00 · model sürümü `20261025T1341` · hobi amaçlıdır, garanti değildir · 18+_
+_Otomatik üretildi: 2026-10-25T13:42:16+00:00 · model sürümü `20261025T1341` · hobi amaçlıdır, garanti değildir · 18+_
 
 ## Kısa sonuç (dürüst)
 
@@ -12,7 +12,7 @@ _Otomatik üretildi: 2026-10-25T13:41:22+00:00 · model sürümü `20261025T1341
 
 ## Veri kapsamı
 
-- Kaynak: herkese açık ayna [https://github.com/cenkozgur/tjk-data](https://github.com/cenkozgur/tjk-data) (lisans belirtilmemiş). Ayna durumu: güncellenmedi (yerel kopya). tjk.org'a hiçbir istek atılmaz; ham veri bu depoya kopyalanmaz.
+- Kaynak: herkese açık ayna [https://github.com/cenkozgur/tjk-data](https://github.com/cenkozgur/tjk-data) (lisans belirtilmemiş). Ayna durumu: güncellendi. tjk.org'a hiçbir istek atılmaz; ham veri bu depoya kopyalanmaz.
 - Sonuçlar: 2025-01-01 → 2026-10-23, **10,895 yerli koşu**, 105,851 koşan at; tam oranlı koşu 10,861. Yabancı (simulcast) koşular ve kazananı belirsiz koşular çıkarıldı ({'yabanci': 3205, 'kazanansiz': 21, 'az_at': 0}).
 - Hipodromlar: İstanbul 2069, İzmir 1720, Bursa 1413, Adana 1297, Ankara 1291, Şanlıurfa 802, Antalya 764, Elazığ 688, Kocaeli 572, Diyarbakır 279.
 - Zaman sıralı bölüm: ısınma (yalnız geçmiş biriktirme) < 2025-03-01; model eğitimi 2025-03-01→2025-11-30 (5064 koşu); harman/kalibrasyon 2025-12-01→2026-03-15 (1618); **sınama (son %30) 2026-03-16→2026-10-23 (3282 koşu)**.
@@ -82,8 +82,8 @@ Yorum: jokeyin son 60 gün formu, at formu (son koşu sıraları, kazanana uzakl
 
 ## Kapı (sürekli öğrenme)
 
-- Son karar (2026-10-25T13:41:22+00:00): **KABUL** — ilk model (kayıtlı model yok)
-- Yeni deneme: log-loss 1.8262, ilk seçim %34.0; kayıtlı model aynı sınamada: yok
+- Son karar (2026-10-25T13:42:16+00:00): **RED** — log-loss düşmedi (1.8262 → 1.8262); dünkü model korunuyor
+- Yeni deneme: log-loss 1.8262, ilk seçim %34.0; kayıtlı model aynı sınamada: log-loss 1.8262, ilk seçim %34.0
 
 ## Canlı karne (kilitlenmiş tahminler, sonuç gelince)
 

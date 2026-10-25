@@ -712,9 +712,15 @@
    "karar": "KABUL",
    "log_loss": 1.8262,
    "ilk_secim_isabet": 0.3403
+  },
+  {
+   "tarih": "2026-10-25T13:42:16+00:00",
+   "karar": "RED",
+   "log_loss": 1.8262,
+   "ilk_secim_isabet": 0.3403
   }
  ],
- "guncelleme": "2026-10-25T13:41:22+00:00",
+ "guncelleme": "2026-10-25T13:42:16+00:00",
  "kapsam": {
   "ilk_tarih": "2025-01-01",
   "son_tarih": "2026-10-23",
@@ -740,14 +746,17 @@
   "az_at": 0
  },
  "kapi": {
-  "tarih": "2026-10-25T13:41:22+00:00",
-  "karar": "KABUL",
-  "neden": "ilk model (kayıtlı model yok)",
+  "tarih": "2026-10-25T13:42:16+00:00",
+  "karar": "RED",
+  "neden": "log-loss düşmedi (1.8262 → 1.8262); dünkü model korunuyor",
   "yeni": {
    "log_loss": 1.8262,
    "ilk_secim_isabet": 0.3403
   },
-  "eski": null
+  "eski": {
+   "log_loss": 1.8262,
+   "ilk_secim_isabet": 0.3403
+  }
  },
  "yayin_modu": "model+piyasa",
  "kaynak": {
@@ -755,5 +764,75 @@
   "lisans": "belirtilmemiş",
   "not": "Ham veri bu depoya kopyalanmaz; tjk.org'a istek atılmaz."
  },
- "uyari": "Hobi amaçlıdır; tahmin garanti değildir · 18+"
+ "uyari": "Hobi amaçlıdır; tahmin garanti değildir · 18+",
+ "reddedilen_son_deneme": {
+  "tarih": "2026-10-25T13:42:16+00:00",
+  "metrik": {
+   "model": {
+    "kosu": 3282,
+    "log_loss": 2.0057,
+    "brier": 0.8366,
+    "ilk_secim_isabet": 0.2672,
+    "ikili_sirali_isabet": 0.0692,
+    "ilk_iki_ikisi_de_ilk2": 0.1246,
+    "p>=0.30": {
+     "secim": 1576,
+     "isabet": 0.3325,
+     "ort_p": 0.4021
+    },
+    "p>=0.50": {
+     "secim": 224,
+     "isabet": 0.4196,
+     "ort_p": 0.5901
+    }
+   },
+   "piyasa": {
+    "kosu": 3282,
+    "log_loss": 1.8277,
+    "brier": 0.7848,
+    "ilk_secim_isabet": 0.3541,
+    "ikili_sirali_isabet": 0.1109,
+    "ilk_iki_ikisi_de_ilk2": 0.1892,
+    "p>=0.30": {
+     "secim": 2022,
+     "isabet": 0.412,
+     "ort_p": 0.4029
+    },
+    "p>=0.50": {
+     "secim": 272,
+     "isabet": 0.5735,
+     "ort_p": 0.5747
+    }
+   },
+   "harman": {
+    "kosu": 3282,
+    "log_loss": 1.8262,
+    "brier": 0.786,
+    "ilk_secim_isabet": 0.3403,
+    "ikili_sirali_isabet": 0.1097,
+    "ilk_iki_ikisi_de_ilk2": 0.1889,
+    "p>=0.30": {
+     "secim": 2448,
+     "isabet": 0.3917,
+     "ort_p": 0.4225
+    },
+    "p>=0.50": {
+     "secim": 478,
+     "isabet": 0.5146,
+     "ort_p": 0.5941
+    }
+   },
+   "duzgun": {
+    "kosu": 3282,
+    "log_loss": 2.2414,
+    "brier": 0.8873
+   },
+   "favori": {
+    "kosu": 3282,
+    "ilk_secim_isabet": 0.3541,
+    "ikili_sirali_isabet": 0.1109,
+    "ilk_iki_ikisi_de_ilk2": 0.1892
+   }
+  }
+ }
 }
