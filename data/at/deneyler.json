@@ -1,0 +1,1139 @@
+{
+ "olusturma": "2026-10-25T17:54:45",
+ "secili_gruplar": [
+  "form",
+  "fark",
+  "piyasa_gecmisi",
+  "dinlenme",
+  "pist_mesafe_hipodrom",
+  "sinif",
+  "kilo",
+  "yas",
+  "jokey",
+  "antrenor",
+  "jokey_at",
+  "alan",
+  "piyasa_hafiza",
+  "reyting",
+  "sinif2",
+  "fark2"
+ ],
+ "yari_omur": 180.0,
+ "gbm": true,
+ "gbm_ayar": {
+  "n_agac": 600,
+  "ogrenme": 0.03,
+  "yaprak": 7,
+  "min_yaprak": 500,
+  "oznitelik_payi": 0.8,
+  "l2": 10.0
+ },
+ "ust_kal": true,
+ "adimlar": [
+  {
+   "no": 0,
+   "deney": "v1 (yayındaki model): tek eğitim, sabit bölüm",
+   "gecti": null,
+   "aciklama": "karşılaştırma tabanı",
+   "model": {
+    "ll": 2.0057,
+    "brier": 0.8366,
+    "ilk": 0.2672,
+    "ilk2": 0.1246,
+    "p30": [
+     1576,
+     0.3325,
+     0.4021
+    ],
+    "p50": [
+     224,
+     0.4196,
+     0.5901
+    ]
+   },
+   "harman": {
+    "ll": 1.8262,
+    "brier": 0.786,
+    "ilk": 0.3403,
+    "ilk2": 0.1889,
+    "p30": [
+     2448,
+     0.3917,
+     0.4225
+    ],
+    "p50": [
+     478,
+     0.5146,
+     0.5941
+    ]
+   },
+   "piyasa": {
+    "ll": 1.8277,
+    "brier": 0.7848,
+    "ilk": 0.3541,
+    "ilk2": 0.1892,
+    "p30": [
+     2022,
+     0.412,
+     0.4029
+    ],
+    "p50": [
+     272,
+     0.5735,
+     0.5747
+    ]
+   },
+   "kovalar_model": [
+    {
+     "aralik": "0.00-0.05",
+     "at": 12042,
+     "ort_tahmin": 0.0264,
+     "gercek": 0.0311
+    },
+    {
+     "aralik": "0.05-0.10",
+     "at": 8809,
+     "ort_tahmin": 0.0728,
+     "gercek": 0.0806
+    },
+    {
+     "aralik": "0.10-0.20",
+     "at": 7637,
+     "ort_tahmin": 0.1401,
+     "gercek": 0.1417
+    },
+    {
+     "aralik": "0.20-0.30",
+     "at": 2550,
+     "ort_tahmin": 0.2427,
+     "gercek": 0.2322
+    },
+    {
+     "aralik": "0.30-0.50",
+     "at": 1352,
+     "ort_tahmin": 0.3709,
+     "gercek": 0.318
+    },
+    {
+     "aralik": "0.50-1.00",
+     "at": 224,
+     "ort_tahmin": 0.5901,
+     "gercek": 0.4196
+    }
+   ]
+  },
+  {
+   "no": 1,
+   "deney": "aylık walk-forward yeniden eğitim (v1 özellikleri)",
+   "gecti": true,
+   "aciklama": "sınamanın her ayı için o aya kadarki veriyle yeniden eğitim; kalibrasyon önceki 90 gün",
+   "model": {
+    "ll": 1.9879,
+    "brier": 0.8312,
+    "ilk": 0.2718,
+    "ilk2": 0.1274,
+    "p30": [
+     1374,
+     0.3479,
+     0.3928
+    ],
+    "p50": [
+     161,
+     0.4783,
+     0.5833
+    ]
+   },
+   "harman": {
+    "ll": 1.8234,
+    "brier": 0.7846,
+    "ilk": 0.3413,
+    "ilk2": 0.1856,
+    "p30": [
+     2292,
+     0.397,
+     0.4159
+    ],
+    "p50": [
+     412,
+     0.5218,
+     0.5844
+    ]
+   },
+   "piyasa": {
+    "ll": 1.8277,
+    "brier": 0.7848,
+    "ilk": 0.3541,
+    "ilk2": 0.1892,
+    "p30": [
+     2022,
+     0.412,
+     0.4029
+    ],
+    "p50": [
+     272,
+     0.5735,
+     0.5747
+    ]
+   },
+   "kovalar_model": [
+    {
+     "aralik": "0.00-0.05",
+     "at": 11181,
+     "ort_tahmin": 0.0279,
+     "gercek": 0.0272
+    },
+    {
+     "aralik": "0.05-0.10",
+     "at": 9377,
+     "ort_tahmin": 0.0728,
+     "gercek": 0.0791
+    },
+    {
+     "aralik": "0.10-0.20",
+     "at": 8164,
+     "ort_tahmin": 0.1396,
+     "gercek": 0.141
+    },
+    {
+     "aralik": "0.20-0.30",
+     "at": 2518,
+     "ort_tahmin": 0.2417,
+     "gercek": 0.2411
+    },
+    {
+     "aralik": "0.30-0.50",
+     "at": 1213,
+     "ort_tahmin": 0.3675,
+     "gercek": 0.3306
+    },
+    {
+     "aralik": "0.50-1.00",
+     "at": 161,
+     "ort_tahmin": 0.5833,
+     "gercek": 0.4783
+    }
+   ]
+  },
+  {
+   "no": 2,
+   "deney": "1: piyasa hafızası (EWMA, piyasa sırası, yenilen favori, piyasa reytingi)",
+   "gecti": true,
+   "aciklama": "grup eklendi",
+   "model": {
+    "ll": 1.9781,
+    "brier": 0.8286,
+    "ilk": 0.2745,
+    "ilk2": 0.1341,
+    "p30": [
+     1460,
+     0.3493,
+     0.3933
+    ],
+    "p50": [
+     181,
+     0.4641,
+     0.5809
+    ]
+   },
+   "harman": {
+    "ll": 1.8231,
+    "brier": 0.7845,
+    "ilk": 0.3413,
+    "ilk2": 0.1886,
+    "p30": [
+     2309,
+     0.3932,
+     0.4152
+    ],
+    "p50": [
+     405,
+     0.5259,
+     0.5866
+    ]
+   },
+   "piyasa": {
+    "ll": 1.8277,
+    "brier": 0.7848,
+    "ilk": 0.3541,
+    "ilk2": 0.1892,
+    "p30": [
+     2022,
+     0.412,
+     0.4029
+    ],
+    "p50": [
+     272,
+     0.5735,
+     0.5747
+    ]
+   },
+   "kovalar_model": [
+    {
+     "aralik": "0.00-0.05",
+     "at": 11358,
+     "ort_tahmin": 0.0278,
+     "gercek": 0.0262
+    },
+    {
+     "aralik": "0.05-0.10",
+     "at": 9306,
+     "ort_tahmin": 0.0727,
+     "gercek": 0.0804
+    },
+    {
+     "aralik": "0.10-0.20",
+     "at": 8006,
+     "ort_tahmin": 0.1394,
+     "gercek": 0.1396
+    },
+    {
+     "aralik": "0.20-0.30",
+     "at": 2484,
+     "ort_tahmin": 0.2415,
+     "gercek": 0.2448
+    },
+    {
+     "aralik": "0.30-0.50",
+     "at": 1279,
+     "ort_tahmin": 0.3667,
+     "gercek": 0.3331
+    },
+    {
+     "aralik": "0.50-1.00",
+     "at": 181,
+     "ort_tahmin": 0.5809,
+     "gercek": 0.4641
+    }
+   ]
+  },
+  {
+   "no": 3,
+   "deney": "2a: Plackett-Luce at/jokey/antrenör reytingi",
+   "gecti": true,
+   "aciklama": "grup eklendi",
+   "model": {
+    "ll": 1.9639,
+    "brier": 0.8262,
+    "ilk": 0.2809,
+    "ilk2": 0.1399,
+    "p30": [
+     1548,
+     0.3527,
+     0.3966
+    ],
+    "p50": [
+     205,
+     0.4732,
+     0.5834
+    ]
+   },
+   "harman": {
+    "ll": 1.8222,
+    "brier": 0.7844,
+    "ilk": 0.3394,
+    "ilk2": 0.1898,
+    "p30": [
+     2291,
+     0.3955,
+     0.4165
+    ],
+    "p50": [
+     410,
+     0.5073,
+     0.5864
+    ]
+   },
+   "piyasa": {
+    "ll": 1.8277,
+    "brier": 0.7848,
+    "ilk": 0.3541,
+    "ilk2": 0.1892,
+    "p30": [
+     2022,
+     0.412,
+     0.4029
+    ],
+    "p50": [
+     272,
+     0.5735,
+     0.5747
+    ]
+   },
+   "kovalar_model": [
+    {
+     "aralik": "0.00-0.05",
+     "at": 11923,
+     "ort_tahmin": 0.0272,
+     "gercek": 0.0257
+    },
+    {
+     "aralik": "0.05-0.10",
+     "at": 8903,
+     "ort_tahmin": 0.0728,
+     "gercek": 0.08
+    },
+    {
+     "aralik": "0.10-0.20",
+     "at": 7687,
+     "ort_tahmin": 0.1405,
+     "gercek": 0.1479
+    },
+    {
+     "aralik": "0.20-0.30",
+     "at": 2553,
+     "ort_tahmin": 0.2414,
+     "gercek": 0.2272
+    },
+    {
+     "aralik": "0.30-0.50",
+     "at": 1343,
+     "ort_tahmin": 0.3681,
+     "gercek": 0.3343
+    },
+    {
+     "aralik": "0.50-1.00",
+     "at": 205,
+     "ort_tahmin": 0.5834,
+     "gercek": 0.4732
+    }
+   ]
+  },
+  {
+   "no": 4,
+   "deney": "2b: sayısal sınıf (tür, alanın reyting düzeyi, handikap kilosu)",
+   "gecti": true,
+   "aciklama": "grup eklendi",
+   "model": {
+    "ll": 1.963,
+    "brier": 0.8256,
+    "ilk": 0.287,
+    "ilk2": 0.1417,
+    "p30": [
+     1547,
+     0.3497,
+     0.3994
+    ],
+    "p50": [
+     211,
+     0.4645,
+     0.5875
+    ]
+   },
+   "harman": {
+    "ll": 1.8221,
+    "brier": 0.7844,
+    "ilk": 0.34,
+    "ilk2": 0.1901,
+    "p30": [
+     2312,
+     0.3949,
+     0.4158
+    ],
+    "p50": [
+     406,
+     0.5148,
+     0.5883
+    ]
+   },
+   "piyasa": {
+    "ll": 1.8277,
+    "brier": 0.7848,
+    "ilk": 0.3541,
+    "ilk2": 0.1892,
+    "p30": [
+     2022,
+     0.412,
+     0.4029
+    ],
+    "p50": [
+     272,
+     0.5735,
+     0.5747
+    ]
+   },
+   "kovalar_model": [
+    {
+     "aralik": "0.00-0.05",
+     "at": 11949,
+     "ort_tahmin": 0.0273,
+     "gercek": 0.0266
+    },
+    {
+     "aralik": "0.05-0.10",
+     "at": 8928,
+     "ort_tahmin": 0.0728,
+     "gercek": 0.079
+    },
+    {
+     "aralik": "0.10-0.20",
+     "at": 7641,
+     "ort_tahmin": 0.1404,
+     "gercek": 0.1468
+    },
+    {
+     "aralik": "0.20-0.30",
+     "at": 2549,
+     "ort_tahmin": 0.2416,
+     "gercek": 0.2338
+    },
+    {
+     "aralik": "0.30-0.50",
+     "at": 1336,
+     "ort_tahmin": 0.3696,
+     "gercek": 0.3316
+    },
+    {
+     "aralik": "0.50-1.00",
+     "at": 211,
+     "ort_tahmin": 0.5875,
+     "gercek": 0.4645
+    }
+   ]
+  },
+  {
+   "no": 5,
+   "deney": "3: hız puanı (standart derece + gün/pist değişkeni)",
+   "gecti": false,
+   "aciklama": "grup eklenmedi",
+   "model": {
+    "ll": 1.9603,
+    "brier": 0.8251,
+    "ilk": 0.2852,
+    "ilk2": 0.1414,
+    "p30": [
+     1574,
+     0.3526,
+     0.4003
+    ],
+    "p50": [
+     211,
+     0.5024,
+     0.5931
+    ]
+   },
+   "harman": {
+    "ll": 1.8216,
+    "brier": 0.7843,
+    "ilk": 0.3382,
+    "ilk2": 0.1892,
+    "p30": [
+     2318,
+     0.3956,
+     0.4158
+    ],
+    "p50": [
+     415,
+     0.5133,
+     0.5871
+    ]
+   },
+   "piyasa": {
+    "ll": 1.8277,
+    "brier": 0.7848,
+    "ilk": 0.3541,
+    "ilk2": 0.1892,
+    "p30": [
+     2022,
+     0.412,
+     0.4029
+    ],
+    "p50": [
+     272,
+     0.5735,
+     0.5747
+    ]
+   },
+   "kovalar_model": [
+    {
+     "aralik": "0.00-0.05",
+     "at": 12015,
+     "ort_tahmin": 0.0271,
+     "gercek": 0.0261
+    },
+    {
+     "aralik": "0.05-0.10",
+     "at": 8877,
+     "ort_tahmin": 0.0728,
+     "gercek": 0.0787
+    },
+    {
+     "aralik": "0.10-0.20",
+     "at": 7609,
+     "ort_tahmin": 0.1403,
+     "gercek": 0.1489
+    },
+    {
+     "aralik": "0.20-0.30",
+     "at": 2539,
+     "ort_tahmin": 0.2411,
+     "gercek": 0.2288
+    },
+    {
+     "aralik": "0.30-0.50",
+     "at": 1363,
+     "ort_tahmin": 0.3705,
+     "gercek": 0.3294
+    },
+    {
+     "aralik": "0.50-1.00",
+     "at": 211,
+     "ort_tahmin": 0.5931,
+     "gercek": 0.5024
+    }
+   ]
+  },
+  {
+   "no": 6,
+   "deney": "4: zaman sönümlü form ve kazanana uzaklık",
+   "gecti": true,
+   "aciklama": "grup eklendi",
+   "model": {
+    "ll": 1.9588,
+    "brier": 0.8247,
+    "ilk": 0.2876,
+    "ilk2": 0.1432,
+    "p30": [
+     1580,
+     0.35,
+     0.3995
+    ],
+    "p50": [
+     204,
+     0.4902,
+     0.5907
+    ]
+   },
+   "harman": {
+    "ll": 1.8216,
+    "brier": 0.7843,
+    "ilk": 0.341,
+    "ilk2": 0.1904,
+    "p30": [
+     2315,
+     0.3957,
+     0.4158
+    ],
+    "p50": [
+     410,
+     0.5146,
+     0.5875
+    ]
+   },
+   "piyasa": {
+    "ll": 1.8277,
+    "brier": 0.7848,
+    "ilk": 0.3541,
+    "ilk2": 0.1892,
+    "p30": [
+     2022,
+     0.412,
+     0.4029
+    ],
+    "p50": [
+     272,
+     0.5735,
+     0.5747
+    ]
+   },
+   "kovalar_model": [
+    {
+     "aralik": "0.00-0.05",
+     "at": 12077,
+     "ort_tahmin": 0.0268,
+     "gercek": 0.0258
+    },
+    {
+     "aralik": "0.05-0.10",
+     "at": 8757,
+     "ort_tahmin": 0.0729,
+     "gercek": 0.0789
+    },
+    {
+     "aralik": "0.10-0.20",
+     "at": 7661,
+     "ort_tahmin": 0.1405,
+     "gercek": 0.1492
+    },
+    {
+     "aralik": "0.20-0.30",
+     "at": 2539,
+     "ort_tahmin": 0.2412,
+     "gercek": 0.23
+    },
+    {
+     "aralik": "0.30-0.50",
+     "at": 1376,
+     "ort_tahmin": 0.3711,
+     "gercek": 0.3292
+    },
+    {
+     "aralik": "0.50-1.00",
+     "at": 204,
+     "ort_tahmin": 0.5907,
+     "gercek": 0.4902
+    }
+   ]
+  },
+  {
+   "no": 7,
+   "deney": "ek: jokey/antrenör binişlerine piyasa ilgisi, jokey yükseltmesi, ekuri",
+   "gecti": false,
+   "aciklama": "grup eklenmedi",
+   "model": {
+    "ll": 1.9585,
+    "brier": 0.8246,
+    "ilk": 0.2873,
+    "ilk2": 0.1435,
+    "p30": [
+     1581,
+     0.3504,
+     0.3995
+    ],
+    "p50": [
+     207,
+     0.4976,
+     0.5893
+    ]
+   },
+   "harman": {
+    "ll": 1.8216,
+    "brier": 0.7843,
+    "ilk": 0.34,
+    "ilk2": 0.1901,
+    "p30": [
+     2318,
+     0.396,
+     0.4156
+    ],
+    "p50": [
+     409,
+     0.5159,
+     0.5876
+    ]
+   },
+   "piyasa": {
+    "ll": 1.8277,
+    "brier": 0.7848,
+    "ilk": 0.3541,
+    "ilk2": 0.1892,
+    "p30": [
+     2022,
+     0.412,
+     0.4029
+    ],
+    "p50": [
+     272,
+     0.5735,
+     0.5747
+    ]
+   },
+   "kovalar_model": [
+    {
+     "aralik": "0.00-0.05",
+     "at": 12056,
+     "ort_tahmin": 0.0268,
+     "gercek": 0.0261
+    },
+    {
+     "aralik": "0.05-0.10",
+     "at": 8800,
+     "ort_tahmin": 0.0728,
+     "gercek": 0.0785
+    },
+    {
+     "aralik": "0.10-0.20",
+     "at": 7606,
+     "ort_tahmin": 0.1404,
+     "gercek": 0.1483
+    },
+    {
+     "aralik": "0.20-0.30",
+     "at": 2571,
+     "ort_tahmin": 0.2408,
+     "gercek": 0.231
+    },
+    {
+     "aralik": "0.30-0.50",
+     "at": 1374,
+     "ort_tahmin": 0.3709,
+     "gercek": 0.3282
+    },
+    {
+     "aralik": "0.50-1.00",
+     "at": 207,
+     "ort_tahmin": 0.5893,
+     "gercek": 0.4976
+    }
+   ]
+  },
+  {
+   "no": 8,
+   "deney": "6a: zaman ağırlıklı eğitim (yarı ömür 180 gün)",
+   "gecti": true,
+   "aciklama": "",
+   "model": {
+    "ll": 1.9549,
+    "brier": 0.8238,
+    "ilk": 0.2928,
+    "ilk2": 0.1478,
+    "p30": [
+     1610,
+     0.3503,
+     0.3989
+    ],
+    "p50": [
+     214,
+     0.4673,
+     0.5888
+    ]
+   },
+   "harman": {
+    "ll": 1.8215,
+    "brier": 0.7843,
+    "ilk": 0.3428,
+    "ilk2": 0.1917,
+    "p30": [
+     2321,
+     0.3964,
+     0.4155
+    ],
+    "p50": [
+     415,
+     0.5108,
+     0.5866
+    ]
+   },
+   "piyasa": {
+    "ll": 1.8277,
+    "brier": 0.7848,
+    "ilk": 0.3541,
+    "ilk2": 0.1892,
+    "p30": [
+     2022,
+     0.412,
+     0.4029
+    ],
+    "p50": [
+     272,
+     0.5735,
+     0.5747
+    ]
+   },
+   "kovalar_model": [
+    {
+     "aralik": "0.00-0.05",
+     "at": 12166,
+     "ort_tahmin": 0.0267,
+     "gercek": 0.0266
+    },
+    {
+     "aralik": "0.05-0.10",
+     "at": 8730,
+     "ort_tahmin": 0.073,
+     "gercek": 0.0781
+    },
+    {
+     "aralik": "0.10-0.20",
+     "at": 7586,
+     "ort_tahmin": 0.141,
+     "gercek": 0.1491
+    },
+    {
+     "aralik": "0.20-0.30",
+     "at": 2522,
+     "ort_tahmin": 0.2413,
+     "gercek": 0.2304
+    },
+    {
+     "aralik": "0.30-0.50",
+     "at": 1396,
+     "ort_tahmin": 0.3698,
+     "gercek": 0.3324
+    },
+    {
+     "aralik": "0.50-1.00",
+     "at": 214,
+     "ort_tahmin": 0.5888,
+     "gercek": 0.4673
+    }
+   ]
+  },
+  {
+   "no": 9,
+   "deney": "6b: LightGBM (koşu içi softmax amacı) + doğrusal birleşim; 15 yaprak, en az 200 at/yaprak",
+   "gecti": false,
+   "aciklama": "birleştirme katsayıları (sıcaklık dahil) kalibrasyon penceresinde öğrenilir",
+   "model": {
+    "ll": 1.9362,
+    "brier": 0.82,
+    "ilk": 0.291,
+    "ilk2": 0.1502,
+    "p30": [
+     1627,
+     0.3694,
+     0.3985
+    ],
+    "p50": [
+     216,
+     0.4583,
+     0.58
+    ]
+   },
+   "harman": {
+    "ll": 1.8185,
+    "brier": 0.7839,
+    "ilk": 0.344,
+    "ilk2": 0.1874,
+    "p30": [
+     2329,
+     0.3942,
+     0.4149
+    ],
+    "p50": [
+     413,
+     0.5303,
+     0.5869
+    ]
+   },
+   "piyasa": {
+    "ll": 1.8277,
+    "brier": 0.7848,
+    "ilk": 0.3541,
+    "ilk2": 0.1892,
+    "p30": [
+     2022,
+     0.412,
+     0.4029
+    ],
+    "p50": [
+     272,
+     0.5735,
+     0.5747
+    ]
+   },
+   "kovalar_model": [
+    {
+     "aralik": "0.00-0.05",
+     "at": 12524,
+     "ort_tahmin": 0.0259,
+     "gercek": 0.0254
+    },
+    {
+     "aralik": "0.05-0.10",
+     "at": 8370,
+     "ort_tahmin": 0.0728,
+     "gercek": 0.0795
+    },
+    {
+     "aralik": "0.10-0.20",
+     "at": 7379,
+     "ort_tahmin": 0.1414,
+     "gercek": 0.1461
+    },
+    {
+     "aralik": "0.20-0.30",
+     "at": 2714,
+     "ort_tahmin": 0.2421,
+     "gercek": 0.2284
+    },
+    {
+     "aralik": "0.30-0.50",
+     "at": 1411,
+     "ort_tahmin": 0.3707,
+     "gercek": 0.3558
+    },
+    {
+     "aralik": "0.50-1.00",
+     "at": 216,
+     "ort_tahmin": 0.58,
+     "gercek": 0.4583
+    }
+   ]
+  },
+  {
+   "no": 10,
+   "deney": "6c: aynı, daha düzenli ağaçlar: 7 yaprak, en az 500 at/yaprak",
+   "gecti": true,
+   "aciklama": "birleştirme katsayıları (sıcaklık dahil) kalibrasyon penceresinde öğrenilir",
+   "model": {
+    "ll": 1.936,
+    "brier": 0.82,
+    "ilk": 0.2937,
+    "ilk2": 0.1466,
+    "p30": [
+     1603,
+     0.3662,
+     0.3968
+    ],
+    "p50": [
+     200,
+     0.445,
+     0.5861
+    ]
+   },
+   "harman": {
+    "ll": 1.8184,
+    "brier": 0.7838,
+    "ilk": 0.3428,
+    "ilk2": 0.1889,
+    "p30": [
+     2313,
+     0.3939,
+     0.4151
+    ],
+    "p50": [
+     416,
+     0.5168,
+     0.5851
+    ]
+   },
+   "piyasa": {
+    "ll": 1.8277,
+    "brier": 0.7848,
+    "ilk": 0.3541,
+    "ilk2": 0.1892,
+    "p30": [
+     2022,
+     0.412,
+     0.4029
+    ],
+    "p50": [
+     272,
+     0.5735,
+     0.5747
+    ]
+   },
+   "kovalar_model": [
+    {
+     "aralik": "0.00-0.05",
+     "at": 12435,
+     "ort_tahmin": 0.0258,
+     "gercek": 0.0253
+    },
+    {
+     "aralik": "0.05-0.10",
+     "at": 8341,
+     "ort_tahmin": 0.0727,
+     "gercek": 0.0792
+    },
+    {
+     "aralik": "0.10-0.20",
+     "at": 7496,
+     "ort_tahmin": 0.1412,
+     "gercek": 0.1442
+    },
+    {
+     "aralik": "0.20-0.30",
+     "at": 2739,
+     "ort_tahmin": 0.241,
+     "gercek": 0.2329
+    },
+    {
+     "aralik": "0.30-0.50",
+     "at": 1403,
+     "ort_tahmin": 0.3698,
+     "gercek": 0.355
+    },
+    {
+     "aralik": "0.50-1.00",
+     "at": 200,
+     "ort_tahmin": 0.5861,
+     "gercek": 0.445
+    }
+   ]
+  },
+  {
+   "no": 11,
+   "deney": "7: üst uç kalibrasyonu (p > 0.25 bölgesine ayrı eğim, kalibrasyon penceresinde)",
+   "gecti": true,
+   "aciklama": "",
+   "model": {
+    "ll": 1.9348,
+    "brier": 0.8194,
+    "ilk": 0.2937,
+    "ilk2": 0.1466,
+    "p30": [
+     1587,
+     0.3655,
+     0.3823
+    ],
+    "p50": [
+     140,
+     0.4857,
+     0.5824
+    ]
+   },
+   "harman": {
+    "ll": 1.818,
+    "brier": 0.7836,
+    "ilk": 0.344,
+    "ilk2": 0.1895,
+    "p30": [
+     2327,
+     0.3924,
+     0.4128
+    ],
+    "p50": [
+     396,
+     0.5328,
+     0.5834
+    ]
+   },
+   "piyasa": {
+    "ll": 1.8277,
+    "brier": 0.7848,
+    "ilk": 0.3541,
+    "ilk2": 0.1892,
+    "p30": [
+     2022,
+     0.412,
+     0.4029
+    ],
+    "p50": [
+     272,
+     0.5735,
+     0.5747
+    ]
+   },
+   "kovalar_model": [
+    {
+     "aralik": "0.00-0.05",
+     "at": 12655,
+     "ort_tahmin": 0.0253,
+     "gercek": 0.0257
+    },
+    {
+     "aralik": "0.05-0.10",
+     "at": 8019,
+     "ort_tahmin": 0.0728,
+     "gercek": 0.0803
+    },
+    {
+     "aralik": "0.10-0.20",
+     "at": 7349,
+     "ort_tahmin": 0.1414,
+     "gercek": 0.1421
+    },
+    {
+     "aralik": "0.20-0.30",
+     "at": 3004,
+     "ort_tahmin": 0.244,
+     "gercek": 0.2294
+    },
+    {
+     "aralik": "0.30-0.50",
+     "at": 1447,
+     "ort_tahmin": 0.3629,
+     "gercek": 0.3538
+    },
+    {
+     "aralik": "0.50-1.00",
+     "at": 140,
+     "ort_tahmin": 0.5824,
+     "gercek": 0.4857
+    }
+   ]
+  }
+ ],
+ "not": "Kapı: yalnız-model log-loss düşmeli ve ilk-seçim isabeti düşmemeli. Deney 5 (sabah form dizisi) RAPOR.md'de."
+}

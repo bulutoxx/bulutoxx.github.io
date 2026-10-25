@@ -22,7 +22,8 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: { python-version: "3.12" }
-      - run: pip install -q numpy
+      # lightgbm: modelin ağaç katmanı (kurulamazsa model doğrusal yedeğe düşer)
+      - run: pip install -q numpy lightgbm || pip install -q numpy
       - name: Aynayı sığ klonla (yalnız okunur, depoya yazılmaz)
         run: git clone -q --depth 1 https://github.com/cenkozgur/tjk-data _tjk-data || echo "ayna klonlanamadı"
       - name: Gece boru hattı (eğitim, kapı, kilit, karne, rapor)
