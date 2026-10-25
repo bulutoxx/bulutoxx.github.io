@@ -184,6 +184,12 @@ UST_KAL = True        # üst uç kalibrasyonu: p > UST_ESIK bölgesinde ayrı e�
 UST_ESIK = 0.25
 KAL_GUN = 90          # kalibrasyon (birleştirme katsayıları, α, β) penceresi: tahmin ayının hemen öncesindeki 90 gün
 YARI_OMUR = 180.0     # zaman ağırlıklı eğitim: koşu ağırlığı 0.5^(yaş/180 gün)
+# v4 ayarları (deney4.py kapısıyla seçilir; tarif() bunları kaydeder)
+KAL_AYAR = {"alan": False, "beta": True, "izo": False}   # kalibrasyon adımları (ust = UST_KAL); v4: beta geçti, alan/izotonik elendi
+PATLAT = (1.0, 0.5)   # v4: derinlik 2 geçti (deney 8b). patlatılmış (sıralı) logit: kademe ağırlıkları; (1.0,) = yalnız kazanan (klasik)
+PATLAT_GBM = False    # aynı sıralı amaç GBM'de de kullanılsın mı
+GBM_TOHUM = (1,)      # GBM torbalama tohumları (ham puanları ortalanır)
+KAT_BAS = "2025-11-01"   # çok katlı sınama: A katı KAT_BAS → son %30'un başı, B katı = son %30 (en güncel)
 
 
 def _gun(t):
@@ -191,7 +197,7 @@ def _gun(t):
     return date.fromisoformat(t).toordinal()
 
 
-def gbm_egit(X, K, agirlik=None, ayar=None, init=None):
+def gbm_egit(X, K, agirlik=None, ayar=None, init=None, tohum=1):
     """Koşu içi softmax (grup-softmax) amacı: gradyan p − y, hessian p(1 − p) (koşu ağırlıklı).
     init: satır başına başlangıç puanı (ör. log q → kalıntı modeli)."""
     a = dict(GBM_AYAR, **(ayar or {}))
@@ -203,15 +209,126 @@ def gbm_egit(X, K, agirlik=None, ayar=None, init=None):
         return sw * (p - K.y), sw * np.maximum(p * (1 - p), 1e-6)
     par = {"objective": amac, "learning_rate": a["ogrenme"], "num_leaves": a["yaprak"],
            "min_data_in_leaf": a["min_yaprak"], "feature_fraction": a["oznitelik_payi"], "bagging_fraction": 0.8,
-           "bagging_freq": 1, "lambda_l2": a["l2"], "verbose": -1, "seed": 1, "deterministic": True,
+           "bagging_freq": 1, "lambda_l2": a["l2"], "verbose": -1, "seed": tohum, "deterministic": True,
            "num_threads": min(4, os.cpu_count() or 1)}
     return lgb.train(par, lgb.Dataset(X, free_raw_data=False), num_boost_round=a["n_agac"])
+
+
+AYIRAC = "\n#==== BULUTOXX GBM TOHUM ====\n"
+
+
+class GbmTorba:
+    """Birden çok tohumla eğitilmiş GBM'lerin ham puan ortalaması (varyans azaltma)."""
+
+    def __init__(self, boosters):
+        self.b = list(boosters)
+
+    def predict(self, X, raw_score=True):
+        return np.mean([b.predict(X, raw_score=True) for b in self.b], axis=0)
+
+    def model_to_string(self):
+        return AYIRAC.join(b.model_to_string() for b in self.b)
 
 
 def gbm_yukle(metin):
     if lgb is None or not metin:
         return None
-    return lgb.Booster(model_str=metin)
+    return GbmTorba([lgb.Booster(model_str=m) for m in metin.split(AYIRAC) if m.strip()])
+
+
+# ---------------------------------------------------------------- patlatılmış (sıralı) logit — Bolton–Chapman
+def patlat(K, agirliklar=PATLAT, rw=None):
+    """Koşuyu kademelere açar: 1. kademe tüm atlar (hedef kazanan), 2. kademe kazanan hariç (hedef ikinci), ...
+    Alt sıraların gürültüsü için kademe ağırlıkları azalır. Döner: (genişletilmiş Kume, koşu ağırlıkları)."""
+    rw = np.ones(K.R) if rw is None else np.asarray(rw, float)
+    if len(agirliklar) <= 1:
+        return K, rw
+    satir, yy, kno, w = [], [], [], []
+    yeni = 0
+    for r in range(K.R):
+        a, b = K.bas[r], K.bas[r] + K.n[r]
+        s = K.sira[a:b]
+        kalan = np.arange(a, b)
+        for d, ag in enumerate(agirliklar):
+            hedef = d + 1
+            if len(kalan) < 2 or np.sum(K.sira[kalan] == hedef) != 1:
+                break
+            satir.append(kalan); yy.append((K.sira[kalan] == hedef).astype(float))
+            kno.append(np.full(len(kalan), yeni)); w.append(rw[r] * ag); yeni += 1
+            kalan = kalan[K.sira[kalan] != hedef]
+    ix = np.concatenate(satir)
+    Ke = Kume(K.X[ix], np.concatenate(yy), K.sira[ix], K.q[ix], np.concatenate(kno))
+    return Ke, np.asarray(w)
+
+
+# ---------------------------------------------------------------- kalibrasyon adımları
+def izotonik(x, y, w=None):
+    """Ağırlıklı PAV (artan). Döner: (düğüm x'leri, düğüm değerleri) — aradeğerleme ile uygulanır."""
+    o = np.argsort(x)
+    x, y = x[o], y[o]
+    w = np.ones(len(x)) if w is None else np.asarray(w, float)[o]
+    v, ww, xs, n = [], [], [], []
+    for xi, yi, wi in zip(x, y, w):
+        v.append(yi); ww.append(wi); xs.append(xi); n.append(1)
+        while len(v) > 1 and v[-2] >= v[-1]:
+            t = ww[-2] + ww[-1]
+            v[-2] = (v[-2] * ww[-2] + v[-1] * ww[-1]) / t; ww[-2] = t
+            xs[-2] = (xs[-2] * n[-2] + xs[-1] * n[-1]) / (n[-2] + n[-1]); n[-2] += n[-1]
+            v.pop(); ww.pop(); xs.pop(); n.pop()
+    return np.asarray(xs), np.asarray(v)
+
+
+def _alan_dN(K):
+    return np.log(K.n[K.seg]) - math.log(10.0)
+
+
+def kal_uygula(adimlar, s0, K):
+    """Kalibrasyon adımlarını sırayla uygular; olasılık döner."""
+    s = s0
+    for ad_, *par in adimlar:
+        if ad_ == "alan":
+            s = par[0] * s + par[1] * s * _alan_dN(K)
+        elif ad_ == "beta":
+            p = softmax_kosu(s, K)
+            s = par[0] * s + par[1] * np.log(np.clip(1 - p, 1e-6, 1))
+        elif ad_ == "ust":
+            lp = np.log(softmax_kosu(s, K))
+            s = par[0] * s + par[1] * np.maximum(lp - math.log(par[2] if len(par) > 2 else UST_ESIK), 0.0)
+        elif ad_ == "izo":
+            p = softmax_kosu(s, K)
+            xs, ys, karis = np.asarray(par[0]), np.asarray(par[1]), par[2]
+            pi = np.interp(p, xs, ys)
+            p2 = np.clip((1 - karis) * p + karis * pi, 1e-6, 1)
+            s = np.log(p2 / np.add.reduceat(p2, K.bas)[K.seg])
+    return softmax_kosu(s, K)
+
+
+def kal_ogren(sb, K, ayar=None, ust=None):
+    """Kalibrasyon penceresinde (K) adımları sırayla öğrenir. sb: birleşik (yığılmış) puan."""
+    ayar = dict(KAL_AYAR, **(ayar or {}))
+    ust = UST_KAL if ust is None else ust
+    adimlar = []
+    s = sb
+    if ayar.get("alan"):
+        a, b = (float(v) for v in clogit(np.c_[s, s * _alan_dN(K)], K, 1e-6))
+        adimlar.append(["alan", a, b]); s = kal_uygula([adimlar[-1]], s, K); s = np.log(s)
+    if ayar.get("beta"):
+        p = softmax_kosu(s, K)
+        a, b = (float(v) for v in clogit(np.c_[s, np.log(np.clip(1 - p, 1e-6, 1))], K, 1e-6))
+        adimlar.append(["beta", a, b]); s = np.log(kal_uygula([adimlar[-1]], s, K))
+    if ust:
+        h = np.maximum(np.log(softmax_kosu(s, K)) - math.log(UST_ESIK), 0.0)
+        a, b = (float(v) for v in clogit(np.c_[s, h], K, 1e-6))
+        adimlar.append(["ust", a, b, UST_ESIK]); s = np.log(kal_uygula([adimlar[-1]], s, K))
+    if ayar.get("izo"):
+        p = softmax_kosu(s, K)
+        xs, ys = izotonik(p, K.y)
+        # düğüm sayısını sınırla (json boyutu): 40 nicelik noktasında örnekle
+        q = np.unique(np.quantile(p, np.linspace(0, 1, 41)))
+        q = np.r_[q, np.linspace(q[-1], 1.0, 5)[1:]] if q[-1] < 1 else q
+        yq = np.interp(q, xs, ys)
+        adimlar.append(["izo", [round(float(v), 5) for v in q], [round(float(v), 5) for v in yq], float(ayar.get("izo_karis", 0.5))])
+    return adimlar
 
 
 # ---------------------------------------------------------------- tam boru hattı
@@ -221,11 +338,13 @@ class Model:
     Eski (v1) model.json'lar da okunur: cl=1, cg=0, T=sıcaklık."""
 
     def __init__(self, adlar, mu, sd, w, T, alfa, beta, gam, dlt, lam, cl=1.0, cg=0.0, gbm=None, yedek=None,
-                 ku=1.0, cu=0.0):
+                 ku=1.0, cu=0.0, kal=None):
         self.adlar, self.mu, self.sd, self.w = list(adlar), np.asarray(mu), np.asarray(sd), np.asarray(w)
         self.T, self.alfa, self.beta, self.gam, self.dlt, self.lam = T, alfa, beta, gam, dlt, lam
         self.cl, self.cg, self.gbm, self.yedek = cl, cg, gbm, yedek
-        self.ku, self.cu = ku, cu   # üst uç kalibrasyonu: s = ku·s0 + cu·max(log p0 − log eşik, 0)
+        # kalibrasyon adımları (v4): [["alan", a, b], ["beta", a, b], ["ust", k, c, eşik], ["izo", xs, ys, karışım]]
+        # eski model.json: üst uç kalibrasyonu s = ku·s0 + cu·max(log p0 − log eşik, 0)
+        self.kal = kal if kal is not None else ([["ust", ku, cu, UST_ESIK]] if cu else [])
         self.bq, self.gbm_artik, self.ab_artik = 1.0, None, None
         self.gam_m, self.dlt_m = gam, dlt
 
@@ -243,18 +362,19 @@ class Model:
             s = s + self.cg * self.gbm.predict(X, raw_score=True)
         return s
 
-    def _ust(self, s0, K):
-        if not self.cu or self._yedekte():
-            return s0
-        lp = np.log(softmax_kosu(s0, K))
-        return self.ku * s0 + self.cu * np.maximum(lp - math.log(UST_ESIK), 0.0)
+    def _kalp(self, X, K):
+        """Kalibre yalnız-model olasılığı (sıcaklık T dahil)."""
+        s0 = self.birlesik(X) / self.T
+        if self._yedekte() or not self.kal:
+            return softmax_kosu(s0, K)
+        return kal_uygula(self.kal, s0, K)
 
     def p_model(self, X, K):
-        return softmax_kosu(self._ust(self.birlesik(X), K) / self.T, K)
+        return self._kalp(X, K)
 
     def p_harman(self, X, K, q):
         a, b = (self.yedek["alfa"], self.yedek["beta"]) if self._yedekte() else (self.alfa, self.beta)
-        s = a * np.log(softmax_kosu(self._ust(self.birlesik(X), K), K)) + b * np.log(np.clip(q, 1e-9, 1))
+        s = a * np.log(np.clip(self._kalp(X, K), 1e-12, 1)) + b * np.log(np.clip(q, 1e-9, 1))
         return softmax_kosu(s, K)
 
     def p_keskin(self, K, q):
@@ -266,7 +386,7 @@ class Model:
         if self.gbm_artik is None or not self.ab_artik:
             return self.p_harman(X, K, q)
         a, b, c = self.ab_artik
-        s = (a * np.log(softmax_kosu(self._ust(self.birlesik(X), K), K)) + b * np.log(np.clip(q, 1e-9, 1))
+        s = (a * np.log(np.clip(self._kalp(X, K), 1e-12, 1)) + b * np.log(np.clip(q, 1e-9, 1))
              + c * self.gbm_artik.predict(X, raw_score=True))
         return softmax_kosu(s, K)
 
@@ -285,7 +405,8 @@ class Model:
                 "piyasa_keskin_beta": round(float(self.bq), 4),
                 "c_dogrusal": round(float(self.cl), 5), "c_gbm": round(float(self.cg), 5),
                 "gbm": self.gbm is not None and bool(self.cg),
-                "k_ust": round(float(self.ku), 5), "c_ust": round(float(self.cu), 5), "ust_esik": UST_ESIK,
+                "kalibrasyon": [[a[0]] + [(round(float(v), 5) if not isinstance(v, list) else v) for v in a[1:]] for a in self.kal],
+                "gbm_tohum": (len(self.gbm.b) if isinstance(self.gbm, GbmTorba) else (1 if self.gbm is not None else 0)),
                 "yedek": ({k: round(float(v), 5) for k, v in self.yedek.items()} if self.yedek else None)}
 
     @staticmethod
@@ -293,6 +414,7 @@ class Model:
         m = Model(j["ozellikler"], j["ortalama"], j["olcek"], j["agirlik"], j["sicaklik"], j["alfa"],
                      j["beta"], j["henery_gamma"], j["henery_delta"], j.get("lambda"),
                      cl=j.get("c_dogrusal", 1.0), cg=j.get("c_gbm", 0.0), ku=j.get("k_ust", 1.0), cu=j.get("c_ust", 0.0),
+                     kal=j.get("kalibrasyon"),
                      gbm=(gbm_yukle(gbm_metin) if j.get("gbm") else None), yedek=j.get("yedek"))
         m.gam_m = j.get("henery_gamma_model", m.gam); m.dlt_m = j.get("henery_delta_model", m.dlt)
         m.bq = j.get("piyasa_keskin_beta", 1.0)
@@ -304,43 +426,84 @@ def _ozel(K, m):
     return K.alt(m[K.seg])
 
 
-def egit(K_fit, K_har, adlar, lam=None, sutun=None, henery=True, agirlik=None, gbm=True, artik=False):
-    """K_fit: model eğitimi; K_har: kalibrasyon/harman dilimi (tam oranlı koşular). sutun: kullanılacak özellikler.
-    agirlik: K_fit koşuları için ağırlık (zaman ağırlıklı eğitim). gbm: LightGBM katmanı (kuruluysa)."""
-    sutun = np.arange(K_fit.X.shape[1]) if sutun is None else np.asarray(sutun)
+def egit_ham(K_fit, K_har, sutun, lam=None, agirlik=None, gbm=True, gbm_ayar=None, patlat_ag=None, tohumlar=None,
+             patlat_gbm=None):
+    """Eğitim katmanı (pahalı kısım): standartlaştırma, doğrusal koşullu logit (isteğe bağlı patlatılmış/sıralı),
+    LightGBM (isteğe bağlı birden çok tohum). Kalibrasyon penceresi yalnız λ seçimi için kullanılır."""
+    patlat_ag = PATLAT if patlat_ag is None else patlat_ag
+    tohumlar = GBM_TOHUM if tohumlar is None else tohumlar
+    patlat_gbm = PATLAT_GBM if patlat_gbm is None else patlat_gbm
     Xf, Xh = K_fit.X[:, sutun], K_har.X[:, sutun]
     mu, sd = Xf.mean(0), Xf.std(0) + 1e-9
     Zf, Zh = (Xf - mu) / sd, (Xh - mu) / sd
+    Kz = Kume(Zf, K_fit.y, K_fit.sira, K_fit.q, K_fit.kosu_no)
+    Ke, ag_e = patlat(Kz, patlat_ag, agirlik)
     if lam is None:
         en = (1e9, None)
         for l in LAMBDALAR:
-            w = clogit(Zf, K_fit, l, agirlik=agirlik)
+            w = clogit(Ke.X, Ke, l, agirlik=ag_e)
             ll = logloss(softmax_kosu(Zh @ w, K_har), K_har)
             en = min(en, (ll, l))
         lam = en[1]
-    w = clogit(Zf, K_fit, lam, agirlik=agirlik)
-    s = Zh @ w
+    w = clogit(Ke.X, Ke, lam, agirlik=ag_e)
+    booster = None
+    if gbm and lgb is not None:
+        if patlat_gbm and len(patlat_ag) > 1:
+            Kg, ag_g = patlat(K_fit.alt(np.ones(len(K_fit.y), bool)), patlat_ag, agirlik)
+            Kg = Kume(Kg.X[:, sutun], Kg.y, Kg.sira, Kg.q, Kg.kosu_no)
+        else:
+            Kg, ag_g = Kume(Xf, K_fit.y, K_fit.sira, K_fit.q, K_fit.kosu_no), agirlik
+        bs = [gbm_egit(Kg.X, Kg, ag_g, gbm_ayar, tohum=t) for t in tohumlar]
+        booster = GbmTorba(bs)
+    return {"mu": mu, "sd": sd, "w": w, "lam": lam, "booster": booster}
+
+
+def egit_kal(ham, K_har, adlar, sutun, s=None, g=None, henery=True, kal_ayar=None, ust=None):
+    """Kalibrasyon katmanı (ucuz): doğrusal+GBM yığma katsayıları, kalibrasyon adımları, harman α/β, Henery.
+    s, g: K_har üzerindeki ham doğrusal ve GBM puanları (verilmezse hesaplanır)."""
+    Xh = K_har.X[:, sutun]
+    mu, sd, w, lam, booster = ham["mu"], ham["sd"], ham["w"], ham["lam"], ham["booster"]
+    if s is None:
+        s = ((Xh - mu) / sd) @ w
     lq = np.log(K_har.q)
     # yalnız doğrusal: sıcaklık (c = 1/T) ve harman — GBM yoksa ya da yedek olarak
     c_lin = float(clogit(s[:, None], K_har, 1e-6)[0])
     ab_y = clogit(np.c_[np.log(softmax_kosu(c_lin * s, K_har)), lq], K_har, 1e-6)
     yedek = {"cl": c_lin, "alfa": float(ab_y[0]), "beta": float(ab_y[1])}
-    booster, cl, cg = None, c_lin, 0.0
-    if gbm and lgb is not None:
-        booster = gbm_egit(Xf, K_fit, agirlik)
-        g = booster.predict(Xh, raw_score=True)
+    cl, cg = c_lin, 0.0
+    if booster is not None:
+        if g is None:
+            g = booster.predict(Xh, raw_score=True)
         cl, cg = (float(v) for v in clogit(np.c_[s, g], K_har, 1e-6))
         sb = cl * s + cg * g
     else:
         sb = c_lin * s
-    ku, cu = 1.0, 0.0
-    if UST_KAL:
-        h = np.maximum(np.log(softmax_kosu(sb, K_har)) - math.log(UST_ESIK), 0.0)
-        ku, cu = (float(v) for v in clogit(np.c_[sb, h], K_har, 1e-6))
-        sb = ku * sb + cu * h
-    ab = clogit(np.c_[np.log(softmax_kosu(sb, K_har)), lq], K_har, 1e-6) if (booster is not None or UST_KAL) else ab_y
+    kal = kal_ogren(sb, K_har, kal_ayar, ust)
+    pk = kal_uygula(kal, sb, K_har)
+    ab = clogit(np.c_[np.log(np.clip(pk, 1e-12, 1)), lq], K_har, 1e-6)
     m = Model([adlar[i] for i in sutun], mu, sd, w, 1.0, float(ab[0]), float(ab[1]), 1.0, 1.0, lam,
-              cl=cl, cg=cg, gbm=booster, yedek=(yedek if booster is not None else None), ku=ku, cu=cu)
+              cl=cl, cg=cg, gbm=booster, yedek=(yedek if booster is not None else None), kal=kal)
+    m.bq = float(clogit(lq[:, None], K_har, 1e-6)[0])
+    if henery:
+        ph = m.p_harman(Xh, K_har, K_har.q)
+        m.gam = henery_ussu(ph, K_har, 2)
+        m.dlt = henery_ussu(ph, K_har, 3)
+        if HENERY_MODEL:
+            pmh = m.p_model(Xh, K_har)
+            m.gam_m = henery_ussu(pmh, K_har, 2)
+            m.dlt_m = henery_ussu(pmh, K_har, 3)
+    return m
+
+
+def egit(K_fit, K_har, adlar, lam=None, sutun=None, henery=True, agirlik=None, gbm=True, artik=False):
+    """K_fit: model eğitimi; K_har: kalibrasyon/harman dilimi (tam oranlı koşular). sutun: kullanılacak özellikler.
+    agirlik: K_fit koşuları için ağırlık (zaman ağırlıklı eğitim). gbm: LightGBM katmanı (kuruluysa)."""
+    sutun = np.arange(K_fit.X.shape[1]) if sutun is None else np.asarray(sutun)
+    ham = egit_ham(K_fit, K_har, sutun, lam, agirlik, gbm)
+    m = egit_kal(ham, K_har, adlar, sutun, henery=False)
+    Xh = K_har.X[:, sutun]
+    lq = np.log(K_har.q)
+    sb = np.log(np.clip(m.p_model(Xh, K_har), 1e-12, 1))
     # piyasa keskinleştirme kontrolü: q^β tek başına (aynı kalibrasyon penceresinde)
     m.bq = float(clogit(lq[:, None], K_har, 1e-6)[0])
     if artik and lgb is not None:
@@ -372,10 +535,13 @@ def bolumle(T, kosular):
     kes_s = int(R * (1 - SINAMA_PAYI)); kes_s = int(np.searchsorted(tarih, tarih[kes_s]))
     kes_h = int(R * (1 - SINAMA_PAYI - HARMAN_PAYI)); kes_h = int(np.searchsorted(tarih, tarih[kes_h]))
     idx = np.arange(R)
+    kat_bas = min(int(np.searchsorted(tarih, KAT_BAS)), kes_s)
     return {"egitim": (idx >= ilk) & (idx < kes_h), "harman": (idx >= kes_h) & (idx < kes_s) & tam_oran,
             "sinama": (idx >= kes_s) & tam_oran, "sinama_tum": idx >= kes_s,
+            "sinama_katli": (idx >= kat_bas) & tam_oran, "kat": np.where(idx >= kes_s, "B", "A"),
             "tarih": {"isinma_bitis": ISINMA_SONU, "egitim": [tarih[ilk], tarih[kes_h - 1]],
-                      "harman": [tarih[kes_h], tarih[kes_s - 1]], "sinama": [tarih[kes_s], tarih[-1]]}}
+                      "harman": [tarih[kes_h], tarih[kes_s - 1]], "sinama": [tarih[kes_s], tarih[-1]],
+                      "katlar": {"A": [tarih[kat_bas], tarih[kes_s - 1]], "B": [tarih[kes_s], tarih[-1]]}}}
 
 
 def kume_kur(T):
@@ -390,19 +556,22 @@ def _pencereler(kosular):
 
 
 def sina(T, kosular, protokol="aylik", lam=None, yari_omur="vars", kal_gun=None, henery=False, gbm=False, sutun=None,
-         artik=False):
+         artik=False, katli=False):
     """Sınama dilimi (son %30, tam oranlı) için tahminleri üretir ve metrikleri döner.
     protokol='sabit': tek model (eğitim → harman → sınama), v1 yöntemi.
     protokol='aylik': sınamanın her ayı için yalnız o aydan önceki verilerle yeniden eğitim (genişleyen pencere);
                       kalibrasyon ayın hemen öncesindeki `kal_gun` günde. Yayındaki modelin gerçekte nasıl
-                      çalıştığını (her gece tüm geçmişle eğitim) dürüstçe taklit eder."""
+                      çalıştığını (her gece tüm geçmişle eğitim) dürüstçe taklit eder.
+    katli=True: sınama KAT_BAS'tan başlar (A katı: KAT_BAS → son %30'un başı, B katı: son %30); aylık yeniden eğitim
+                tüm katlarda aynı. Ana metrikler B katında (önceki sürümlerle kıyaslanabilir), r["katlar"] her katı ayrı verir."""
     yari_omur = YARI_OMUR if yari_omur == "vars" else yari_omur
     kal_gun = kal_gun or KAL_GUN
     K = kume_kur(T)
     B = bolumle(T, kosular)
-    Ks = _ozel(K, B["sinama"])
+    Ks = _ozel(K, B["sinama_katli"] if katli else B["sinama"])
     Xs = Ks.X if sutun is None else Ks.X[:, sutun]
     tarih, gunler, tam_oran, idx, ilk = _pencereler(kosular)
+    kat_s = B["kat"][Ks.kosu_no]   # satır başına kat (A/B)
     pm = np.zeros(len(Ks.y)); ph = np.zeros(len(Ks.y)); pk = np.zeros(len(Ks.y)); pa = np.zeros(len(Ks.y))
     s2 = {"model": [], "model_h1": [], "harman": [], "harman_h1": []}
     modeller = []
@@ -433,16 +602,38 @@ def sina(T, kosular, protokol="aylik", lam=None, yari_omur="vars", kal_gun=None,
             pk[satir] = m.p_keskin(Ka, Ka.q)
             pa[satir] = m.p_harman_artik(Xa, Ka, Ka.q)
             if henery:
-                for ad_, pp, g, d in (("model", pm[satir], m.gam_m, m.dlt_m), ("harman", ph[satir], m.gam, m.dlt)):
-                    l2, l3 = sira_ll(pp, Ka, g, d)
-                    h2, h3 = sira_ll(pp, Ka, 1.0, 1.0)
+                sb_ = satir & (kat_s == "B")
+                Kb = Ks.alt(sb_)
+                for ad_, pp, g, d in (("model", pm[sb_], m.gam_m, m.dlt_m), ("harman", ph[sb_], m.gam, m.dlt)):
+                    if Kb.R == 0:
+                        continue
+                    l2, l3 = sira_ll(pp, Kb, g, d)
+                    h2, h3 = sira_ll(pp, Kb, 1.0, 1.0)
                     s2[ad_].append((l2, l3)); s2[ad_ + "_h1"].append((h2, h3))
             modeller.append(m)
+    katlar, tum = None, None
+    if katli:
+        katlar = {}
+        for kt in ("A", "B"):
+            mk = kat_s == kt
+            Kk = Ks.alt(mk)
+            if Kk.R == 0:
+                continue
+            katlar[kt] = {"tarih": B["tarih"]["katlar"][kt], "kosu": int(Kk.R),
+                          "metrik": {"model": metrikler(pm[mk], Kk), "harman": metrikler(ph[mk], Kk),
+                                     "piyasa": metrikler(Kk.q, Kk)},
+                          "kovalar": {"model": kovalar(pm[mk], Kk.y), "harman": kovalar(ph[mk], Kk.y)}}
+        tum = (Ks, pm, ph)
+        mk = kat_s == "B"
+        Ks, pm, ph, pk, pa = Ks.alt(mk), pm[mk], ph[mk], pk[mk], pa[mk]
     pq = Ks.q
     out = {"metrik": {"model": metrikler(pm, Ks), "harman": metrikler(ph, Ks), "piyasa": metrikler(pq, Ks),
                       "piyasa_keskin": metrikler(pk, Ks)},
            "kovalar": {"model": kovalar(pm, Ks.y), "harman": kovalar(ph, Ks.y), "piyasa": kovalar(pq, Ks.y)},
            "p": (pm, ph), "p_ek": {"keskin": pk, "harman_artik": pa}, "Ks": Ks, "modeller": modeller, "B": B}
+    if katli:
+        out["katlar"] = katlar
+        out["Ks_tum"], out["p_tum"] = tum[0], (tum[1], tum[2])
     if artik:
         out["metrik"]["harman_artik"] = metrikler(pa, Ks)
     if henery and protokol != "sabit" and s2["model"]:
@@ -461,7 +652,7 @@ def sina(T, kosular, protokol="aylik", lam=None, yari_omur="vars", kal_gun=None,
 def iz_cikar(r, kosular):
     """Sınama izi: her koşu için [kimlik, -log p_kazanan (model), ilk seçim tuttu mu (model), aynısı harman için].
     Kapı, tarif değiştiğinde yeni ve eski izleri ORTAK koşular üzerinde kıyaslar (aynı dilim, adil kıyas)."""
-    Ks = r["Ks"]; pm, ph = r["p"]
+    Ks = r.get("Ks_tum", r["Ks"]); pm, ph = r.get("p_tum", r["p"])
     iz = []
     for k in range(Ks.R):
         a, b = Ks.bas[k], Ks.bas[k] + Ks.n[k]
@@ -473,22 +664,31 @@ def iz_cikar(r, kosular):
     return iz
 
 
-def iz_kiyas(yeni, eski):
-    """Ortak koşularda (ll_model, ilk_model, ll_harman, ilk_harman) ortalamaları: (yeni, eski, n)."""
+def iz_kiyas(yeni, eski, b_bas=None):
+    """Ortak koşularda (ll_model, ilk_model, ll_harman, ilk_harman) ortalamaları: (yeni, eski, n).
+    b_bas verilirse ayrıca en güncel katın (tarih ≥ b_bas) ortak koşularındaki ortalamalar ("B")."""
     e = {s[0]: s for s in eski}
     ort = [s for s in yeni if s[0] in e]
     if not ort:
         return None
     f = lambda L, i: round(float(np.mean([s[i] for s in L])), 4)
-    eo = [e[s[0]] for s in ort]
-    return {"kosu": len(ort),
-            "yeni": {"model_ll": f(ort, 1), "model_ilk": f(ort, 2), "harman_ll": f(ort, 3), "harman_ilk": f(ort, 4)},
-            "eski": {"model_ll": f(eo, 1), "model_ilk": f(eo, 2), "harman_ll": f(eo, 3), "harman_ilk": f(eo, 4)}}
+
+    def ozet(L):
+        eo = [e[s[0]] for s in L]
+        return {"kosu": len(L),
+                "yeni": {"model_ll": f(L, 1), "model_ilk": f(L, 2), "harman_ll": f(L, 3), "harman_ilk": f(L, 4)},
+                "eski": {"model_ll": f(eo, 1), "model_ilk": f(eo, 2), "harman_ll": f(eo, 3), "harman_ilk": f(eo, 4)}}
+    out = ozet(ort)
+    if b_bas:
+        ob = [s for s in ort if s[0][:10] >= b_bas]
+        if ob:
+            out["B"] = ozet(ob)
+    return out
 
 
 def degerlendir(T, kosular, ablasyon=True, gbm=True):
     """Yayın tarifinin tam değerlendirmesi (aylık walk-forward). (son ay modeli, sonuç sözlüğü, iz) döner."""
-    r = sina(T, kosular, "aylik", gbm=gbm, henery=True)
+    r = sina(T, kosular, "aylik", gbm=gbm, henery=True, katli=True)
     Ks = r["Ks"]; pm, ph = r["p"]; pq = Ks.q
     m = r["modeller"][-1]
     B = r["B"]
@@ -497,6 +697,7 @@ def degerlendir(T, kosular, ablasyon=True, gbm=True):
              "bolum": B["tarih"], "kosu_sayisi": {"egitim": int(np.sum(B["egitim"])), "harman": int(np.sum(B["harman"])),
                                                    "sinama": int(Ks.R)},
              "gbm": bool(gbm and lgb is not None)}
+    sonuc["katlar"] = r.get("katlar")   # v4: iki zaman katı (A: KAT_BAS → B'nin başı, B: son %30; metrik = B katı)
     sonuc["metrik"] = dict(r["metrik"])
     pu = 1.0 / Ks.n[Ks.seg]
     sonuc["metrik"]["duzgun"] = {k: v for k, v in metrikler(pu, Ks, 1.0).items() if k in ("kosu", "log_loss", "brier")}
@@ -515,7 +716,10 @@ def degerlendir(T, kosular, ablasyon=True, gbm=True):
                              "alfa": round(float(x.alfa), 3), "beta": round(float(x.beta), 3)} for x in r["modeller"]]
     if ablasyon:
         # Ablasyon yalnız doğrusal katmanla (GBM'siz) ölçülür: hızlıdır ve grubun ham bilgisini gösterir.
+        # Süre için klasik (patlatılmamış) logitle; gece akışında haftada bir çalışır (bkz. gece.py).
         from ozellik import GRUP
+        global PATLAT
+        _p, PATLAT = PATLAT, (1.0,)
         taban = sina(T, kosular, "aylik", lam=m.lam, gbm=False)
         tab = []
         for g in sorted({GRUP[a] for a in T["adlar"]}):
@@ -524,6 +728,7 @@ def degerlendir(T, kosular, ablasyon=True, gbm=True):
             tab.append({"grup_cikarildi": g,
                         "model_ll_fark": round(rg["metrik"]["model"]["log_loss"] - taban["metrik"]["model"]["log_loss"], 4),
                         "harman_ll_fark": round(rg["metrik"]["harman"]["log_loss"] - taban["metrik"]["harman"]["log_loss"], 4)})
+        PATLAT = _p
         sonuc["ablasyon"] = sorted(tab, key=lambda d: -d["model_ll_fark"])
     return m, sonuc, iz_cikar(r, kosular)
 

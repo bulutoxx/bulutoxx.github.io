@@ -17,7 +17,7 @@ import veri, ozellik as O  # noqa: E402
 
 AT_SUTUNLARI = ["yeni", "n_kosu", "skor_son", "skor3", "skor5", "skor10", "galibiyet10", "ilk3_10", "geri_son", "geri3",
                 "piyasa_son", "piyasa3", "pz_ewma", "pz_en_iyi5", "piyasa_reyting", "r_at", "r_at_belirsiz",
-                "skor_sonum", "geri_en_iyi5", "hz_son", "hz_en_iyi3", "hz_ort3", "hz_trend", "hz_yok"]
+                "skor_sonum", "geri_en_iyi5", "hz_son", "hz_en_iyi3", "hz_ort3", "hz_trend", "hz_yok", "hp_once", "hp_yok"]
 
 
 def esit(A, B):
