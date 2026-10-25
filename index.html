@@ -1431,6 +1431,37 @@ td,th{border-bottom-color:var(--line)}
   .btn:active,.tp-r:active,.ib-od span:active,.mo:active,.seg button:active,.tb-ic:active,.bt-days button:active,.bt-chips button:active,.tp-add:active,.ms-x:active{transform:none!important}
 }
 </style>
+<style id="ui-v70">
+/* v70: üst çubuk — daha aşağıda, daha büyük, etiketli düğmeler (Bulut · Ses · Yenile) */
+:root{--tbh:66px}
+.topbar{padding-top:calc(env(safe-area-inset-top,0px) + 10px)}
+.topbar .in{height:var(--tbh);gap:6px}
+body.tb2 #hdrRefresh{display:flex!important}
+.topbar .iconbtn#hdrBot,.topbar .iconbtn#modeBtn,.topbar .iconbtn#hdrRefresh{width:56px;height:52px;border-radius:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:0;
+  background:rgba(255,255,255,.06);border:1px solid var(--line2,rgba(255,255,255,.14));color:var(--ink);-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+.topbar .iconbtn#hdrBot svg,.topbar .iconbtn#modeBtn svg,.topbar .iconbtn#hdrRefresh svg{width:21px;height:21px}
+.topbar .iconbtn .tbl{font:700 10.5px/1 var(--font,system-ui);letter-spacing:.02em;color:var(--ink2);pointer-events:none}
+.topbar .iconbtn#hdrBot{background:linear-gradient(160deg,rgba(34,211,255,.18),rgba(10,132,255,.10));border-color:rgba(34,211,255,.38)}
+.topbar .iconbtn#hdrBot svg{stroke:#7FE3FF}
+.topbar .iconbtn#hdrRefresh svg{stroke:#3BEA7E}
+.topbar .iconbtn#hdrRefresh.spin svg{animation:spin360 .8s linear infinite}
+.topbar .iconbtn#hdrRefresh.ok{border-color:rgba(59,234,126,.55);background:rgba(59,234,126,.14)}
+.topbar .iconbtn::after{inset:-4px}
+.bt-head{top:calc(var(--tbh) + 10px + env(safe-area-inset-top,0px))}
+.bt-head.cmp{top:calc(var(--tbh) + 10px + env(safe-area-inset-top,0px))!important}
+.coach{top:calc(var(--tbh) + 16px + env(safe-area-inset-top,0px))}
+.ez{top:calc(var(--tbh) + 14px + env(safe-area-inset-top,0px))}
+#updBanner{top:calc(var(--tbh) + 18px + env(safe-area-inset-top,0px))!important}
+@media (max-width:380px){ .logo{gap:6px;flex-shrink:0} .logo b{font-size:14.5px;letter-spacing:.02em} .logo img{height:26px} .topbar .iconbtn#hdrBot,.topbar .iconbtn#modeBtn,.topbar .iconbtn#hdrRefresh{width:50px} .topbar .in{gap:4px} }
+@media (max-width:340px){ .logo b{display:none} }
+/* Tek güncelle kapısı: sayfa içi tekrar eden güncelle düğmeleri gizli (üst çubuktaki Yenile hepsini yapar) */
+#refreshBtn,#rsRef,.upd-go,#btMoreMenu [data-o="upd"]{display:none!important}
+/* Listem · Sonuç takibim · Kayıtlı — tek yerde üç sekme */
+.kp-seg button{min-height:44px;white-space:nowrap;font-size:14px;padding-left:6px;padding-right:6px}
+#sncSeg{margin:0 16px 12px}
+/* Karne: tekrar eden satır ve başlıklar sade */
+.kz-g.dup{display:none}
+</style>
 </head>
 <body>
 <div class="splash" id="splash" aria-hidden="true"><img src="icons/logo-full.png" alt=""></div>
@@ -7005,6 +7036,90 @@ setTimeout(()=>{ try{ renderTP(); }catch(e){} },1500);
       for(const v of Object.values(A)){ if(v.ok==null||v.rp==null||!v.ro) continue; if(v.rp>=.70&&v.ro>=GOLD.omin&&v.ro<=GOLD.omax){ n++; had=1; if(v.ok) h++; } } g+=had; }
     TP.karne={n,h,g}; }catch(e){} };
   (function kw(i){ if(DAILY&&DAILY.gunler){ if(!TP.karne||!TP.karne.n) tpKarne().then(()=>{ try{ const v=$("v-tahmin"); if(v&&!v.hidden) renderTP(); }catch(e){} }); return; } if(i<40) setTimeout(()=>kw(i+1),1500); })(0);
+})();
+</script>
+<script id="ui-v70">
+// =====================================================================
+// BULUTOXX v70: Üst çubuk ergonomisi + tek Yenile kapısı + tekrar eden menülerin birleşmesi
+// • Bulut · Ses · Yenile: daha aşağıda, 52 px yüksek, altında adıyla; Yenile veriyi ve uygulama sürümünü birlikte tazeler
+// • Sayfa içi tekrar eden "Güncelle" düğmeleri kalktı (Tahmin, Bülten ⋯, Sonuçlar) — hepsi üstteki Yenile'de
+// • Kayıtlı tahminler, Tahmin listem'in üçüncü sekmesi oldu (Listem · Sonuç takibim · Kayıtlı)
+// • Karne: aynı başlıklı günlük satırlar tekilleşti; "Canlı karne" adı iki farklı ölçümde kullanılmıyor
+// =====================================================================
+(function(){
+  const lbl=(b,t)=>{ if(!b) return; let s=b.querySelector(".tbl"); if(!s){ s=document.createElement("span"); s.className="tbl"; b.appendChild(s); } s.textContent=t; };
+  function hdr(){
+    const tin=document.querySelector(".topbar .in"); if(!tin) return;
+    const bot=$("hdrBot"), mode=$("modeBtn"); let rf=$("hdrRefresh");
+    if(!rf){ rf=document.createElement("button"); rf.className="iconbtn"; rf.id="hdrRefresh"; rf.type="button"; rf.innerHTML='<svg viewBox="0 0 24 24"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7"/></svg>'; tin.appendChild(rf); }
+    // sıra: Bulut · Ses · Yenile (en sağda)
+    if(mode&&rf.previousElementSibling!==mode) mode.after(rf);
+    if(bot&&mode&&bot.nextElementSibling!==mode) mode.before(bot);
+    rf.setAttribute("aria-label","Yenile: verileri ve uygulamayı güncelle"); rf.title="Yenile";
+    lbl(bot,"Bulut"); lbl(mode,"Ses"); lbl(rf,"Yenile");
+    rf.onclick=v70Refresh;
+  }
+  async function verCheck(){ try{ const r=await fetch("index.html?vchk="+Date.now(),{cache:"no-store"}); if(!r.ok) return null; const t=await r.text(); const m=t.match(/const APP_V="([^"]+)"/); return m&&m[1]!==APP_V?m[1]:null; }catch(e){ return null; } }
+  let busy=false;
+  async function v70Refresh(){
+    if(busy) return; busy=true; const rf=$("hdrRefresh"); if(rf){ rf.classList.remove("ok"); rf.classList.add("spin"); }
+    try{ buzz(10); }catch(e){}
+    try{
+      const nv=await verCheck();
+      if(nv){ toast("✨ Yeni sürüm bulundu, uygulama yenileniyor…");
+        try{ if(window.caches){ const ks=await caches.keys(); await Promise.all(ks.map(k=>caches.delete(k))); } }catch(e){}
+        try{ const reg=navigator.serviceWorker&&await navigator.serviceWorker.getRegistration(); if(reg) await reg.update(); }catch(e){}
+        setTimeout(()=>location.reload(),700); return; }
+      const jobs=[];
+      try{ jobs.push(Promise.resolve(doRefresh())); }catch(e){}
+      try{ if(typeof IDL!=="undefined"&&IDL.load) jobs.push(IDL.load(IDLV.sp,true).then(()=>{ try{ idlRenderAll(); idlBadge(); }catch(e){} }).catch(()=>{})); }catch(e){}
+      try{ const v=$("v-sonuclar"); if(v&&!v.hidden&&typeof RS!=="undefined"){ RS.cache.delete(RS.day); jobs.push(RS.load(RS.day,true).then(()=>renderRes()).catch(()=>{})); } }catch(e){}
+      await Promise.race([Promise.all(jobs),new Promise(r=>setTimeout(r,9000))]);
+      try{ const v=$("v-karne"); if(v&&!v.hidden) renderKarne(); }catch(e){}
+      try{ const v=$("v-power"); if(v&&!v.hidden&&typeof renderPower==="function") renderPower(); }catch(e){}
+      if(rf){ rf.classList.add("ok"); setTimeout(()=>rf.classList.remove("ok"),1800); }
+      toast("✅ Güncellendi · "+ist(new Date(),{hour:"2-digit",minute:"2-digit"})+" · uygulama güncel");
+    }finally{ if(rf) rf.classList.remove("spin"); busy=false; }
+  }
+  window.v70Refresh=v70Refresh;
+  hdr(); setTimeout(hdr,1200); setTimeout(hdr,4000);
+
+  // ---- Menü: Kayıtlı tahminler → Listelerim; Analiz yalnız analiz araçları ----
+  try{
+    const an=MENU_PLAN.find(g=>g[0]==="Analiz"), ls=MENU_PLAN.find(g=>g[0]==="Listelerim");
+    if(an&&ls){ const i=an[1].findIndex(x=>x[0]==='[data-go="sonuc"]'); if(i>=0){ const it=an[1].splice(i,1)[0]; it[2]="Kaydettiğin maç analizleri ve sonuçları"; ls[1].splice(1,0,it); } }
+    if(ls){ const c=ls[1].find(x=>x[0]==="#moreCp"); if(c) c[2]="Seçtiğin tahminler, birlikte tutma olasılığı ve sonuçları"; }
+    menuOrganize();
+    if(IS_STANDALONE()){ const ins=document.querySelector('#v-more [data-act="install"]'); if(ins) ins.hidden=true; }
+  }catch(e){}
+
+  // ---- Tahmin listem: Listem · Sonuç takibim · Kayıtlı (tek kapı, üç sekme) ----
+  function goKupon(t){ KP.tab=t; const b=document.querySelector('nav.tabs button[data-v="kupon"]'); if(b) b.click(); setTimeout(()=>{ try{ kuponTab(t); }catch(e){} },30); }
+  function goSonuc(){ const b=document.querySelector('nav.tabs button[data-v="sonuc"]'); if(b) b.click(); }
+  function addThird(){ const sg=$("kpSeg"); if(!sg||sg.querySelector('[data-kt="snc"]')) return;
+    sg.insertAdjacentHTML("beforeend",`<button type="button" data-kt="snc" aria-pressed="false">Kayıtlı</button>`);
+    sg.querySelector('[data-kt="snc"]').addEventListener("click",e=>{ e.stopPropagation(); buzz(6); goSonuc(); },true); }
+  const _kt=kuponTab; kuponTab=function(t){ if(t==="snc"){ goSonuc(); return; } const r=_kt.apply(this,arguments); addThird(); return r; };
+  function sncSeg(){ const v=$("v-sonuc"); if(!v||$("sncSeg")) return; const lt=v.querySelector(".ltitle");
+    const html=`<div class="seg kp-seg" id="sncSeg" role="group" aria-label="Tahmin listem"><button type="button" data-k="cp">Listem</button><button type="button" data-k="oyn">Sonuç takibim</button><button type="button" data-k="snc" aria-pressed="true">Kayıtlı</button></div>`;
+    lt?lt.insertAdjacentHTML("afterend",html):v.insertAdjacentHTML("afterbegin",html);
+    $("sncSeg").onclick=e=>{ const b=e.target.closest("[data-k]"); if(!b||b.dataset.k==="snc") return; buzz(6); goKupon(b.dataset.k); window.scrollTo({top:0}); };
+    const p=v.querySelector(".ltitle p"); if(p) p.textContent="Maç tahmini ekranında kaydettiğin analizler ve sonuçları"; }
+  sncSeg(); addThird();
+
+  // ---- Karne: aynı başlıklı günlük satırlar tekil, iki farklı "Canlı karne" adı ayrışır ----
+  const _rk70=renderKarne;
+  renderKarne=function(){ const r=_rk70.apply(this,arguments);
+    try{ const seen=new Set(); document.querySelectorAll("#kzBox .kz-g").forEach(p=>{ const k=((p.querySelector("b")||{}).textContent||"").trim(); if(seen.has(k)) p.classList.add("dup"); else seen.add(k); });
+      document.querySelectorAll("#karne .panel > h2").forEach(h=>{ if(h.textContent.trim()==="Canlı karne"&&!h.closest("#kzBox")){ h.textContent="Maç öncesi kilitli tahminler";
+        const p=h.parentElement; p.querySelectorAll(".stat .k").forEach(k=>{ if(/Bahis şirketleri/.test(k.textContent)) k.textContent="Oran favorisi doğru"; }); } });
+    }catch(e){}
+    return r; };
+
+  // ---- Canlı: resmi bülten alınamazsa iki ayrı liste değil, tek yedek liste görünür ----
+  try{ const _ira=idlRenderAll; idlRenderAll=function(){ const r=_ira.apply(this,arguments);
+      try{ const box=$("idlBox"); if(box){ const ok=IDL.ok[1]||IDL.ok[2]; box.style.display=(!ok&&IDL.failed)?"none":""; } }catch(e){} return r; };
+    idlRenderAll(); }catch(e){}
 })();
 </script>
 </body>
