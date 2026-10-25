@@ -1563,7 +1563,7 @@ body.tb2 #hdrRefresh{display:flex!important}
 .sport-sw .sw-logo{width:20px;height:20px;flex:none;display:inline-block}.sport-sw .sw-logo svg{width:100%;height:100%;display:block}
 .sport-sw .sw-at[aria-pressed="true"]{background:linear-gradient(135deg,#B8892B,#F3DC8A 50%,#C9A646)!important;color:#2A1C00!important;box-shadow:0 6px 16px -6px rgba(212,175,55,.7)!important}
 .at-head{margin-bottom:10px}
-.at-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;padding:4px;border-radius:14px;background:rgba(255,255,255,.05);border:1px solid var(--line);margin-bottom:10px}
+.at-tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;padding:4px;border-radius:14px;background:rgba(255,255,255,.05);border:1px solid var(--line);margin-bottom:10px}
 .at-tabs button{min-height:42px;border-radius:10px;font:800 14px var(--font,system-ui);color:var(--ink2)}
 .at-tabs button small{font-size:11px;opacity:.8}
 .at-tabs button[aria-pressed="true"]{color:#2A1C00;background:linear-gradient(135deg,#D4AF37,#FFF0B3 50%,#C9A646)}
@@ -1581,6 +1581,12 @@ body.tb2 #hdrRefresh{display:flex!important}
 .at-share{width:100%;min-height:40px;margin-top:8px;border-radius:10px;background:rgba(34,211,255,.08);border:1px solid rgba(34,211,255,.3);color:#7FE3FF;font:700 13px var(--font,system-ui)}
 .at-fav{margin-bottom:10px;padding:10px 12px;border-radius:14px;border:1px solid rgba(243,220,138,.5);background:rgba(243,220,138,.08);font-size:13px}
 .at-fav b{color:#F3DC8A}.at-fr{padding:7px 0;border-top:1px solid rgba(255,255,255,.06);cursor:pointer}.at-fr:first-of-type{border-top:0;margin-top:4px}
+.at-tabs button{font-size:13px!important;padding:0 2px}
+.jk-r{display:grid;grid-template-columns:24px 1fr 74px;gap:8px;align-items:center;padding:9px 0;border-top:1px solid rgba(255,255,255,.06)}
+.jk-i{font:900 13px var(--round,system-ui);color:var(--ink3);text-align:center}
+.jk-n{min-width:0}.jk-n b{display:block;font-size:14px}.jk-n small{color:var(--ink3);font-size:11.5px;line-height:1.35;display:block}
+.jk-b{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}.jk-b button{font-size:11px;padding:3px 7px;border-radius:8px;background:rgba(243,220,138,.1);border:1px solid rgba(243,220,138,.35);color:#F3DC8A}
+.jk-k{text-align:right}.jk-k b{font:900 14px var(--round,system-ui);color:#F3DC8A;display:block}.jk-k i{display:block;height:4px;border-radius:2px;background:linear-gradient(90deg,#B8892B,#F3DC8A);margin-left:auto;margin-top:3px}
 #moreAt .ic{background:none!important;padding:0;overflow:hidden}#v-at .ltitle{display:none}#v-at #atBack{margin-top:6px}#moreAt .ic svg{width:100%;height:100%}
 </style>
 <style id="gate-v78">
@@ -5570,7 +5576,7 @@ if((location.hash||"")==="#sonuclar") setTimeout(()=>$("navRes").click(),200);
 // =====================================================================
 // BULUTOXX v35: Otomatik sürüm güncelleme — yeni sürüm yayınlanınca uygulama kendini yeniler
 // =====================================================================
-const APP_V="2026-10-25.85";
+const APP_V="2026-10-25.86";
 (function autoUpdate(){
   let shown=false;
   async function check(auto){
@@ -7582,8 +7588,21 @@ setTimeout(()=>{ try{ renderTP(); }catch(e){} },1500);
       AT.days=[]; offs.forEach((o,i)=>{ const d=got[i]; if(d&&d.kosular&&d.kosular.length){ AT.data[d.tarih]=d; AT.days.push(d.tarih); } });
       AT.days.sort(); if(!AT.d||!AT.data[AT.d]) AT.d=AT.days.includes(dISO(0))?dISO(0):AT.days[AT.days.length-1]||null;
       const [m,k]=await Promise.all([j("data/at/model.json"),j("data/at/karne.json")]); AT.model=m; AT.karne=k;
+      AT.jok=await j("data/at/jokeyler.json");
       AT.canli=AT.canli||{}; const cs=await Promise.all(AT.days.map(d=>j("data/at/canli/"+d+".json"))); AT.days.forEach((d,i)=>{ if(cs[i]&&cs[i].kosular) AT.canli[d]=cs[i]; });
     }finally{ AT.busy=false; } render(); }
+  function jokeyHtml(){ const J=AT.jok; if(!J||!(J.jokeyler||[]).length) return `<div class="panel"><p class="note" style="margin:0">Jokey istatistikleri hazırlanıyor. Laboratuvar her gece geçmiş koşulardan jokeylerin atın gücünden arındırılmış katkısını hesaplar.</p></div>`;
+    const tr=t=>t==="yukseliyor"?"📈":t==="dusuyor"?"📉":"➖";
+    const L=J.jokeyler.slice(0,25), mx=Math.max(...L.map(x=>Math.abs(+x.katki||0)),1e-9);
+    const row=(x,i)=>`<div class="jk-r"><span class="jk-i">${i+1}</span><span class="jk-n"><b>${esc(x.ad)} ${tr(x.form_trend)}</b><small>${x.binis_90g} biniş · kazanma %${Math.round((x.kazanma_90g||0)*100)} · ilk 3 %${Math.round((x.ilk3_90g||0)*100)}${x.uzmanlik?` · ${esc([x.uzmanlik.pist,x.uzmanlik.mesafe,x.uzmanlik.hipodrom].filter(Boolean).join(", "))}`:""}</small>
+      ${(x.bugun_binis||[]).length?`<span class="jk-b">${x.bugun_binis.slice(0,4).map(b=>`<button type="button" data-jb="${esc(b.kosu_id)}|${esc(b.at)}">${esc(b.kosu_id.split("/").slice(1).join(" "))}. koşu · ${esc(b.at)} ${b.p_kazanma!=null?"%"+Math.round(b.p_kazanma*100):""}</button>`).join("")}</span>`:""}</span>
+      <span class="jk-k"><b>${(+x.katki>0?"+":"")+(+x.katki).toFixed(2).replace(".",",")}</b><i style="width:${Math.max(4,Math.abs(+x.katki)/mx*100)}%;${+x.katki<0?"background:#FF8A80":""}"></i></span></div>`;
+    const tl=(J.antrenorler||[]).slice(0,15), ik=(J.ikililer||[]).slice(0,10);
+    return `<div class="at-race"><div class="at-rh"><b>🏇 Jokey sıralaması</b><span>son 90 gün · atın gücünden arındırılmış katkı</span></div>
+      <p class="note" style="margin:6px 0">"Katkı", jokeyin aynı atla beklenenden ne kadar iyi sonuç aldığını gösterir; yalnız kazanma sayısına bakmaz. 📈 formu yükselen, 📉 düşen.</p>${L.map(row).join("")}</div>
+      ${tl.length?`<details class="sx"><summary>🧑‍🏫 Antrenörler <small>${tl.length}</small></summary><div class="sx-in"><div class="at-race">${tl.map(row).join("")}</div></div></details>`:""}
+      ${ik.length?`<details class="sx"><summary>🤝 En uyumlu jokey–antrenör ikilileri <small>${ik.length}</small></summary><div class="sx-in"><div class="at-race">${ik.map((x,i)=>`<div class="jk-r"><span class="jk-i">${i+1}</span><span class="jk-n"><b>${esc(x.jokey)} + ${esc(x.antrenor)}</b><small>${x.binis} birliktelik · kazanma %${Math.round((x.kazanma||0)*100)}</small></span><span class="jk-k"><b>${(+x.katki>0?"+":"")+(+x.katki).toFixed(2).replace(".",",")}</b></span></div>`).join("")}</div></div></details>`:""}
+      <p class="note">Dönem: ${esc((J.donem||[]).join(" – "))} · güncelleme ${esc(J.guncelleme||"")}. Kaynak: açık TJK sonuç arşivi; yalnız türetilmiş istatistik.</p>`; }
   function goldOfDay(D){ const out=[];
     for(const r of D.kosular||[]){ const A=(r.atlar||[]).slice().sort((a,b)=>b.p_kazanma-a.p_kazanma); if(A.length<2) continue;
       const a=A[0], gap=a.p_kazanma-A[1].p_kazanma; if(a.p_kazanma>=.35&&gap>=.12) out.push({r,h:a,s:a.p_kazanma+gap}); }
@@ -7642,11 +7661,12 @@ setTimeout(()=>{ try{ renderTP(); }catch(e){} },1500);
     if(!AT.d){ box.innerHTML=h+`<div class="panel"><p class="note" style="margin:0">${AT.busy?"Yükleniyor…":"Bugün ve yakın günler için kilitli at yarışı tahmini bulunamadı. Laboratuvar her sabah 05:23 ve öğlen 12:23'te yeni programı işler."}</p></div>`; return; }
     const D=AT.data[AT.d], hips=[...new Set(D.kosular.map(r=>r.hipodrom))]; if(!AT.hip||!hips.includes(AT.hip)) AT.hip=hips[0];
     const G=goldOfDay(D), S=resOfDay(AT.d);
-    h+=`<div class="at-tabs" role="tablist"><button type="button" data-t="tah" aria-pressed="${AT.tab==="tah"}">Tahminler</button><button type="button" data-t="altin" aria-pressed="${AT.tab==="altin"}">🥇 Altın${G.length?` <small>${G.length}</small>`:""}</button><button type="button" data-t="sonuc" aria-pressed="${AT.tab==="sonuc"}">Sonuçlar${S.length?` <small>${S.length}</small>`:""}</button></div>`;
+    h+=`<div class="at-tabs" role="tablist"><button type="button" data-t="tah" aria-pressed="${AT.tab==="tah"}">Tahminler</button><button type="button" data-t="altin" aria-pressed="${AT.tab==="altin"}">🥇 Altın${G.length?` <small>${G.length}</small>`:""}</button><button type="button" data-t="sonuc" aria-pressed="${AT.tab==="sonuc"}">Sonuçlar${S.length?` <small>${S.length}</small>`:""}</button><button type="button" data-t="jokey" aria-pressed="${AT.tab==="jokey"}">🏇 Jokey</button></div>`;
     h+=`<div class="at-chips" role="group" aria-label="Gün">${AT.days.map(d=>`<button type="button" data-d="${d}" aria-pressed="${d===AT.d}">${dLbl(d)}</button>`).join("")}</div>`;
     const FT=[]; if(FAV.size) for(const r of D.kosular) for(const h of r.atlar||[]) if(FAV.has(h.ad)) FT.push({r,h});
     if(FT.length&&AT.tab==="tah") h+=`<div class="at-fav"><b>⭐ Takip ettiğin atlar bugün koşuyor</b>${FT.map(x=>`<div class="at-fr" data-ah="${esc(x.r.kosu_id)}|${esc(x.h.no)}" role="button">${esc(x.r.hipodrom)} ${x.r.kosu}. koşu ${esc(x.r.saat||"")} · <b>${esc(x.h.no)} ${esc(x.h.ad)}</b> · ${pct(merged(x.r).A.find(y=>y.no===x.h.no)?.p_goster)}</div>`).join("")}</div>`;
-    if(AT.tab==="altin"){
+    if(AT.tab==="jokey"){ h+=jokeyHtml(); }
+    else if(AT.tab==="altin"){
       h+=`<div class="at-gold"><div class="at-gh">🥇 Günün Altın atları <small>${esc(dLbl(AT.d))} · tüm hipodromlar · en fazla 3</small></div>
         <p class="at-gn">Kural: koşusunda kazanma olasılığı en yüksek olan, en yakın rakibine en az 12 puan fark atan ve olasılığı %35+ olan at; günde en çok güvenilen 3 tanesi. Futboldaki Altın gibi temkinli seçilir.</p>
         ${G.length?G.map(x=>`<div class="at-gr"><span class="at-no">${esc(x.h.no)}</span><span class="at-n"><b>${esc(x.h.ad)}</b><small>${esc(x.r.hipodrom)} ${x.r.kosu}. koşu · ${esc(x.r.saat||"")} · ${esc(x.r.mesafe+" m "+x.r.pist)}</small></span><span class="at-p"><b>${pct(x.h.p_kazanma)}</b><small>ilk 3: ${pct(x.h.p_ilk3)}</small></span></div>`).join("")
@@ -7670,7 +7690,8 @@ setTimeout(()=>{ try{ renderTP(); }catch(e){} },1500);
     box.querySelectorAll("[data-h]").forEach(b=>b.onclick=()=>{ AT.hip=b.dataset.h; buzz(6); render(); });
     box.querySelectorAll("[data-at]").forEach(b=>b.onclick=()=>{ const k=b.dataset.at; AT.open.has(k)?AT.open.delete(k):AT.open.add(k); render(); });
     box.querySelectorAll("[data-ah]").forEach(b=>b.onclick=()=>{ const [rid,no]=b.dataset.ah.split("|"); try{ buzz(6); }catch(e){} horseSheet(rid,no); });
-    box.querySelectorAll("[data-sh]").forEach(b=>b.onclick=()=>shareRace(b.dataset.sh)); }
+    box.querySelectorAll("[data-sh]").forEach(b=>b.onclick=()=>shareRace(b.dataset.sh));
+    box.querySelectorAll("[data-jb]").forEach(b=>b.onclick=()=>{ const [rid,ad]=b.dataset.jb.split("|"); const D=AT.data[AT.d]; const r=D&&D.kosular.find(x=>x.kosu_id===rid); const hh=r&&(r.atlar||[]).find(x=>x.ad===ad); if(hh) horseSheet(rid,hh.no); else toast("Bu koşu bugünkü listede yok"); }); }
   // görünüm + menü girişi
   const main=document.querySelector("main"); if(main&&!$("v-at")){ const s=document.createElement("section"); s.className="view"; s.id="v-at"; s.hidden=true;
     s.innerHTML=`<div class="bt-head cmp at-head"><div class="tb-row" id="atRow"></div></div><div class="ltitle"><div><h1>At Yarışı</h1><p>Deneme · kendini her gece eğiten olasılık modeli</p></div></div><div class="wrap"><div id="atBox"></div></div>`;
