@@ -69,3 +69,18 @@ rep["dosya_baglantilari"] = sorted(l for l in rep["baglantilar"] if re.search(r"
 json.dump(rep, open(os.path.join(OUT, "kesif.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
 print(json.dumps({"sayfa": len(rep["sayfalar"]), "basarili": sum(1 for s in rep["sayfalar"] if s.get("durum") == 200),
                   "dosya": len(rep["dosya_baglantilari"]), "kosul_cumlesi": len(rep["kosullar"])}, ensure_ascii=False))
+# ---- günlüğe ayrıntı (ek indirilemezse diye) ----
+def tablo_ozet(txt, n=3):
+    out = []
+    for tb in re.findall(r"<table.*?</table>", txt, re.S | re.I)[:6]:
+        rows = re.findall(r"<tr.*?</tr>", tb, re.S | re.I)
+        cells = [[re.sub(r"\s+", " ", html.unescape(re.sub(r"<[^>]+>", " ", c))).strip() for c in re.findall(r"<t[hd][^>]*>(.*?)</t[hd]>", r, re.S | re.I)] for r in rows[:n + 1]]
+        out.append({"satir": len(rows), "ornek": cells})
+    return out
+print("=====KESIF_JSON_BASLA=====")
+print(json.dumps(rep, ensure_ascii=False)[:60000])
+print("=====KESIF_JSON_BITTI=====")
+for f in sorted(os.listdir(OUT)):
+    if f.endswith(".html"):
+        t = open(os.path.join(OUT, f), encoding="utf-8").read()
+        print("=====TABLO", f, json.dumps(tablo_ozet(t), ensure_ascii=False)[:6000])
