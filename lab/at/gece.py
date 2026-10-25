@@ -1,7 +1,8 @@
 # BULUTOXX at yarışı laboratuvarı — gece boru hattı.
 # 1) Aynayı sığ klonla/güncelle (yalnız github.com/cenkozgur/tjk-data; tjk.org'a istek YOK)
 # 2) Sızıntısız özellikler + tam yeniden eğitim + zaman sıralı sınama
-# 3) KAPI: yeni katsayılar ancak sınama log-loss'unu düşürür ve ilk-seçim isabetini bozmazsa kabul
+# 3) KAPI: yeni tarif ancak aynı sınama koşularında yalnız-model log-loss'unu düşürür, ilk-seçim isabetini bozmaz
+#    ve harmanı kötüleştirmezse kabul; tarif aynıysa yeni veriyle yeniden eğitim (bozulma korumalı)
 # 4) Bugün/yarın programları için tahminleri KİLİTLE (data/at/tahmin/<tarih>.json; bir kez yazılır, ezilmez)
 # 5) Sonucu gelen kilitli tahminleri puanla (data/at/karne.json)
 # 6) data/at/model.json ve lab/at/RAPOR.md yaz
@@ -21,49 +22,83 @@ import veri, ozellik, model as M  # noqa: E402
 CIKTI = os.path.join(KOK, "data", "at")
 TAHMIN = os.path.join(CIKTI, "tahmin")
 RAPOR = os.path.join(BURA, "RAPOR.md")
+GBM_DOSYA = os.path.join(CIKTI, "gbm_uretim.txt")      # yayın modelinin ağaçları (uygulama okumaz)
+IZ_DOSYA = os.path.join(CIKTI, "sinama_izi.json")     # kapı için koşu başına sınama izi
+DENEY_DOSYA = os.path.join(CIKTI, "deneyler.json")
+YENILEME_GUN = 7   # aynı tarifte yayın katsayılarının yenilenme aralığı (gün)
 TAKIP = [("2026-10-25", "İstanbul", 5)]   # raporda kalıcı izlenen örnek koşu(lar)
 
-IFADE = {  # özellik -> (lehine, aleyhine)
-    "yeni": ("", "ilk koşusu, geçmiş verisi yok"),
-    "n_kosu": ("az koşmuş, gelişime açık", "çok koşmuş"),
+IFADE = {  # özellik -> (değeri koşu ortalamasından YÜKSEKSE, DÜŞÜKSE) — yön katkının işaretinden ayrı seçilir
+    "yeni": ("ilk koşusu, geçmiş verisi yok", ""),
+    "n_kosu": ("çok koşmuş", "az koşmuş, gelişime açık"),
     "skor_son": ("son koşusunda iyi derece", "son koşusunda geride kaldı"),
     "skor3": ("son 3 koşu formu iyi", "son 3 koşu formu zayıf"),
     "skor5": ("son 5 koşu formu iyi", "son 5 koşu formu zayıf"),
     "skor10": ("son 10 koşu formu iyi", "son 10 koşu formu zayıf"),
     "galibiyet10": ("son koşularda kazanma oranı yüksek", "son koşularda kazanamadı"),
     "ilk3_10": ("sık sık ilk 3'te", "nadiren ilk 3'te"),
-    "geri_son": ("son koşuda kazanana yakın bitirdi", "son koşuda kazananın epey gerisinde"),
-    "geri3": ("son koşularda kazanana yakın", "son koşularda kazananın gerisinde"),
+    "geri_son": ("son koşuda kazananın epey gerisinde", "son koşuda kazanana yakın bitirdi"),
+    "geri3": ("son koşularda kazananın gerisinde", "son koşularda kazanana yakın"),
     "piyasa_son": ("son koşusunda piyasa onu öne çıkarmıştı", "son koşusunda piyasa ilgisi düşüktü"),
     "piyasa3": ("son koşularında piyasanın gözdesiydi", "son koşularında piyasa ilgisi düşüktü"),
-    "log_gun": ("dinlenme süresi uygun", "dinlenme süresi aleyhine"),
-    "uzun_ara": ("", "uzun aradan dönüyor"),
+    "log_gun": ("uzun süredir koşmuyor", "sık koşuyor"),
+    "uzun_ara": ("uzun aradan dönüyor", ""),
     "pist_uyum": ("bu pistte iyi koşuyor", "bu pistte zayıf"),
     "pist_payi": ("bu pist tecrübesi fazla", "bu pistte az tecrübeli"),
     "mesafe_uyum": ("bu mesafede başarılı", "bu mesafede zayıf"),
-    "mesafe_degisim": ("mesafe değişimi lehine", "mesafe değişimi aleyhine"),
+    "mesafe_degisim": ("mesafe değişiyor", ""),
     "hipodrom_uyum": ("bu hipodromda başarılı", "bu hipodromda zayıf"),
-    "sinif_degisim": ("sınıf düşüyor (daha kolay koşu)", "sınıf yükseliyor (daha zor koşu)"),
-    "kilo_fark": ("kilo durumu lehine", "kilo durumu aleyhine"),
-    "kilo_degisim": ("kilo değişimi lehine", "kilo değişimi aleyhine"),
-    "yas2": ("yaşı lehine", "yaşı aleyhine"), "yas3": ("yaşı lehine", "yaşı aleyhine"),
-    "yas6p": ("yaşı lehine", "yaşı aleyhine"),
+    "sinif_degisim": ("sınıf yükseliyor (daha zor koşu)", "sınıf düşüyor (daha kolay koşu)"),
+    "kilo_fark": ("alan ortalamasından ağır kilo", "alan ortalamasından hafif kilo"),
+    "kilo_degisim": ("kilosu arttı", "kilosu azaldı"),
+    "yas2": ("2 yaşında", ""), "yas3": ("3 yaşında", ""), "yas6p": ("6 yaş ve üstü", ""),
     "jokey_gal60": ("jokeyi son 60 günde formda", "jokeyinin son 60 günü zayıf"),
     "jokey_ae": ("jokeyi piyasa beklentisinin üstünde kazanıyor", "jokeyi piyasa beklentisinin altında"),
     "antrenor_gal60": ("antrenörü son 60 günde formda", "antrenörünün son 60 günü zayıf"),
     "antrenor_ae": ("antrenörü piyasa beklentisinin üstünde", "antrenörü piyasa beklentisinin altında"),
     "jokey_at_n": ("jokeyiyle çok koştu", "jokeyiyle az koştu"),
     "jokey_at_uyum": ("bu jokeyle iyi sonuçlar almış", "bu jokeyle sonuçları zayıf"),
-    "jokey_degisti": ("jokey değişimi lehine", "jokey değişti"),
-    "alan_x_form": ("alan büyüklüğü formuna uygun", "alan büyüklüğü aleyhine"),
+    "jokey_degisti": ("jokey değişti", ""),
+    "alan_x_form": ("", ""),
+    "pz_ewma": ("son koşularında piyasa onu öne çıkarıyordu", "son koşularında piyasa ilgisi düşüktü"),
+    "pz_en_iyi5": ("yakın geçmişte piyasanın gözdesi olmuştu", "yakın geçmişte piyasa ilgisi hep düşüktü"),
+    "p_sira_son": ("son koşusunda piyasada geride sıralanmıştı", "son koşusunda piyasada önde sıralanmıştı"),
+    "p_sira3": ("son koşularında piyasada geride", "son koşularında piyasada önde"),
+    "fav_son": ("son koşusunda favoriydi", ""),
+    "yenilen_fav": ("son koşusunda favoriyken kazanamadı", ""),
+    "piyasa_ustu": ("piyasanın beklediğinden iyi koşuyor", "piyasanın beklediğinden kötü koşuyor"),
+    "piyasa_reyting": ("piyasa gözünde rakiplerinden güçlü", "piyasa gözünde rakiplerinden zayıf"),
+    "piyasa_yok": ("geçmiş oran bilgisi yok", ""),
+    "r_at": ("yarış reytingi yüksek", "yarış reytingi düşük"),
+    "r_jokey": ("jokey reytingi yüksek", "jokey reytingi düşük"),
+    "r_antrenor": ("antrenör reytingi yüksek", "antrenör reytingi düşük"),
+    "r_at_belirsiz": ("reytingi henüz belirsiz (az koşu)", ""),
+    "r_at_alan": ("reytingi alanın üstünde", "reytingi alanın altında"),
+    "handikap": ("", ""), "maiden": ("", ""), "sinif_r": ("", ""),
+    "kilo_hnd": ("handikapta üst kilo (resmî puanı yüksek)", "handikapta alt kilo"),
+    "sinif_r_degisim": ("sınıf yükseliyor (alan düzeyi)", "sınıf düşüyor (alan düzeyi)"),
+    "at_ustu_sinif": ("reytingi bu sınıfın üstünde", "reytingi bu sınıfın altında"),
+    "hiz_son": ("son hız puanı yüksek", "son hız puanı düşük"), "hiz_en_iyi": ("en iyi hız puanı yüksek", "en iyi hız puanı düşük"),
+    "hiz_ort3": ("hız puanları yüksek", "hız puanları düşük"), "hiz_yok": ("hız puanı yok", ""),
+    "hiz_pist": ("bu pistte daha hızlı", "bu pistte daha yavaş"),
+    "skor_sonum": ("yakın dönem formu iyi", "yakın dönem formu zayıf"),
+    "geri_sonum": ("yakın dönemde kazananın gerisinde", "yakın dönemde kazanana yakın"),
+    "geri_en_iyi5": ("son 5 koşuda kazanana hiç yaklaşamadı", "son 5 koşuda kazanana çok yaklaştı"),
+    "jokey_pz60": ("jokeyi son dönemde gözde atlara biniyor", "jokeyi son dönemde gözde olmayan atlara biniyor"),
+    "antrenor_pz60": ("ahırının atları son dönemde gözde", "ahırının atları son dönemde gözde değil"),
+    "jokey_r_degisim": ("daha güçlü bir jokeye geçti", "daha zayıf bir jokeye geçti"),
+    "ekuri": ("koşuda aynı antrenörden başka at var", ""),
 }
 
 
-def jyaz(yol, veri_):
+def jyaz(yol, veri_, sikisik=False):
     os.makedirs(os.path.dirname(yol), exist_ok=True)
     tmp = yol + ".tmp"
     with open(tmp, "w", encoding="utf-8") as f:
-        json.dump(veri_, f, ensure_ascii=False, indent=1)
+        if sikisik:
+            json.dump(veri_, f, ensure_ascii=False, separators=(",", ":"))
+        else:
+            json.dump(veri_, f, ensure_ascii=False, indent=1)
     os.replace(tmp, yol)
 
 
@@ -88,9 +123,19 @@ def ayna_guncelle(kaynak):
 
 
 # ---------------------------------------------------------------- tahmin
-def kosu_tahmini(mj, kosu, durum, yayin_modu):
-    m = M.Model.yukle(mj)
-    X = durum.ozellik(kosu)
+def model_yukle(uj):
+    """Yayın modelini (JSON + varsa GBM dosyası) yükler. LightGBM yoksa model kendi doğrusal yedeğine düşer."""
+    metin = None
+    if uj.get("gbm"):
+        try:
+            metin = open(GBM_DOSYA, encoding="utf-8").read()
+        except Exception:
+            metin = None
+    return M.Model.yukle(uj, metin)
+
+
+def kosu_tahmini(m, kosu, durum, yayin_modu):
+    X = durum.ozellik(kosu, m.adlar)
     K = M.Kume(X, np.zeros(len(X)), np.zeros(len(X)), np.zeros(len(X)), np.zeros(len(X), int))
     q = veri.piyasa_q([a["oran"] for a in kosu["atlar"]])
     if q is not None and yayin_modu == "model+piyasa":
@@ -100,13 +145,21 @@ def kosu_tahmini(mj, kosu, durum, yayin_modu):
     else:
         p = m.p_model(X, K); mod = "yalnız model (piyasa oranı henüz yok)"
     so = M.sirali_olasiliklar(p, m.gam, m.dlt)
-    Z = (X - m.mu) / m.sd
-    katki = (Z - Z.mean(0)) * m.w / m.T
+    katki = m.katki(X)
+    sapma = X - X.mean(0)
+
+    def ifade(i, k):
+        e = IFADE.get(m.adlar[k], ("", ""))
+        return e[0] if sapma[i, k] > 0 else e[1]
     atlar = []
     for i, a in enumerate(kosu["atlar"]):
         o = np.argsort(-katki[i])
-        lehte = [IFADE[m.adlar[k]][0] for k in o if katki[i, k] > 0.04 and IFADE[m.adlar[k]][0]][:2]
-        aleyh = [IFADE[m.adlar[k]][1] for k in o[::-1] if katki[i, k] < -0.12 and IFADE[m.adlar[k]][1]][:1]
+        lehte = [ifade(i, k) for k in o if katki[i, k] > 0.04 and ifade(i, k)]
+        tekil = {}
+        for x in lehte:   # aynı anlamdaki ifadeleri (ör. iki "sınıf düşüyor") tekille
+            tekil.setdefault(" ".join(x.split()[:2]), x)
+        lehte = list(tekil.values())[:2]
+        aleyh = [ifade(i, k) for k in o[::-1] if katki[i, k] < -0.12 and ifade(i, k)][:1]
         ger = "; ".join(lehte) if lehte else "belirgin artısı yok"
         if aleyh:
             ger += " · dikkat: " + aleyh[0]
@@ -122,7 +175,7 @@ def kosu_tahmini(mj, kosu, durum, yayin_modu):
             "ikili_onerisi": {"sira": [kosu["atlar"][i]["no"], kosu["atlar"][j]["no"]], "p": round(float(E[i, j]), 4)}}
 
 
-def kilitle(gunler, son_sonuc, mj, durum, yayin_modu, surum):
+def kilitle(gunler, son_sonuc, m, durum, yayin_modu, surum):
     yazilan = []
     for t in gunler:
         yol = os.path.join(TAHMIN, t + ".json")
@@ -134,7 +187,7 @@ def kilitle(gunler, son_sonuc, mj, durum, yayin_modu, surum):
         simdi_tr = (datetime.now(timezone.utc) + timedelta(hours=3)).strftime("%Y-%m-%d %H:%M")
         ks = []
         for k in prog:
-            kt = kosu_tahmini(mj, k, durum, yayin_modu)
+            kt = kosu_tahmini(m, k, durum, yayin_modu)
             # koşu saati geçtiyse kilit "canlı" sayılmaz (sızıntısızdır ama koşudan sonra atılmıştır)
             kt["kosudan_once"] = not (k.get("saat") and f"{t} {k['saat']}" <= simdi_tr)
             ks.append(kt)
@@ -204,6 +257,30 @@ def _y(v):
     return "–" if v is None else (f"%{100 * v:.1f}" if isinstance(v, float) and v <= 1 else str(v))
 
 
+def _ll(v):
+    return "–" if v is None else f"{v:.4f}"
+
+
+def _deney_tablosu(a):
+    dj = joku(DENEY_DOSYA)
+    if not dj or not dj.get("adimlar"):
+        a("- Deney kaydı yok (`lab/at/deney.py` elle çalıştırılır).")
+        return
+    a("Hepsi aynı sınama diliminde (son %30, aynı koşular). Kapı: yalnız-model log-loss düşmeli **ve** yalnız-model "
+      "ilk seçim isabeti düşmemeli; geçen adım bir sonrakinin tabanı olur.")
+    a("")
+    a("| # | deney | sonuç | yalnız model: log-loss / Brier / ilk seçim / ilk iki | yalnız model p≥.30 · p≥.50 (seçim, isabet) | harman: log-loss / ilk seçim |")
+    a("|---|---|---|---|---|---|")
+    for s in dj["adimlar"]:
+        m, h = s["model"], s["harman"]
+        sonuc = "taban" if s["gecti"] is None else ("✅ kaldı" if s["gecti"] else "❌ elendi")
+        a(f"| {s['no']} | {s['deney']} | {sonuc} | {m['ll']:.4f} / {m['brier']:.4f} / {_y(m['ilk'])} / {_y(m['ilk2'])} | "
+          f"{m['p30'][0]}, {_y(m['p30'][1])} · {m['p50'][0]}, {_y(m['p50'][1])} | {h['ll']:.4f} / {_y(h['ilk'])} |")
+    a("")
+    a(f"Piyasa (aynı koşular): log-loss {dj['adimlar'][0]['piyasa']['ll']:.4f}, favori ilk seçim {_y(dj['adimlar'][0]['piyasa']['ilk'])}. "
+      f"Deney kaydı: `data/at/deneyler.json` ({dj.get('olusturma', '')}).")
+
+
 def rapor_yaz(mj, karne, bugun, ayna_durumu):
     d = mj["degerlendirme"]; mt = d["metrik"]; kp = mj["kapi"]; kap = mj["kapsam"]
     L = []
@@ -212,23 +289,49 @@ def rapor_yaz(mj, karne, bugun, ayna_durumu):
     a("")
     a(f"_Otomatik üretildi: {mj['guncelleme']} · model sürümü `{mj['surum']}` · hobi amaçlıdır, garanti değildir · 18+_")
     a("")
-    hp = d["harman_eksi_piyasa"]
+    hp = d["harman_eksi_piyasa"]; mp = d["model_eksi_piyasa"]
     anlamli = hp["ll_fark"] + 2 * hp["std_hata"] < 0
+    dj = joku(DENEY_DOSYA) or {}
+    v1 = (dj.get("adimlar") or [{}])[0]
+    a("## Özet: v2 güncellemesi (25.10.2026)")
+    a("")
+    a("Uygulamadaki **sabah tahminleri yalnız modeldir** (sabah programında ganyan oranı yok). Bu yüzden bu turda hedef, "
+      "oransız (yalnız geçmişe dayalı) tahmini güçlendirmekti. Yapılanlar:")
+    a("")
+    if v1.get("model"):
+        a(f"- **Yalnız model (sabah) sınama log-loss'u {v1['model']['ll']:.4f} → {mt['model']['log_loss']:.4f}; ilk seçim isabeti "
+          f"{_y(v1['model']['ilk'])} → {_y(mt['model']['ilk_secim_isabet'])}** (aynı {d['kosu_sayisi']['sinama']:,} sınama koşusu). "
+          f"Piyasa favorisi hâlâ önde: {_y(mt['favori']['ilk_secim_isabet'])}, piyasa log-loss {mt['piyasa']['log_loss']:.4f}.")
+        a(f"- Model + piyasa harmanı: log-loss {v1['harman']['ll']:.4f} → {mt['harman']['log_loss']:.4f} "
+          f"(piyasaya göre {hp['ll_fark']:+.4f} ± {hp['std_hata']:.4f}; " + ("anlamlı iyileşme" if anlamli else "küçük, gürültü sınırında") + ").")
+    a("- Yeni bilgiler: atın **geçmiş koşulardaki piyasa değerlendirmesi** (oran hafızası: üstel ortalama, piyasa sırası, yenilen favori, "
+      "piyasanın beklediğinden iyi/kötü koşma, rakiplere göre aktarılan \"piyasa reytingi\"), her koşudan sonra güncellenen "
+      "**Plackett-Luce reytingleri** (at + jokey + antrenör), **sayısal sınıf** (koşu türü, alanın reyting düzeyi, handikapta kilo), "
+      "**zaman sönümlü form**.")
+    a("- Eğitim: sınamada her ay **yalnız o aydan önceki veriyle yeniden eğitim** (walk-forward; gece akışı da her gün böyle eğitir), "
+      "eski koşulara daha az ağırlık (yarı ömür 180 gün), ve doğrusal modelin yanına **LightGBM** (koşu içi softmax amacıyla) eklendi; "
+      "ikisinin karışımı, sıcaklık ve %25 üstü olasılıklar için ayrı bir \"üst uç\" eğimi son 90 günde kalibre edilir.")
+    a("- Kapı artık **yalnız-model** ölçülerine bakıyor (sabah ekranı bunu gösteriyor), harman da kötüleşmemeli; tarif değişince eski ve "
+      "yeni tahminler aynı sınama koşularında kıyaslanıyor (bkz. Kapı).")
+    a("- Elenenler: hız puanı, jokey/antrenör piyasa ilgisi + ekuri (log-loss'u çok az düşürdü ama ilk seçim isabetini düşürdü); "
+      "sabah programındaki form dizisi (yalnız 2026-04 sonrasında var, eğitim geçmişi yetersiz).")
+    a("- Dürüst sonuç: model tek başına **hâlâ piyasa favorisinin gerisinde**. Sabah tahminleri bilgi amaçlıdır; koşu öncesi oran "
+      "geldiğinde en güvenilir olasılık piyasa (ve harman) olur.")
+    a("")
     a("## Kısa sonuç (dürüst)")
     a("")
-    a(f"- Yalnız geçmiş verilerle kurulan model **tek başına piyasadan belirgin biçimde zayıf**: sınama log-loss "
+    a(f"- Yalnız geçmiş verilerle kurulan model (sabah tahmini) **tek başına piyasadan zayıf**: sınama log-loss "
       f"{mt['model']['log_loss']} (piyasa {mt['piyasa']['log_loss']}), ilk seçim isabeti {_y(mt['model']['ilk_secim_isabet'])} "
-      f"(piyasa favorisi {_y(mt['favori']['ilk_secim_isabet'])}).")
+      f"(piyasa favorisi {_y(mt['favori']['ilk_secim_isabet'])}). Fark model − piyasa = {mp['ll_fark']:+.4f} ± {mp['std_hata']:.4f}.")
     a(f"- Model + piyasa harmanı log-loss'u {mt['harman']['log_loss']}: piyasaya göre fark **{hp['ll_fark']:+.4f} ± {hp['std_hata']:.4f}** "
-      f"(std. hata). " + ("Bu fark istatistiksel olarak anlamlı bir iyileşme." if anlamli else
+      f"(std. hata). " + ("Bu fark istatistiksel olarak anlamlı bir iyileşme (2 std. hatadan büyük)." if anlamli else
                           "Bu fark **gürültü sınırları içinde**; modelin piyasaya kalıcı bir üstünlüğü kanıtlanmadı."))
     a(f"- Harmanın ilk seçim isabeti {_y(mt['harman']['ilk_secim_isabet'])}, piyasa favorisi {_y(mt['favori']['ilk_secim_isabet'])}. "
       f"Yayın modu: **{mj['yayin_modu']}** (kural: harman sınama log-loss'u piyasadan düşükse model+piyasa yayınlanır).")
-    ust = d["kovalar"]["harman"][-1]
-    a(f"- Harman en yüksek kovada aşırı güvenli: {ust['aralik']} aralığında ortalama tahmin {_y(ust['ort_tahmin'])}, gerçek {_y(ust['gercek'])} "
-      f"({ust['at']} at). Piyasa aynı kovada {_y(d['kovalar']['piyasa'][-1]['ort_tahmin'])} / {_y(d['kovalar']['piyasa'][-1]['gercek'])}.")
-    a("- Piyasa (son koşu öncesi ganyan oranı) bu veride en güçlü bilgi; model şimdilik ancak küçük düzeltmeler yapıyor. "
-      "Pratikte: koşu öncesi oran varken en güvenilir olasılık piyasanın kendisidir; model yorum/gerekçe katmanı olarak değerli.")
+    um = d["kovalar"]["model"][-1]; ust = d["kovalar"]["harman"][-1]
+    a(f"- Kalibrasyon, en yüksek kova: yalnız model {um['aralik']} aralığında ortalama tahmin {_y(um['ort_tahmin'])}, gerçek {_y(um['gercek'])} "
+      f"({um['at']} at); harman {_y(ust['ort_tahmin'])} / {_y(ust['gercek'])} ({ust['at']} at). Yani %50+ verilen atlarda model hâlâ "
+      "biraz iyimser; bu atlar gerçekte yaklaşık yarı yarıya kazanıyor.")
     a("")
     a("## Veri kapsamı")
     a("")
@@ -239,19 +342,19 @@ def rapor_yaz(mj, karne, bugun, ayna_durumu):
       f"({mj['atilan']}).")
     a("- Hipodromlar: " + ", ".join(f"{k} {v}" for k, v in kap["hipodrom"].items()) + ".")
     b = d["bolum"]
-    a(f"- Zaman sıralı bölüm: ısınma (yalnız geçmiş biriktirme) < {b['isinma_bitis']}; model eğitimi {b['egitim'][0]}→{b['egitim'][1]} "
-      f"({d['kosu_sayisi']['egitim']} koşu); harman/kalibrasyon {b['harman'][0]}→{b['harman'][1]} ({d['kosu_sayisi']['harman']}); "
-      f"**sınama (son %30) {b['sinama'][0]}→{b['sinama'][1]} ({d['kosu_sayisi']['sinama']} koşu)**.")
+    a(f"- Zaman sıralı ölçüm: ısınma (yalnız geçmiş biriktirme) < {b['isinma_bitis']}; **sınama (son %30) {b['sinama'][0]}→{b['sinama'][1]} "
+      f"({d['kosu_sayisi']['sinama']} tam oranlı koşu)**. {d.get('protokol', '')}.")
     a("- Piyasa olasılığı q: **nihai** ganyan oranından (1/oran, marj ayrılmış). Bu, \"son koşu öncesi\" piyasayı temsil eder; "
-      "sabah programında oran yoktur. Yani harman ancak koşudan hemen önce kullanılabilir; sabah kilitlenen tahminler yalnız modeldir.")
+      "sabah programında oran yoktur. Yani harman ancak koşudan hemen önce kullanılabilir; sabah kilitlenen tahminler yalnız modeldir. "
+      "Geçmiş koşuların oranları ise (o koşular bittiği için) sabah da bilinir ve modelde \"piyasa hafızası\" olarak kullanılır.")
     a("- Kullanılmayanlar: aynanın memory/*.json özetleri (geleceği içerir → sızıntı), gün içi oran görüntüleri (yalnız 57 gün), "
-      "hava/nem (yalnız 2026-04 sonrası programlarda).")
+      "hava/nem ve form dizileri (yalnız 2026-04 sonrası programlarda).")
     a("")
     a("## Sınama metrikleri (son %30, yalnız tam oranlı koşular)")
     a("")
     a("| | log-loss ↓ | Brier ↓ | ilk seçim | ikili (sıralı) | ilk iki → ilk 2 | p≥.30 seçim / isabet (ort. p) | p≥.50 seçim / isabet (ort. p) |")
     a("|---|---|---|---|---|---|---|---|")
-    for ad_, et in (("model", "Model (yalnız geçmiş)"), ("piyasa", "Piyasa q"), ("harman", "**Model + piyasa**"), ("favori", "Favori tabanı"), ("duzgun", "Düzgün (1/N)")):
+    for ad_, et in (("model", "**Yalnız model (sabah)**"), ("piyasa", "Piyasa q"), ("harman", "**Model + piyasa**"), ("favori", "Favori tabanı"), ("duzgun", "Düzgün (1/N)")):
         r = mt[ad_]
 
         def es(k):
@@ -260,47 +363,74 @@ def rapor_yaz(mj, karne, bugun, ayna_durumu):
         a(f"| {et} | {r.get('log_loss', '–')} | {r.get('brier', '–')} | {_y(r.get('ilk_secim_isabet'))} | {_y(r.get('ikili_sirali_isabet'))} | "
           f"{_y(r.get('ilk_iki_ikisi_de_ilk2'))} | {es('p>=0.30')} | {es('p>=0.50')} |")
     a("")
-    mp = d["model_eksi_piyasa"]
     a(f"Eşleştirilmiş log-loss farkı (koşu başına, ± std. hata): harman − piyasa = {hp['ll_fark']:+.4f} ± {hp['std_hata']:.4f}; "
       f"model − piyasa = {mp['ll_fark']:+.4f} ± {mp['std_hata']:.4f}.")
     m = mj["uretim_modeli"]
     a("")
-    a(f"Parametreler (yayın modeli): harman α = {m['alfa']}, β = {m['beta']}; yalnız-model sıcaklığı T = {m['sicaklik']}; "
-      f"Henery üsleri γ(2.) = {m['henery_gamma']}, δ(3.) = {m['henery_delta']}; L2 λ = {m['lambda']}.")
+    a(f"Parametreler (yayın modeli): birleşik puan = {m.get('c_dogrusal', 1)} × doğrusal + {m.get('c_gbm', 0)} × GBM "
+      f"(GBM {'açık' if m.get('gbm') else 'kapalı'}); harman α = {m['alfa']}, β = {m['beta']}; "
+      f"Henery üsleri γ(2.) = {m['henery_gamma']}, δ(3.) = {m['henery_delta']}; L2 λ = {m['lambda']}. "
+      "LightGBM kurulu değilse model doğrusal yedeğe (kendi kalibrasyonuyla) düşer.")
     a("")
-    a("### Kalibrasyon (sınama, model + piyasa)")
+    for anah, baslik in (("model", "yalnız model (sabah tahmini)"), ("harman", "model + piyasa")):
+        a(f"### Kalibrasyon (sınama, {baslik})")
+        a("")
+        a("| tahmin aralığı | at | ort. tahmin | gerçek kazanma |")
+        a("|---|---|---|---|")
+        for k in d["kovalar"][anah]:
+            a(f"| {k['aralik']} | {k['at']} | {_y(k['ort_tahmin'])} | {_y(k['gercek'])} |")
+        a("")
+    a("## Deneyler (25.10.2026, yalnız model odaklı)")
     a("")
-    a("| tahmin aralığı | at | ort. tahmin | gerçek kazanma |")
-    a("|---|---|---|---|")
-    for k in d["kovalar"]["harman"]:
-        a(f"| {k['aralik']} | {k['at']} | {_y(k['ort_tahmin'])} | {_y(k['gercek'])} |")
+    _deney_tablosu(a)
+    a("")
+    a("Ölçülen ama tabloya girmeyenler:")
+    a("")
+    a("- **Deney 5 — sabah programındaki form dizisi** (ör. \"621-141\", 2025 öncesi kariyeri de içerir): yalnız 2026-04'ten beri var. "
+      "Sınamanın Nisan–Haziran kısmında öğrenilip Temmuz–Ekim'de (1.377 koşu) denendiğinde yalnız-model log-loss'u ≈0,004 düşürdü; "
+      "etkinin çoğu \"form dizisi boş = gerçekten ilk koşu\" bayrağından. Eğitim geçmişinde bu bilgi olmadığı için yayına alınmadı; "
+      "program arşivi uzadıkça yeniden denenecek.")
+    a("- **Reyting ayarları** (öğrenme hızı, kaç bitiş sırası kullanılacağı, piyasa reytingi hızı, sönüm): değişiklikler ±0,002–0,008 "
+      "log-loss oynattı ama ilk seçim isabetini düşürdü; varsayılanlar korundu (aşırı ayar = sınamaya uydurma riski).")
+    a("- **GBM ayarı**: ilk denenen ayar (15 yaprak) log-loss'u en çok düşürdü ama ilk seçim isabeti 0,18 puan (6 koşu) düştüğü için "
+      "kurala göre elendi; ikinci ve son denenen daha düzenli ayar (7 yaprak, en az 500 at) kapıdan geçti. İki deneme yapıldığı açıkça kayıtlı.")
+    a("- **Deney 7 — kalibrasyon**: sıcaklık doğrusal+GBM karışımıyla birlikte son 90 günde öğreniliyor; üstüne %25 üstü bölge için ayrı "
+      "eğim eklendi (kapıdan geçti, %50+ seçim sayısını azalttı). Tekdüze dağılımla karıştırma log-loss'u iyileştirmedi. Buna rağmen "
+      "%50+ kovasında ≈10 puanlık iyimserlik sürüyor (az örnek: ≈140 at) ve raporda açıkça gösteriliyor.")
+    a("- **Kalibrasyon penceresi 150 gün** (90 yerine) ve **λ = 100**: ikisi de kötüleştirdi.")
     a("")
     a("## Neler önemli?")
     a("")
-    a("Standartlaştırılmış katsayılar (en büyük 10; + kazanma şansını artırır):")
+    a("Doğrusal katmanın standartlaştırılmış katsayıları (en büyük 12; + kazanma şansını artırır; GBM katmanı ayrıca etkileşimleri yakalar):")
     a("")
     a("| özellik | katsayı |")
     a("|---|---|")
-    for o in d["onem"][:10]:
+    for o in d["onem"][:12]:
         a(f"| {o['ozellik']} | {o['std_katsayi']:+.3f} |")
     a("")
-    a("Ablasyon — grup çıkarılınca sınama log-loss'u ne kadar kötüleşiyor (+ = grup faydalı):")
-    a("")
-    a("| çıkarılan grup | yalnız model Δ | model+piyasa Δ |")
-    a("|---|---|---|")
-    for o in d.get("ablasyon", []):
-        a(f"| {o['grup_cikarildi']} | {o['model_ll_fark']:+.4f} | {o['harman_ll_fark']:+.4f} |")
-    a("")
-    a("Yorum: jokeyin son 60 gün formu, at formu (son koşu sıraları, kazanana uzaklık), geçmiş koşulardaki piyasa ilgisi ve "
-      "pist/mesafe/hipodrom uyumu modeli tek başına en çok taşıyan bilgiler. Ancak bunların çoğu piyasada zaten fiyatlanmış; "
-      "harman sütunundaki farklar ±0,001 düzeyinde, yani piyasanın üstüne eklenen bilgi çok az.")
+    if d.get("ablasyon"):
+        a("Ablasyon — grup çıkarılınca sınama log-loss'u ne kadar kötüleşiyor (+ = grup faydalı; yalnız doğrusal katmanla, aylık walk-forward):")
+        a("")
+        a("| çıkarılan grup | yalnız model Δ | model+piyasa Δ |")
+        a("|---|---|---|")
+        for o in d.get("ablasyon", []):
+            a(f"| {o['grup_cikarildi']} | {o['model_ll_fark']:+.4f} | {o['harman_ll_fark']:+.4f} |")
+        a("")
+    a("Yorum: sabah tahmininde en çok taşıyan bilgiler reytingler (at/jokey/antrenör), pist/mesafe/hipodrom uyumu, atın geçmişte "
+      "piyasada nasıl değerlendirildiği (piyasa hafızası) ve dinlenme. Jokeyin son 60 gün oranı artık jokey reytingiyle örtüştüğü için "
+      "tek başına katkısı kalmadı. Grupların çoğu birbiriyle örtüştüğünden tek grup çıkarmak az fark yaratır; harmana katkıları ±0,001 düzeyinde.")
     a("")
     a("## Kapı (sürekli öğrenme)")
     a("")
+    a("- Kural: tarif (özellikler/ayarlar) değişirse yeni model ancak **aynı sınama koşularında** yalnız-model log-loss'u düşürür, "
+      "ilk seçim isabetini düşürmez ve harman log-loss'unu 0,001'den fazla bozmazsa kabul edilir. Tarif aynıysa özellikler her gece "
+      "yeni sonuçlarla güncellenir, katsayılar haftada bir yeniden eğitilir (KORU = bu gece yenileme günü değil); ortak koşularda "
+      "belirgin bozulma (veri sorunu) olursa dünkü model korunur. İz: `data/at/sinama_izi.json`.")
     a(f"- Son karar ({kp['tarih']}): **{kp['karar']}** — {kp['neden']}")
-    if kp.get("yeni"):
-        a(f"- Yeni deneme: log-loss {kp['yeni']['log_loss']}, ilk seçim {_y(kp['yeni']['ilk_secim_isabet'])}; "
-          f"kayıtlı model aynı sınamada: " + (f"log-loss {kp['eski']['log_loss']}, ilk seçim {_y(kp['eski']['ilk_secim_isabet'])}" if kp.get("eski") else "yok"))
+    if kp.get("yeni") and kp.get("eski"):
+        y, e = kp["yeni"], kp["eski"]
+        a(f"- Yeni: yalnız model log-loss {_ll(y['model_ll'])}, ilk seçim {_y(y['model_ilk'])}; harman {_ll(y['harman_ll'])}. "
+          f"Kıyas: yalnız model {_ll(e['model_ll'])}, ilk seçim {_y(e['model_ilk'])}; harman {_ll(e['harman_ll'])}.")
     a("")
     a("## Canlı karne (kilitlenmiş tahminler, sonuç gelince)")
     a("")
@@ -312,14 +442,13 @@ def rapor_yaz(mj, karne, bugun, ayna_durumu):
     else:
         a("- Henüz puanlanmış kilitli tahmin yok (sonuçlar aynaya düştükçe her gece puanlanır).")
     a("")
-    # gösteri
     a(f"## Gösteri: {bugun} İstanbul tahminleri")
     a("")
     kt = joku(os.path.join(TAHMIN, bugun + ".json"))
     ist = [k for k in (kt or {}).get("kosular", []) if k["hipodrom"] == "İstanbul"]
     if ist:
-        a(f"Kilit zamanı {kt.get('kilit_zamani_tsi', kt['kilit_zamani'])} TSİ. Mod: {ist[0]['mod']}. (Oran olmadığında bunlar **yalnız model** "
-          "olasılıklarıdır; sınamada yalnız model piyasa favorisinden zayıftı — bilgi amaçlıdır.) "
+        a(f"Kilit zamanı {kt.get('kilit_zamani_tsi', kt['kilit_zamani'])} TSİ, model sürümü `{kt.get('model_surumu', '?')}` "
+          "(kilitler ezilmez; bu günün kilidi önceki modelle atılmış olabilir). Mod: " + ist[0]["mod"] + ". "
           "`*` = kilit koşu saatinden sonra atıldı (sızıntısız ama canlı karneye sayılmaz).")
         a("")
         a("| koşu | saat | mesafe/pist | ilk 3 (kazanma olasılığı) | ikili önerisi |")
@@ -339,7 +468,8 @@ def rapor_yaz(mj, karne, bugun, ayna_durumu):
             a("- Kilitli tahmin yok.")
             a("")
             continue
-        a(f"{k['mesafe']} m {k['pist']}, {k['sinif']}, saat {k.get('saat') or '–'}. Mod: {k['mod']}. Kilit: {kt.get('kilit_zamani_tsi', kt['kilit_zamani'])} TSİ.")
+        a(f"{k['mesafe']} m {k['pist']}, {k['sinif']}, saat {k.get('saat') or '–'}. Mod: {k['mod']}. Kilit: {kt.get('kilit_zamani_tsi', kt['kilit_zamani'])} TSİ "
+          f"(model `{kt.get('model_surumu', '?')}`).")
         if not k.get("kosudan_once", True):
             a("")
             a("> Not: bu kilit koşu saatinden **sonra** atıldı. Sonuç aynada yokken ve yalnız önceki günlerin verisiyle üretildi "
@@ -357,7 +487,7 @@ def rapor_yaz(mj, karne, bugun, ayna_durumu):
         else:
             a("**Sonuç:** henüz aynada yok (son sonuç günü " + kap["son_tarih"] + "); sonuç gelince gece robotu otomatik puanlayacak.")
         a("")
-    a("## Denenmiş ama kapıdan geçmemiş fikirler (25.10.2026 ölçümü)")
+    a("## Daha önce denenmiş ama kapıdan geçmemiş fikirler")
     a("")
     a("- Benter'in ortak tahmini (log q'yu modelin içine sabit girdi olarak koyup birlikte eğitmek): harman diliminde piyasayı "
       "≈0,009 log-loss iyileştirdi, fakat sınamada fark +0,0002 ± 0,003 (iyileşme yok) → dönem kayması işareti. Yayına alınmadı.")
@@ -368,24 +498,75 @@ def rapor_yaz(mj, karne, bugun, ayna_durumu):
     a("- Veri yalnız 2025-01-01'den başlıyor: atların daha eski kariyerleri görünmüyor (ilk aylarda özellikler zayıf, ısınma ile kısmen çözüldü).")
     a("- Ayna lisanssız ve tek kişinin bakımında; kesilirse sistem son kopyayla çalışır, yeni sonuç gelmez.")
     a("- At adları kimlik olarak kullanılıyor (aynı adlı iki at nadir ama mümkün). Ekürili atlarda ganyan oranı ortaktır.")
-    a("- Kapı tek sınama dilimine bakıyor; günlük gürültüyle sık red beklenir (koruyucu tasarım).")
+    a("- Sınama tek bir zaman dilimi (≈7 ay); deneylerdeki 0,001–0,003'lük farklar gürültü düzeyinde, büyük kazançlar (walk-forward, "
+      "piyasa hafızası, reyting, GBM) ise tutarlı. İlk seçim isabetinin standart hatası ≈ ±0,8 puan.")
+    a("- GBM katmanı `lightgbm` paketine dayanır (iş akışı kurar). Kurulamazsa model doğrusal yedeğe düşer; gerekçeler yalnız doğrusal katmandan üretilir.")
     a("- Sabah kilitleri yalnız model olasılığıdır; piyasa harmanı için koşu öncesi oran gerekir (ayna gün içi oranları düzenli yayınlamıyor).")
+    a("- Uygulamadaki üst özet kutusu `degerlendirme.metrik.harman` isabetini gösteriyor; sabah tahmininin kendi isabeti (yalnız model) daha düşüktür.")
     a("")
     a("## Sonraki deneyler")
     a("")
-    a("1. Koşu öncesi anlık oran (gün içi görüntüler düzenli gelirse) ile oran hareketi özelliği ve sabah→koşu öncesi harman.")
-    a("2. Hız puanı: hipodrom/pist/mesafe standart derecesine göre normalize derece (beaten-time yerine), pist durumu düzeltmeli.")
-    a("3. Genişleyen pencerede (walk-forward, aylık yeniden eğitim) harman α/β'nın kararlılığı; dönem kayması için zaman ağırlıklı eğitim.")
-    a("4. Programdaki form dizilerinden (2025 öncesi koşular) eski kariyer bilgisini çıkarmak; pedigri/idman verisi açık kaynakta bulunursa.")
+    a("1. Program arşivi uzadıkça form dizisi (2025 öncesi kariyer, gerçek ilk koşu bayrağı) — şimdiden +0,004 işareti var.")
+    a("2. Koşu öncesi anlık oran (gün içi görüntüler düzenli gelirse) ile oran hareketi ve sabah→koşu öncesi harman.")
+    a("3. Üst kovadaki iyimserlik için izotonik/parçalı kalibrasyon (yeterli örnek birikince).")
+    a("4. Hız puanını kilo ve pist durumuyla düzeltip yeniden denemek; pedigri/idman verisi açık kaynakta bulunursa.")
     a("")
     a("## Zamanlama")
     a("")
-    a("`.github/workflows/at-lab.yml` her gece 02:23 UTC (05:23 TSİ) için ayarlı; **ancak GitHub zamanlanmış iş akışlarını yalnız varsayılan "
-      "daldan (main) çalıştırır**. Laboratuvar main dalındadır; iş akışı her gün 05:23 ve 12:23 TSİ'de, ayrıca `lab/at/**` değişince "
-      "veya elle çalışır. Çıktılar yalnız `data/at/` ve `lab/at/RAPOR.md`'ye yazılır.")
+    a("`.github/workflows/at-lab.yml` her gün 05:23 ve 12:23 TSİ'de, ayrıca `lab/at/**` değişince veya elle çalışır (main dalı). "
+      "Çıktılar yalnız `data/at/` ve `lab/at/RAPOR.md`'ye yazılır. Gece akışı ≈3–5 dakika sürer.")
     a("")
     a(f"_Kaynak atfı: TJK verilerinin herkese açık aynası {veri.AYNA_URL}. Model ve olasılıklar BULUTOXX laboratuvarınındır._")
     open(RAPOR, "w", encoding="utf-8").write("\n".join(L) + "\n")
+
+
+# ---------------------------------------------------------------- kapı
+def tarif():
+    """Modelin tarifi (özellikler + ayarlar). Tarif aynıysa gece yalnız yeni veriyle yeniden eğitir."""
+    return {"surum": "v2", "ozellikler": list(ozellik.ADLAR), "gbm": M.lgb is not None, "gbm_ayar": M.GBM_AYAR,
+            "kal_gun": M.KAL_GUN, "yari_omur": M.YARI_OMUR, "pl_hiz": ozellik.PL_HIZ, "pl_kademe": ozellik.PL_KADEME,
+            "pm_hiz": ozellik.PM_HIZ, "ewma": ozellik.EWMA_A, "sonum_gun": ozellik.SONUM_GUN}
+
+
+def kapi_karari(yeni, iz, trf, eski, eski_iz):
+    """KAPI. Ana ölçüt yalnız-model (sabah tahmini) log-loss ve ilk-seçim isabeti; harman log-loss'u da kötüleşmemeli.
+    - Tarif aynı + iz var: gece yeniden eğitimi; ortak koşularda belirgin kötüleşme (veri sorunu) yoksa KABUL.
+    - Tarif değişti + iz var: eski ve yeni tahminler ORTAK sınama koşularında kıyaslanır (adil, aynı dilim).
+    - İz yok (v1'den geçiş): kayıtlı sınama metrikleriyle kıyaslanır."""
+    if not eski:
+        return {"karar": "KABUL", "neden": "ilk model (kayıtlı model yok)", "yeni": yeni, "eski": None}
+    k = M.iz_kiyas(iz, eski_iz["iz"]) if eski_iz and eski_iz.get("iz") else None
+    if k and eski.get("tarif") == trf:
+        y, e = k["yeni"], k["eski"]
+        try:
+            yas = (datetime.now(timezone.utc) - datetime.fromisoformat(eski["olusturma"])).days
+        except Exception:
+            yas = 99
+        if yas < YENILEME_GUN:
+            # Depo şişmesin diye (GBM dosyası ≈0,5 MB) aynı tarifte katsayılar haftada bir yenilenir; özellikler
+            # (form, reyting, piyasa hafızası) her gece yeni sonuçlarla güncellenir.
+            return {"karar": "KORU", "neden": f"aynı tarif; katsayılar {yas} günlük (haftalık yenileme), özellikler bu gece "
+                    f"yeni sonuçlarla güncellendi", "yeni": y, "eski": e}
+        if y["model_ll"] > e["model_ll"] + 0.01 or y["harman_ll"] > e["harman_ll"] + 0.01:
+            return {"karar": "RED", "neden": f"aynı tarif ama ortak {k['kosu']} koşuda log-loss belirgin kötüleşti "
+                    f"(model {e['model_ll']}→{y['model_ll']}); veri sorunu olabilir, dünkü model korunuyor", "yeni": y, "eski": e}
+        return {"karar": "KABUL", "neden": f"aynı tarif, yeni veriyle yeniden eğitim (ortak {k['kosu']} koşuda model log-loss "
+                f"{e['model_ll']}→{y['model_ll']})", "yeni": y, "eski": e}
+    if k:
+        y, e, ek = k["yeni"], k["eski"], f" (ortak {k['kosu']} sınama koşusunda)"
+    else:
+        mt = eski["degerlendirme"]["metrik"]
+        e = {"model_ll": mt["model"]["log_loss"], "model_ilk": mt["model"]["ilk_secim_isabet"],
+             "harman_ll": mt["harman"]["log_loss"], "harman_ilk": mt["harman"]["ilk_secim_isabet"]}
+        y, ek = yeni, " (tarif değişti; kayıtlı sınama metrikleriyle kıyaslandı)"
+    if y["model_ll"] >= e["model_ll"] - 1e-5:
+        return {"karar": "RED", "neden": f"yalnız-model log-loss düşmedi ({e['model_ll']} → {y['model_ll']}); dünkü model korunuyor{ek}", "yeni": y, "eski": e}
+    if y["model_ilk"] < e["model_ilk"]:
+        return {"karar": "RED", "neden": f"yalnız-model ilk seçim isabeti düştü ({e['model_ilk']} → {y['model_ilk']}); dünkü model korunuyor{ek}", "yeni": y, "eski": e}
+    if y["harman_ll"] > e["harman_ll"] + 0.001:
+        return {"karar": "RED", "neden": f"harman log-loss kötüleşti ({e['harman_ll']} → {y['harman_ll']}); dünkü model korunuyor{ek}", "yeni": y, "eski": e}
+    return {"karar": "KABUL", "neden": f"yalnız-model log-loss {e['model_ll']}→{y['model_ll']}, ilk seçim {e['model_ilk']}→{y['model_ilk']}; "
+            f"harman log-loss {e['harman_ll']}→{y['harman_ll']}{ek}", "yeni": y, "eski": e}
 
 
 # ---------------------------------------------------------------- ana akış
@@ -402,49 +583,60 @@ def main():
     yarin = (date.fromisoformat(bugun) + timedelta(days=1)).isoformat()
 
     kosular, atilan = veri.sonuclari_yukle()
-    T, durum = ozellik.tablo_kur(kosular)
-    print("tablo:", T["X"].shape)
-    m_eval, sonuc, (K, B) = M.degerlendir(T, kosular, ablasyon=not ar.ablasyonsuz)
-    yeni = {"log_loss": sonuc["metrik"]["harman"]["log_loss"], "ilk_secim_isabet": sonuc["metrik"]["harman"]["ilk_secim_isabet"]}
+    T, durum = ozellik.tablo_kur(kosular, adlar=ozellik.TUM_ADLAR)
+    sec = [ozellik.TUM_ADLAR.index(a) for a in ozellik.ADLAR]
+    T_sec = dict(T); T_sec["X"] = T["X"][:, sec]; T_sec["adlar"] = list(ozellik.ADLAR)
+    print("tablo:", T_sec["X"].shape, "gbm:", M.lgb is not None)
+    m_eval, sonuc, iz = M.degerlendir(T_sec, kosular, ablasyon=not ar.ablasyonsuz, gbm=True)
+    mt_y = sonuc["metrik"]
+    yeni = {"model_ll": mt_y["model"]["log_loss"], "model_ilk": mt_y["model"]["ilk_secim_isabet"],
+            "harman_ll": mt_y["harman"]["log_loss"], "harman_ilk": mt_y["harman"]["ilk_secim_isabet"]}
     eski = joku(os.path.join(CIKTI, "model.json"))
+    eski_iz = joku(IZ_DOSYA)
+    trf = tarif()
     simdi = datetime.now(timezone.utc).isoformat(timespec="seconds")
-    eski_olcum = None
-    if not eski:
-        kabul, neden = True, "ilk model (kayıtlı model yok)"
-    else:
-        eski_olcum = M.eski_modeli_sina(eski.get("degerlendirme_modeli"), K, B)
-        ref = eski_olcum or {"log_loss": eski["degerlendirme"]["metrik"]["harman"]["log_loss"],
-                             "ilk_secim_isabet": eski["degerlendirme"]["metrik"]["harman"]["ilk_secim_isabet"]}
-        ek = "" if eski_olcum else " (özellik listesi değişti; kayıtlı metriklerle kıyaslandı)"
-        if yeni["log_loss"] < ref["log_loss"] - 1e-5 and yeni["ilk_secim_isabet"] >= ref["ilk_secim_isabet"]:
-            kabul, neden = True, f"log-loss {ref['log_loss']}→{yeni['log_loss']}, ilk seçim {ref['ilk_secim_isabet']}→{yeni['ilk_secim_isabet']}{ek}"
-        elif yeni["log_loss"] >= ref["log_loss"] - 1e-5:
-            kabul, neden = False, f"log-loss düşmedi ({ref['log_loss']} → {yeni['log_loss']}); dünkü model korunuyor{ek}"
-        else:
-            kabul, neden = False, f"ilk seçim isabeti düştü ({ref['ilk_secim_isabet']} → {yeni['ilk_secim_isabet']}); dünkü model korunuyor{ek}"
-    kapi = {"tarih": simdi, "karar": "KABUL" if kabul else "RED", "neden": neden, "yeni": yeni, "eski": eski_olcum}
-    print("kapı:", kapi["karar"], neden)
+    kapi = kapi_karari(yeni, iz, trf, eski, eski_iz)
+    kabul = kapi["karar"] == "KABUL"
+    kapi["tarih"] = simdi
+    print("kapı:", kapi["karar"], kapi["neden"])
     if kabul:
-        uretim = M.uretim_modeli(T, kosular, m_eval.lam)
-        mj = {"surum": simdi[:16].replace(":", "").replace("-", ""), "olusturma": simdi,
-              "degerlendirme": sonuc, "degerlendirme_modeli": m_eval.json(), "uretim_modeli": uretim.json(),
-              "gecmis": (eski or {}).get("gecmis", [])}
+        uretim = M.uretim_modeli(T_sec, kosular, m_eval.lam, gbm=True)
+        mj = {"surum": simdi[:16].replace(":", "").replace("-", ""), "olusturma": simdi, "tarif": trf,
+              "degerlendirme": sonuc, "uretim_modeli": uretim.json(), "gecmis": (eski or {}).get("gecmis", [])}
+        if uretim.gbm is not None and uretim.cg:
+            os.makedirs(CIKTI, exist_ok=True)
+            with open(GBM_DOSYA + ".tmp", "w", encoding="utf-8") as f:
+                f.write(uretim.gbm.model_to_string())
+            os.replace(GBM_DOSYA + ".tmp", GBM_DOSYA)
+        jyaz(IZ_DOSYA, {"surum": mj["surum"], "tarif": trf,
+                        "alanlar": ["kosu_id", "model_-logp_kazanan", "model_ilk_tuttu", "harman_-logp_kazanan", "harman_ilk_tuttu"],
+                        "iz": iz}, sikisik=True)
+        m_uretim = uretim
+    elif kapi["karar"] == "KORU":
+        # aynı tarif: ölçüm güncel tutulur (aynı tarifin bu geceki walk-forward sonucu), yayın katsayıları korunur
+        mj = eski
+        mj["degerlendirme"] = sonuc
+        jyaz(IZ_DOSYA, dict(eski_iz, iz=iz), sikisik=True)
+        m_uretim = model_yukle(mj["uretim_modeli"])
     else:
         mj = eski
         mj["reddedilen_son_deneme"] = {"tarih": simdi, "metrik": sonuc["metrik"]}
+        m_uretim = model_yukle(mj["uretim_modeli"])
     mj["guncelleme"] = simdi
     mj["kapsam"] = veri.kapsam(kosular)
     mj["atilan"] = atilan
     mj["kapi"] = kapi
-    mj["gecmis"] = (mj.get("gecmis", []) + [{"tarih": simdi, "karar": kapi["karar"], "log_loss": yeni["log_loss"],
-                                               "ilk_secim_isabet": yeni["ilk_secim_isabet"]}])[-60:]
+    mj["gecmis"] = (mj.get("gecmis", []) + [{"tarih": simdi, "karar": kapi["karar"], "log_loss": yeni["harman_ll"],
+                                               "ilk_secim_isabet": yeni["harman_ilk"], "model_log_loss": yeni["model_ll"],
+                                               "model_ilk_secim_isabet": yeni["model_ilk"]}])[-60:]
     mt = mj["degerlendirme"]["metrik"]
     mj["yayin_modu"] = "model+piyasa" if mt["harman"]["log_loss"] < mt["piyasa"]["log_loss"] else "yalniz_piyasa"
     mj["kaynak"] = {"ayna": veri.AYNA_URL, "lisans": "belirtilmemiş", "not": "Ham veri bu depoya kopyalanmaz; tjk.org'a istek atılmaz."}
     mj["uyari"] = "Hobi amaçlıdır; tahmin garanti değildir · 18+"
+    mj["gbm_kurulu"] = M.lgb is not None
 
     son_sonuc = kosular[-1]["tarih"]
-    kilit = kilitle([bugun, yarin], son_sonuc, mj["uretim_modeli"], durum, mj["yayin_modu"], mj["surum"])
+    kilit = kilitle([bugun, yarin], son_sonuc, m_uretim, durum, mj["yayin_modu"], mj["surum"])
     print("kilitlenen:", kilit)
     karne, puanlanan = puanla(kosular)
     print("puanlanan:", puanlanan)

@@ -1,6 +1,7 @@
-# BULUTOXX at yarışı laboratuvarı — koşu içi koşullu logit (Benter) + piyasa harmanı + Harville/Henery.
-# Değerlendirme zaman sıralıdır: [ısınma | model eğitimi | harman/kalibrasyon | SINAMA (son %30)].
+# BULUTOXX at yarışı laboratuvarı — koşu içi koşullu logit (Benter) + isteğe bağlı GBM + piyasa harmanı + Harville/Henery.
+# Değerlendirme zaman sıralıdır: ısınma | eğitim | SINAMA (son %30, aylık walk-forward yeniden eğitimle).
 import math
+import os
 
 import numpy as np
 
@@ -34,17 +35,20 @@ def softmax_kosu(s, K):
     return e / np.add.reduceat(e, K.bas)[K.seg]
 
 
-def clogit(X, K, lam=1.0, iters=50, w0=None):
-    """Koşu içi koşullu logit, L2 (lam), Newton yöntemi. X standartlaştırılmış olmalı."""
+def clogit(X, K, lam=1.0, iters=50, w0=None, agirlik=None):
+    """Koşu içi koşullu logit, L2 (lam), Newton yöntemi. X standartlaştırılmış olmalı.
+    agirlik: koşu başına ağırlık (zaman ağırlıklı eğitim için); None = hepsi 1."""
     d = X.shape[1]
     w = np.zeros(d) if w0 is None else w0.copy()
+    rw = np.ones(K.R) if agirlik is None else np.asarray(agirlik, float)
+    sw = rw[K.seg]
     onceki = None
     for _ in range(iters):
         p = softmax_kosu(X @ w, K)
-        ll = np.sum(np.log(p[K.y > 0] + 1e-300)) - 0.5 * lam * w @ w
-        g = X.T @ (K.y - p) - lam * w
+        ll = np.sum((sw * np.log(p + 1e-300))[K.y > 0]) - 0.5 * lam * w @ w
+        g = X.T @ (sw * (K.y - p)) - lam * w
         M = np.add.reduceat(p[:, None] * X, K.bas)
-        H = (X * p[:, None]).T @ X - M.T @ M + lam * np.eye(d)
+        H = (X * (sw * p)[:, None]).T @ X - (M * rw[:, None]).T @ M + lam * np.eye(d)
         adim = np.linalg.solve(H + 1e-9 * np.eye(d), g)
         w = w + adim
         if onceki is not None and abs(ll - onceki) < 1e-7 * max(1.0, abs(ll)):
@@ -141,34 +145,111 @@ def kovalar(p, y):
     return t
 
 
+
+
+# ---------------------------------------------------------------- gradyan artırmalı ağaçlar (isteğe bağlı)
+# LightGBM, koşu içi softmax (koşullu logit) amacıyla özel amaç fonksiyonu üzerinden eğitilir. Kurulu değilse
+# sistem yalnız doğrusal koşullu logite düşer (model.json'daki "yedek" kalibrasyonu ile).
+try:
+    import lightgbm as lgb
+except Exception:  # pragma: no cover
+    lgb = None
+
+GBM_AYAR = {"n_agac": 600, "ogrenme": 0.03, "yaprak": 7, "min_yaprak": 500, "oznitelik_payi": 0.8, "l2": 10.0}
+UST_KAL = True        # üst uç kalibrasyonu: p > UST_ESIK bölgesinde ayrı eğim (deney 7, kapıdan geçti)
+UST_ESIK = 0.25
+KAL_GUN = 90          # kalibrasyon (birleştirme katsayıları, α, β) penceresi: tahmin ayının hemen öncesindeki 90 gün
+YARI_OMUR = 180.0     # zaman ağırlıklı eğitim: koşu ağırlığı 0.5^(yaş/180 gün)
+
+
+def _gun(t):
+    from datetime import date
+    return date.fromisoformat(t).toordinal()
+
+
+def gbm_egit(X, K, agirlik=None, ayar=None):
+    a = dict(GBM_AYAR, **(ayar or {}))
+    sw = (np.ones(K.R) if agirlik is None else np.asarray(agirlik, float))[K.seg]
+
+    def amac(preds, ds):
+        p = softmax_kosu(preds, K)
+        return sw * (p - K.y), sw * np.maximum(p * (1 - p), 1e-6)
+    par = {"objective": amac, "learning_rate": a["ogrenme"], "num_leaves": a["yaprak"],
+           "min_data_in_leaf": a["min_yaprak"], "feature_fraction": a["oznitelik_payi"], "bagging_fraction": 0.8,
+           "bagging_freq": 1, "lambda_l2": a["l2"], "verbose": -1, "seed": 1, "deterministic": True,
+           "num_threads": min(4, os.cpu_count() or 1)}
+    return lgb.train(par, lgb.Dataset(X, free_raw_data=False), num_boost_round=a["n_agac"])
+
+
+def gbm_yukle(metin):
+    if lgb is None or not metin:
+        return None
+    return lgb.Booster(model_str=metin)
+
+
 # ---------------------------------------------------------------- tam boru hattı
 class Model:
-    """Standartlaştırma + ağırlıklar + harman/kalibrasyon parametreleri. JSON'a yazılabilir."""
+    """Standartlaştırma + doğrusal ağırlıklar (+ isteğe bağlı GBM) + kalibrasyon/harman parametreleri.
+    Birleşik puan s = cl·(doğrusal) + cg·(GBM); yalnız model: p ∝ exp(s / T); harman: p ∝ exp(α log p_s + β log q).
+    Eski (v1) model.json'lar da okunur: cl=1, cg=0, T=sıcaklık."""
 
-    def __init__(self, adlar, mu, sd, w, T, alfa, beta, gam, dlt, lam):
+    def __init__(self, adlar, mu, sd, w, T, alfa, beta, gam, dlt, lam, cl=1.0, cg=0.0, gbm=None, yedek=None,
+                 ku=1.0, cu=0.0):
         self.adlar, self.mu, self.sd, self.w = list(adlar), np.asarray(mu), np.asarray(sd), np.asarray(w)
         self.T, self.alfa, self.beta, self.gam, self.dlt, self.lam = T, alfa, beta, gam, dlt, lam
+        self.cl, self.cg, self.gbm, self.yedek = cl, cg, gbm, yedek
+        self.ku, self.cu = ku, cu   # üst uç kalibrasyonu: s = ku·s0 + cu·max(log p0 − log eşik, 0)
+
+    def _yedekte(self):
+        return bool(self.cg) and self.gbm is None and bool(self.yedek)
 
     def puan(self, X):
         return ((X - self.mu) / self.sd) @ self.w
 
+    def birlesik(self, X):
+        if self._yedekte():
+            return self.yedek["cl"] * self.puan(X)
+        s = self.cl * self.puan(X)
+        if self.cg and self.gbm is not None:
+            s = s + self.cg * self.gbm.predict(X, raw_score=True)
+        return s
+
+    def _ust(self, s0, K):
+        if not self.cu or self._yedekte():
+            return s0
+        lp = np.log(softmax_kosu(s0, K))
+        return self.ku * s0 + self.cu * np.maximum(lp - math.log(UST_ESIK), 0.0)
+
     def p_model(self, X, K):
-        return softmax_kosu(self.puan(X) / self.T, K)
+        return softmax_kosu(self._ust(self.birlesik(X), K) / self.T, K)
 
     def p_harman(self, X, K, q):
-        s = self.alfa * np.log(softmax_kosu(self.puan(X), K)) + self.beta * np.log(np.clip(q, 1e-9, 1))
+        a, b = (self.yedek["alfa"], self.yedek["beta"]) if self._yedekte() else (self.alfa, self.beta)
+        s = a * np.log(softmax_kosu(self._ust(self.birlesik(X), K), K)) + b * np.log(np.clip(q, 1e-9, 1))
         return softmax_kosu(s, K)
+
+    def katki(self, X):
+        """Gerekçe için doğrusal katkılar (koşu ortalamasına göre, kalibre ölçekte)."""
+        Z = (X - self.mu) / self.sd
+        c = (self.yedek["cl"] if self._yedekte() else self.cl) / self.T
+        return (Z - Z.mean(0)) * self.w * c
 
     def json(self):
         return {"ozellikler": self.adlar, "ortalama": [round(float(v), 6) for v in self.mu],
                 "olcek": [round(float(v), 6) for v in self.sd], "agirlik": [round(float(v), 6) for v in self.w],
                 "sicaklik": round(self.T, 4), "alfa": round(self.alfa, 4), "beta": round(self.beta, 4),
-                "henery_gamma": self.gam, "henery_delta": self.dlt, "lambda": self.lam}
+                "henery_gamma": self.gam, "henery_delta": self.dlt, "lambda": self.lam,
+                "c_dogrusal": round(float(self.cl), 5), "c_gbm": round(float(self.cg), 5),
+                "gbm": self.gbm is not None and bool(self.cg),
+                "k_ust": round(float(self.ku), 5), "c_ust": round(float(self.cu), 5), "ust_esik": UST_ESIK,
+                "yedek": ({k: round(float(v), 5) for k, v in self.yedek.items()} if self.yedek else None)}
 
     @staticmethod
-    def yukle(j):
+    def yukle(j, gbm_metin=None):
         return Model(j["ozellikler"], j["ortalama"], j["olcek"], j["agirlik"], j["sicaklik"], j["alfa"],
-                     j["beta"], j["henery_gamma"], j["henery_delta"], j.get("lambda"))
+                     j["beta"], j["henery_gamma"], j["henery_delta"], j.get("lambda"),
+                     cl=j.get("c_dogrusal", 1.0), cg=j.get("c_gbm", 0.0), ku=j.get("k_ust", 1.0), cu=j.get("c_ust", 0.0),
+                     gbm=(gbm_yukle(gbm_metin) if j.get("gbm") else None), yedek=j.get("yedek"))
 
 
 def _ozel(K, m):
@@ -176,8 +257,9 @@ def _ozel(K, m):
     return K.alt(m[K.seg])
 
 
-def egit(K_fit, K_har, adlar, lam=None, sutun=None, henery=True):
-    """K_fit: model eğitimi; K_har: harman/kalibrasyon dilimi (tam oranlı koşular). sutun: kullanılacak özellikler."""
+def egit(K_fit, K_har, adlar, lam=None, sutun=None, henery=True, agirlik=None, gbm=True):
+    """K_fit: model eğitimi; K_har: kalibrasyon/harman dilimi (tam oranlı koşular). sutun: kullanılacak özellikler.
+    agirlik: K_fit koşuları için ağırlık (zaman ağırlıklı eğitim). gbm: LightGBM katmanı (kuruluysa)."""
     sutun = np.arange(K_fit.X.shape[1]) if sutun is None else np.asarray(sutun)
     Xf, Xh = K_fit.X[:, sutun], K_har.X[:, sutun]
     mu, sd = Xf.mean(0), Xf.std(0) + 1e-9
@@ -185,19 +267,33 @@ def egit(K_fit, K_har, adlar, lam=None, sutun=None, henery=True):
     if lam is None:
         en = (1e9, None)
         for l in LAMBDALAR:
-            w = clogit(Zf, K_fit, l)
+            w = clogit(Zf, K_fit, l, agirlik=agirlik)
             ll = logloss(softmax_kosu(Zh @ w, K_har), K_har)
             en = min(en, (ll, l))
         lam = en[1]
-    w = clogit(Zf, K_fit, lam)
+    w = clogit(Zf, K_fit, lam, agirlik=agirlik)
     s = Zh @ w
-    # sıcaklık (yalnız model): p ∝ exp(s / T)
-    a = clogit(s[:, None], K_har, 1e-6)[0]
-    T = 1.0 / a if a > 1e-3 else 1.0
-    # piyasa harmanı: p ∝ exp(α log p_model + β log q)
-    lpm = np.log(softmax_kosu(s, K_har))
-    ab = clogit(np.c_[lpm, np.log(K_har.q)], K_har, 1e-6)
-    m = Model([adlar[i] for i in sutun], mu, sd, w, float(T), float(ab[0]), float(ab[1]), 1.0, 1.0, lam)
+    lq = np.log(K_har.q)
+    # yalnız doğrusal: sıcaklık (c = 1/T) ve harman — GBM yoksa ya da yedek olarak
+    c_lin = float(clogit(s[:, None], K_har, 1e-6)[0])
+    ab_y = clogit(np.c_[np.log(softmax_kosu(c_lin * s, K_har)), lq], K_har, 1e-6)
+    yedek = {"cl": c_lin, "alfa": float(ab_y[0]), "beta": float(ab_y[1])}
+    booster, cl, cg = None, c_lin, 0.0
+    if gbm and lgb is not None:
+        booster = gbm_egit(Xf, K_fit, agirlik)
+        g = booster.predict(Xh, raw_score=True)
+        cl, cg = (float(v) for v in clogit(np.c_[s, g], K_har, 1e-6))
+        sb = cl * s + cg * g
+    else:
+        sb = c_lin * s
+    ku, cu = 1.0, 0.0
+    if UST_KAL:
+        h = np.maximum(np.log(softmax_kosu(sb, K_har)) - math.log(UST_ESIK), 0.0)
+        ku, cu = (float(v) for v in clogit(np.c_[sb, h], K_har, 1e-6))
+        sb = ku * sb + cu * h
+    ab = clogit(np.c_[np.log(softmax_kosu(sb, K_har)), lq], K_har, 1e-6) if (booster is not None or UST_KAL) else ab_y
+    m = Model([adlar[i] for i in sutun], mu, sd, w, 1.0, float(ab[0]), float(ab[1]), 1.0, 1.0, lam,
+              cl=cl, cg=cg, gbm=booster, yedek=(yedek if booster is not None else None), ku=ku, cu=cu)
     if henery:
         ph = m.p_harman(Xh, K_har, K_har.q)
         m.gam = henery_ussu(ph, K_har, 2)
@@ -224,65 +320,136 @@ def kume_kur(T):
     return Kume(T["X"], T["y"], T["sira"], T["q"], T["kid"])
 
 
-def degerlendir(T, kosular, ablasyon=True):
-    """Zaman sıralı tam değerlendirme. Sözlük döner: model, metrikler, önem, ablasyon, kovalar."""
+def _pencereler(kosular):
+    tarih = np.array([k["tarih"] for k in kosular])
+    gunler = np.array([_gun(t) for t in tarih])
+    tam_oran = np.array([not any(a["oran"] is None for a in k["atlar"]) for k in kosular])
+    return tarih, gunler, tam_oran, np.arange(len(kosular)), int(np.searchsorted(tarih, ISINMA_SONU))
+
+
+def sina(T, kosular, protokol="aylik", lam=None, yari_omur="vars", kal_gun=None, henery=False, gbm=False, sutun=None):
+    """Sınama dilimi (son %30, tam oranlı) için tahminleri üretir ve metrikleri döner.
+    protokol='sabit': tek model (eğitim → harman → sınama), v1 yöntemi.
+    protokol='aylik': sınamanın her ayı için yalnız o aydan önceki verilerle yeniden eğitim (genişleyen pencere);
+                      kalibrasyon ayın hemen öncesindeki `kal_gun` günde. Yayındaki modelin gerçekte nasıl
+                      çalıştığını (her gece tüm geçmişle eğitim) dürüstçe taklit eder."""
+    yari_omur = YARI_OMUR if yari_omur == "vars" else yari_omur
+    kal_gun = kal_gun or KAL_GUN
     K = kume_kur(T)
     B = bolumle(T, kosular)
-    Kf, Kh, Ks = _ozel(K, B["egitim"]), _ozel(K, B["harman"]), _ozel(K, B["sinama"])
-    m, _ = egit(Kf, Kh, T["adlar"])
-    pm = m.p_model(Ks.X, Ks)
-    ph = m.p_harman(Ks.X, Ks, Ks.q)
+    Ks = _ozel(K, B["sinama"])
+    Xs = Ks.X if sutun is None else Ks.X[:, sutun]
+    tarih, gunler, tam_oran, idx, ilk = _pencereler(kosular)
+    pm = np.zeros(len(Ks.y)); ph = np.zeros(len(Ks.y))
+    modeller = []
+    if protokol == "sabit":
+        Kf, Kh = _ozel(K, B["egitim"]), _ozel(K, B["harman"])
+        ag = None
+        if yari_omur:
+            gk = gunler[Kf.kosu_no[Kf.bas]]
+            ag = 0.5 ** ((gk.max() - gk) / yari_omur)
+        m, _ = egit(Kf, Kh, T["adlar"], lam=lam, henery=henery, agirlik=ag, gbm=gbm, sutun=sutun)
+        pm, ph = m.p_model(Xs, Ks), m.p_harman(Xs, Ks, Ks.q)
+        modeller.append(m)
+    else:
+        aylar = np.array([tarih[i][:7] for i in Ks.kosu_no[Ks.bas]])
+        for ay in sorted(set(aylar)):
+            g0 = _gun(ay + "-01")
+            kal_bas = g0 - kal_gun
+            Kf = _ozel(K, (idx >= ilk) & (gunler < kal_bas))
+            Kh = _ozel(K, (gunler >= kal_bas) & (gunler < g0) & tam_oran)
+            ag = 0.5 ** ((kal_bas - gunler[Kf.kosu_no[Kf.bas]]) / yari_omur) if yari_omur else None
+            m, _ = egit(Kf, Kh, T["adlar"], lam=lam, henery=henery, agirlik=ag, gbm=gbm, sutun=sutun)
+            satir = (aylar == ay)[Ks.seg]
+            Ka = Ks.alt(satir)
+            Xa = Xs[satir]
+            pm[satir] = m.p_model(Xa, Ka)
+            ph[satir] = m.p_harman(Xa, Ka, Ka.q)
+            modeller.append(m)
     pq = Ks.q
-    pu = 1.0 / Ks.n[Ks.seg]
-    sonuc = {"bolum": B["tarih"], "kosu_sayisi": {"egitim": int(Kf.R), "harman": int(Kh.R), "sinama": int(Ks.R)}}
-    sonuc["metrik"] = {
-        "model": metrikler(pm, Ks, m.gam), "piyasa": metrikler(pq, Ks, m.gam),
-        "harman": metrikler(ph, Ks, m.gam), "duzgun": {k: v for k, v in metrikler(pu, Ks, 1.0).items()
-                                                      if k in ("kosu", "log_loss", "brier")}}
-    # harman - piyasa: koşu başına log-loss farkının ortalaması ve standart hatası (eşleştirilmiş)
+    out = {"metrik": {"model": metrikler(pm, Ks), "harman": metrikler(ph, Ks), "piyasa": metrikler(pq, Ks)},
+           "kovalar": {"model": kovalar(pm, Ks.y), "harman": kovalar(ph, Ks.y), "piyasa": kovalar(pq, Ks.y)},
+           "p": (pm, ph), "Ks": Ks, "modeller": modeller, "B": B}
     w = Ks.y > 0
     for ad_, pp in (("harman", ph), ("model", pm)):
         d = -np.log(np.clip(pp[w], 1e-12, 1)) + np.log(pq[w])
-        sonuc[f"{ad_}_eksi_piyasa"] = {"ll_fark": round(float(d.mean()), 4), "std_hata": round(float(d.std() / math.sqrt(len(d))), 4)}
-    # favori tabanı: piyasa favorisi kazanır, ikili = en düşük iki oran sırasıyla
-    fav = metrikler(pq, Ks, 1.0)
+        out[f"{ad_}_eksi_piyasa"] = {"ll_fark": round(float(d.mean()), 4), "std_hata": round(float(d.std() / math.sqrt(len(d))), 4)}
+    return out
+
+
+def iz_cikar(r, kosular):
+    """Sınama izi: her koşu için [kimlik, -log p_kazanan (model), ilk seçim tuttu mu (model), aynısı harman için].
+    Kapı, tarif değiştiğinde yeni ve eski izleri ORTAK koşular üzerinde kıyaslar (aynı dilim, adil kıyas)."""
+    Ks = r["Ks"]; pm, ph = r["p"]
+    iz = []
+    for k in range(Ks.R):
+        a, b = Ks.bas[k], Ks.bas[k] + Ks.n[k]
+        y = Ks.y[a:b]; ko = kosular[Ks.kosu_no[a]]
+        sat = [f'{ko["tarih"]}/{ko["hipodrom"]}/{ko["kosu"]}']
+        for p in (pm[a:b], ph[a:b]):
+            sat += [round(float(-np.log(max(p[y > 0][0], 1e-12))), 4), int(y[np.argmax(p)] > 0)]
+        iz.append(sat)
+    return iz
+
+
+def iz_kiyas(yeni, eski):
+    """Ortak koşularda (ll_model, ilk_model, ll_harman, ilk_harman) ortalamaları: (yeni, eski, n)."""
+    e = {s[0]: s for s in eski}
+    ort = [s for s in yeni if s[0] in e]
+    if not ort:
+        return None
+    f = lambda L, i: round(float(np.mean([s[i] for s in L])), 4)
+    eo = [e[s[0]] for s in ort]
+    return {"kosu": len(ort),
+            "yeni": {"model_ll": f(ort, 1), "model_ilk": f(ort, 2), "harman_ll": f(ort, 3), "harman_ilk": f(ort, 4)},
+            "eski": {"model_ll": f(eo, 1), "model_ilk": f(eo, 2), "harman_ll": f(eo, 3), "harman_ilk": f(eo, 4)}}
+
+
+def degerlendir(T, kosular, ablasyon=True, gbm=True):
+    """Yayın tarifinin tam değerlendirmesi (aylık walk-forward). (son ay modeli, sonuç sözlüğü, iz) döner."""
+    r = sina(T, kosular, "aylik", gbm=gbm, henery=True)
+    Ks = r["Ks"]; pm, ph = r["p"]; pq = Ks.q
+    m = r["modeller"][-1]
+    B = r["B"]
+    sonuc = {"protokol": f"aylık walk-forward: sınamanın her ayı için yalnız o aydan önceki verilerle yeniden eğitim; "
+                         f"kalibrasyon ayın hemen öncesindeki {KAL_GUN} günde; zaman ağırlığı yarı ömrü {YARI_OMUR:g} gün",
+             "bolum": B["tarih"], "kosu_sayisi": {"egitim": int(np.sum(B["egitim"])), "harman": int(np.sum(B["harman"])),
+                                                   "sinama": int(Ks.R)},
+             "gbm": bool(gbm and lgb is not None)}
+    sonuc["metrik"] = dict(r["metrik"])
+    pu = 1.0 / Ks.n[Ks.seg]
+    sonuc["metrik"]["duzgun"] = {k: v for k, v in metrikler(pu, Ks, 1.0).items() if k in ("kosu", "log_loss", "brier")}
+    fav = r["metrik"]["piyasa"]
     sonuc["metrik"]["favori"] = {k: fav[k] for k in ("kosu", "ilk_secim_isabet", "ikili_sirali_isabet", "ilk_iki_ikisi_de_ilk2")}
-    sonuc["kovalar"] = {"harman": kovalar(ph, Ks.y), "model": kovalar(pm, Ks.y), "piyasa": kovalar(pq, Ks.y)}
+    sonuc["harman_eksi_piyasa"] = r["harman_eksi_piyasa"]; sonuc["model_eksi_piyasa"] = r["model_eksi_piyasa"]
+    sonuc["kovalar"] = r["kovalar"]
     sonuc["onem"] = sorted([{"ozellik": a, "std_katsayi": round(float(w), 4)} for a, w in zip(m.adlar, m.w)],
                            key=lambda d: -abs(d["std_katsayi"]))
+    sonuc["birlestirme"] = [{"c_dogrusal": round(float(x.cl), 3), "c_gbm": round(float(x.cg), 3),
+                             "alfa": round(float(x.alfa), 3), "beta": round(float(x.beta), 3)} for x in r["modeller"]]
     if ablasyon:
-        from ozellik import OZELLIKLER, GRUPLAR
+        # Ablasyon yalnız doğrusal katmanla (GBM'siz) ölçülür: hızlıdır ve grubun ham bilgisini gösterir.
+        from ozellik import GRUP
+        taban = sina(T, kosular, "aylik", lam=m.lam, gbm=False)
         tab = []
-        for g in GRUPLAR:
-            sut = [i for i, (_, gg) in enumerate(OZELLIKLER) if gg != g]
-            mg, s = egit(Kf, Kh, T["adlar"], lam=m.lam, sutun=sut, henery=False)
-            Xs = Ks.X[:, s]
+        for g in sorted({GRUP[a] for a in T["adlar"]}):
+            sut = [i for i, a in enumerate(T["adlar"]) if GRUP[a] != g]
+            rg = sina(T, kosular, "aylik", lam=m.lam, gbm=False, sutun=sut)
             tab.append({"grup_cikarildi": g,
-                        "model_ll_fark": round(logloss(mg.p_model(Xs, Ks), Ks) - sonuc["metrik"]["model"]["log_loss"], 4),
-                        "harman_ll_fark": round(logloss(mg.p_harman(Xs, Ks, Ks.q), Ks) - sonuc["metrik"]["harman"]["log_loss"], 4)})
+                        "model_ll_fark": round(rg["metrik"]["model"]["log_loss"] - taban["metrik"]["model"]["log_loss"], 4),
+                        "harman_ll_fark": round(rg["metrik"]["harman"]["log_loss"] - taban["metrik"]["harman"]["log_loss"], 4)})
         sonuc["ablasyon"] = sorted(tab, key=lambda d: -d["model_ll_fark"])
-    return m, sonuc, (K, B)
+    return m, sonuc, iz_cikar(r, kosular)
 
 
-def eski_modeli_sina(eski_json, K, B):
-    """Kaydedilmiş (dünkü) değerlendirme modelini BUGÜNKÜ sınama dilimiyle ölçer (aynı koşullarda kıyas)."""
-    from ozellik import ADLAR
-    if not eski_json or eski_json.get("ozellikler") != ADLAR:
-        return None
-    m = Model.yukle(eski_json)
-    Ks = _ozel(K, B["sinama"])
-    ph = m.p_harman(Ks.X, Ks, Ks.q)
-    return {"log_loss": round(logloss(ph, Ks), 4), "ilk_secim_isabet": metrikler(ph, Ks, m.gam)["ilk_secim_isabet"]}
-
-
-def uretim_modeli(T, kosular, lam):
-    """Yayın için aynı tarif, pencere kaydırılmış: model tüm geçmişin ilk %85'i, harman son %15 ile."""
+def uretim_modeli(T, kosular, lam=None, gbm=True):
+    """Yayın modeli, değerlendirmeyle aynı tarif: son KAL_GUN gün kalibrasyon, öncesi (zaman ağırlıklı) eğitim."""
     K = kume_kur(T)
-    tarih = np.array([k["tarih"] for k in kosular])
-    R = len(kosular)
-    tam_oran = np.array([not any(a["oran"] is None for a in k["atlar"]) for k in kosular])
-    ilk = int(np.searchsorted(tarih, ISINMA_SONU))
-    kes = int(R * (1 - HARMAN_PAYI)); kes = int(np.searchsorted(tarih, tarih[kes]))
-    idx = np.arange(R)
-    m, _ = egit(_ozel(K, (idx >= ilk) & (idx < kes)), _ozel(K, (idx >= kes) & tam_oran), T["adlar"], lam=lam)
+    tarih, gunler, tam_oran, idx, ilk = _pencereler(kosular)
+    g0 = int(gunler[-1]) + 1
+    kal_bas = g0 - KAL_GUN
+    Kf = _ozel(K, (idx >= ilk) & (gunler < kal_bas))
+    Kh = _ozel(K, (gunler >= kal_bas) & tam_oran)
+    ag = 0.5 ** ((kal_bas - gunler[Kf.kosu_no[Kf.bas]]) / YARI_OMUR) if YARI_OMUR else None
+    m, _ = egit(Kf, Kh, T["adlar"], lam=lam, agirlik=ag, gbm=gbm)
     return m
