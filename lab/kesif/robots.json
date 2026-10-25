@@ -1,114 +1,81 @@
 {
- "https://www.sporx.com": {
-  "robots_durum": 200,
-  "robots": "User-agent: *\n\nDisallow: /_ajax/\nDisallow: /_iframe/\nDisallow: /_login/\nDisallow: /*?cat=*\nDisallow: *?frm_league=*\nDisallow: *?frm_date=*\nDisallow: *interstitial_layer_check*\nDisallow: *country_check*\nDisallow: *consent_check*\nDisallow: /tumhaberler.php\nDisallow: /detail.php\nDisallow: /ara.php\nDisallow: /advertorial/\nDisallow: /*-dk2022-fgy-*\nDisallow: /*-benim-puan-durumum-\nDisallow: /*haber_cnt*\nDisallow: /*video_cnt*\nDisallow: /*?slide=*\nDisallow: */hbr_al.php*\nDisallow: /_ajax/dynamic_bnnrs.php\n\nSitemap: https://www.sporx.com/sitemaps/GaleriSitemap.php\nSitemap: https://www.sporx.com/sitemaps/GoogleNewsSitemap.php\nSitemap: https://www.sporx.com/sitemaps/posts.xml",
-  "kosul_baglantilari": [
-   "/gizlilik.php",
-   "https://www.sporx.com/gizlilik.php",
-   "https://www.sporx.com/hakkimizda/yasal_uyari.php"
-  ],
-  "kosullar": [
-   {
-    "url": "https://www.sporx.com/gizlilik.php",
-    "cumle": "formlar�, sosyal a�lar, internet sitesi, muhtelif s�zle�meler, mobil uygulamalar, elektronik posta, ba�vuru formlar�, b�ltenler d�hil olmak �zere ancak bunlarla s�n�rl� olmamak kayd�yla benzeri ara�larla, s�zl�, yaz�l�, otomatik ya da otomatik olmayan y�ntemlerle ya da elektronik olarak toplanabilecektir."
-   },
-   {
-    "url": "https://www.sporx.com/gizlilik.php",
-    "cumle": "Kullan�c�/�ye, �irket taraf�ndan kendisine b�lten, duyuru, ticari ileti veya di�er bildiri ve/veya mesaj g�nderilmesini istemiyorsa, bu durumda �nternet Sitesi'ne �ye olurken bu bildiriler veya hizmetler i�in bir talep belirtmemelidir."
-   },
-   {
-    "url": "https://www.sporx.com/gizlilik.php",
-    "cumle": "formlar�, sosyal a�lar, internet sitesi, muhtelif s�zle�meler, mobil uygulamalar, elektronik posta, ba�vuru formlar�, b�ltenler d�hil olmak �zere ancak bunlarla s�n�rl� olmamak kayd�yla benzeri ara�larla, s�zl�, yaz�l�, otomatik ya da otomatik olmayan y�ntemlerle ya da elektronik olarak toplanabilecektir."
-   },
-   {
-    "url": "https://www.sporx.com/gizlilik.php",
-    "cumle": "Kullan�c�/�ye, �irket taraf�ndan kendisine b�lten, duyuru, ticari ileti veya di�er bildiri ve/veya mesaj g�nderilmesini istemiyorsa, bu durumda �nternet Sitesi'ne �ye olurken bu bildiriler veya hizmetler i�in bir talep belirtmemelidir."
-   },
-   {
-    "url": "https://www.sporx.com/hakkimizda/yasal_uyari.php",
-    "cumle": "formlar�, sosyal a�lar, internet sitesi, muhtelif s�zle�meler, mobil uygulamalar, elektronik posta, ba�vuru formlar�, b�ltenler d�hil olmak �zere ancak bunlarla s�n�rl� olmamak kayd�yla benzeri ara�larla, s�zl�, yaz�l�, otomatik ya da otomatik olmayan y�ntemlerle ya da elektronik olarak toplanabilecektir."
-   },
-   {
-    "url": "https://www.sporx.com/hakkimizda/yasal_uyari.php",
-    "cumle": "Kullan�c�/�ye, �irket taraf�ndan kendisine b�lten, duyuru, ticari ileti veya di�er bildiri ve/veya mesaj g�nderilmesini istemiyorsa, bu durumda �nternet Sitesi'ne �ye olurken bu bildiriler veya hizmetler i�in bir talep belirtmemelidir."
-   }
-  ]
+ "atyarisi_llms": {
+  "durum": 200,
+  "metin": "﻿\r\n# llms.txt - Atyarisi.com\r\n# Bu dosya, Atyarisi.com tüm site ve /haber/ içeriklerinin \r\n# büyük dil modelleri (LLM) tarafından taranmasına ve kullanılmasına izin verildiğini belirtir.\r\n\r\nDomain: https://www.atyarisi.com\r\nAllow: /\r\nAllow: /haber/\r\n\r\n# iletişim\r\niletişim: destek@atyarisi.com\r\n\r\n\r\n"
  },
- "https://www.habergazetesi.com.tr": {
-  "robots_durum": 200,
-  "robots": "User-agent: facebookexternalhit\nAllow: /\n\nUser-agent: Facebot\nAllow: /\n\nUser-agent: Twitterbot\nAllow: /\n\nUser-agent: LinkedInBot\nAllow: /\n\nUser-agent: WhatsApp\nAllow: /\n\nUser-agent: Pinterest\nAllow: /\n\nUser-agent: GPTBot              # OpenAI (ChatGPT)\nUser-agent: Google-Extended     # Google (Gemini/Bard)\nUser-agent: CCBot               # Common Crawl\nUser-agent: ClaudeBot           # Anthropic (Claude)\nUser-agent: Applebot-Extended   # Apple Intelligence\nUser-agent: Omgilibot           # Facebook/Meta AI ve digerleri\nUser-agent: Diffbot             # Veri cikarma botlari\nUser-agent: FacebookBot         # Meta AI egitim verileri\nUser-agent: *\n\nDisallow: /widgets/\nDisallow: /widgets/load-widget*\nDisallow: /bigdata/*\nDisallow: /cdn-cgi/*\nDisallow: /index.php\nDisallow: /public/\nDisallow: /service/*\nDisallow: /arama/\nDisallow: /api\nDisallow: /*?q=\nDisallow: /*?preview=\nDisallow: /*?utm_source=\nDisallow: /*?utm_medium=\nDisallow: /*?utm_campaign=\nDisallow: /*?page=\nDisallow: /*?sayfa=\nDisallow: /*&page=\nDisallow: /*?sort=\nDisallow: /*&sort=\nDisallow: /advert/*\nDisallow: /admin/\nDisallow: /register/\nDisallow: /password-reset/\nDisallow: /auth/\nDisallow: /vidyome/embed/\nDisallow: /vendor/*\nDisallow: /member/\nDisallow: /date\nDisallow: /poster\nDisallow: /arsiv?date\nDisallow: /xpanel\nDisallow: /comments/*\nDisallow: /themes/*\nDisallow: /paylas\nDisallow: /font-awesome\nDisallow: /.well-known/*\n\nSitemap: https://www.habergazetesi.com.tr/sitemap.xml\nSitemap: https://www.habergazetesi.com.tr/rss?yandex=turbo\n",
-  "kosul_baglantilari": [
-   "/ankara-at-yarisi-sonuclari-24-ekim-tum-kosularin-kazananlari-ve-altili-ganyan-ikramiyeleri",
-   "/gizlilik-politikasi-privacy-policy",
-   "/gizlilik-sozlesmesi",
-   "/kullanim-kosullari",
-   "https://www.habergazetesi.com.tr/gizlilik-politikasi-privacy-policy"
-  ],
-  "kosullar": [
-   {
-    "url": "https://www.habergazetesi.com.tr/ankara-at-yarisi-sonuclari-24-ekim-tum-kosularin-kazananlari-ve-altili-ganyan-ikramiyeleri",
-    "cumle": "Paylaş Linkedin Pinterest Telegram Yazdır Kopyala A - A + Hüseyin Çor 24."
-   },
-   {
-    "url": "https://www.habergazetesi.com.tr/ankara-at-yarisi-sonuclari-24-ekim-tum-kosularin-kazananlari-ve-altili-ganyan-ikramiyeleri",
-    "cumle": "Bu içerik ticari iş birliği veya reklam içerebilir."
-   },
-   {
-    "url": "https://www.habergazetesi.com.tr/gizlilik-politikasi-privacy-policy",
-    "cumle": "tr ‘nin yazılı izni olmaksızın ticari olarak herhangi bir şekilde kopyalanamaz, dağıtılamaz, değiştirilemez, yayınlanamaz."
-   },
-   {
-    "url": "https://www.habergazetesi.com.tr/gizlilik-politikasi-privacy-policy",
-    "cumle": "İzinsiz ve kaynak belirtilmeksizin kopyalama ve kullanımı yapılamaz."
-   },
-   {
-    "url": "https://www.habergazetesi.com.tr/gizlilik-sozlesmesi",
-    "cumle": "Çoğu internet tarayıcısı çerezleri otomatik olarak kabul eder ancak isterseniz tarayıcınızın ayarlarından bunu değiştirebilir veya çerezleri engelleyebilirsiniz."
-   },
-   {
-    "url": "https://www.habergazetesi.com.tr/kullanim-kosullari",
-    "cumle": "Yazılı izin olmaksızın site içeriğinin çoğaltılması veya kopyalanması kesinlikle yasaktır."
-   }
-  ]
+ "atyarisi_baglantilar": [
+  "//atyarisi.com",
+  "//img.atyarisi.com",
+  "//sc.atyarisi.com/10979123351/www/assets/css/fonts.min.css?v=10979123351",
+  "//sc.atyarisi.com/10979123351/www/assets/css/new-homepage.min.css?v=10979123351",
+  "//sc.atyarisi.com/10979123351/www/assets/css/new-screen.min.css?v=10979123351",
+  "//sc.atyarisi.com/10979123351/www/assets/css/tjk-homepage.min.css?v=10979123351",
+  "//sc.atyarisi.com/10979123351/www/assets/fonts/nesine/nesine.woff2?v=10979123351",
+  "//sc.atyarisi.com/10979123351/www/assets/fonts/oswald/Oswald-Bold.woff2?v=10979123351",
+  "//sc.atyarisi.com/10979123351/www/assets/fonts/oswald/Oswald-Regular.woff2?v=10979123351",
+  "//sc.atyarisi.com/10979123351/www/assets/fonts/rajdhani/rajdhani-bold-webfont.woff2?v=10979123351",
+  "//sc.atyarisi.com/10979123351/www/assets/fonts/rajdhani/rajdhani-light-webfont.woff2?v=10979123351",
+  "//sc.atyarisi.com/10979123351/www/assets/fonts/rajdhani/rajdhani-medium-webfont.woff2?v=10979123351",
+  "//sc.atyarisi.com/10979123351/www/assets/fonts/rajdhani/rajdhani-semibold-webfont.woff2?v=10979123351",
+  "//sc.atyarisi.com/10979123351/www/assets/fonts/roboto/roboto-condensed-v16-latin_latin-ext-700.woff2?v=10979123351",
+  "//sc.atyarisi.com/10979123351/www/assets/fonts/roboto/roboto-condensed-v16-latin_latin-ext-regular.woff2?v=10979123351",
+  "//sc.atyarisi.com/10979123351/www/assets/fonts/roboto/roboto-v18-latin-ext_latin-500.woff2?v=10979123351",
+  "//sc.atyarisi.com/10979123351/www/assets/fonts/roboto/roboto-v18-latin_latin-ext-700.woff2?v=10979123351",
+  "//sc.atyarisi.com/10979123351/www/assets/fonts/roboto/roboto-v18-latin_latin-ext-regular.woff2?v=10979123351",
+  "//sc.atyarisi.com/10979123351/www/assets/fonts/saira/sairacondensed-bold-webfont.woff2?v=10979123351",
+  "//sc.atyarisi.com/10979123351/www/assets/fonts/saira/sairacondensed-regular-webfont.woff2?v=10979123351",
+  "//sc.atyarisi.com/10979123351/www/img/tjkExternal/webicons/android-chrome-192x192.png?v=10979123351",
+  "//sc.atyarisi.com/10979123351/www/img/tjkExternal/webicons/apple-touch-icon-114x114.png?v=10979123351",
+  "//sc.atyarisi.com/10979123351/www/img/tjkExternal/webicons/apple-touch-icon-120x120.png?v=10979123351",
+  "//sc.atyarisi.com/10979123351/www/img/tjkExternal/webicons/apple-touch-icon-144x144.png?v=10979123351",
+  "//sc.atyarisi.com/10979123351/www/img/tjkExternal/webicons/apple-touch-icon-152x152.png?v=10979123351",
+  "//sc.atyarisi.com/10979123351/www/img/tjkExternal/webicons/apple-touch-icon-180x180.png?v=10979123351",
+  "//sc.atyarisi.com/10979123351/www/img/tjkExternal/webicons/apple-touch-icon-57x57.png?v=10979123351",
+  "//sc.atyarisi.com/10979123351/www/img/tjkExternal/webicons/apple-touch-icon-60x60.png?v=10979123351",
+  "//sc.atyarisi.com/10979123351/www/img/tjkExternal/webicons/apple-touch-icon-72x72.png?v=10979123351",
+  "//sc.atyarisi.com/10979123351/www/img/tjkExternal/webicons/apple-touch-icon-76x76.png?v=10979123351",
+  "//sc.atyarisi.com/10979123351/www/img/tjkExternal/webicons/apple-touch-icon-precomposed.png?v=10979123351",
+  "//sc.atyarisi.com/10979123351/www/img/tjkExternal/webicons/apple-touch-icon.png?v=10979123351",
+  "//sc.atyarisi.com/10979123351/www/img/tjkExternal/webicons/favicon-16x16.png?v=10979123351",
+  "//sc.atyarisi.com/10979123351/www/img/tjkExternal/webicons/favicon-32x32.png?v=10979123351",
+  "//sc.atyarisi.com/10979123351/www/img/tjkExternal/webicons/favicon-96x96.png?v=10979123351",
+  "//sc.atyarisi.com/10979123351/www/img/tjkExternal/webicons/favicon.ico?v=10979123351",
+  "//sc.atyarisi.com/10979123351/www/nsn-react/assets/nsnstrap.ttf?v=10979123351",
+  "//sc.atyarisi.com/10979123351/www/nsn-react/public/css/vendor.min.css?v=10979123351",
+  "//sc.atyarisi.com/10979123351/www/tjk-external/manifest.json?v=10979123351",
+  "/atyarisicom-tv",
+  "/hakkimizda/kullanim-sartlari",
+  "/tjk-at-yarisi-bulteni",
+  "/tjk-at-yarisi-editor-hazir-kuponlar",
+  "/tjk-at-yarisi-istatistikler",
+  "/tjk-at-yarisi-muhtemel-agf",
+  "/tjk-at-yarisi-programi",
+  "/tjk-at-yarisi-sonuclari",
+  "/tjk-at-yarisi-tahminleri",
+  "/yardim/Oyunlar/257/At-Yarisi--TJK-",
+  "/yardim/Oyunlar/257/At-Yarisi--TJK-#At-Yarisi-oyun-kurallari",
+  "/yardim/Oyunlar/257/At-Yarisi--TJK-#Yilin-Bazi-Onemli-Kosulari",
+  "https://twitter.com/atyarisicom",
+  "https://www.atyarisi.com/",
+  "https://www.facebook.com/atyarisicom",
+  "https://www.instagram.com/atyarisicom",
+  "https://www.youtube.com/@atyarisi_com"
+ ],
+ "atyarisi_kosullar": [
+  {
+   "url": "https://www.atyarisi.com/hakkimizda/kullanim-sartlari",
+   "metin": " Kullanım Şartları | Hakkımızda | atyarışı.com Kapat Kapat Tamam Kapat Kuponu Kaydet Para Yatır Kapat Vazgeç Tamam Kapat Kapat Kaydet Kapat Oran Değişimi Tercihleri Paylaş Link kopyalandı Paylaş Link kopyalandı Kapat İptal Et Tamam Kapat Profil Resmi Düzenle Profil Resmini Kaldır Vazgeç Kaydet Kapat Tüm üyelerle paylaş Sadece takipçilerimle paylaş Paylaş Kapat Kupona Ad Ver Kuponunuzun adı en az 3, en fazla 20 karakter olabilir. Kuponunuzun adını belirlerken rakam ya da harf kullanabilirsiniz Kupon Adı Vazgeç Tamam Kapat Kupona Ad Ver Kupon adı kaydedilmiştir. Tamam Kapat Kupona Ad Ver Vazgeç Devam Kapat Yorumlar Kapat Yorumlar Editör Yorumları Üye Yorumları Editör Yorumları Üye Yorumları Bu müsabaka için henüz bir yorum yapılmamıştır. Bu müsabaka için henüz bir yorum yapılmamıştır. Kuponları Göster Kapat Önemli Bilgilendirme Lütfen aşağıdaki kutucukları tıklamadan önce Kişisel Verilerin İşlenmesine İlişkin Aydınlatma Metnini okuyunuz. Bu onaya neden ihtiyaç duyduğumuzla ilgili detaylı bilgiye buradan ulaşabilirsiniz. Tarafıma kişiye özel bir hizmet sunulabilmesi için Açık Rıza Metni'ni kabul ediyorum. İletişim bilgilerimin reklam, promosyon vb. ticari elektronik ileti gönderilmek üzere işlenmesini, bu amaçla kullanılmasını, saklanmasını ve ticari elektronik ileti gönderilmesini ve bu gönderimin sağlanması için Türkiye’de ve Avrupa Birliği’nde yerleşik hizmet alınan üçüncü kişilerle paylaşılmasını Elektronik Ticari İleti kuralları çerçevesinde kabul ediyorum. Tamam Kapat Bilgi İşleme devam ettiğinizde açık rıza tercihiniz pasife alınacak ve site içinde mevcut durumda yararlandığınız bazı hizmetler kesintiye uğrayacaktır. İşlemi onaylıyor musunuz? Vazgeç Onayla Kapat Aydınlatma ve Rıza Beyanı Tamam Kapat Üyelik Sözleşmesi atyarışı.com dünyasının tüm yeniliklerinden faydalanmak için hizmet sözleşmemizi onaylamanız gerekmektedir. Daha Sonra Okudum Onaylıyorum Kapat Bilgi Aynı gün içerisinde en fazla 5 defa aktivasyon SMS'i alabilirsiniz. Tamam Kapat Bilgi Aynı gün içerisinde en fazla 5 defa aktivasyon e-posta'sı alabilirsiniz. Tamam Lige Göre Filtrele Tarihe Göre Filtrele Aramış olduğunuz kriterlerde şu anda sonuç bulunmamaktadır. Temizle Filtrele Kapat En İyilerin Kuponları Kapat Bahis Türü Bilgi Ekranı Tamam Kapat Bilgi Bilgilerinizi güncel tuttuğunuz için teşekkür ederiz. Ticari Elektronik İletişim İzin Durumu E-posta yolu ile gönderim. (Kapalı) Ticari Elektronik İleti izin tercihlerinizi, dilerseniz Hesabım > Bilgilerim > Ayarlarım sayfasından düzenleyebilirsiniz. Tamam Kapat Bilgi Bilgilerinizi güncel tuttuğunuz için teşekkür ederiz. Ticari Elektronik İletişim İzin Durumu Kısa mesaj servisi ile gönderim. (Kapalı) Telefon, faks ve diğer her türlü elektronik iletişim aracı ile gönderim. (Kapalı) Ticari Elektronik İleti izin tercihlerinizi, dilerseniz Hesabım > Bilgilerim > Ayarlarım sayfasından düzenleyebilirsiniz. Aynı gün içerisinde en fazla 5 defa aktivasyon SMS'i alabilirsiniz. Tamam Kapat E-posta Adresinizi Doğrulayın Şifrenizi unutmanız durumunda güvenlik adımlarından kolaylıkla geçebilmeniz için aşağıdaki e-posta adresiniz güncel e-posta adresiniz mi? atyarışı.com'dan e-posta alabilmeniz için, kullanmak istediğiniz e-posta adresinizi girerek lütfen e-posta doğrulama işlemini tamamlayınız. Ticari elektronik ileti izniniz, sistemde kayıtlı olduğu şekilde devam edecektir. E-posta Adresi e-posta adresine gelen aktivasyon kodunu giriniz. Aktivasyon Kodu Tekrar Gönder Yeni E-posta Adresi Gir Hayır, güncel değil E-posta Adresim Güncel Aktivasyon Kodunu Gönder Devam Et Kapat Bilgi Sistemde kayıtlı e-posta adresiniz henüz doğrulanmamıştır. atyarışı.com'dan e-posta alabilmeniz için öncelikle Hesabım -> Bilgilerim menüsü üzerinden e-posta hesabınızı doğrulamanız gerekmektedir. Doğrulama işleminizin ardından talep ettiğiniz bu ve diğer benzer konularda e-posta almaya başlayabilirsiniz. E-Posta hesabınızı doğrulamak için tıklayınız. Hesabım Bilgilerime Git Kapat Cep Telefonunuzu Doğrulayın Şifrenizi unutmanız durumunda güvenlik adım"
+  },
+  {
+   "url": "https://www.atyarisi.com/yardim/Oyunlar/257/At-Yarisi--TJK-#Yilin-Bazi-Onemli-Kosulari",
+   "metin": " Yardım | Oyunlar - At Yarışı | atyarışı.com Kapat Kapat Tamam Kapat Kuponu Kaydet Para Yatır Kapat Vazgeç Tamam Kapat Kapat Kaydet Kapat Oran Değişimi Tercihleri Paylaş Link kopyalandı Paylaş Link kopyalandı Kapat İptal Et Tamam Kapat Profil Resmi Düzenle Profil Resmini Kaldır Vazgeç Kaydet Kapat Tüm üyelerle paylaş Sadece takipçilerimle paylaş Paylaş Kapat Kupona Ad Ver Kuponunuzun adı en az 3, en fazla 20 karakter olabilir. Kuponunuzun adını belirlerken rakam ya da harf kullanabilirsiniz Kupon Adı Vazgeç Tamam Kapat Kupona Ad Ver Kupon adı kaydedilmiştir. Tamam Kapat Kupona Ad Ver Vazgeç Devam Kapat Yorumlar Kapat Yorumlar Editör Yorumları Üye Yorumları Editör Yorumları Üye Yorumları Bu müsabaka için henüz bir yorum yapılmamıştır. Bu müsabaka için henüz bir yorum yapılmamıştır. Kuponları Göster Kapat Önemli Bilgilendirme Lütfen aşağıdaki kutucukları tıklamadan önce Kişisel Verilerin İşlenmesine İlişkin Aydınlatma Metnini okuyunuz. Bu onaya neden ihtiyaç duyduğumuzla ilgili detaylı bilgiye buradan ulaşabilirsiniz. Tarafıma kişiye özel bir hizmet sunulabilmesi için Açık Rıza Metni'ni kabul ediyorum. İletişim bilgilerimin reklam, promosyon vb. ticari elektronik ileti gönderilmek üzere işlenmesini, bu amaçla kullanılmasını, saklanmasını ve ticari elektronik ileti gönderilmesini ve bu gönderimin sağlanması için Türkiye’de ve Avrupa Birliği’nde yerleşik hizmet alınan üçüncü kişilerle paylaşılmasını Elektronik Ticari İleti kuralları çerçevesinde kabul ediyorum. Tamam Kapat Bilgi İşleme devam ettiğinizde açık rıza tercihiniz pasife alınacak ve site içinde mevcut durumda yararlandığınız bazı hizmetler kesintiye uğrayacaktır. İşlemi onaylıyor musunuz? Vazgeç Onayla Kapat Aydınlatma ve Rıza Beyanı Tamam Kapat Üyelik Sözleşmesi atyarışı.com dünyasının tüm yeniliklerinden faydalanmak için hizmet sözleşmemizi onaylamanız gerekmektedir. Daha Sonra Okudum Onaylıyorum Kapat Bilgi Aynı gün içerisinde en fazla 5 defa aktivasyon SMS'i alabilirsiniz. Tamam Kapat Bilgi Aynı gün içerisinde en fazla 5 defa aktivasyon e-posta'sı alabilirsiniz. Tamam Lige Göre Filtrele Tarihe Göre Filtrele Aramış olduğunuz kriterlerde şu anda sonuç bulunmamaktadır. Temizle Filtrele Kapat En İyilerin Kuponları Kapat Bahis Türü Bilgi Ekranı Tamam Kapat Bilgi Bilgilerinizi güncel tuttuğunuz için teşekkür ederiz. Ticari Elektronik İletişim İzin Durumu E-posta yolu ile gönderim. (Kapalı) Ticari Elektronik İleti izin tercihlerinizi, dilerseniz Hesabım > Bilgilerim > Ayarlarım sayfasından düzenleyebilirsiniz. Tamam Kapat Bilgi Bilgilerinizi güncel tuttuğunuz için teşekkür ederiz. Ticari Elektronik İletişim İzin Durumu Kısa mesaj servisi ile gönderim. (Kapalı) Telefon, faks ve diğer her türlü elektronik iletişim aracı ile gönderim. (Kapalı) Ticari Elektronik İleti izin tercihlerinizi, dilerseniz Hesabım > Bilgilerim > Ayarlarım sayfasından düzenleyebilirsiniz. Aynı gün içerisinde en fazla 5 defa aktivasyon SMS'i alabilirsiniz. Tamam Kapat E-posta Adresinizi Doğrulayın Şifrenizi unutmanız durumunda güvenlik adımlarından kolaylıkla geçebilmeniz için aşağıdaki e-posta adresiniz güncel e-posta adresiniz mi? atyarışı.com'dan e-posta alabilmeniz için, kullanmak istediğiniz e-posta adresinizi girerek lütfen e-posta doğrulama işlemini tamamlayınız. Ticari elektronik ileti izniniz, sistemde kayıtlı olduğu şekilde devam edecektir. E-posta Adresi e-posta adresine gelen aktivasyon kodunu giriniz. Aktivasyon Kodu Tekrar Gönder Yeni E-posta Adresi Gir Hayır, güncel değil E-posta Adresim Güncel Aktivasyon Kodunu Gönder Devam Et Kapat Bilgi Sistemde kayıtlı e-posta adresiniz henüz doğrulanmamıştır. atyarışı.com'dan e-posta alabilmeniz için öncelikle Hesabım -> Bilgilerim menüsü üzerinden e-posta hesabınızı doğrulamanız gerekmektedir. Doğrulama işleminizin ardından talep ettiğiniz bu ve diğer benzer konularda e-posta almaya başlayabilirsiniz. E-Posta hesabınızı doğrulamak için tıklayınız. Hesabım Bilgilerime Git Kapat Cep Telefonunuzu Doğrulayın Şifrenizi unutmanız durumunda güvenlik adımla"
+  }
+ ],
+ "atyarisi_program_ornek": {
+  "url": "https://www.atyarisi.com/tjk-at-yarisi-programi",
+  "durum": 200,
+  "tablo_basliklari": [],
+  "uzunluk": 264704
  },
- "https://www.yarisdergisi.com": {
-  "robots_durum": 200,
-  "robots": "User-agent: *\r\nDisallow: /wp-content/uploads/wc-logs/\r\nDisallow: /wp-content/uploads/woocommerce_transient_files/\r\nDisallow: /wp-content/uploads/woocommerce_uploads/\r\nDisallow: /wp-admin/\r\nAllow: /wp-admin/admin-ajax.php\r\n\r\nSitemap: https://www.yarisdergisi.com/sitemap.xml\r\nSitemap: https://www.yarisdergisi.com/sitemap.rss\n",
-  "kosul_baglantilari": [
-   "https://www.yarisdergisi.com/g-afrikada-cim-pistte-8-kosulu-program-durbanville211026-hasret-delice/",
-   "https://www.yarisdergisi.com/g-afrikada-cim-pistte-8-kosulu-program-durbanville211026-hasret-delice/#respond",
-   "https://www.yarisdergisi.com/istanbulda-cim-kosulari-sentetik-piste-alindi-21026/",
-   "https://www.yarisdergisi.com/istanbulda-cim-kosulari-sentetik-piste-alindi-21026/#respond",
-   "https://www.yarisdergisi.com/istanbulda-pazar-gunu-kosulacak-cim-pist-yarislari-sentetik-piste-alindi17102026/",
-   "https://www.yarisdergisi.com/istanbulda-pazar-gunu-kosulacak-cim-pist-yarislari-sentetik-piste-alindi17102026/#respond",
-   "https://www.yarisdergisi.com/kanadada-8-kosulu-program-woodbine-hasret-delice/",
-   "https://www.yarisdergisi.com/kanadada-8-kosulu-program-woodbine-hasret-delice/#respond",
-   "https://www.yarisdergisi.com/teklerim-maiden-kosularda-adana251026-yusuf-can-kaya/",
-   "https://www.yarisdergisi.com/teklerim-maiden-kosularda-adana251026-yusuf-can-kaya/#respond"
-  ],
-  "kosullar": [
-   {
-    "url": "https://www.yarisdergisi.com/g-afrikada-cim-pistte-8-kosulu-program-durbanville211026-hasret-delice/",
-    "cumle": "@ Kaynak gösterilerek dahi kullanılamaz."
-   },
-   {
-    "url": "https://www.yarisdergisi.com/g-afrikada-cim-pistte-8-kosulu-program-durbanville211026-hasret-delice/#respond",
-    "cumle": "@ Kaynak gösterilerek dahi kullanılamaz."
-   }
-  ]
- },
- "https://www.horseturk.com": {
-  "robots_durum": 200,
-  "robots": "User-agent: *\r\nDisallow: /wp-admin/\r\nAllow: /wp-admin/admin-ajax.php\r\nDisallow: /player/\r\nDisallow: *?replytocom\n\nSitemap: https://www.horseturk.com/sitemap.xml\n",
-  "kosul_baglantilari": [
-   "https://www.horseturk.com/horse-turk-akademi/kamci-kullanimi/"
-  ],
-  "kosullar": []
- },
- "https://www.atyarisi.com": {
-  "robots_durum": 200,
-  "robots": "﻿\r\n# ---------------------------------------------\r\n# llms.txt dosyası hakkında bilgi\r\n# Atyarisi.com tüm sayfaları ve /haber/ içerikleri LLM'ler tarafından kullanılabilir.\r\n# Ayrıntılar: https://www.atyarisi.com/llms.txt\r\n# ---------------------------------------------\r\n\r\nUser-agent: Googlebot\r\nUser-agent: bingbot\r\nUser-agent: YandexBot\r\n\r\nAllow: /\r\n\r\nSitemap: https://www.atyarisi.com/sitemap.xml\r\n\r\n",
-  "kosul_baglantilari": [],
-  "kosullar": []
- }
+ "sporx_yasal": " Gizlilik Politikası (Privacy Policy) - Şirket --> --> --> --> --> --> SPORX YOUTUBE --> --> Abone Ol --> --> Futbol Basketbol Sporx TV Canlı Skor Voleybol At Yarışı Tümü HAKEM SORUŞTURMASI İLK 11'İNİ KUR GÜNÜN ÖZETİ SÜPER LİG ŞAMPİYONLAR LİGİ TV'DE BUGÜN İSTATİSTİK AVRUPA LİGİ CANLI ANLATIM İNGİLTERE Tenis Motorsporları Voleybol At Yarışı Diğer Sporlar Hentbol Ülke Puan Sıralaması İstatistik Tv'de Bugün Canlı Anlatım Beşiktaş Fenerbahçe Galatasaray Trabzonspor Süperlig Puan Durumu Medya Teknoloji Gizlilik Politikası Mobil uygulamalar ve m.sporx.com mobil sitesi ile Sporx'i cepten de takip edebilirsiniz. Daha detaylı bilgi için Sporx Mobil sayfasını ziyaret edin. Puan Durumu Fikstür Gizlilik Politikası (Privacy Policy) www.sporx.com'da yayınlanan her türlü fotoğraf, yazı, haber ve diğer içerikler, 5846 sayılı Fikir ve Sanat Eserleri Kanunu 36. madde uyarınca kaynak gösterilmeden kullanılamaz, çoğaltılamaz ve yayınlanamaz. Sitemizde yayınlanan haberlerin tüm hakları Sporx'e aittir. Aksi bir uygulamanın varlığı halinde ilgili web sitesi sahibi ve yetkilileri hakkında, FSEK, TCK, TTK ve BK'nın ilgili maddelerine muhalefet sebebi ile ceza, maddi ve manevi tazminat davası açılacaktır. sporx.com web sitesinde yer alan tüm sayısal veriler, istatistikler ve tahminler sadece bilgilendirme amaçlıdır. Köşe yazılarında yer alan ve üyeler tarafından yaratılan içerik yazarların ve üyelerin kendi görüşleri olup; ilgili konu hakkında sporx.com'un genel görüşünü yansıtmaz. Web sayfalarımızda yer alan bilgiler ve doğrulukları tarafımızca garanti edilmemekte olup, bu bilgiler belli bir getirinin sağlanmasına yönelik olarak verilmemektedir. Bu nedenle bu sayfalarda yer alan bilgilerdeki hatalardan, eksikliklerden ya da bu bilgilere dayanılarak yapılan işlemlerden doğacak her türlü maddi/manevi zararlardan ve her ne şekilde olursa olsun üçüncü kişilerin uğrayabileceği her türlü zararlardan dolayı sporx.com sorumlu tutulamaz. GİZLİLİK VE KİŞİSEL VERİLERİN KORUNMASI POLİTİKASI İşbu Gizlilik ve Kişisel Verilerin Korunması Politikası, Maksimum İletişim Hizmetleri A.Ş. ('Şirket') olarak içerik sağlayıcısı ve veri sorumlusu olduğumuz www.sporx.com adresli internet sitemiz (\"İnternet Sitesi\") ve sair yollar üzerinden hangi kişisel verilerin ne şekilde toplandığı, kullanıldığı, kimlerle paylaşılabileceği, Kullanıcıların/Üyelerin hangi haklara sahip oldukları, bunları ne şekilde kullanabilecekleri ve çerezler hakkında bilgi vermek amacıyla hazırlanmıştır. İnternet Sitemizi ziyaret eden, kullanan, üye olan, erişen, yorum, bilgi, görüntü, video, resim, fotoğraf gibi içerik gönderen kişi ve kuruluşlar (\"Kullanıcı/Üye\") işbu Gizlilik ve Kişisel Verilerin Korunması Politikası'nda yer alan tüm şartları kabul etmiş bulunmaktadır. Şirketin, işbu Gizlilik ve Kişisel Verilerin Korunması Politikası'nda yapacağı değişiklikler ve güncellemeler İnternet Sitemizde yayınlandığı andan itibaren geçerlilik kazanmış sayılır. Bu nedenle, İnternet Sitemiz ziyaret edilmeden önce işbu Gizlilik ve Kişisel Verilerin Korunması Politikası'nın Kullanıcı/Üye tarafından gözden geçirilmesi ve yapılan değişiklik ve/veya düzeltmelerin Kullanıcı/Üye tarafından dikkate alınmasını öneririz. 1. Kişisel Verilerin Toplanması 1.1. İnternet Sitemizi görüntülemek ve ziyaret etmek için Kullanıcının/Üyenin kişisel verilerini paylaşması gerekmemektedir. Ancak, Kullanıcı/Üye, İnternet Sitemizin sunduğu özellikler ve hizmetlerden herhangi birine katılmak, yararlanmak veya bunları kullanmak isterse, bu durumda kendisinden çeşitli kişisel ve/veya demografik veriler sağlanması talep edilebilecektir. 1.2. İşbu Gizlilik ve Kişisel Verilerin Korunması Politikası'nda kullanılan kişisel veriler terimi; ad-soyad, e-posta adresi, telefon numarası, doğum tarihi, yaş, cinsiyet ve Kullanıcının/Üyenin sosyal medya hesaplarıyla bağlanması durumunda mezkûr hesaplar aracılığıyla paylaşılmasına onay verdiği bilgiler dâhil olmak üzere ancak bunlarla sınırlı olmamak kaydıyla Kullanıcıyı/Üyeyi doğrudan veya dolaylı olarak tanımlamaya yönelik verileri ifade etmektedir. 1.3. Kullanıcının/Üyenin, Şirket'e ilettiği kişisel veriler, aşağıda belirtilen amaçlar çerçevesinde işlenecek olup, hiçbir durumda öngörülen amacın dışında kullanılmayacaktır. Kullanıcıya/Üyeye ait kişisel veriler; Şirket tarafından daha iyi bir hizmet sağlamak, Kullanıcının/Üyenin sorularını cevaplamak ve etkin bir müşteri hizmeti sunmak, gerektiğinde temas kurmak, yayınlar göndermek, elektronik posta ile bülten göndermek ya da bildirimlerde bulunmak, Kullanıcı/Üye adına üyelik hesabı oluşturmak, verilen hizmetlerin devamını ve iyileştirilmesini sağlamak, ihtiyaç duyulduğunda geçmişe yönelik bilgilere yeniden ulaşmak, Kullanıcının/Üyenin ilgi alanlarını tanımlayarak toplanan veriler ile iş geliştirme, pazarlama, iletişim gibi operasyonel faaliyetleri yürütmek ve geliştirmek, Kullanıcının/Üyenin mevcut sosyal ağ hesapları ile siteye daha kolay erişimini sağlamak, Kanun'dan ve sair mevzuattan doğan yükümlülüklerimizi yerine getirmek, istati"
 }
