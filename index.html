@@ -1486,6 +1486,27 @@ body.tb2 #hdrRefresh{display:flex!important}
 #v-power .pw-star{display:none}
 @media (prefers-reduced-motion:reduce){.pw-one1.chg{animation:none}.o1-st.live i{animation:none}}
 </style>
+<style id="canli-v70">
+/* v70 Canlı: gerçek altın renkli "Canlı altın kupon" düğmesi — sürekli taranır */
+.lg-btn{position:relative;overflow:hidden;width:100%;display:flex;align-items:center;gap:12px;text-align:left;margin:0 0 12px;padding:14px 16px;border-radius:18px;border:1px solid #F9E7A1;
+  color:#2A1C00;background:linear-gradient(135deg,#8C6A1F 0%,#D4AF37 18%,#FFF0B3 38%,#E6C35C 52%,#B8892B 72%,#F7DC7A 100%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.7),inset 0 -2px 6px rgba(120,80,0,.35),0 10px 28px -12px rgba(212,175,55,.85);min-height:64px;-webkit-tap-highlight-color:transparent}
+.lg-btn::after{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 30%,rgba(255,255,255,.65) 46%,transparent 62%);transform:translateX(-120%);animation:lgShine 3.2s ease-in-out infinite}
+@keyframes lgShine{0%{transform:translateX(-120%)}55%,100%{transform:translateX(120%)}}
+.lg-btn .lg-ic{font-size:26px;filter:drop-shadow(0 1px 1px rgba(0,0,0,.25))}
+.lg-btn .lg-t{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.lg-btn .lg-t b{font:900 16px/1.2 var(--font,system-ui);letter-spacing:.01em}
+.lg-btn .lg-t small{font:700 12px/1.3 var(--font,system-ui);color:#4A3300}
+.lg-btn .lg-p{font:900 24px var(--round,system-ui);font-variant-numeric:tabular-nums;color:#2A1C00;text-shadow:0 1px 0 rgba(255,255,255,.5)}
+.lg-btn.off{filter:saturate(.35) brightness(.75)}.lg-btn.off::after{animation:none;display:none}
+.lg-btn.new{animation:lgPop .6s ease}@keyframes lgPop{0%{transform:scale(.97)}60%{transform:scale(1.02)}100%{transform:none}}
+.lg-pan{margin:-4px 0 12px;padding:10px 12px;border-radius:16px;border:1px solid rgba(233,199,102,.55);background:linear-gradient(180deg,rgba(233,199,102,.12),rgba(233,199,102,.03));display:flex;flex-direction:column;gap:8px}
+.lg-pan .pw-r{cursor:pointer}
+.lg-pan .lg-add{width:100%;min-height:48px;border-radius:14px;font:900 15px var(--font,system-ui);color:#2A1C00;background:linear-gradient(135deg,#D4AF37,#FFF0B3 45%,#C9A646);box-shadow:inset 0 1px 0 rgba(255,255,255,.7)}
+.lg-pan .lg-n{margin:0;font-size:11.5px;color:var(--ink3)}
+.lv-c.lg-on{box-shadow:0 0 0 2px #E6C35C,0 0 18px -4px rgba(230,195,92,.8);border-radius:12px}
+@media (prefers-reduced-motion:reduce){.lg-btn::after{animation:none;display:none}.lg-btn.new{animation:none}}
+</style>
 </head>
 <body>
 <div class="splash" id="splash" aria-hidden="true"><img src="icons/logo-full.png" alt=""></div>
@@ -5425,7 +5446,7 @@ if((location.hash||"")==="#sonuclar") setTimeout(()=>$("navRes").click(),200);
 // =====================================================================
 // BULUTOXX v35: Otomatik sürüm güncelleme — yeni sürüm yayınlanınca uygulama kendini yeniler
 // =====================================================================
-const APP_V="2026-10-25.70";
+const APP_V="2026-10-25.71";
 (function autoUpdate(){
   let shown=false;
   async function check(auto){
@@ -7379,6 +7400,45 @@ setTimeout(()=>{ try{ renderTP(); }catch(e){} },1500);
     }catch(e){}
     return r; };
   try{ if(!$("v-power").hidden) renderPower(); }catch(e){}
+})();
+</script>
+<script id="canli-v70">
+// =====================================================================
+// BULUTOXX v70: Canlı sekmesinde gerçek altın renkli "Canlı altın kupon" — canlı maçlar 10 sn'de bir taranır.
+// Adaylar: Power Now'un kalibre canlı seçimleri (%80+, açık oranlı). Kupon: farklı maçlardan 2–4 seçim,
+// birlikte tutma olasılığı %75+ kalan en yüksek oranlı kombinasyon; yoksa tek başına %85+ en güçlü canlı seçim.
+// Kupondaki maçlar canlı listede altın çerçeveyle işaretlenir. Tahmindir, garanti değildir.
+// =====================================================================
+(function(){
+  const TH=.75, SOLO=.85; let open=false, lastSig="";
+  function build(){ let L=[]; try{ L=pwLiveCands(); }catch(e){} const seen=new Set(), c=[];
+    for(const x of L){ if(!(x.o>=1.05)) continue; if(seen.has(x.m.id)) continue; seen.add(x.m.id); c.push(x); if(c.length>=12) break; }
+    let best=null;
+    (function rec(i,sel,p,o){ if(sel.length>=2&&p>=TH&&(!best||o>best.o+1e-9)) best={sel:sel.slice(),p,o};
+      if(sel.length>=4) return; for(let j=i;j<c.length;j++){ const np=p*c[j].p; if(np<TH) continue; sel.push(c[j]); rec(j+1,sel,np,o*c[j].o); sel.pop(); } })(0,[],1,1);
+    if(!best){ const s=c.filter(x=>x.p>=SOLO).sort((a,b)=>b.p-a.p)[0]; if(s) best={sel:[s],p:s.p,o:s.o}; }
+    return best; }
+  const of2=o=>(+o).toLocaleString("tr-TR",{minimumFractionDigits:2,maximumFractionDigits:2});
+  function paint(){ const cw=document.querySelector("#v-canli .wrap"); if(!cw) return;
+    let b=$("lgBtn"); if(!b){ b=document.createElement("button"); b.type="button"; b.id="lgBtn"; b.className="lg-btn";
+      b.onclick=()=>{ open=!open; buzz(8); try{ Sound.tap(); }catch(e){} paint(); }; }
+    let pan=$("lgPan"); if(!pan){ pan=document.createElement("div"); pan.id="lgPan"; pan.className="lg-pan"; pan.hidden=true; }
+    if(cw.firstElementChild!==b) cw.prepend(b); if(b.nextElementSibling!==pan) b.after(pan);
+    const K=build(), ok=typeof IDL!=="undefined"&&(IDL.ok[1]);
+    document.querySelectorAll(".lv-c.lg-on").forEach(e=>e.classList.remove("lg-on"));
+    if(!K){ b.classList.add("off"); b.setAttribute("aria-expanded","false"); pan.hidden=true;
+      b.innerHTML=`<span class="lg-ic">🥇</span><span class="lg-t"><b>Canlı altın kupon</b><small>${ok?"Taranıyor · şu an yeterince güvenli canlı seçim yok":"Canlı maçlar yükleniyor…"}</small></span>`; lastSig=""; return; }
+    const sig=K.sel.map(x=>x.m.id+x.k).join("|"); if(sig!==lastSig){ b.classList.remove("new"); void b.offsetWidth; if(lastSig) b.classList.add("new"); lastSig=sig; }
+    b.classList.remove("off"); b.setAttribute("aria-expanded",String(open));
+    b.innerHTML=`<span class="lg-ic">🥇</span><span class="lg-t"><b>Canlı altın kupon · ${K.sel.length} maç</b><small>Birlikte tutma olasılığı · toplam oran ${of2(K.o)} · ${open?"kapat":"dokun, gör"}</small></span><span class="lg-p">%${pc9(K.p)}</span>`;
+    K.sel.forEach(x=>{ const r=document.querySelector(`#v-canli .lv-c[data-id="${x.m.id}"]`); if(r) r.classList.add("lg-on"); });
+    pan.hidden=!open; if(!open) return;
+    pan.innerHTML=K.sel.map(x=>{ const m=x.m; return `<div class="pw-r"${omA(m)}><div class="pw-m"><b>${esc(m.h)} - ${esc(m.a)}</b><small>🔴 ${esc(x.clock||"")} · ${m.hs}-${m.as} · ${esc(m.comp||"")}</small></div><div class="pw-s"><span>${esc(x.n)}</span><b>%${pc9(x.p)}</b><i>${of2(x.o)}</i></div></div>`; }).join("")
+      +`<button type="button" class="lg-add" id="lgAdd">+ Altın kuponu listeye ekle</button><p class="lg-n">Canlı maçlar 10 saniyede bir yeniden taranır; maç durumu değişince kupon da değişir. %${Math.round(TH*100)}+ birlikte tutma bile kesinlik değildir · 18+</p>`;
+    $("lgAdd").onclick=()=>{ buzz([10,30,10]); try{ pwAdd(K.sel); }catch(e){} }; }
+  window.lgPaint=paint;
+  try{ const _ira=idlRenderAll; idlRenderAll=function(){ const r=_ira.apply(this,arguments); try{ paint(); }catch(e){} return r; }; }catch(e){}
+  try{ paint(); }catch(e){}
 })();
 </script>
 </body>
