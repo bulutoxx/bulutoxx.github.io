@@ -5514,7 +5514,7 @@ if((location.hash||"")==="#sonuclar") setTimeout(()=>$("navRes").click(),200);
 // =====================================================================
 // BULUTOXX v35: Otomatik sürüm güncelleme — yeni sürüm yayınlanınca uygulama kendini yeniler
 // =====================================================================
-const APP_V="2026-10-25.75";
+const APP_V="2026-10-25.76";
 (function autoUpdate(){
   let shown=false;
   async function check(auto){
@@ -7597,6 +7597,35 @@ setTimeout(()=>{ try{ renderTP(); }catch(e){} },1500);
   mountMenu(); setTimeout(mountMenu,1600); setTimeout(mountMenu,5200);
   if((location.hash||"")==="#at") setTimeout(openAt,450);
   setInterval(()=>{ const v=$("v-at"); if(v&&!v.hidden&&!document.hidden) load(); },10*60e3);
+
+  // ---------- Bulut: at yarışı soruları (yalnız telefondaki kilitli olasılıklardan; uydurma yok) ----------
+  const NZ=t=>String(t||"").toLocaleLowerCase("tr").replace(/ç/g,"c").replace(/ğ/g,"g").replace(/ı/g,"i").replace(/ö/g,"o").replace(/ş/g,"s").replace(/ü/g,"u").replace(/[^a-z0-9 .]/g," ").replace(/\s+/g," ").trim();
+  const VEN=["istanbul","ankara","izmir","bursa","adana","kocaeli","elazig","diyarbakir","sanliurfa","antalya"];
+  const AKEY=/\b(at yarisi|at yarislari|atyarisi|kosu|kosular|kosusu|ganyan|hipodrom|jokey|altili ganyan|plase|veliefendi|atlar)\b|\bat (bolum|yaris)\w*/;
+  async function ensure(){ if(!AT.days.length) await load(); return AT.d?AT.data[AT.d]:null; }
+  function horseRow(h){ return `<b>${esc(h.no)} · ${esc(h.ad)}</b> — kazanma <b>${pct(h.p_kazanma)}</b>, ilk 3: ${pct(h.p_ilk3)}${h.gerekce?` <small>(${esc(h.gerekce)})</small>`:""}`; }
+  const DISCf=()=>`<br><small>Sabah tahmini; ganyan favorisi seviyesinin gerisindedir (sınamada ilk seçim ${pct(((AT.model&&AT.model.degerlendirme&&AT.model.degerlendirme.metrik)||{}).model?.ilk_secim_isabet)}). Garanti değildir · 18+</small>`;
+  async function atAnswer(raw){ const n=NZ(raw); const hasKey=AKEY.test(n), venue=VEN.find(v=>n.includes(v));
+    const D0=AT.d?AT.data[AT.d]:null; let horseHit=null;
+    if(!hasKey&&D0){ for(const r of D0.kosular) for(const h of r.atlar||[]){ const hn=NZ(h.ad); if(hn.length>=7&&(" "+n+" ").includes(" "+hn+" ")) { horseHit={r,h}; break; } } }
+    if(!hasKey&&!horseHit) return null;
+    if(/\bat (bolum|yaris)\w* ac/.test(n)){ setTimeout(()=>{ try{ openAt(); }catch(e){} },300); return {html:"🐎 At Yarışı bölümünü açıyorum.",chips:["Altın atlar","Bugünkü koşular"]}; }
+    const D=await ensure(); if(!D) return {html:"🐎 Bugün için kilitli at yarışı tahmini henüz yok. Laboratuvar her sabah 05:23 ve öğlen 12:23'te yeni programı işler.",chips:["At bölümünü aç"]};
+    const day=dLbl(AT.d);
+    if(horseHit){ const {r,h}=horseHit; return {html:`🐎 ${esc(day)} ${esc(r.hipodrom)} ${r.kosu}. koşu (${esc(r.saat||"")}, ${esc(r.mesafe+" m "+r.pist)}):<br>${horseRow(h)}${DISCf()}`,chips:[`${r.hipodrom} ${r.kosu}. koşu`,"Altın atlar"]}; }
+    if(/\baltin\b/.test(n)){ const G=goldOfDay(D); return {html:G.length?`🥇 ${esc(day)} Altın atlar (en fazla 3):<br>`+G.map(x=>`• ${esc(x.r.hipodrom)} ${x.r.kosu}. koşu ${esc(x.r.saat||"")}: ${horseRow(x.h)}`).join("<br>")+DISCf():`🥇 ${esc(day)} Altın kuralına uyan at yok; model yeterince emin olmadığında Altın vermez.`,chips:["Bugünkü koşular","At bölümünü aç"]}; }
+    const km=n.match(/\b(\d{1,2})\s*\.?\s*(?:kosu|ayak)/); const hips=[...new Set(D.kosular.map(r=>r.hipodrom))];
+    if(km){ const k=+km[1]; let R=D.kosular.filter(r=>r.kosu===k); if(venue) R=R.filter(r=>NZ(r.hipodrom).includes(venue));
+      if(!R.length) return {html:`${esc(day)} ${venue?esc(venue)+" ":""}${k}. koşu bulunamadı. Bugünkü hipodromlar: ${hips.map(esc).join(", ")}.`,chips:hips.map(h=>`${h} ${k}. koşu`).slice(0,3)};
+      if(R.length>1&&!venue) return {html:`Bugün ${k}. koşu birden fazla hipodromda var; hangisi?`,chips:R.map(r=>`${r.hipodrom} ${k}. koşu`)};
+      const r=R[0], A=(r.atlar||[]).slice().sort((a,b)=>b.p_kazanma-a.p_kazanma), ik=r.ikili_onerisi;
+      return {html:`🐎 ${esc(day)} ${esc(r.hipodrom)} ${r.kosu}. koşu · ${esc(r.saat||"")} · ${esc(r.mesafe+" m "+r.pist)} · ${esc(r.sinif||"")}<br>`+A.slice(0,3).map((h,i)=>`${i+1}) ${horseRow(h)}`).join("<br>")+(ik&&ik.sira?`<br>İkili önerisi: <b>${ik.sira.map(esc).join(" - ")}</b> (tam sırayla %${Math.round((ik.p||0)*1000)/10})`:"")+DISCf(),chips:[`${r.hipodrom} ${k+1}. koşu`,"Altın atlar"]}; }
+    let R=D.kosular; if(venue) R=R.filter(r=>NZ(r.hipodrom).includes(venue));
+    const best=R.map(r=>({r,h:(r.atlar||[]).slice().sort((a,b)=>b.p_kazanma-a.p_kazanma)[0]})).filter(x=>x.h).sort((a,b)=>b.h.p_kazanma-a.h.p_kazanma).slice(0,3);
+    return {html:`🐎 ${esc(day)} at yarışları: ${hips.map(h=>`${esc(h)} (${D.kosular.filter(r=>r.hipodrom===h).length} koşu)`).join(", ")}.<br>Modelin en emin olduğu atlar${venue?" ("+esc(venue)+")":""}:<br>`+best.map(x=>`• ${esc(x.r.hipodrom)} ${x.r.kosu}. koşu: ${horseRow(x.h)}`).join("<br>")+DISCf(),
+      chips:[...hips.slice(0,2).map(h=>`${h} 1. koşu`),"Altın atlar","At bölümünü aç"]}; }
+  if(typeof botAnswer==="function"){ const _ba=botAnswer; botAnswer=async function(raw){ try{ const r=await atAnswer(raw); if(r) return r; }catch(e){} return _ba.apply(this,arguments); }; }
+  setTimeout(()=>{ if(!AT.days.length) load(); },8000);
 })();
 </script>
 </body>
