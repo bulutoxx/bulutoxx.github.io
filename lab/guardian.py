@@ -4,7 +4,8 @@ Bir değişiklikten sonra kilitli önerilerin gerçek isabeti belirgin şekilde 
 
 İzlenen yapılandırma: motor ayarları (decay, prior, rho, mkt, marketW, kalibrasyon), motor sürümü, marj yöntemi, analist katsayıları,
 canlı Platt, kalibrasyon yolu (cal_yol: 'sunulan' = uygulamanın gösterdiği piyasa yolunda öğrenilmiş, 'model' = eski yöntem).
-Ölçüt: kilitli önerilerin Brier skoru (düşük = iyi). Değişiklikten önceki ve sonraki dönemde en az 400'er öneri gerekir;
+Ölçüt: kilitli önerilerin Brier skoru (düşük = iyi). ml80'den beri iki dönemde de en az 400'er 'sunulan' kayıt varsa
+(toplayıcı 'sp'/'sok': uygulamanın gösterdiği, calT/gscale/dk dahil öneri) ölçüt odur; yoksa ham 'rp'/'ok'. Değişiklikten önceki ve sonraki dönemde en az 400'er öneri gerekir;
 fark 0,01'den büyükse geri alınır (gürültüyle karışmasın diye eşik bilerek yüksek)."""
 import json, os, glob, sys
 from datetime import date, datetime, timezone, timedelta
@@ -33,6 +34,12 @@ def recs_between(d0, d1):
 
 def brier(rs): return sum((r["rp"] - r["ok"]) ** 2 for r in rs) / len(rs)
 
+def brier_srv(rs):
+    """ml80: uygulamanın gösterdiği öneri (toplayıcı 'sp'/'sok'; calT/gscale/dk dahil). rp bu ayarlardan etkilenmediği için
+    kalibrasyon değişiklikleri ancak bununla izlenebilir."""
+    v = [r for r in rs if r.get("sp") is not None and r.get("sok") is not None]
+    return (sum((r["sp"] - r["sok"]) ** 2 for r in v) / len(v), len(v)) if v else (None, 0)
+
 def main():
     today = date.today().isoformat()
     log = jl("changes.json", {"degisiklikler": []}) or {"degisiklikler": []}
@@ -60,6 +67,10 @@ def main():
             if (date.fromisoformat(today) - date.fromisoformat(d)).days > 21: ch["durum"] = "yeterli veri yok, kabul"
             continue
         b0, b1 = brier(before), brier(after); ch["brier_once"], ch["brier_sonra"] = round(b0, 4), round(b1, 4)
+        (s0, n0), (s1, n1) = brier_srv(before), brier_srv(after)
+        if n0 >= MIN_N and n1 >= MIN_N:   # iki dönemde de yeterli 'sunulan' kayıt varsa ölçüt odur (kalibrasyon değişikliklerini görür)
+            ch["olcut"] = "sunulan"; ch["brier_ham_once"], ch["brier_ham_sonra"] = ch["brier_once"], ch["brier_sonra"]
+            b0, b1 = s0, s1; ch["brier_once"], ch["brier_sonra"] = round(b0, 4), round(b1, 4)
         if b1 > b0 + MARGIN and not rb.get("aktif"):
             prev = log["degisiklikler"][i - 1]["config"]
             ch["durum"] = "GERİ ALINDI"

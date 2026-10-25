@@ -628,7 +628,7 @@ def calibrate_served(bt, P, legacy=None, deep=None, w_srv=None):
     late_s = np.array([x[0] >= split for x in items]); late_s[len(oi):] = False
     GS = (0.98, 1.0, 1.01, 1.02, 1.03, 1.04, 1.05); TS = (0.9, 0.95, 1.0, 1.05, 1.1, 1.15, 1.2, 1.25, 1.3); DK = (0.97, 1.0, 1.03, 1.06, 1.1, 1.14, 1.18, 1.22)
     cs = {g: served_probs(sl[:, 0], sl[:, 1], g, rho, h1) for g in GS}
-    cm = {g: outcome_probs(lhm * g, lam * g, rho)[:2] for g in GS}
+    cm = {g: served_probs(lhm, lam, g, rho, h1) for g in GS}   # ml80: model yolu da uygulamanın dist()'i (iki yarı DC) ile
     def part(p, pO, r, ov, hasou, idx, T, dk):
         q = _cal3(p[idx], T, dk); l1 = -np.log(np.maximum(q[np.arange(len(idx)), r[idx]], 1e-9)).mean()
         j = idx[hasou[idx]]; o = np.clip(pO[j], 1e-9, 1 - 1e-9)
@@ -654,8 +654,116 @@ def calibrate_served(bt, P, legacy=None, deep=None, w_srv=None):
     ok = ad["amac"] < ki["amac"] - 1e-5 and gold_ok
     out = {"T": best[0], "g": best[1], "dk": best[2], "kabul": bool(ok), "yol": "sunulan", "w_oranli": round(w, 3), "ayrim": split,
            "n_piyasa": len(items), "n_derin": len(deep), "son30": R}
+    # 🎯 ml80: tek "son %30" sınaması gürültülüydü (65–92 Altın seçim; CI'da %77,2 → %76,6 farkıyla reddedildi).
+    # Yürüyen pencere (her yaz 1 Temmuz'dan bölünen yıllık katlar, derin arşiv + sezon ≈53 bin oranlı maç sınama) ile karar verilir.
+    try:
+        wf = _served_walkforward(items, cs, cm, res, tot, dts, rs, ovs, hou, w, legacy, TS, GS, DK, n_oi=len(oi), part=part)
+        out["wf"] = wf
+        if wf.get("karar") is not None:
+            out["kabul_son30"] = out["kabul"]; out["kabul"] = bool(wf["karar"])
+            if wf["karar"]: out["T"], out["g"], out["dk"] = wf["secilen"]
+    except Exception as e:
+        print("yürüyen pencere atlandı:", e.__class__.__name__, e, flush=True)
     print("Sunulan yol kalibrasyonu:", json.dumps(out, ensure_ascii=False), flush=True)
     return out
+
+WF_MIN_TEST, WF_MIN_TRAIN = 1500, 5000
+def _served_walkforward(items, cs, cm, res, tot, dts, rs, ovs, hou, w, legacy, TS, GS, DK, n_oi, part):
+    """ml80 — sunulan yol kalibrasyonunun yürüyen pencere sınaması.
+    Katlar: 1 Temmuz sınırlarıyla yıllık; k. kat yalnız kendinden ÖNCEKİ maçlarla (derin arşiv + sezon; model yolu satırları
+    varsa (1−w) ağırlıkla) T/g/dk seçer, kendi yılında sınanır. Sınama tahminleri birleştirilip şu an kullanılan yapılandırmayla
+    (eski model-yolu kalibrasyonu) karşılaştırılır. Kabul (hepsi):
+      1) birleşik sınamada piyasa amacı (1X2 + ½·2,5 log-kayıp) daha düşük ve katların çoğunda daha düşük,
+      2) öneri Brier'i daha düşük, 3) Altın isabeti (≥%78, oran 1,20–2,00, günde ≤3) düşmüyor (her iki tarafta ≥100 Altın),
+      4) model (oransız) yolu: son katın model satırlarında amaç en fazla 0,002 kötüleşebilir.
+    Kabul edilirse uygulanan değer TÜM veride aynı amaçla seçilen T/g/dk'dır (yöntem sınandı, son veriyle yeniden öğrenilir)."""
+    n = len(items); idt = np.array([x[0] for x in items]); mdt = np.array(dts)
+    if n < WF_MIN_TRAIN + WF_MIN_TEST: return {"karar": None, "neden": "az veri"}
+    y0, y1 = int(min(idt)[:4]) + 1, int(max(idt)[:4])
+    cuts = [f"{y}-07-01" for y in range(y0, y1 + 1)]
+    folds = []
+    for i, a in enumerate(cuts):
+        b = cuts[i + 1] if i + 1 < len(cuts) else "9999"
+        nt = int(((idt >= a) & (idt < b)).sum()); ntr = int((idt < a).sum())
+        if nt >= WF_MIN_TEST and ntr >= WF_MIN_TRAIN: folds.append((a, b))
+        elif folds and nt: folds[-1] = (folds[-1][0], b)   # küçük son dilim önceki kata eklenir
+    if len(folds) < 2: return {"karar": None, "neden": "kat oluşmadı"}
+    grid = [(T, g, dk) for T in TS for g in GS for dk in DK]
+    allm = np.ones(len(mdt), bool)
+    def obj(c, si, mi):
+        T, g, dk = c; a1, a2 = part(*cs[g], rs, ovs, hou, si, T, dk); mk_ = a1 + .5 * a2
+        if len(mi) < 300: return mk_
+        b1, b2 = part(*cm[g], res, tot > 2, allm, mi, T, dk); return w * mk_ + (1 - w) * (b1 + .5 * b2)
+    def mkt(c, si):
+        T, g, dk = c; a1, a2 = part(*cs[g], rs, ovs, hou, si, T, dk); return a1 + .5 * a2
+    def mdl(c, mi):
+        T, g, dk = c; b1, b2 = part(*cm[g], res, tot > 2, allm, mi, T, dk); return b1 + .5 * b2
+    cur = (legacy.get("T", 1.0), legacy.get("g", 1.0) if legacy.get("g", 1.0) in cs else 1.0, legacy.get("dk", 1.0)) if legacy else (1.0, 1.0, 1.0)
+    # öneri düzeyi (recOf): her maçta oranlı seçenekler içinde en yüksek olasılık
+    O1 = np.array([x[1] for x in items], float); OU = np.array([x[2] if x[2] else [0, 0] for x in items], float)
+    def picks(c, idx):
+        T, g, dk = c; p, O = cs[g]; q = _cal3(p[idx], T, dk); Oi = O[idx]
+        C5 = np.column_stack([q, np.where(hou[idx], Oi, -1), np.where(hou[idx], 1 - Oi, -1)])
+        k = C5.argmax(1); j = np.arange(len(idx)); pp = C5[j, k]
+        od = np.where(k < 3, O1[idx][j, np.minimum(k, 2)], OU[idx][j, np.clip(k - 3, 0, 1)])
+        r = rs[idx]; ov = ovs[idx]
+        y = np.where(k < 3, r == k, np.where(k == 3, ov, ~ov)).astype(float)
+        return pp, od, y
+    def gold(dd, pp, od):
+        m = np.zeros(len(pp), bool); by = collections.defaultdict(list)
+        for i in np.where((pp >= .78) & (od >= 1.2) & (od <= 2.0))[0]: by[dd[i]].append(i)
+        for L in by.values():
+            for i in sorted(L, key=lambda i: -pp[i])[:3]: m[i] = True
+        return m
+    rows = []; SEL = {"p": [], "od": [], "y": [], "d": []}; CUR = {"p": [], "od": [], "y": []}; win = 0
+    for a, b in folds:
+        si_tr = np.where(idt < a)[0]; si_te = np.where((idt >= a) & (idt < b))[0]
+        mi_tr = np.where(mdt < a)[0]; mi_te = np.where((mdt >= a) & (mdt < b))[0]
+        c = min(grid, key=lambda x: obj(x, si_tr, mi_tr))
+        o_new, o_cur = mkt(c, si_te), mkt(cur, si_te); win += o_new < o_cur
+        r = {"kat": a, "secilen": list(c), "n": len(si_te), "piyasa_amac": round(o_new, 5), "piyasa_amac_mevcut": round(o_cur, 5)}
+        if len(mi_te) >= 300: r["model_amac"] = round(mdl(c, mi_te), 5); r["model_amac_mevcut"] = round(mdl(cur, mi_te), 5)
+        rows.append(r)
+        for D, cc in ((SEL, c), (CUR, cur)):
+            pp, od, y = picks(cc, si_te); D["p"].append(pp); D["od"].append(od); D["y"].append(y)
+        SEL["d"] += [items[i][0] for i in si_te]
+    dd = SEL["d"]
+    def summ(D):
+        pp, od, y = (np.concatenate(D[k]) for k in ("p", "od", "y")); g = gold(dd, pp, od); m70 = pp >= .7; pc = np.clip(pp, 1e-4, 1 - 1e-4)
+        return {"n": len(pp), "oneri_brier": round(float(np.mean((pp - y) ** 2)), 5), "oneri_ll": round(float(-np.mean(y * np.log(pc) + (1 - y) * np.log(1 - pc))), 5),
+                "n70": int(m70.sum()), "hit70": round(float(y[m70].mean()), 4) if m70.any() else None,
+                "altin_n": int(g.sum()), "altin_hit": round(float(y[g].mean()), 4) if g.any() else None}, (pp, od, y, g)
+    S_new, A = summ(SEL); S_cur, B = summ(CUR)
+    sinama = np.concatenate([np.where((idt >= a) & (idt < b))[0] for a, b in folds])
+    S_new["piyasa_amac"] = round(float(np.average([r["piyasa_amac"] for r in rows], weights=[r["n"] for r in rows])), 5)
+    S_cur["piyasa_amac"] = round(float(np.average([r["piyasa_amac_mevcut"] for r in rows], weights=[r["n"] for r in rows])), 5)
+    # gün blok bootstrap (%95): Δ = aday − mevcut
+    ci = {}
+    try:
+        rng = np.random.default_rng(80); ud = sorted(set(dd)); di = collections.defaultdict(list)
+        for i, d_ in enumerate(dd): di[d_].append(i)
+        di = [np.array(di[d_]) for d_ in ud]; dg, dh, db = [], [], []
+        for _ in range(300):
+            idx = np.concatenate([di[j] for j in rng.integers(0, len(ud), len(ud))])
+            ga, gb = A[3][idx], B[3][idx]
+            if ga.any() and gb.any(): dg.append(A[2][idx][ga].mean() - B[2][idx][gb].mean())
+            ma, mb = A[0][idx] >= .7, B[0][idx] >= .7
+            if ma.any() and mb.any(): dh.append(A[2][idx][ma].mean() - B[2][idx][mb].mean())
+            db.append(np.mean((A[0][idx] - A[2][idx]) ** 2) - np.mean((B[0][idx] - B[2][idx]) ** 2))
+        q = lambda v: [round(float(np.percentile(v, 2.5)), 5), round(float(np.percentile(v, 97.5)), 5)] if v else None
+        ci = {"altin_hit": q(dg), "hit70": q(dh), "oneri_brier": q(db)}
+    except Exception: pass
+    last = rows[-1]
+    model_ok = "model_amac" not in last or last["model_amac"] <= last["model_amac_mevcut"] + 0.002
+    gold_ok = S_new["altin_n"] >= 100 and S_cur["altin_n"] >= 100 and S_new["altin_hit"] >= S_cur["altin_hit"] - 1e-9
+    ok = (S_new["piyasa_amac"] < S_cur["piyasa_amac"] - 1e-5 and win * 2 > len(folds) and S_new["oneri_brier"] <= S_cur["oneri_brier"]
+          and gold_ok and model_ok)
+    allsi = np.arange(n); fin = min(grid, key=lambda x: obj(x, allsi, np.arange(len(mdt))))
+    neden = [] if ok else [t for t, c_ in (("piyasa amacı", S_new["piyasa_amac"] < S_cur["piyasa_amac"] - 1e-5), ("katların çoğu", win * 2 > len(folds)),
+                                           ("öneri Brier", S_new["oneri_brier"] <= S_cur["oneri_brier"]), ("Altın isabeti", gold_ok), ("model yolu", model_ok)) if not c_]
+    return {"karar": bool(ok), "secilen": list(fin), "mevcut": list(cur), "kat_sayisi": len(folds), "kazanilan_kat": int(win),
+            "n_sinama": int(len(sinama)), "aday": S_new, "mevcut_sonuc": S_cur, "fark_ci95": ci, "katlar": rows,
+            "neden": "geçti" if ok else "geçemedi: " + ", ".join(neden)}
 
 def build_ck(season, today):
     """Korner ve kart: takım bazlı oran modeli (gol modeliyle aynı yapı). Laboratuvar: korner 9,5 çizgisinde
@@ -769,7 +877,7 @@ def tune(all_ms, P0):
     return P, fin
 
 GUARD = None
-ENGINE_V = "2026-10-25.ml70"   # ml70: sunulan yol kalibrasyonu + derin arşiv
+ENGINE_V = "2026-10-25.ml80"   # ml80: sunulan yol kalibrasyonunda yürüyen pencere kararı (ml70: sunulan yol + derin arşiv)
 DATA_V = 3   # 3: kupalar ESPN, takvim yılı sezonları, önek eşleme kaldırıldı; 2: aynı eşleşmenin sezonda birden çok oynanması + sıkı isim eşleme   # motor kodu değişince bir kez tam eğitim yapılır
 CAL_INFO = {}
 NEW_TEAM = (0.95, 1.05)   # 3 ay önceden testte (3 sezon) en iyi çıkan: lige yeni gelen takım ortalamaya yakın, hafif zayıf
