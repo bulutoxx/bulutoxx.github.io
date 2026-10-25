@@ -183,6 +183,29 @@ def p3(out):
         out.setdefault("robots_alt", {})[host] = {"durum": st, "metin": t[:800]}
 
 
+def p4(out):
+    """Kullanım şartları metni: StaticPages paketindeki 'kullanim-sartlari' bileşeninin metni (gömülü ise)."""
+    sc = "https://sc.atyarisi.com/10979123351/www/nsn-react/public/js/"
+    st, js, _ = get(sc + "StaticPages.min.js", "*/*", 15_000_000)
+    out["durum"] = st
+    m = re.search(r'path:"/hakkimizda/kullanim-sartlari",component:([A-Za-z_$][\w$]*)', js)
+    comp = m.group(1) if m else None
+    out["bilesen"] = comp
+    tanim = []
+    if comp:
+        for mm in re.finditer(r"[,;\s]" + re.escape(comp) + r"=(?:function|\(|[A-Za-z_$])", js):
+            tanim.append(js[mm.start(): mm.start() + 2500])
+    out["bilesen_tanim"] = tanim[:4]
+    # Uzun Türkçe metin parçaları (sırasıyla), şart metnine özgü kelimeleri içerenlerin çevresi
+    strs = [(mm.start(), mm.group(1)) for mm in re.finditer(r'"((?:[^"\\]|\\.){60,})"', js)]
+    tr = [(i, s) for i, s in strs if re.search(r"[şğıüçŞĞİÜÇ]", s)]
+    anahtar = re.compile(r"kullanım şart|kullanim|işbu|site(?:mizi|nin|de)|telif|fikri|kopyala|çoğalt|izin|otomatik|robot|yazılım|ticari", re.I)
+    sec = [s for i, s in tr if anahtar.search(s)]
+    out["tr_metin_sayisi"] = len(tr)
+    out["sart_adaylari"] = sec[:200]
+    out["sart_toplam_uzunluk"] = sum(len(s) for s in sec)
+
+
 def main():
     hedef = sys.argv[1] if len(sys.argv) > 1 else "p1"
     os.makedirs("lab/kesif/atyarisi", exist_ok=True)
@@ -223,6 +246,8 @@ def main():
         p2(out)
     elif hedef == "p3":
         p3(out)
+    elif hedef == "p4":
+        p4(out)
     out["istek_sayisi"] = SAYAC["n"]
     json.dump(out, open(f"lab/kesif/atyarisi/{hedef}.json", "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     print("tamam", SAYAC["n"], "istek")
