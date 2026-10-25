@@ -1574,6 +1574,13 @@ body.tb2 #hdrRefresh{display:flex!important}
 .at-gr .at-no{color:#2A1C00;background:linear-gradient(135deg,#D4AF37,#FFF0B3 50%,#C9A646)}
 .at-sr{display:grid;grid-template-columns:30px 1fr auto;gap:10px;align-items:center;padding:8px 0;border-top:1px solid rgba(255,255,255,.05)}.at-sr:first-child{border-top:0}
 .at-ok{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-weight:900}.at-ok.y{background:rgba(59,234,126,.18);color:#3BEA7E}.at-ok.n{background:rgba(255,69,58,.15);color:#FF8A80}
+.at-st{display:inline-block;margin-top:6px;padding:3px 9px;border-radius:999px;font:800 11.5px var(--font,system-ui)}
+.at-st.or{background:rgba(59,234,126,.14);color:#3BEA7E}.at-st.ok{background:rgba(59,234,126,.18);color:#3BEA7E}.at-st.no{background:rgba(255,255,255,.08);color:var(--ink2)}
+.at-h{cursor:pointer;border-radius:10px}.at-h:active{background:rgba(255,255,255,.04)}
+.at-h.win .at-no{background:#3BEA7E;color:#04210F}
+.at-share{width:100%;min-height:40px;margin-top:8px;border-radius:10px;background:rgba(34,211,255,.08);border:1px solid rgba(34,211,255,.3);color:#7FE3FF;font:700 13px var(--font,system-ui)}
+.at-fav{margin-bottom:10px;padding:10px 12px;border-radius:14px;border:1px solid rgba(243,220,138,.5);background:rgba(243,220,138,.08);font-size:13px}
+.at-fav b{color:#F3DC8A}.at-fr{padding:7px 0;border-top:1px solid rgba(255,255,255,.06);cursor:pointer}.at-fr:first-of-type{border-top:0;margin-top:4px}
 #moreAt .ic{background:none!important;padding:0;overflow:hidden}#v-at .ltitle{display:none}#v-at #atBack{margin-top:6px}#moreAt .ic svg{width:100%;height:100%}
 </style>
 <style id="gate-v78">
@@ -5547,7 +5554,7 @@ if((location.hash||"")==="#sonuclar") setTimeout(()=>$("navRes").click(),200);
 // =====================================================================
 // BULUTOXX v35: Otomatik sürüm güncelleme — yeni sürüm yayınlanınca uygulama kendini yeniler
 // =====================================================================
-const APP_V="2026-10-25.82";
+const APP_V="2026-10-25.83";
 (function autoUpdate(){
   let shown=false;
   async function check(auto){
@@ -7559,12 +7566,16 @@ setTimeout(()=>{ try{ renderTP(); }catch(e){} },1500);
       AT.days=[]; offs.forEach((o,i)=>{ const d=got[i]; if(d&&d.kosular&&d.kosular.length){ AT.data[d.tarih]=d; AT.days.push(d.tarih); } });
       AT.days.sort(); if(!AT.d||!AT.data[AT.d]) AT.d=AT.days.includes(dISO(0))?dISO(0):AT.days[AT.days.length-1]||null;
       const [m,k]=await Promise.all([j("data/at/model.json"),j("data/at/karne.json")]); AT.model=m; AT.karne=k;
+      AT.canli=AT.canli||{}; const cs=await Promise.all(AT.days.map(d=>j("data/at/canli/"+d+".json"))); AT.days.forEach((d,i)=>{ if(cs[i]&&cs[i].kosular) AT.canli[d]=cs[i]; });
     }finally{ AT.busy=false; } render(); }
   function goldOfDay(D){ const out=[];
     for(const r of D.kosular||[]){ const A=(r.atlar||[]).slice().sort((a,b)=>b.p_kazanma-a.p_kazanma); if(A.length<2) continue;
       const a=A[0], gap=a.p_kazanma-A[1].p_kazanma; if(a.p_kazanma>=.35&&gap>=.12) out.push({r,h:a,s:a.p_kazanma+gap}); }
     return out.sort((x,y)=>y.s-x.s).slice(0,3); }
-  function resOfDay(d){ return ((AT.karne&&AT.karne.kosular)||[]).map(x=>{ const k=String(x.kosu_id||"").split("/"); return Object.assign({tarih:k[0],hipodrom:k[1]||"",kosu:+k[2]||0},x); })
+  function resOfDay(d){ const K=resOfDayK(d); const C=AT.canli&&AT.canli[d]; if(!C) return K; const have=new Set(K.map(x=>x.kosu_id));
+    const ex=(C.kosular||[]).filter(c=>c.sonuc&&!have.has(c.kosu_id)).map(c=>({kosu_id:c.kosu_id,tarih:d,hipodrom:c.hipodrom,kosu:c.kosu,kazanan:c.sonuc.kazanan_ad||c.sonuc.kazanan,ilk_secim:(c.atlar||[]).find(h=>String(h.no)===String(c.sonuc.model_ilk))?.ad||c.sonuc.model_ilk,ilk_secim_tuttu:!!c.sonuc.tuttu,p_kazanan:((c.atlar||[]).find(h=>String(h.no)===String(c.sonuc.kazanan))||{}).p_sabah}));
+    return K.concat(ex).sort((a,b)=>a.hipodrom.localeCompare(b.hipodrom,"tr")||a.kosu-b.kosu); }
+  function resOfDayK(d){ return ((AT.karne&&AT.karne.kosular)||[]).map(x=>{ const k=String(x.kosu_id||"").split("/"); return Object.assign({tarih:k[0],hipodrom:k[1]||"",kosu:+k[2]||0},x); })
       .filter(x=>x.tarih===d).sort((a,b)=>a.hipodrom.localeCompare(b.hipodrom,"tr")||a.kosu-b.kosu); }
   function dLbl(d){ const t=dISO(0); return d===t?"Bugün":d===dISO(1)?"Yarın":d===dISO(-1)?"Dün":d.slice(8,10)+"."+d.slice(5,7); }
   function hero(){ const M=AT.model&&AT.model.degerlendirme, me=M&&M.metrik||{}, h=me.harman||{}, f=me.favori||{}, mo=me.model||{}, n=(M&&M.kosu_sayisi&&M.kosu_sayisi.sinama)||0;
@@ -7573,12 +7584,43 @@ setTimeout(()=>{ try{ renderTP(); }catch(e){} },1500);
       <details class="sx" id="atOz"${(()=>{ try{ return localStorage.getItem("bx-at-oz")==="1"?" open":""; }catch(e){ return ""; } })()}><summary>📈 Model ne kadar başarılı? <small>sınama ve karne</small></summary><div class="sx-in">
       <div class="at-km at-km4"><div><b>${pct(mo.ilk_secim_isabet)}</b><small>sabah tahmini<br>ilk seçim kazandı</small></div><div><b>${pct(h.ilk_secim_isabet)}</b><small>oranla harman<br>ilk seçim kazandı</small></div><div><b>${pct(f.ilk_secim_isabet)}</b><small>ganyan favorisi<br>aynı koşularda</small></div><div><b>${kn?"%"+Math.round(kh/kn*100):"–"}</b><small>kilitli karne<br>${kn?kn+" koşu":"birikiyor"}</small></div></div>
       <p class="at-note">🧪 Dürüst durum (son ${n.toLocaleString("tr-TR")} koşuda sınandı): burada gördüğün <b>sabah tahmini</b> oran açılmadan yapılır ve ganyan favorisinin gerisindedir. Koşu öncesi oranla harmanlanınca olasılık hatasında piyasayı az farkla geçiyor, ama ilk seçim isabetinde henüz favori seviyesinde. Model her gece yeniden öğrenir. Garanti değildir · 18+. Bahis sitesine yönlendirme yoktur.</p></div></details>`; }
-  function race(r){ const A=(r.atlar||[]).slice().sort((a,b)=>b.p_kazanma-a.p_kazanma), mx=A.length?A[0].p_kazanma:1, id=r.kosu_id, op=AT.open.has(id), L=op?A:A.slice(0,4);
-    const ik=r.ikili_onerisi; return `<div class="at-race"><div class="at-rh"><b>${r.kosu}. Koşu</b><span>${esc(r.mesafe+" m · "+r.pist+" · "+r.sinif)}</span><span class="t">${esc(r.saat||"")}</span></div>
-      ${r.kosudan_once===false?`<span class="at-tag">koşudan sonra kilitlendi · karneye sayılmaz</span>`:""}${r.mod&&/yalnız model/.test(r.mod)?` <span class="at-tag">sabah tahmini · ganyan oranı henüz yok</span>`:""}
-      <div style="margin-top:6px">${L.map((h,i)=>`<div class="at-h${i===0?" top":""}"><span class="at-no">${esc(h.no)}</span><span class="at-n"><b>${esc(h.ad)}</b><small>${esc(h.gerekce||"")}</small></span><span class="at-p"><b>${pct(h.p_kazanma)}</b><small>ilk 2: ${pct(h.p_ilk2)}</small></span><span class="at-bar"><i style="width:${Math.max(3,h.p_kazanma/mx*100)}%"></i></span></div>`).join("")}</div>
+  // ---- gün içi canlı veri (data/at/canli/<gün>.json): oranla güncel olasılık + aynı akşam sonuç ----
+  const FAV=(()=>{ try{ return new Set(JSON.parse(localStorage.getItem("bx-at-fav")||"[]")); }catch(e){ return new Set(); } })();
+  const favSave=()=>{ try{ localStorage.setItem("bx-at-fav",JSON.stringify([...FAV].slice(-200))); }catch(e){} };
+  function cRace(r){ const C=AT.canli&&AT.canli[AT.d]; return C?(C.kosular||[]).find(x=>x.kosu_id===r.kosu_id||(x.hipodrom===r.hipodrom&&x.kosu===r.kosu))||null:null; }
+  function merged(r){ const c=cRace(r), byNo={}; if(c) for(const h of c.atlar||[]) byNo[h.no]=h;
+    const A=(r.atlar||[]).map(h=>{ const x=byNo[h.no]||{}; const po=x.p_oran!=null?x.p_oran:null;
+      return Object.assign({},h,{jokey:x.jokey??h.jokey??null,antrenor:x.antrenor??null,kilo:x.kilo??h.kilo??null,yas:x.yas??h.yas??null,form:x.form??h.form??null,son3:x.son3||null,oran:x.oran??null,p_oran:po,p_ilk3_oran:x.p_ilk3_oran??null,p_goster:po!=null?po:h.p_kazanma}); });
+    return {A:A.sort((a,b)=>b.p_goster-a.p_goster), c, oranli:A.some(h=>h.p_oran!=null)}; }
+  function stChip(r,M){ const c=M.c;
+    if(c&&c.sonuc){ const S=c.sonuc; const ok=S.tuttu!=null?!!S.tuttu:(M.A[0]&&String(S.kazanan)===String(M.A[0].no));
+      return `<span class="at-st ${ok?"ok":"no"}">🏁 Bitti · kazanan ${esc(S.kazanan)} ${esc(S.kazanan_ad||"")} · ${ok?"✓ ilk tahmin tuttu":"✗ ilk tahmin tutmadı"}</span>`; }
+    if(M.oranli) return `<span class="at-st or">💹 Oranla güncel${AT.canli[AT.d]&&AT.canli[AT.d].guncelleme_tsi?" · "+esc(AT.canli[AT.d].guncelleme_tsi.slice(11)):""}</span>`;
+    return ""; }
+  function race(r){ const M=merged(r), A=M.A, mx=A.length?A[0].p_goster:1, id=r.kosu_id, op=AT.open.has(id), L=op?A:A.slice(0,4), win=M.c&&M.c.sonuc?String(M.c.sonuc.kazanan):null;
+    const ik=r.ikili_onerisi; return `<div class="at-race" data-rid="${esc(id)}"><div class="at-rh"><b>${r.kosu}. Koşu</b><span>${esc(r.mesafe+" m · "+r.pist+" · "+r.sinif)}</span><span class="t">${esc(r.saat||"")}</span></div>
+      ${stChip(r,M)}${r.kosudan_once===false?`<span class="at-tag">koşudan sonra kilitlendi · karneye sayılmaz</span>`:""}${!M.oranli&&r.mod&&/yalnız model/.test(r.mod)?` <span class="at-tag">sabah tahmini · ganyan oranı henüz yok</span>`:""}
+      <div style="margin-top:6px">${L.map((h,i)=>`<div class="at-h${i===0?" top":""}${win&&String(h.no)===win?" win":""}" data-ah="${esc(id)}|${esc(h.no)}" role="button" tabindex="0"><span class="at-no">${esc(h.no)}</span><span class="at-n"><b>${FAV.has(h.ad)?"⭐ ":""}${esc(h.ad)}${win&&String(h.no)===win?" 🏁":""}</b><small>${esc([h.jokey,h.kilo?h.kilo+" kg":null,h.form?"form "+h.form:null].filter(Boolean).join(" · ")||h.gerekce||"")}</small></span><span class="at-p"><b>${pct(h.p_goster)}</b><small>${h.p_oran!=null?`sabah ${pct(h.p_kazanma)}${h.oran?" · oran "+(+h.oran).toFixed(2).replace(".",","):""}`:`ilk 2: ${pct(h.p_ilk2)}`}</small></span><span class="at-bar"><i style="width:${Math.max(3,h.p_goster/mx*100)}%"></i></span></div>`).join("")}</div>
       ${A.length>4?`<button type="button" class="at-more" data-at="${esc(id)}">${op?"Daralt":"Tüm atlar ("+A.length+")"}</button>`:""}
-      ${ik&&ik.sira?`<div class="at-ik">İkili önerisi: <b>${ik.sira.map(esc).join(" - ")}</b> · tam bu sırayla gelme olasılığı <b>${pct(ik.p)}</b></div>`:""}</div>`; }
+      ${ik&&ik.sira?`<div class="at-ik">İkili önerisi (sabah): <b>${ik.sira.map(esc).join(" - ")}</b> · tam bu sırayla gelme olasılığı <b>${pct(ik.p)}</b></div>`:""}
+      <button type="button" class="at-share" data-sh="${esc(id)}">📤 Bu koşunun tahminini paylaş</button></div>`; }
+  function horseSheet(rid,no){ const D=AT.data[AT.d]; const r=D&&D.kosular.find(x=>x.kosu_id===rid); if(!r) return; const M=merged(r), h=M.A.find(x=>String(x.no)===String(no)); if(!h) return;
+    const old=$("atSheet"); if(old) old.remove(); const el=document.createElement("div"); el.className="gate g2"; el.id="atSheet";
+    const s3=(h.son3||[]).map(k=>`<li>${esc(k.tarih.slice(8,10)+"."+k.tarih.slice(5,7))} · ${esc(k.hipodrom)} ${esc(k.mesafe+" m "+k.pist)} → <b>${k.sira!=null?k.sira+".":"–"}</b></li>`).join("");
+    el.innerHTML=`<div class="gbox" role="dialog" aria-modal="true" style="text-align:left"><h2 style="margin:0 0 4px">${esc(h.no)} · ${esc(h.ad)}</h2>
+      <p class="note" style="margin:0 0 10px">${esc(r.hipodrom)} ${r.kosu}. koşu · ${esc(r.saat||"")} · ${esc(r.mesafe+" m "+r.pist)}</p>
+      <div class="at-km at-km4" style="margin-bottom:10px"><div><b>${pct(h.p_kazanma)}</b><small>sabah<br>kazanma</small></div><div><b>${pct(h.p_oran)}</b><small>oranla<br>kazanma</small></div><div><b>${pct(h.p_ilk3_oran!=null?h.p_ilk3_oran:h.p_ilk3)}</b><small>ilk 3'e<br>girme</small></div><div><b>${h.oran?(+h.oran).toFixed(2).replace(".",","):"–"}</b><small>ganyan<br>oranı</small></div></div>
+      <ul class="g2-l">${h.jokey?`<li><span>🏇</span><div>Jokey: <b>${esc(h.jokey)}</b></div></li>`:""}${h.antrenor?`<li><span>🧑‍🏫</span><div>Antrenör: <b>${esc(h.antrenor)}</b></div></li>`:""}${h.kilo||h.yas?`<li><span>⚖️</span><div>${h.kilo?esc(h.kilo)+" kg":""}${h.kilo&&h.yas?" · ":""}${h.yas?esc(h.yas)+" yaş":""}</div></li>`:""}${h.form?`<li><span>📈</span><div>Son koşu dizisi: <b>${esc(h.form)}</b></div></li>`:""}${h.gerekce?`<li><span>🧠</span><div>${esc(h.gerekce)}</div></li>`:""}</ul>
+      ${s3?`<p class="note" style="margin:4px 0">Son 3 koşusu</p><ul style="margin:0 0 10px;padding-left:18px;font-size:13.5px;line-height:1.6">${s3}</ul>`:""}
+      <button class="g2-go" type="button" id="atFav">${FAV.has(h.ad)?"⭐ Takipten çıkar":"☆ Bu atı takip et"}</button><button class="g2-no" type="button" id="atX">Kapat</button>
+      <p class="g2-s">Olasılıklar BULUTOXX modelinindir; garanti değildir · 18+</p></div>`;
+    document.body.appendChild(el); const close=()=>{ el.classList.add("out"); setTimeout(()=>el.remove(),250); };
+    $("atX").onclick=close; el.onclick=e=>{ if(e.target===el) close(); };
+    $("atFav").onclick=()=>{ FAV.has(h.ad)?FAV.delete(h.ad):FAV.add(h.ad); favSave(); try{ buzz(8); }catch(e){} close(); render(); toast(FAV.has(h.ad)?"⭐ "+h.ad+" takipte":"Takipten çıkarıldı"); }; }
+  async function shareRace(rid){ const D=AT.data[AT.d]; const r=D&&D.kosular.find(x=>x.kosu_id===rid); if(!r) return; const M=merged(r);
+    const t=`🐎 ${r.hipodrom} ${r.kosu}. koşu · ${r.saat||""} (${r.mesafe} m ${r.pist})\nBULUTOXX tahmini${M.oranli?" (oranla güncel)":" (sabah)"}:\n`+M.A.slice(0,3).map((h,i)=>`${i+1}) ${h.no} ${h.ad} %${Math.round(h.p_goster*100)}`).join("\n")+`\nHobi amaçlı olasılıktır, garanti değildir · 18+\nbulutoxx.github.io/#at`;
+    try{ if(navigator.share){ await navigator.share({text:t}); return; } }catch(e){ return; }
+    try{ await navigator.clipboard.writeText(t); toast("📋 Koşu tahmini kopyalandı"); }catch(e){ location.href="https://wa.me/?text="+encodeURIComponent(t); } }
   function render(){ const v=$("v-at"); if(!v||v.hidden) return; const box=$("atBox"); if(!box) return;
     let h=hero();
     if(!AT.d){ box.innerHTML=h+`<div class="panel"><p class="note" style="margin:0">${AT.busy?"Yükleniyor…":"Bugün ve yakın günler için kilitli at yarışı tahmini bulunamadı. Laboratuvar her sabah 05:23 ve öğlen 12:23'te yeni programı işler."}</p></div>`; return; }
@@ -7586,6 +7628,8 @@ setTimeout(()=>{ try{ renderTP(); }catch(e){} },1500);
     const G=goldOfDay(D), S=resOfDay(AT.d);
     h+=`<div class="at-tabs" role="tablist"><button type="button" data-t="tah" aria-pressed="${AT.tab==="tah"}">Tahminler</button><button type="button" data-t="altin" aria-pressed="${AT.tab==="altin"}">🥇 Altın${G.length?` <small>${G.length}</small>`:""}</button><button type="button" data-t="sonuc" aria-pressed="${AT.tab==="sonuc"}">Sonuçlar${S.length?` <small>${S.length}</small>`:""}</button></div>`;
     h+=`<div class="at-chips" role="group" aria-label="Gün">${AT.days.map(d=>`<button type="button" data-d="${d}" aria-pressed="${d===AT.d}">${dLbl(d)}</button>`).join("")}</div>`;
+    const FT=[]; if(FAV.size) for(const r of D.kosular) for(const h of r.atlar||[]) if(FAV.has(h.ad)) FT.push({r,h});
+    if(FT.length&&AT.tab==="tah") h+=`<div class="at-fav"><b>⭐ Takip ettiğin atlar bugün koşuyor</b>${FT.map(x=>`<div class="at-fr" data-ah="${esc(x.r.kosu_id)}|${esc(x.h.no)}" role="button">${esc(x.r.hipodrom)} ${x.r.kosu}. koşu ${esc(x.r.saat||"")} · <b>${esc(x.h.no)} ${esc(x.h.ad)}</b> · ${pct(merged(x.r).A.find(y=>y.no===x.h.no)?.p_goster)}</div>`).join("")}</div>`;
     if(AT.tab==="altin"){
       h+=`<div class="at-gold"><div class="at-gh">🥇 Günün Altın atları <small>${esc(dLbl(AT.d))} · tüm hipodromlar · en fazla 3</small></div>
         <p class="at-gn">Kural: koşusunda kazanma olasılığı en yüksek olan, en yakın rakibine en az 12 puan fark atan ve olasılığı %35+ olan at; günde en çok güvenilen 3 tanesi. Futboldaki Altın gibi temkinli seçilir.</p>
@@ -7597,7 +7641,7 @@ setTimeout(()=>{ try{ renderTP(); }catch(e){} },1500);
     } else {
       h+=`<div class="at-chips" role="group" aria-label="Hipodrom">${hips.map(x=>`<button type="button" data-h="${esc(x)}" aria-pressed="${x===AT.hip}">${esc(x)} · ${D.kosular.filter(r=>r.hipodrom===x).length}</button>`).join("")}</div>`;
       const KS=D.kosular.filter(r=>r.hipodrom===AT.hip).sort((a,b)=>a.kosu-b.kosu), now=Date.now();
-      const bitti=r=>{ const t=Date.parse(AT.d+"T"+(r.saat||"23:59")+":00+03:00"); return isFinite(t)&&t+15*60e3<now; };
+      const bitti=r=>{ const c=cRace(r); if(c&&c.sonuc) return true; const t=Date.parse(AT.d+"T"+(r.saat||"23:59")+":00+03:00"); return isFinite(t)&&t+15*60e3<now; };
       const ac=KS.filter(r=>!bitti(r)), bt=KS.filter(bitti);
       h+=ac.map(race).join("")||`<div class="panel"><p class="note" style="margin:0">Bu hipodromda bugün başlamamış koşu kalmadı.</p></div>`;
       if(bt.length) h+=`<details class="sx"><summary>🏁 Biten koşular <small>${bt.length}</small></summary><div class="sx-in">${bt.map(race).join("")}</div></details>`;
@@ -7608,7 +7652,9 @@ setTimeout(()=>{ try{ renderTP(); }catch(e){} },1500);
     const oz=$("atOz"); if(oz) oz.addEventListener("toggle",()=>{ try{ localStorage.setItem("bx-at-oz",oz.open?"1":"0"); }catch(e){} });
     box.querySelectorAll("[data-t]").forEach(b=>b.onclick=()=>{ AT.tab=b.dataset.t; buzz(6); try{ Sound.tap(); }catch(e){} render(); });
     box.querySelectorAll("[data-h]").forEach(b=>b.onclick=()=>{ AT.hip=b.dataset.h; buzz(6); render(); });
-    box.querySelectorAll("[data-at]").forEach(b=>b.onclick=()=>{ const k=b.dataset.at; AT.open.has(k)?AT.open.delete(k):AT.open.add(k); render(); }); }
+    box.querySelectorAll("[data-at]").forEach(b=>b.onclick=()=>{ const k=b.dataset.at; AT.open.has(k)?AT.open.delete(k):AT.open.add(k); render(); });
+    box.querySelectorAll("[data-ah]").forEach(b=>b.onclick=()=>{ const [rid,no]=b.dataset.ah.split("|"); try{ buzz(6); }catch(e){} horseSheet(rid,no); });
+    box.querySelectorAll("[data-sh]").forEach(b=>b.onclick=()=>shareRace(b.dataset.sh)); }
   // görünüm + menü girişi
   const main=document.querySelector("main"); if(main&&!$("v-at")){ const s=document.createElement("section"); s.className="view"; s.id="v-at"; s.hidden=true;
     s.innerHTML=`<div class="bt-head cmp at-head"><div class="tb-row" id="atRow"></div></div><div class="ltitle"><div><h1>At Yarışı</h1><p>Deneme · kendini her gece eğiten olasılık modeli</p></div></div><div class="wrap"><div id="atBox"></div></div>`;
@@ -7635,7 +7681,7 @@ setTimeout(()=>{ try{ renderTP(); }catch(e){} },1500);
     c.onclick=openAt; g.appendChild(c); }
   mountMenu(); setTimeout(mountMenu,1600); setTimeout(mountMenu,5200);
   if((location.hash||"")==="#at") setTimeout(openAt,450);
-  setInterval(()=>{ const v=$("v-at"); if(v&&!v.hidden&&!document.hidden) load(); },10*60e3);
+  setInterval(()=>{ const v=$("v-at"); if(v&&!v.hidden&&!document.hidden) load(); },5*60e3);
 
   // ---------- Bulut: at yarışı soruları (yalnız telefondaki kilitli olasılıklardan; uydurma yok) ----------
   const NZ=t=>String(t||"").toLocaleLowerCase("tr").replace(/ç/g,"c").replace(/ğ/g,"g").replace(/ı/g,"i").replace(/ö/g,"o").replace(/ş/g,"s").replace(/ü/g,"u").replace(/[^a-z0-9 .]/g," ").replace(/\s+/g," ").trim();
