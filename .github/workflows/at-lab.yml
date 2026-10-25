@@ -1,14 +1,13 @@
 name: BULUTOXX at yarisi laboratuvari (gece)
-# Yalnız at-hazirlik dalına yazar; futbol sistemine, index.html'e ve data/*.json'a dokunmaz.
+# Yalnız data/at ve lab/at/RAPOR.md yazar; futbol sistemine, index.html'e ve data/*.json'a dokunmaz.
 # Veri: github.com/cenkozgur/tjk-data aynası çalışma anında sığ klonlanır (_tjk-data, gitignore'da); tjk.org'a istek YOK.
-# Not: GitHub zamanlanmış (schedule) iş akışlarını yalnız varsayılan daldan (main) çalıştırır. Bu dosya main'e
-# birleştirilene kadar iş akışı yalnız at-hazirlik dalına lab/at/** itildiğinde veya elle çalışır.
+# Her gün 05:23 ve 12:23 (TSİ): ayna gece 04:30 civarı güncellenir; öğlen çalışması geç gelen programı da kilitler.
 on:
   schedule:
-    - cron: "23 2 * * *"
+    - cron: "23 2,9 * * *"
   workflow_dispatch:
   push:
-    branches: [at-hazirlik]
+    branches: [main]
     paths: ["lab/at/**", "!lab/at/RAPOR.md", ".github/workflows/at-lab.yml"]
 permissions:
   contents: write
@@ -21,8 +20,6 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
-        with:
-          ref: at-hazirlik
       - uses: actions/setup-python@v5
         with: { python-version: "3.12" }
       - run: pip install -q numpy
@@ -36,10 +33,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: python lab/at/arastirma.py || echo "arastirma.py başarısız"
-      - name: Yalnız türetilmiş çıktıları at-hazirlik dalına yaz
+      - name: Yalnız türetilmiş çıktıları kaydet
         run: |
           git config user.name "bulutoxx-bot"; git config user.email "bulutoxx-bot@users.noreply.github.com"
           git add data/at lab/at/RAPOR.md
           git diff --cached --quiet && { echo "değişiklik yok"; exit 0; }
           git commit -qm "At lab: gece eğitimi, kilit ve karne [skip ci]"
-          for i in 1 2 3; do git pull -q --no-rebase origin at-hazirlik && git push -q origin HEAD:at-hazirlik && break; sleep 5; done
+          for i in 1 2 3; do git pull -q --rebase -X theirs origin main && git push -q origin HEAD:main && break; sleep 8; done

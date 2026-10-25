@@ -381,8 +381,8 @@ def rapor_yaz(mj, karne, bugun, ayna_durumu):
     a("## Zamanlama")
     a("")
     a("`.github/workflows/at-lab.yml` her gece 02:23 UTC (05:23 TSİ) için ayarlı; **ancak GitHub zamanlanmış iş akışlarını yalnız varsayılan "
-      "daldan (main) çalıştırır**. Bu dosya main'e birleştirilene kadar iş akışı yalnız `at-hazirlik` dalına `lab/at/**` itildiğinde "
-      "veya elle (workflow_dispatch) çalışır. Çıktılar her durumda yalnız `at-hazirlik` dalına yazılır.")
+      "daldan (main) çalıştırır**. Laboratuvar main dalındadır; iş akışı her gün 05:23 ve 12:23 TSİ'de, ayrıca `lab/at/**` değişince "
+      "veya elle çalışır. Çıktılar yalnız `data/at/` ve `lab/at/RAPOR.md`'ye yazılır.")
     a("")
     a(f"_Kaynak atfı: TJK verilerinin herkese açık aynası {veri.AYNA_URL}. Model ve olasılıklar BULUTOXX laboratuvarınındır._")
     open(RAPOR, "w", encoding="utf-8").write("\n".join(L) + "\n")

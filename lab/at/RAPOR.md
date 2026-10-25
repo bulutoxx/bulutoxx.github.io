@@ -145,6 +145,6 @@ Kilit zamanı 2026-10-25 16:41 TSİ. Mod: yalnız model (piyasa oranı henüz yo
 
 ## Zamanlama
 
-`.github/workflows/at-lab.yml` her gece 02:23 UTC (05:23 TSİ) için ayarlı; **ancak GitHub zamanlanmış iş akışlarını yalnız varsayılan daldan (main) çalıştırır**. Bu dosya main'e birleştirilene kadar iş akışı yalnız `at-hazirlik` dalına `lab/at/**` itildiğinde veya elle (workflow_dispatch) çalışır. Çıktılar her durumda yalnız `at-hazirlik` dalına yazılır.
+`.github/workflows/at-lab.yml` her gece 02:23 UTC (05:23 TSİ) için ayarlı; **ancak GitHub zamanlanmış iş akışlarını yalnız varsayılan daldan (main) çalıştırır**. Laboratuvar main dalındadır; iş akışı her gün 05:23 ve 12:23 TSİ'de, ayrıca `lab/at/**` değişince veya elle çalışır. Çıktılar yalnız `data/at/` ve `lab/at/RAPOR.md`'ye yazılır.
 
 _Kaynak atfı: TJK verilerinin herkese açık aynası https://github.com/cenkozgur/tjk-data. Model ve olasılıklar BULUTOXX laboratuvarınındır._
