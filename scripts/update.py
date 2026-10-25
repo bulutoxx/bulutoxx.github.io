@@ -518,6 +518,145 @@ def apply_cal(p, P):
     q = p ** T; q /= q.sum(1, keepdims=True); q[:, 1] *= dk; q /= q.sum(1, keepdims=True)
     return q
 
+# ------------------------------------------------------------------ 🎯 sunulan yol kalibrasyonu (2026-10-25, ml70)
+# Teşhis: calT/gscale/dk motorun MODEL backtest'inde öğreniliyordu, ama uygulama (index.html dist()) bunları oranlı maçta
+# PİYASA yoluna uyguluyor (marketW=1 → olasılık tamamen piyasadan). 11.426 maçlık aylık yürüyen sınamada eski ayarlar
+# piyasa yolunu kötüleştiriyordu (1X2 log-loss 1,00249 → 1,00273; Altın isabeti %80,1 → %77,2). Burada kalibrasyon
+# uygulamanın gerçekten sunduğu yolda (power marj ayırma → gol beklentisi tablosu → yarı yarıya Dixon-Coles → T/dk) öğrenilir.
+_UI_TAB = {}
+def _dc_grid(l1, l2, rho, K):
+    k = np.arange(K + 1); lf = np.array([math.lgamma(i + 1) for i in k])
+    a = np.exp(-l1[:, None] + k[None] * np.log(np.maximum(l1[:, None], 1e-9)) - lf); b = np.exp(-l2[:, None] + k[None] * np.log(np.maximum(l2[:, None], 1e-9)) - lf)
+    g = a[:, :, None] * b[:, None, :]
+    g[:, 0, 0] *= np.maximum(1 - l1 * l2 * rho, 0); g[:, 0, 1] *= 1 + l1 * rho; g[:, 1, 0] *= 1 + l2 * rho; g[:, 1, 1] *= 1 - rho
+    g = np.maximum(g, 0); return g / g.sum((1, 2), keepdims=True)
+
+def ui_market_lam(odds, ous, rho):
+    """index.html fitMarket()'in aynısı: power marj ayırma, (0,25–3,8)×(0,2–3,4) tablo, 1X2 (+2,5 üst) en yakın nokta."""
+    key = round(float(rho), 4)
+    if key not in _UI_TAB:
+        LH, LA = np.meshgrid(np.arange(0.25, 3.8001, 0.05), np.arange(0.2, 3.4001, 0.05), indexing="ij"); LH = LH.ravel(); LA = LA.ravel()
+        G = _dc_grid(LH, LA, rho, 10); ii, jj = np.meshgrid(np.arange(11), np.arange(11), indexing="ij")
+        _UI_TAB[key] = (LH, LA, (G * (ii > jj)).sum((1, 2)), (G * (ii == jj)).sum((1, 2)), (G * (ii < jj)).sum((1, 2)), (G * ((ii + jj) > 2)).sum((1, 2)))
+    LH, LA, TH, TD, TA, TO = _UI_TAB[key]
+    p = np.array([power_devig(o) for o in odds]); po = np.array([power_devig(o)[0] if o else np.nan for o in ous])
+    out = np.zeros((len(p), 2))
+    for s in range(0, len(p), 400):
+        pp, oo = p[s:s + 400], po[s:s + 400]
+        e = (TH[None] - pp[:, :1]) ** 2 + (TD[None] - pp[:, 1:2]) ** 2 + (TA[None] - pp[:, 2:3]) ** 2
+        has = ~np.isnan(oo)
+        if has.any(): e[has] += (TO[None] - oo[has, None]) ** 2
+        k = e.argmin(1); out[s:s + 400, 0] = LH[k]; out[s:s + 400, 1] = LA[k]
+    return out
+
+def served_probs(lh, la, g, rho, h1):
+    """index.html dist()'in aynısı (kalibrasyonsuz kısım): kıstırma, gol ölçeği g, iki yarı ayrı Dixon-Coles, maç sonu = birleşim."""
+    lh = np.clip(lh, .15, 4.5) * g; la = np.clip(la, .1, 4) * g
+    g1 = _dc_grid(lh * h1, la * h1, rho, 7); g2 = _dc_grid(lh * (1 - h1), la * (1 - h1), rho * .6, 7)
+    ft = np.zeros((len(lh), 15, 15))
+    for a in range(8):
+        for b in range(8): ft[:, a:a + 8, b:b + 8] += g1[:, a, b, None, None] * g2
+    i, j = np.meshgrid(np.arange(15), np.arange(15), indexing="ij")
+    return np.stack([(ft * (i > j)).sum((1, 2)), (ft * (i == j)).sum((1, 2)), (ft * (i < j)).sum((1, 2))], 1), (ft * ((i + j) > 2)).sum((1, 2))
+
+def _cal3(p, T, dk):
+    q = p ** T; q /= q.sum(1, keepdims=True); q[:, 1] *= dk; return q / q.sum(1, keepdims=True)
+
+def _gold_stats(q, O, items, idx):
+    """Öneri (recOf: oranlı seçenekler içinde en yüksek olasılık) düzeyi ölçüm: ikili log-loss/Brier, ≥%70 ve Altın
+    (≥%78, oran 1,20–2,00, günde en fazla 3) isabeti."""
+    picks = []
+    for t in idx:
+        d, odds, ou, r, ov = items[t]
+        c = [(q[t, 0], odds[0], r == 0), (q[t, 1], odds[1], r == 1), (q[t, 2], odds[2], r == 2)]
+        if ou: c += [(O[t], ou[0], ov), (1 - O[t], ou[1], not ov)]
+        b = max(c, key=lambda x: x[0]); picks.append((d, float(b[0]), b[1], bool(b[2])))
+    if not picks: return {}
+    pp = np.array([x[1] for x in picks]); yy = np.array([x[3] for x in picks], float); pc = np.clip(pp, 1e-4, 1 - 1e-4)
+    m70 = pp >= .70; byd = collections.defaultdict(list)
+    for x in picks:
+        if x[1] >= .78 and 1.20 <= x[2] <= 2.00: byd[x[0]].append(x)
+    gold = [x for L in byd.values() for x in sorted(L, key=lambda x: -x[1])[:3]]
+    return {"oneri_ll": round(float(-np.mean(yy * np.log(pc) + (1 - yy) * np.log(1 - pc))), 5), "oneri_brier": round(float(np.mean((pp - yy) ** 2)), 5),
+            "n70": int(m70.sum()), "hit70": round(float(yy[m70].mean()), 4) if m70.any() else None,
+            "altin_n": len(gold), "altin_hit": round(float(np.mean([x[3] for x in gold])), 4) if gold else None}
+
+def load_deep(season):
+    """🗄️ Derin arşiv (lab/derin.py: football-data'nın bitmiş eski sezonları). Yalnız season.json'daki en eski maçtan önceki,
+    oranlı maçlar döner (çakışma yok). Dosya yoksa boş liste."""
+    out = []
+    first = {lg: min(m["d"] for m in d["matches"]) for lg, d in season.items() if d.get("matches") and not d.get("cup")}
+    for f in sorted(__import__("glob").glob(os.path.join(DATA, "derin", "*-*.json"))):
+        try: D = json.load(open(f, encoding="utf-8"))
+        except Exception: continue
+        lg = D.get("lg"); cut = first.get(lg, "9999")
+        for r in D.get("m", []):
+            if r[0] < cut and r[5] and r[6] and r[7]:
+                out.append({"d": r[0], "ft": [r[3], r[4]], "odds": [r[5], r[6], r[7]], "ou": [r[8], r[9]] if r[8] and r[9] else None})
+    return out
+
+def _odds_share():
+    """Uygulamadaki tahminlerin ne kadarı oranlı (piyasa yolu)? Son fikstür dosyasından; yoksa 0,7."""
+    try:
+        F = json.load(open(os.path.join(DATA, "fixtures.json"), encoding="utf-8"))
+        if len(F) >= 50: return min(max(sum(1 for f in F if f.get("odds")) / len(F), 0.5), 0.95)
+    except Exception: pass
+    return 0.7
+
+def calibrate_served(bt, P, legacy=None, deep=None, w_srv=None):
+    """calT/gscale/dk'yı uygulamanın sunduğu yolda öğren. Amaç = w·(oranlı maç, piyasa yolu) + (1−w)·(oransız maç, model yolu);
+    w = fikstürde oranlı maç payı. İlk %70'te (öncesi + derin arşiv) seçilir, son %30'da sınanır.
+    Kabul: son %30'da amaç şu anki (model-yolu) kalibrasyondan iyi VE Altın isabeti ondan düşük değil."""
+    rows = bt["rows"]; n = len(rows); res = bt["res"]; rho = P["rho"]; h1 = P.get("h1", .44); mw = P.get("marketW", .6)
+    if n < 500: return {"kabul": False, "neden": "az veri"}
+    w = _odds_share() if w_srv is None else w_srv
+    tot = np.array([sum(r[1]["ft"]) for r in rows]); dts = [r[1]["d"] for r in rows]
+    split = sorted(dts)[int(n * .7)]; late_m = np.array([d >= split for d in dts])
+    lhm = np.array([r[2] for r in rows]); lam = np.array([r[3] for r in rows])
+    oi = [i for i, r in enumerate(rows) if r[1].get("odds")]
+    items = [(rows[i][1]["d"], rows[i][1]["odds"], rows[i][1].get("ou"), int(res[i]), tot[i] > 2) for i in oi]
+    deep = (deep or []) if mw >= 0.9 else []          # derin arşivde model tahmini yok: yalnız piyasa ağırlıklıyken kullanılır
+    for m in deep:
+        a, b = m["ft"]; items.append((m["d"], m["odds"], m["ou"], 0 if a > b else 1 if a == b else 2, a + b > 2))
+    if len(oi) < 300: return {"kabul": False, "neden": "oranlı maç az"}
+    mk = ui_market_lam([x[1] for x in items], [x[2] for x in items], rho)
+    sl = mk.copy()
+    if mw < 1:
+        sl[:len(oi), 0] = np.exp((1 - mw) * np.log(lhm[oi]) + mw * np.log(mk[:len(oi), 0]))
+        sl[:len(oi), 1] = np.exp((1 - mw) * np.log(lam[oi]) + mw * np.log(mk[:len(oi), 1]))
+    rs = np.array([x[3] for x in items]); ovs = np.array([x[4] for x in items]); hou = np.array([bool(x[2]) for x in items])
+    late_s = np.array([x[0] >= split for x in items]); late_s[len(oi):] = False
+    GS = (0.98, 1.0, 1.01, 1.02, 1.03, 1.04, 1.05); TS = (0.9, 0.95, 1.0, 1.05, 1.1, 1.15, 1.2, 1.25, 1.3); DK = (0.97, 1.0, 1.03, 1.06, 1.1, 1.14, 1.18, 1.22)
+    cs = {g: served_probs(sl[:, 0], sl[:, 1], g, rho, h1) for g in GS}
+    cm = {g: outcome_probs(lhm * g, lam * g, rho)[:2] for g in GS}
+    def part(p, pO, r, ov, hasou, idx, T, dk):
+        q = _cal3(p[idx], T, dk); l1 = -np.log(np.maximum(q[np.arange(len(idx)), r[idx]], 1e-9)).mean()
+        j = idx[hasou[idx]]; o = np.clip(pO[j], 1e-9, 1 - 1e-9)
+        l2 = -np.mean(np.where(ov[j], np.log(o), np.log(1 - o))) if len(j) else 0.0
+        return float(l1), float(l2)
+    es, ls = np.where(~late_s & (np.arange(len(items)) >= 0))[0], np.where(late_s)[0]
+    em, lm = np.where(~late_m)[0], np.where(late_m)[0]
+    ones = np.ones(n, bool)
+    def obj(T, g, dk, si, mi):
+        a1, a2 = part(*cs[g], rs, ovs, hou, si, T, dk); b1, b2 = part(*cm[g], res, tot > 2, ones, mi, T, dk)
+        return w * (a1 + .5 * a2) + (1 - w) * (b1 + .5 * b2)
+    best = min(((T, g, dk) for T in TS for g in GS for dk in DK), key=lambda x: obj(*x, es, em))
+    def rep(T, g, dk):
+        p, O = cs[g]; q = _cal3(p, T, dk); a1, a2 = part(p, O, rs, ovs, hou, ls, T, dk); b1, b2 = part(*cm[g], res, tot > 2, ones, lm, T, dk)
+        return dict({"amac": round(obj(T, g, dk, ls, lm), 5), "piyasa_ll_1x2": round(a1, 5), "piyasa_ll_ou": round(a2, 5), "model_ll_1x2": round(b1, 5), "model_ll_ou": round(b2, 5)},
+                    **_gold_stats(q, O, items, ls))
+    R = {"kimlik": rep(1.0, 1.0, 1.0), "aday": rep(*best)}
+    if legacy: R["eski_model_yolu"] = rep(legacy.get("T", 1.0), legacy.get("g", 1.0) if legacy.get("g", 1.0) in cs else 1.0, legacy.get("dk", 1.0))
+    # Kıyas: şu an kullanılan yapılandırma (eski model-yolu kalibrasyonu; yoksa kimlik). Aday hem amaçta iyi olmalı
+    # hem de Altın isabetini düşürmemeli (iki tarafta da ≥20 Altın seçim varsa ölçülür).
+    ki, ad = R.get("eski_model_yolu") or R["kimlik"], R["aday"]
+    gold_ok = (ad.get("altin_n", 0) < 20 or ki.get("altin_n", 0) < 20) or (ad.get("altin_hit") or 0) >= (ki.get("altin_hit") or 0) - 1e-9
+    ok = ad["amac"] < ki["amac"] - 1e-5 and gold_ok
+    out = {"T": best[0], "g": best[1], "dk": best[2], "kabul": bool(ok), "yol": "sunulan", "w_oranli": round(w, 3), "ayrim": split,
+           "n_piyasa": len(items), "n_derin": len(deep), "son30": R}
+    print("Sunulan yol kalibrasyonu:", json.dumps(out, ensure_ascii=False), flush=True)
+    return out
+
 def build_ck(season, today):
     """Korner ve kart: takım bazlı oran modeli (gol modeliyle aynı yapı). Laboratuvar: korner 9,5 çizgisinde
     lig ortalamasına göre +%1,5-2,8; kart 3,5 çizgisinde +%3-5 isabet (2024'te seçildi, 2025-26'da doğrulandı)."""
@@ -630,7 +769,7 @@ def tune(all_ms, P0):
     return P, fin
 
 GUARD = None
-ENGINE_V = "2026-10-24.6"
+ENGINE_V = "2026-10-25.ml70"   # ml70: sunulan yol kalibrasyonu + derin arşiv
 DATA_V = 3   # 3: kupalar ESPN, takvim yılı sezonları, önek eşleme kaldırıldı; 2: aynı eşleşmenin sezonda birden çok oynanması + sıkı isim eşleme   # motor kodu değişince bir kez tam eğitim yapılır
 CAL_INFO = {}
 NEW_TEAM = (0.95, 1.05)   # 3 ay önceden testte (3 sezon) en iyi çıkan: lige yeni gelen takım ortalamaya yakın, hafif zayıf
@@ -898,9 +1037,8 @@ def pick_calib(season, rho):
     Olasılık dilimlerine göre gerçek isabet; bir önceki sezonda öğrenilip son sezonda doğrulanır."""
     # Kendi arşivimiz (scripts/collector.py: tüm iddaa liglerinde kilitli öneri + sonuç) yeterince büyüdüyse onu kullan
     try:
-        import glob as _g
-        arc = sorted(_g.glob(os.path.join(DATA, "archive", "*.json")))
-        ar = [(os.path.basename(f)[:10], r) for f in arc for r in json.load(open(f, encoding="utf-8")).values() if r.get("ok") is not None and r.get("rp")]
+        import arsiv   # güncel + kalıcı (eski/) arşiv katmanı
+        ar = arsiv.kayitlar(DATA)
         if len(ar) >= 3000:
             edges = [0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 1.01]; mid = sorted(a[0] for a in ar)[len(ar) // 2]
             def tab2(rs):
@@ -1073,7 +1211,7 @@ def grade_predlog(log, all_ms, today):
             m = cands[0]; e["r"] = m["ft"]
         elif (today - date.fromisoformat(e["d"])).days > 10:
             e["r"] = False   # ertelendi / bulunamadı
-    keep = [e for e in log if (today - date.fromisoformat(e["d"])).days <= 120]
+    keep = [e for e in log if (today - date.fromisoformat(e["d"])).days <= 400]   # ml70: 120 → 400 gün (veritabanı büyür)
     return keep
 
 def live_report(log, today):
@@ -1221,9 +1359,6 @@ def main():
     if not quick or not os.path.exists(os.path.join(DATA, "ck.json")):
         try: print("Korner/kart modeli:", build_ck(season, today), "lig", flush=True)
         except Exception as e: print("korner/kart atlandı:", e, flush=True)
-    if not quick and bt:
-        cal = calibrate(bt, P["rho"]); P["calT"], P["gscale"], P["dk"] = cal["T"], cal["g"], cal["dk"]
-        CAL_INFO.clear(); CAL_INFO.update(cal)
     if not quick:
         P["h1"] = h1_share(all_ms)
         mw, mstats = tune_market(bt) if bt else (0.6, None)
@@ -1235,6 +1370,24 @@ def main():
             mm = re.match(r"piyasa \+ bizim %(\d+)", kb)
             if mm: P["marketW"] = round(1 - int(mm.group(1)) / 100, 2); P["auto_lab"] = kb
         except Exception: pass
+        if RB and RB.get("params") and RB["params"].get("marketW") is not None: P["marketW"] = RB["params"]["marketW"]
+    if not quick and bt:
+        cal = calibrate(bt, P["rho"]); P["calT"], P["gscale"], P["dk"] = cal["T"], cal["g"], cal["dk"]; P["cal_yol"] = "model"
+        CAL_INFO.clear(); CAL_INFO.update(cal)
+        # 🎯 ml70: kalibrasyonu uygulamanın sunduğu yolda öğren (kabul edilirse eski model-yolu kalibrasyonunun yerine geçer).
+        # Koruyucu geri alma aktifse ve önceki yapılandırmada bu özellik kapalıysa dondurulur (canli_platt ile aynı kalıp).
+        try:
+            if RB and RB.get("cal_yol") != "sunulan":
+                CAL_INFO["sunulan"] = {"kabul": False, "neden": "Koruyucu geri alma süresince dondurulmuş"}
+            else:
+                deep = load_deep(season)
+                srv = calibrate_served(bt, P, legacy=cal, deep=deep)
+                CAL_INFO["sunulan"] = srv
+                if srv.get("kabul"): P["calT"], P["gscale"], P["dk"], P["cal_yol"] = srv["T"], srv["g"], srv["dk"], "sunulan"
+        except Exception as e:
+            print("sunulan yol kalibrasyonu atlandı:", e.__class__.__name__, e, flush=True)
+        CAL_INFO["kullanilan"] = {"yol": P["cal_yol"], "T": P["calT"], "g": P["gscale"], "dk": P["dk"]}
+    if not quick:
         if RB and RB.get("params"):
             for k in ("marketW", "calT", "gscale", "dk"):
                 if RB["params"].get(k) is not None: P[k] = RB["params"][k]
@@ -1318,6 +1471,13 @@ def main():
                               "n": len([m for m in d["matches"] if m["season"] == d.get("season")]), "n_all": len(d["matches"]),
                               "avg": round(sum(sum(m["ft"]) for m in d["matches"] if m["season"] == d.get("season")) / max(1, len([m for m in d["matches"] if m["season"] == d.get("season")])), 2)}
                          for lg, d in season.items()}}
+    # 🗄️ ml70: veritabanı büyüklüğü (uygulama için yeni alan; okumazsa zararsız)
+    try:
+        import arsiv
+        dx = json.load(open(os.path.join(DATA, "derin", "index.json"), encoding="utf-8")) if os.path.exists(os.path.join(DATA, "derin", "index.json")) else {}
+        model["veritabani"] = {"sezon_maci": sum(len(d["matches"]) for d in season.values()), "derin_maci": dx.get("toplam", 0),
+                               "derin_dosya": dx.get("dosya", 0), "arsiv": arsiv.ozet(DATA)}
+    except Exception as e: print("veritabanı özeti atlandı:", e, flush=True)
     json.dump(clean_nan(model), open(mp, "w", encoding="utf-8"), ensure_ascii=False, indent=1, allow_nan=False)
     hp = os.path.join(DATA, "history.json")
     hist = json.load(open(hp, encoding="utf-8")) if os.path.exists(hp) else []

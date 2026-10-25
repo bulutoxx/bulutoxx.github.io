@@ -14,6 +14,7 @@ Hiçbir yapay zekâ servisine (Claude vb.) bağlı değildir; tüm botlar GitHub
    canlı, sonuçlar)    │                    🛡️ Bekçi           15 dakikada bir             health                          canlı oranları doğrudan
  EuroLeague            ┘                    🔬 Araştırmacı     her gece 03:07 UTC          research                        iddaa'dan okur)
  PyPI (penaltyblog)  ──────────────────────▶📊 Analist         her gece                    analyst
+ football-data (eski sezonlar) ────────────▶🗄️ Derin arşiv     her gece (bir kez indirir)  derin/*
                                             🛟 Koruyucu        her gece                    changes, rollback
                                             🧹 Denetçi         her gece                    dq
                                             🎨 Kalite          her gece                    qa, qa/*.jpg
@@ -44,6 +45,10 @@ Futbolda tek maçın sonucu doğası gereği belirsizdir; hiçbir model her maç
    Sistem bu yüzden piyasa + kalibrasyon üzerine kuruludur. Konsey bir pazarda iki sezonda da piyasayı geçerse onay beklemeden devreye girer (scripts/konsey.py yaklaşan maçlara konsey olasılığını ekler); koruyucu sonrasını izler.
 2. **Kalibrasyon:** Gösterilen yüzde, geçmişte o güvendeki önerilerin gerçek tutma oranına göre düzeltilir
    (maç öncesi: 9.000+ maç; canlı: kilitli canlı seçimler; lig bazında: analist).
+   Maç öncesi ayarlar (calT keskinleştirme, gscale gol ölçeği, dk beraberlik payı) **uygulamanın gerçekten gösterdiği yolda**
+   öğrenilir (`calibrate_served`, `params.cal_yol = "sunulan"`): power marj ayırma → gol beklentisi tablosu → iki yarı Dixon-Coles → T/dk.
+   Amaç = oranlı maç payı × piyasa yolu + kalanı × model yolu; ilk %70 (+ derin arşiv) öğrenme, son %30 sınama; şu anki yapılandırmadan
+   iyi değilse veya Altın isabetini düşürürse eski (model yolu) ayar kalır. Koruyucu `cal_yol`'u izler, geri almada dondurur.
 3. **Seçicilik (pas geçme):** Güven %58'in altındaysa öneri verilmez ("⏸️ Pas"). Güçlü öneri %70+, Power Now canlı %80+.
    Az ama isabetli öneri, çok ama yarı yarıya öneriden iyidir.
 4. **Dürüst ölçüm ve geri alma:** Her öneri maçtan önce kilitlenir, sonuçla puanlanır; koruyucu bozulan değişikliği geri alır.
@@ -53,12 +58,14 @@ Futbolda tek maçın sonucu doğası gereği belirsizdir; hiçbir model her maç
 | Dosya | Üreten | Okuyan | İçerik |
 |---|---|---|---|
 | season.json | Motor | Motor, denetçi | Tüm liglerin maçları, oranlar, piyasa beklenen golü |
-| model.json | Motor | Uygulama, koruyucu, bekçi | Ayarlar, geriye dönük test, öneri kalibrasyonu, kupa gücü |
+| model.json | Motor | Uygulama, koruyucu, bekçi | Ayarlar (`cal_yol`), geriye dönük test (`backtest.kalibrasyon.sunulan`: son %30 kimlik/eski/aday karşılaştırması), öneri kalibrasyonu, kupa gücü, `veritabani` (sezon/derin/arşiv büyüklüğü) |
 | fixtures.json | Motor | Uygulama | Yaklaşan maçlar + iddaa oranları, MBS, yarışma adı |
 | iddaa.json | Motor | Uygulama, canlı kayıt | Maç öncesi gol beklentisi (8 gün) |
-| archive/GGGG-AA-GG.json | Toplayıcı | Motor, analist, araştırmacı, koruyucu | Kilitli öneri + oran + sonuç |
+| archive/GGGG-AA-GG.json | Toplayıcı | Motor, analist, araştırmacı, koruyucu, uygulama (son 30 gün) | Kilitli öneri + oran + sonuç (son 120 gün) |
+| archive/eski/GGGG-AA-GG.json | Toplayıcı (`scripts/arsiv.py`) | Motor, analist, araştırmacı, koruyucu | 120 günden eski günler: yalnız puanlı kayıtlar, `lam` atılmış; bir kez yazılır, **silinmez** |
+| derin/<lig>-<sezon>.json, derin/index.json | Derin arşiv (`lab/derin.py`) | Motor (`load_deep` → kalibrasyon) | football-data bitmiş eski sezonlar (son 5): `m` = [tarih, ev, dep, ev_gol, dep_gol, o1, oX, o2, o2.5üst, o2.5alt]; `tam: false` = ağ yokken season.json'dan geçici kopya |
 | archive/live/*.json | Canlı kayıt | Toplayıcı | Kilitli canlı seçimler ve sonuçları |
-| daily.json | Toplayıcı | Uygulama, koruyucu | Günlük karne, canlı kalibrasyon (`canli.bins`; `canli.platt` = zaman sıralı sınamayı geçerse `kabul: true` olan logit-doğrusal canlı kalibrasyon) |
+| daily.json | Toplayıcı | Uygulama, koruyucu | Günlük karne, `veritabani` (arşiv gün/kayıt/puanlı), canlı kalibrasyon (`canli.bins`; `canli.platt` = zaman sıralı sınamayı geçerse `kabul: true` olan logit-doğrusal canlı kalibrasyon) |
 | research.json | Araştırmacı | Motor, uygulama | Yeni ligler, kütüphane sürümü, marj yöntemi (power / prop / shin / hibrit: marj <%12 power, üstü oransal) |
 | analyst.json | Analist | Uygulama | Lig güven katsayıları (doğrulanmışsa; ampirik Bayes küçültme), `teshis`: pazar ve oran bandına göre sapma |
 | changes.json, rollback.json | Koruyucu | Motor, analist, uygulama | Değişiklik geçmişi, geri alma |
@@ -76,3 +83,12 @@ Futbolda tek maçın sonucu doğası gereği belirsizdir; hiçbir model her maç
 3. `.github/workflows/otonom-ekip.yml`'e bir adım ekle (veya kendi zamanlamasıyla yeni iş akışı); `git add` listesine çıktısını ekle.
 4. Uygulamadaki Motor sayfasının "Otonom ekip" paneline bir satır ekle.
 5. Koruyucu, `config()` içine eklenen her ayarı otomatik izler.
+
+## Veri tabanı ve eğitim (ml70, 2026-10-25)
+
+- **Hiçbir kilitli öneri silinmez.** Toplayıcı 120 günden eski arşiv günlerini `archive/eski/`'ye taşır (`scripts/arsiv.py`); tüm okuyucular
+  (`arsiv.kayitlar`) iki katmanı birlikte okur. `predlog.json` 400 gün tutulur.
+- **Derin arşiv:** gece botu football-data'nın bitmiş son 5 sezonunu bir kez indirir (≈50 bin maç); sonra yalnız eksik sezonu dener.
+- **Eğitim:** saatlik motor yeni sonuç gelince tam öğrenir; kalibrasyon artık uygulamanın sunduğu yolda ve derin arşivle öğrenilir.
+  Ölçüm (8.990 maç, Ocak–Ekim 2026, aylık yürüyen pencere, piyasa yolu): 1X2 log-loss 1,00220 → 1,00106; öneri Brier 0,23661 → 0,23611;
+  %70+ öneri isabeti %74,2 → %75,9; Altın (≥%78, oran 1,20–2,00, günde ≤3) %76,1 → %77,9. Bedel: oransız (yalnız model) yolda 1X2 log-loss 1,0095 → 1,0104.

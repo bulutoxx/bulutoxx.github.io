@@ -13,6 +13,7 @@ import numpy as np
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import iddaa as ID
 import update as U
+import arsiv
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA = os.path.join(ROOT, "data"); ARC = os.path.join(DATA, "archive")
@@ -20,7 +21,9 @@ TR = ZoneInfo("Europe/Istanbul")
 KEEP_DAYS = 120
 
 def rec_for(ms, ou, rho):
-    """Uygulamadaki öneriyle aynı kural: MS 1/X/2 ve 2,5 Alt/Üst içinden en yüksek olasılık."""
+    """Uygulamadaki öneriyle aynı kural: MS 1/X/2 ve 2,5 Alt/Üst içinden en yüksek olasılık.
+    Not (ml70): arşivdeki 'rp' bilerek kalibrasyonsuz (ham piyasa) tutulur; kilitli 605 iddaa önerisinde calT/gscale/dk
+    uygulamak log-loss'u kötüleştirdi (0,6719 → 0,6755). Koruyucu ve analist bu ham ölçeği izler."""
     tmp = [dict({"odds": ms}, **({"ou": ou} if ou else {}))]
     U.market_xg(tmp)
     lh, la = tmp[0]["xg"]
@@ -281,10 +284,11 @@ def main():
             if s["ht"].get("ht") is not None: r["h1"], r["a1"] = s["ht"]["ht"], s["at"]["ht"]
             r["ok"] = hit(r.get("rk"), r["hs"], r["as"]); n_res += 1
     for d, recs in days.items(): save_day(d, recs)
-    # eski arşivleri temizle
-    cut = (now.astimezone(TR).date() - timedelta(days=KEEP_DAYS)).isoformat()
-    for f in glob.glob(os.path.join(ARC, "*.json")):
-        if os.path.basename(f)[:10] < cut: os.remove(f)
+    # eski arşivler artık SİLİNMEZ: 120 günden eski günler data/archive/eski/ katmanına sıkıştırılarak taşınır (veritabanı büyür)
+    try:
+        nz = arsiv.sikistir(DATA, KEEP_DAYS, now.astimezone(TR).date())
+        if nz: print(f"Arşiv: {nz} eski gün kalıcı katmana taşındı", flush=True)
+    except Exception as ex: print("arşiv sıkıştırma atlandı:", ex.__class__.__name__, ex, flush=True)
     # 3) günlük özet
     summ = []
     for f in sorted(glob.glob(os.path.join(ARC, "*.json")))[-30:]:
@@ -297,10 +301,12 @@ def main():
         summ.append({"d": d, "n": len(g), "kayit": len(recs), "hit": round(sum(r["ok"] for r in g) / len(g), 4),
                      **{k: {"n": len(v), "hit": round(sum(r["ok"] for r in v) / len(v), 4) if v else None} for k, v in tiers.items()},
                      "ornek": [{"h": r["h"], "a": r["a"], "s": f"{r['hs']}-{r['as']}", "o": NM.get(r["rk"], r["rk"]), "p": r["rp"], "odd": r.get("ro")} for r in top]})
-    allg = [r for f in glob.glob(os.path.join(ARC, "*.json")) for r in json.load(open(f, encoding="utf-8")).values() if r.get("ok") is not None]
+    allg = [r for _, r in arsiv.kayitlar(DATA, puanli=False) if r.get("ok") is not None]
     out = {"updated": now.strftime("%Y-%m-%dT%H:%MZ"), "gunler": summ,
            "toplam": {"n": len(allg), "hit": round(sum(r["ok"] for r in allg) / len(allg), 4) if allg else None,
                       "guclu_n": sum(1 for r in allg if r["rp"] >= .7), "guclu_hit": (round(sum(r["ok"] for r in allg if r["rp"] >= .7) / max(1, sum(1 for r in allg if r["rp"] >= .7)), 4))}}
+    try: out["veritabani"] = arsiv.ozet(DATA)   # yeni alan: {gun, kayit, puanli, ilk, eski_gun}
+    except Exception: pass
     try: live_snapshot()
     except Exception as ex: print("canlı kayıt atlandı:", ex.__class__.__name__, ex, flush=True)
     try: out["canli"] = live_grade()

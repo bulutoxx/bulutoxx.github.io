@@ -1,5 +1,5 @@
 name: BULUTOXX otonom ekip
-# Her gün: 🔬 araştırmacı (kaynak keşfi, kütüphane takibi, marj deneyi), 📊 analist (lig güven katsayıları),
+# Her gün: 🗄️ derin arşiv (bitmiş eski sezonlar, bir kez), 🔬 araştırmacı (kaynak keşfi, kütüphane takibi, marj deneyi), 📊 analist (lig güven katsayıları),
 # 🎨 tasarımcı/kalite (yayındaki uygulamayı telefonda açıp her düğmeyi dener, ekran görüntüsü alır).
 # Doğrulanan bulgular data/*.json üzerinden motora ve uygulamaya otomatik geçer; sorun varsa GitHub'da uyarı kaydı açılır.
 on:
@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths: ["lab/research.py", "lab/analyst.py", "lab/qa.mjs", "lab/guardian.py", "lab/dq.py", ".github/workflows/otonom-ekip.yml"]
+    paths: ["lab/research.py", "lab/analyst.py", "lab/qa.mjs", "lab/guardian.py", "lab/dq.py", "lab/derin.py", "scripts/arsiv.py", ".github/workflows/otonom-ekip.yml"]
 permissions:
   contents: write
 concurrency:
@@ -24,6 +24,10 @@ jobs:
         with: { python-version: "3.12" }
       - uses: actions/setup-node@v4
         with: { node-version: "20" }
+      - run: pip install numpy==2.1.3
+      - name: 🗄️ Derin arşiv (football-data bitmiş sezonlar; bir kez indirilir, sonra yalnız eksik sezon)
+        env: { DERIN_SEZON: "5", DERIN_BUDGET: "600" }
+        run: python lab/derin.py || echo "derin arşiv atlandı"
       - name: 🔬 Araştırmacı
         run: python lab/research.py || echo "araştırmacı atlandı"
       - name: 📊 Analist
@@ -39,7 +43,7 @@ jobs:
       - name: Kaydet
         run: |
           git config user.name "bulutoxx-bot"; git config user.email "bulutoxx-bot@users.noreply.github.com"
-          git add data/research.json data/analyst.json data/qa.json data/qa data/changes.json data/rollback.json data/dq.json data/gelisim.json 2>/dev/null || true
+          git add data/derin data/research.json data/analyst.json data/qa.json data/qa data/changes.json data/rollback.json data/dq.json data/gelisim.json 2>/dev/null || true
           git diff --cached --quiet && exit 0
           git commit -qm "Otonom ekip raporu $(date -u +%F)"
           for i in 1 2 3; do git pull -q --rebase -X theirs origin main && git push -q origin HEAD:main && break; sleep 8; done

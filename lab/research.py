@@ -9,6 +9,8 @@ import json, os, glob, math, urllib.request, sys
 from datetime import date
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA = os.path.join(ROOT, "data")
+sys.path.insert(0, os.path.join(ROOT, "scripts"))
+import arsiv   # güncel + kalıcı arşiv katmanı
 UA = {"User-Agent": "Mozilla/5.0 (BULUTOXX research)", "Accept": "application/json"}
 
 def get(u):
@@ -58,10 +60,7 @@ def main():
         if old.get("penaltyblog") and old["penaltyblog"] != v: out["bulgular"].append(f"penaltyblog {old['penaltyblog']} → {v} yayınlandı; pazar günkü laboratuvar yeni sürümü yarıştıracak.")
     except Exception: out["penaltyblog"] = old.get("penaltyblog")
     # 3) marj ayırma deneyi (kendi arşivimiz)
-    recs = []
-    for f in sorted(glob.glob(os.path.join(DATA, "archive", "*.json"))):
-        for r in json.load(open(f, encoding="utf-8")).values():
-            if r.get("hs") is not None and r.get("ms") and len(r["ms"]) == 3: recs.append((os.path.basename(f)[:10], r))
+    recs = [(d, r) for d, r in arsiv.kayitlar(DATA, puanli=False) if r.get("hs") is not None and r.get("ms") and len(r["ms"]) == 3]
     out["devig"] = old.get("devig", "power"); out["devig_kabul"] = old.get("devig_kabul", False)
     if len(recs) >= 1500:
         recs.sort(key=lambda x: x[0]); mid = recs[len(recs) // 2][0]

@@ -3,9 +3,11 @@ Kilitli öneri arşivinden (data/archive) lig ve pazar bazında gerçek isabeti 
 Bir ligde öneriler beklenenden sistemli olarak kötü/iyi tutuyorsa o lig için 'güven katsayısı' öğrenir.
 Katsayılar arşivin ilk yarısında öğrenilip ikinci yarısında sınanır; tahmini iyileştirmiyorsa uygulanmaz.
 Çıktı: data/analyst.json (uygulama okur; öneri yüzdeleri ve Power Now buna göre düzeltilir)."""
-import json, os, glob, collections, math
+import json, os, glob, collections, math, sys
 from datetime import date
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.join(ROOT, "scripts"))
+import arsiv   # güncel + kalıcı arşiv katmanı
 ARC = os.path.join(ROOT, "data", "archive")
 MIN_N, SHRINK = 60, 80
 YONTEM = "eb"   # "eb": ampirik Bayes logit küçültme (2026-10-25'ten beri), "carpim": eski çarpımsal k
@@ -54,11 +56,7 @@ def brier(recs, F):
     return (sum((r["rp"] - r["ok"]) ** 2 for r in recs) / len(recs), sum((adj(r) - r["ok"]) ** 2 for r in recs) / len(recs))
 
 def main():
-    recs = []
-    for f in sorted(glob.glob(os.path.join(ARC, "*.json"))):
-        d = os.path.basename(f)[:10]
-        for r in json.load(open(f, encoding="utf-8")).values():
-            if r.get("ok") is not None and r.get("rp"): recs.append(dict(r, _d=d))
+    recs = [dict(r, _d=d) for d, r in arsiv.kayitlar(os.path.join(ROOT, "data"))]
     out = {"tarih": date.today().isoformat(), "n": len(recs), "ligler": {}, "pazar": {}, "kabul": False, "aciklama": ""}
     # pazar bazında isabet (MS 1/X/2, 2,5 Alt/Üst)
     pm = collections.defaultdict(list)
