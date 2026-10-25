@@ -263,6 +263,13 @@ Kilit zamanı 2026-10-25 16:41 TSİ, model sürümü `20261025T1341` (kilitler e
 
 **Sonuç:** kazanan MODERN WARRIOR (modelin verdiği olasılık %36.2); ilk seçim MODERN WARRIOR → TUTTU; ikili tutmadı.
 
+## Gün içi robot (canlı oran + aynı akşam karne)
+
+- `lab/at/canli.py` (`.github/workflows/at-canli.yml`, 11:00–00:30 TSİ her 30 dk; gece akışıyla aynı eşzamanlılık grubu, üst üste binmez). Yeniden eğitim yok: kayıtlı yayın modeli yüklenir, durum yalnız koşu gününden ÖNCEKİ sonuçlarla kurulur (sızıntısız; özellikler gece akışıyla birebir aynı, ölçüldü). Süre ≈10 sn.
+- Ayna yarış günü gün içinde senkronlanıyor: programdaki atların güncel ganyan oranı (sabah 0) ve akşam sonuç dosyası. Alanın en az yarısında oran varsa `p_piyasa` (marjı ayrılmış) ve `p_oran` (gece ile aynı α/β harmanı) hesaplanır; oranı 0 olan at (genelde koşmayan) piyasa/harman dışında kalır.
+- Sonucu gelen koşular aynı akşam `data/at/canli/<tarih>.json` içinde puanlanır; sabah kilitli tahminler `data/at/karne.json`'a koşu kimliğiyle idempotent eklenir (çift sayım yok, gün özeti yeniden hesaplanır).
+- Son canlı dosya 2026-10-25 (güncelleme 2026-10-25 21:40 TSİ): 18 koşu, 3 oranlı bekleyen, 15 bitti; modelin (sabah) ilk seçimi 4/15 tuttu.
+
 ## Daha önce denenmiş ama kapıdan geçmemiş fikirler
 
 - Benter'in ortak tahmini (log q'yu modelin içine sabit girdi olarak koyup birlikte eğitmek): harman diliminde piyasayı ≈0,009 log-loss iyileştirdi, fakat sınamada fark +0,0002 ± 0,003 (iyileşme yok) → dönem kayması işareti. Yayına alınmadı.
