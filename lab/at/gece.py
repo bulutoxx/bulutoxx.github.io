@@ -161,6 +161,13 @@ def model_yukle(uj):
     return M.Model.yukle(uj, metin)
 
 
+def _tam(v):
+    try:
+        return int(v) if v not in (None, "") else None
+    except (TypeError, ValueError):
+        return None
+
+
 def kosu_tahmini(m, kosu, durum, yayin_modu):
     X = durum.ozellik(kosu, m.adlar)
     K = M.Kume(X, np.zeros(len(X)), np.zeros(len(X)), np.zeros(len(X)), np.zeros(len(X), int))
@@ -194,7 +201,10 @@ def kosu_tahmini(m, kosu, durum, yayin_modu):
             ger += " · dikkat: " + aleyh[0]
         atlar.append({"no": a["no"], "ad": a["ad"], "p_kazanma": round(float(p[i]), 4),
                       "p_ilk2": round(float(min(so["ilk2"][i], 1)), 4),
-                      "p_ilk3": round(float(so["ilk3"][i]), 4) if "ilk3" in so else None, "gerekce": ger})
+                      "p_ilk3": round(float(so["ilk3"][i]), 4) if "ilk3" in so else None, "gerekce": ger,
+                      # ek (isteğe bağlı) alanlar: programdaki herkese açık sportif bilgiler
+                      "jokey": a.get("jokey") or None, "kilo": a.get("kilo"), "yas": _tam(a.get("yas")),
+                      "form": a.get("form") or None})
     E = so["ikili"]
     i, j = np.unravel_index(np.argmax(E), E.shape)
     atlar.sort(key=lambda d: -d["p_kazanma"])
@@ -229,17 +239,31 @@ def kilitle(gunler, son_sonuc, m, durum, yayin_modu, surum):
 
 
 # ---------------------------------------------------------------- karne
-def puanla(kosular):
+def _gun_ozeti(satir):
+    canli = [x for x in satir if x["kosudan_once"]] or satir
+    return {"canli": any(x["kosudan_once"] for x in satir), "kosu": len(canli),
+            "log_loss": round(float(np.mean([x["log_loss"] for x in canli])), 4),
+            "ilk_secim_isabet": round(float(np.mean([x["ilk_secim_tuttu"] for x in canli])), 4),
+            "ikili_isabet": round(float(np.mean([x["ikili_tuttu"] for x in canli])), 4)}
+
+
+def puanla(kosular, yalniz_degisince=False):
+    """Kilitli tahminleri (data/at/tahmin) sonuçla puanlar. Koşu kimliğiyle (kosu_id) idempotent: aynı koşu iki kez
+    sayılmaz; gün içinde sonucu gelen koşular (canlı robot) ve geceki tamamlama aynı kayda eklenir, gün özeti
+    o günün tüm puanlı koşularından yeniden hesaplanır. yalniz_degisince=True: yeni satır yoksa dosya yazılmaz."""
     karne = joku(os.path.join(CIKTI, "karne.json"), None) or {"gunler": {}, "kosular": []}
     sonuc = {(k["tarih"], k["hipodrom"], k["kosu"]): k for k in kosular}
+    var = {x["kosu_id"] for x in karne["kosular"]}
     yeni = []
     for f in sorted(os.listdir(TAHMIN)) if os.path.isdir(TAHMIN) else []:
         t = f[:-5]
-        if not f.endswith(".json") or t in karne["gunler"]:
+        if not f.endswith(".json"):
             continue
         kt = joku(os.path.join(TAHMIN, f), {})
         satir = []
         for kp in kt.get("kosular", []):
+            if kp["kosu_id"] in var:
+                continue
             r = sonuc.get((t, kp["hipodrom"], kp["kosu"]))
             if not r:
                 continue
@@ -263,11 +287,11 @@ def puanla(kosular):
         if not satir:
             continue
         karne["kosular"].extend(satir)
-        canli = [x for x in satir if x["kosudan_once"]] or satir
-        karne["gunler"][t] = {"canli": any(x["kosudan_once"] for x in satir), "kosu": len(canli), "log_loss": round(float(np.mean([x["log_loss"] for x in canli])), 4),
-                              "ilk_secim_isabet": round(float(np.mean([x["ilk_secim_tuttu"] for x in canli])), 4),
-                              "ikili_isabet": round(float(np.mean([x["ikili_tuttu"] for x in canli])), 4)}
+        var.update(x["kosu_id"] for x in satir)
+        karne["gunler"][t] = _gun_ozeti([x for x in karne["kosular"] if x["kosu_id"].startswith(t + "/")])
         yeni.append(t)
+    if yalniz_degisince and not yeni:
+        return karne, yeni
     ks = [x for x in karne["kosular"] if x.get("kosudan_once", True)]
     karne["gecikmeli_kilit_sayisi"] = sum(1 for x in karne["kosular"] if not x.get("kosudan_once", True))
     if ks:
@@ -454,6 +478,30 @@ def _v3_ozet(a, mj):
           f"{sl['harman_h1']['uclu_ll']:.4f} ({sl['model']['kosu']} koşu).")
     a("- Sızıntı testi (`lab/at/test_sizinti.py`, her gece): aynı (at, gün) satırları özdeş; rastgele günlerde yalnız "
       "geçmişten yeniden kurulan durum tam tabloyla birebir aynı; gün içi koşu sırası özellikleri değiştirmiyor.")
+    a("")
+
+
+def _canli_bolum(a):
+    """Gün içi robot (lab/at/canli.py) — kısa açıklama + son canlı dosyanın özeti."""
+    d = os.path.join(CIKTI, "canli")
+    son = sorted(f for f in os.listdir(d) if f.endswith(".json")) if os.path.isdir(d) else []
+    a("## Gün içi robot (canlı oran + aynı akşam karne)")
+    a("")
+    a("- `lab/at/canli.py` (`.github/workflows/at-canli.yml`, 11:00–00:30 TSİ her 30 dk; gece akışıyla aynı eşzamanlılık "
+      "grubu, üst üste binmez). Yeniden eğitim yok: kayıtlı yayın modeli yüklenir, durum yalnız koşu gününden ÖNCEKİ "
+      "sonuçlarla kurulur (sızıntısız; özellikler gece akışıyla birebir aynı, ölçüldü). Süre ≈10 sn.")
+    a("- Ayna yarış günü gün içinde senkronlanıyor: programdaki atların güncel ganyan oranı (sabah 0) ve akşam sonuç dosyası. "
+      "Alanın en az yarısında oran varsa `p_piyasa` (marjı ayrılmış) ve `p_oran` (gece ile aynı α/β harmanı) hesaplanır; "
+      "oranı 0 olan at (genelde koşmayan) piyasa/harman dışında kalır.")
+    a("- Sonucu gelen koşular aynı akşam `data/at/canli/<tarih>.json` içinde puanlanır; sabah kilitli tahminler "
+      "`data/at/karne.json`'a koşu kimliğiyle idempotent eklenir (çift sayım yok, gün özeti yeniden hesaplanır).")
+    if son:
+        cj = joku(os.path.join(d, son[-1]), {})
+        ks = cj.get("kosular", [])
+        bt = [k for k in ks if k.get("sonuc")]
+        a(f"- Son canlı dosya {cj.get('tarih')} (güncelleme {cj.get('guncelleme_tsi')} TSİ): {len(ks)} koşu, "
+          f"{sum(k['durum'] == 'oran_var' for k in ks)} oranlı bekleyen, {len(bt)} bitti; modelin (sabah) ilk seçimi "
+          f"{sum(k['sonuc']['tuttu'] for k in bt)}/{len(bt)} tuttu.")
     a("")
 
 
@@ -665,6 +713,7 @@ def rapor_yaz(mj, karne, bugun, ayna_durumu):
         else:
             a("**Sonuç:** henüz aynada yok (son sonuç günü " + kap["son_tarih"] + "); sonuç gelince gece robotu otomatik puanlayacak.")
         a("")
+    _canli_bolum(a)
     a("## Daha önce denenmiş ama kapıdan geçmemiş fikirler")
     a("")
     a("- Benter'in ortak tahmini (log q'yu modelin içine sabit girdi olarak koyup birlikte eğitmek): harman diliminde piyasayı "

@@ -1,0 +1,36 @@
+name: BULUTOXX at yarisi canli (gun ici)
+# Yarış günü 11:00–00:30 TSİ arası her 30 dakikada: güncel ganyan oranlarıyla olasılıkları tazeler, aynı akşam
+# sonuçları puanlar. Yalnız data/at/canli/ ve data/at/karne.json yazar; futbol sistemine, index.html'e dokunmaz.
+# Veri: github.com/cenkozgur/tjk-data aynası sığ klonlanır (_tjk-data, gitignore'da); tjk.org'a istek YOK.
+# Yeniden eğitim yok: gece akışının (at-lab.yml) kaydettiği yayın modeli kullanılır.
+on:
+  schedule:
+    - cron: "*/30 8-21 * * *"
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: at-lab          # gece akışıyla aynı grup: ikisi asla aynı anda çalışmaz
+  cancel-in-progress: false
+jobs:
+  canli:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install -q numpy lightgbm || pip install -q numpy
+      - name: Aynayı sığ klonla (yalnız okunur, depoya yazılmaz)
+        run: git clone -q --depth 1 https://github.com/cenkozgur/tjk-data _tjk-data || echo "ayna klonlanamadı"
+      - name: Gün içi tahmin + aynı akşam puanlama
+        env:
+          AT_KAYNAK: ./_tjk-data
+        run: timeout 420 python lab/at/canli.py --guncelleme-yok || echo "canli.py başarısız; önceki çıktılar korunuyor"
+      - name: Yalnız değişen türetilmiş çıktıları kaydet
+        run: |
+          git config user.name "bulutoxx-bot"; git config user.email "bulutoxx-bot@users.noreply.github.com"
+          git add data/at/canli data/at/karne.json 2>/dev/null || true
+          git diff --cached --quiet && { echo "değişiklik yok"; exit 0; }
+          git commit -qm "At canlı: $(TZ=Europe/Istanbul date '+%Y-%m-%d %H:%M') [skip ci]"
+          for i in 1 2 3; do git pull -q --rebase -X theirs origin main && git push -q origin HEAD:main && break; sleep 8; done
