@@ -114,6 +114,52 @@ def sayfa_ozet(u, h):
     return out
 
 
+URL_RE = re.compile(r"""["'`]((?:https?:)?//[a-z0-9.\-]*atyarisi\.com[^"'`\s]*|/[A-Za-z0-9_\-]+(?:/[A-Za-z0-9_\-{}.$]+)*/(?:[A-Za-z0-9_\-]*(?:[Pp]rogram|[Aa]gf|AGF|[Rr]esult|[Ss]onuc|[Bb]ulten|[Rr]ace|[Hh]orse|[Kk]osu|[Ss]tatist|[Cc]ontent|[Pp]age|[Hh]elp)[A-Za-z0-9_\-{}.$?=&/]*))["'`]""")
+GIZLI = re.compile(r"(token|key|secret|auth)[\w]*\s*[=:]\s*['\"][^'\"]{6,}['\"]", re.I)
+
+
+def cevre(t, kelime, n=6, w=250):
+    return [t[max(0, m.start() - w): m.end() + w] for m in re.finditer(kelime, t)][:n]
+
+
+def p2(out):
+    st, h, _ = get(KOK + "/tjk-at-yarisi-programi")
+    inl = re.findall(r"<script(?![^>]*src=)[^>]*>(.*?)</script>", h, re.S | re.I)
+    cfg = [GIZLI.sub(r"\1=<gizlendi>", s.strip())[:12000] for s in inl
+           if re.search(r"WebsiteUrl|Site\.Init|RefreshTimeInMiliseconds|selectedBultenMenu|ApiUrl|injectReactApps", s)]
+    out["program_config_scriptleri"] = cfg
+    out["program_hostlar"] = sorted(set(re.findall(r"https?://[a-z0-9.\-]+atyarisi\.com", h)))
+    out["program_govde_idleri"] = sorted(set(re.findall(r'id="([^"]+)"', h)))[:200]
+    srcs = [s if s.startswith("http") else "https:" + s for s in re.findall(r'<script[^>]+src=["\']([^"\']+)', h, re.I)]
+    out["jsler"] = {}
+    loader = [s for s in srcs if "react-app-loader" in s]
+    for u in loader + [s for s in srcs if "NesineAllJS" in s]:
+        st, js, _ = get(u, "*/*", 15_000_000)
+        out["jsler"][u] = {"durum": st, "uzunluk": len(js), "urller": sorted(set(URL_RE.findall(js)))[:300],
+                           "inject_cevre": cevre(js, r"injectReactApp\w*|manifest|ReactApps?Url|reactApp", 8, 400),
+                           "tjk_cevre": cevre(js, r"tjkbulten|tjkgw|Program|AGF|Agf", 12, 200)}
+    # yükleyicinin işaret ettiği manifest/uygulama listesi
+    manifestler = set()
+    for u, v in out["jsler"].items():
+        for x in v["urller"]:
+            if re.search(r"manifest|apps?\.json|asset", x, re.I):
+                manifestler.add(x)
+        for c in v["inject_cevre"]:
+            for x in re.findall(r"""["']((?:https?:)?//[^"']+\.json[^"']*|/[^"']+\.json[^"']*)["']""", c):
+                manifestler.add(x)
+    out["manifest_adaylari"] = sorted(manifestler)[:30]
+    out["manifestler"] = {}
+    for m in sorted(manifestler)[:4]:
+        u = m if m.startswith("http") else ("https:" + m if m.startswith("//") else "https://sc.atyarisi.com" + m)
+        st, t, _ = get(u, "application/json")
+        out["manifestler"][u] = {"durum": st, "uzunluk": len(t), "metin": t[:20000]}
+    # hostların robots.txt'leri
+    out["robots_alt"] = {}
+    for host in ["tjkbulten.atyarisi.com", "tjkgw.atyarisi.com", "content.atyarisi.com", "sc.atyarisi.com"]:
+        st, t, _ = get(f"https://{host}/robots.txt", "text/plain")
+        out["robots_alt"][host] = {"durum": st, "metin": t[:1500]}
+
+
 def main():
     hedef = sys.argv[1] if len(sys.argv) > 1 else "p1"
     os.makedirs("lab/kesif/atyarisi", exist_ok=True)
@@ -150,6 +196,8 @@ def main():
             o = sayfa_ozet(KOK + p, h) if h and st == 200 else {"url": KOK + p, "hata": h[:200]}
             o["durum"] = st; o["content_type"] = hd.get("Content-Type")
             out.setdefault("sayfalar", []).append(o)
+    elif hedef == "p2":
+        p2(out)
     out["istek_sayisi"] = SAYAC["n"]
     json.dump(out, open(f"lab/kesif/atyarisi/{hedef}.json", "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     print("tamam", SAYAC["n"], "istek")
