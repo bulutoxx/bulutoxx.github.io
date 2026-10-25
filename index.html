@@ -1507,6 +1507,24 @@ body.tb2 #hdrRefresh{display:flex!important}
 .lv-c.lg-on{box-shadow:0 0 0 2px #E6C35C,0 0 18px -4px rgba(230,195,92,.8);border-radius:12px}
 @media (prefers-reduced-motion:reduce){.lg-btn::after{animation:none;display:none}.lg-btn.new{animation:none}}
 </style>
+<style id="bulten-v71">
+/* v71: bülten/fikstürde %70+ (Güçlü tahmin) kutusu gerçek altın renginde; resmi 🥇 Altın ayrıca parıltılı ve mühürlü */
+.rec.rec-g{position:relative;overflow:hidden;border:1px solid #F3DC8A!important;color:#2A1C00!important;
+  background:linear-gradient(135deg,#9C7A26 0%,#D4AF37 22%,#F8E7A6 42%,#DDB94F 58%,#B8892B 78%,#EED27A 100%)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.65),inset 0 -1px 4px rgba(110,70,0,.35),0 6px 16px -10px rgba(212,175,55,.9)!important}
+.rec.rec-g .rec-t,.rec.rec-g .rec-t b,.rec.rec-g .rec-o,.rec.rec-g small{color:#2A1C00!important}
+.rec.rec-g .rec-p{color:#1F1400!important;font-weight:900;text-shadow:0 1px 0 rgba(255,255,255,.45)}
+.rec.rec-g .rec-o{background:rgba(255,255,255,.35)!important;border-radius:6px;padding:0 5px}
+/* %70+ seçilen oran düğmesi de altın */
+.rk.rk-g:not(.gold-odd){background:linear-gradient(140deg,#B8892B,#F3DC8A 50%,#C9A646)!important;border-color:#F3DC8A!important;color:#2A1C00!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.6),0 4px 12px -4px rgba(212,175,55,.8)!important}
+.rk.rk-g:not(.gold-odd) u,.rk.rk-g:not(.gold-odd) b,.rk.rk-g:not(.gold-odd) small,.rk.rk-g:not(.gold-odd) span{color:#2A1C00!important}
+/* resmi Altın: aynı altın + kayan parıltı (mührü zaten var) */
+.rec.rec-g.rec-gold{border-color:#FFF3C2!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.8),0 0 0 1px rgba(212,175,55,.6),0 8px 22px -8px rgba(212,175,55,1)!important}
+.rec.rec-g.rec-gold .rec-t,.rec.rec-g.rec-gold .rec-p,.rec.rec-g.rec-gold b{color:#1F1400!important}
+.rec.rec-g.rec-gold::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(110deg,transparent 30%,rgba(255,255,255,.6) 46%,transparent 62%);transform:translateX(-120%);animation:lgShine 3.2s ease-in-out infinite}
+@keyframes lgShine{0%{transform:translateX(-120%)}55%,100%{transform:translateX(120%)}}
+@media (prefers-reduced-motion:reduce){.rec.rec-g.rec-gold::after{animation:none;display:none}}
+</style>
 </head>
 <body>
 <div class="splash" id="splash" aria-hidden="true"><img src="icons/logo-full.png" alt=""></div>
@@ -5446,7 +5464,7 @@ if((location.hash||"")==="#sonuclar") setTimeout(()=>$("navRes").click(),200);
 // =====================================================================
 // BULUTOXX v35: Otomatik sürüm güncelleme — yeni sürüm yayınlanınca uygulama kendini yeniler
 // =====================================================================
-const APP_V="2026-10-25.71";
+const APP_V="2026-10-25.72";
 (function autoUpdate(){
   let shown=false;
   async function check(auto){
