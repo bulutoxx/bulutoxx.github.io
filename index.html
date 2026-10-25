@@ -1575,6 +1575,22 @@ body.tb2 #hdrRefresh{display:flex!important}
 .at-ok{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-weight:900}.at-ok.y{background:rgba(59,234,126,.18);color:#3BEA7E}.at-ok.n{background:rgba(255,69,58,.15);color:#FF8A80}
 #moreAt .ic{background:none!important;padding:0;overflow:hidden}#v-at .ltitle{display:none}#v-at #atBack{margin-top:6px}#moreAt .ic svg{width:100%;height:100%}
 </style>
+<style id="gate-v78">
+/* v78: tek dokunuşla onay — sade giriş ekranı */
+.gate.g2 .gbox{max-width:420px;padding:22px 20px calc(18px + env(safe-area-inset-bottom,0px));text-align:center}
+.g2 .glogo{width:150px;margin:2px auto 6px;display:block}
+.g2 h2{margin:4px 0 12px;font-size:22px}
+.g2-l{list-style:none;margin:0 0 16px;padding:0;display:flex;flex-direction:column;gap:8px;text-align:left}
+.g2-l li{display:flex;gap:10px;align-items:center;padding:10px 12px;border-radius:14px;background:rgba(255,255,255,.05);border:1px solid var(--line);font-size:14.5px;line-height:1.35}
+.g2-l li span{font-size:20px;flex:none}
+.g2-go{width:100%;min-height:58px;border-radius:18px;border:0;font:900 17px var(--font,system-ui);color:#fff;background:var(--grad,linear-gradient(135deg,#22D3FF,#0A84FF));box-shadow:0 12px 28px -12px rgba(10,132,255,.9);-webkit-tap-highlight-color:transparent}
+.g2-go:active{transform:scale(.98)}
+.g2-s{margin:12px 0 0;font-size:12.5px;color:var(--ink3);line-height:1.5}
+@media (max-height:700px){.g2 .glogo{width:110px}.g2 h2{font-size:19px;margin-bottom:8px}.g2-l li{padding:8px 10px;font-size:13.5px}}
+.g2-s button{background:none;border:0;padding:0;color:#7FE3FF;font:inherit;text-decoration:underline;cursor:pointer}
+.g2-no{margin-top:10px;width:100%;min-height:44px;border-radius:14px;background:none;border:1px solid var(--line);color:var(--ink2);font:700 14px var(--font,system-ui)}
+.g2-doc{text-align:left;max-height:55vh;overflow:auto;margin:10px 0;padding:12px;border-radius:12px;background:rgba(255,255,255,.04);font-size:13px}
+</style>
 </head>
 <body>
 <div class="splash" id="splash" aria-hidden="true"><img src="icons/logo-full.png" alt=""></div>
@@ -5514,7 +5530,7 @@ if((location.hash||"")==="#sonuclar") setTimeout(()=>$("navRes").click(),200);
 // =====================================================================
 // BULUTOXX v35: Otomatik sürüm güncelleme — yeni sürüm yayınlanınca uygulama kendini yeniler
 // =====================================================================
-const APP_V="2026-10-25.77";
+const APP_V="2026-10-25.78";
 (function autoUpdate(){
   let shown=false;
   async function check(auto){
@@ -7668,6 +7684,53 @@ setTimeout(()=>{ try{ renderTP(); }catch(e){} },1500);
   // Hazır tahminler Altın kararını tek yerden okur
   try{ const _tc=tpCands; tpCands=function(){ const L=_tc.apply(this,arguments); for(const x of L) x.gold=!!goldOf(x.m); return L; }; }catch(e){}
   bump();
+})();
+</script>
+<script id="gate-v78">
+// =====================================================================
+// BULUTOXX v78: Sade onay — giriş ve "ana ekrana ekle" tek dokunuşla.
+// Tam Kullanım Koşulları ve KVKK metni bir dokunuşla açılır; düğmenin hemen altında "devam ederek kabul edersin" yazar.
+// Kayıt aynı: bx-terms {v, at, kvkk:true, yas18:true}. Ayarlar'daki "Kullanım koşulları" ekranı (tam metin) aynen kalır.
+// =====================================================================
+(function(){
+  const _st=showTerms;
+  function doc(title,html){ const old=$("g2doc"); if(old) old.remove(); const d=document.createElement("div"); d.className="gate g2"; d.id="g2doc"; d.style.zIndex=97;
+    d.innerHTML=`<div class="gbox" role="dialog" aria-modal="true"><h2>${title}</h2><div class="g2-doc terms">${html}</div><button class="g2-go" type="button" id="g2docX">Tamam</button></div>`;
+    document.body.appendChild(d); $("g2docX").onclick=()=>{ d.classList.add("out"); setTimeout(()=>d.remove(),250); }; }
+  showTerms=function(gate){ if(!gate) return _st.apply(this,arguments);
+    const old=$("gate"); if(old) old.remove();
+    const el=document.createElement("div"); el.className="gate g2"; el.id="gate";
+    el.innerHTML=`<div class="gbox" role="dialog" aria-modal="true" aria-labelledby="gT">
+      <img class="glogo" src="icons/logo-full.png" alt="BULUTOXX">
+      <h2 id="gT">Hoş geldin 👋</h2>
+      <ul class="g2-l">
+        <li><span>⚽</span><div>Hobi amaçlı maç tahmini ve takip aracı. <b>Bahis değildir</b>, para almaz.</div></li>
+        <li><span>📊</span><div>Tahminler olasılıktır, <b>garanti değildir</b>.</div></li>
+        <li><span>🔒</span><div>Hesap yok; listelerin yalnız bu telefonda kalır.</div></li>
+      </ul>
+      <button class="g2-go" id="gGo" type="button">18 yaşındayım, kabul ediyorum</button>
+      <p class="g2-s">Devam ederek <button type="button" id="gT1">Kullanım Koşulları</button>'nı ve <button type="button" id="gT2">KVKK Aydınlatma Metni</button>'ni kabul etmiş olursun. Yasa dışı bahis suçtur · Destek: 115 (YEDAM)</p>
+    </div>`;
+    document.body.appendChild(el);
+    $("gT1").onclick=()=>doc("Kullanım Koşulları",TERMS_HTML); $("gT2").onclick=()=>doc("KVKK Aydınlatma Metni",KVKK_HTML);
+    $("gGo").onclick=()=>{ try{ localStorage.setItem("bx-terms",JSON.stringify({v:TERMS_VER, at:Date.now(), kvkk:true, yas18:true, sade:1})); }catch(e){}
+      try{ Count.call("hit","accept"); }catch(e){} try{ buzz(10); Sound.ready(); }catch(e){} el.classList.add("out"); setTimeout(()=>el.remove(),350);
+      if(window._pendInst){ window._pendInst=false; setTimeout(()=>doInstall(),380); } };
+    setTimeout(()=>{ try{ $("gGo").focus(); }catch(e){} },50); };
+  // ana ekrana ekle: tek dokunuş
+  doInstall=function(){ if(!termsAccepted()){ window._pendInst=true; showTerms(true); return; }
+    const old=$("instGate"); if(old) old.remove();
+    const el=document.createElement("div"); el.className="gate g2"; el.id="instGate";
+    el.innerHTML=`<div class="gbox" role="dialog" aria-modal="true" aria-labelledby="iT"><img class="glogo" src="icons/logo-full.png" alt="BULUTOXX">
+      <h2 id="iT">Ana ekrana ekle</h2>
+      <ul class="g2-l"><li><span>📲</span><div>BULUTOXX telefonunda uygulama gibi açılır.</div></li><li><span>🔒</span><div>Listelerin yalnız bu cihazda kalır; simgeyi silersen listeler de silinebilir.</div></li></ul>
+      <button class="g2-go" id="iGo" type="button">Ana ekrana ekle</button><button class="g2-no" id="iNo" type="button">Şimdi değil</button></div>`;
+    document.body.appendChild(el);
+    $("iNo").onclick=()=>{ el.classList.add("out"); setTimeout(()=>el.remove(),300); };
+    $("iGo").onclick=()=>{ try{ const t=JSON.parse(localStorage.getItem("bx-terms")||"{}"); t.inst=Date.now(); localStorage.setItem("bx-terms",JSON.stringify(t)); }catch(e){}
+      el.classList.add("out"); setTimeout(()=>el.remove(),300); try{ buzz(10); }catch(e){} return _doInstallL(); }; };
+  // açılışta eski (uzun) onay ekranı açıksa sade olanla değiştir
+  const g=$("gate"); if(g&&!termsAccepted()&&!g.classList.contains("g2")) showTerms(true);
 })();
 </script>
 </body>
