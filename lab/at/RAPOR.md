@@ -1,6 +1,6 @@
 # BULUTOXX 🐎 At Yarışı Laboratuvarı — Rapor
 
-_Otomatik üretildi: 2026-10-25T19:09:28+00:00 · model sürümü `20261025T1746` · hobi amaçlıdır, garanti değildir · 18+_
+_Otomatik üretildi: 2026-10-25T19:20:05+00:00 · model sürümü `20261025T1746` · hobi amaçlıdır, garanti değildir · 18+_
 
 ## Özet: v4 turu — sabah (oransız) modeli, iki katlı sağlam ölçüm (25.10.2026 gece)
 
@@ -221,7 +221,7 @@ Yorum: sabah tahmininde en çok taşıyan bilgiler reytingler (at/jokey/antrenö
 ## Kapı (sürekli öğrenme)
 
 - Kural: tarif (özellikler/ayarlar) değişirse yeni model ancak **aynı sınama koşularında** yalnız-model log-loss'u düşürür, ilk seçim isabetini düşürmez ve harman log-loss'unu 0,001'den fazla bozmazsa kabul edilir. Tarif aynıysa özellikler her gece yeni sonuçlarla güncellenir, katsayılar haftada bir yeniden eğitilir (KORU = bu gece yenileme günü değil); ortak koşularda belirgin bozulma (veri sorunu) olursa dünkü model korunur. İz: `data/at/sinama_izi.json`.
-- Son karar (2026-10-25T19:09:28+00:00): **KORU** — aynı tarif; katsayılar 0 günlük (haftalık yenileme), özellikler bu gece yeni sonuçlarla güncellendi
+- Son karar (2026-10-25T19:20:05+00:00): **KORU** — aynı tarif; katsayılar 0 günlük (haftalık yenileme), özellikler bu gece yeni sonuçlarla güncellendi
 - Yeni: yalnız model log-loss 1.8897, ilk seçim %31.4; harman 1.8004. Kıyas: yalnız model 1.8897, ilk seçim %31.4; harman 1.8004.
 
 ## Canlı karne (kilitlenmiş tahminler, sonuç gelince)
