@@ -1,0 +1,23 @@
+name: BULUTOXX atyarisi kesif (yalniz kesif-atyarisi dali)
+# Yalnız www.atyarisi.com (llms.txt izni). <=30 istek, >=2 sn ara. Yalnız küçük yapısal özetler geri yazılır.
+on:
+  push:
+    branches: [kesif-atyarisi]
+    paths: ["lab/kesif/atyarisi_probe.py", "lab/kesif/hedef.txt", ".github/workflows/kesif-atyarisi.yml"]
+permissions:
+  contents: write
+concurrency:
+  group: kesif-atyarisi
+  cancel-in-progress: false
+jobs:
+  k:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: python lab/kesif/atyarisi_probe.py "$(cat lab/kesif/hedef.txt 2>/dev/null || echo p1)" || true
+      - run: |
+          git config user.name "bulutoxx-bot"; git config user.email "bulutoxx-bot@users.noreply.github.com"
+          git add lab/kesif/atyarisi && git commit -qm "atyarisi keşif çıktısı [skip ci]" && git push -q origin HEAD:kesif-atyarisi || true
