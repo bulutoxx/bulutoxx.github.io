@@ -1555,6 +1555,23 @@ body.tb2 #hdrRefresh{display:flex!important}
 .at-ik{margin-top:8px;padding:8px 10px;border-radius:10px;background:rgba(233,199,102,.08);border:1px dashed rgba(233,199,102,.35);font-size:12.5px;color:var(--ink2)}
 .at-ik b{color:#F3DC8A}
 .at-more{width:100%;min-height:40px;margin-top:6px;border-radius:10px;background:rgba(255,255,255,.05);color:var(--ink2);font:700 13px var(--font,system-ui)}
+.sport-sw .sw-at{display:inline-flex;align-items:center;justify-content:center;gap:5px}
+.tb-row .sport-sw button,.sport-sw button{white-space:nowrap}
+@media (max-width:380px){.tb-row .sport-sw button{font-size:13px;padding-left:3px;padding-right:3px}.sport-sw .sw-logo{width:18px;height:18px}}
+.sport-sw .sw-logo{width:20px;height:20px;flex:none;display:inline-block}.sport-sw .sw-logo svg{width:100%;height:100%;display:block}
+.sport-sw .sw-at[aria-pressed="true"]{background:linear-gradient(135deg,#B8892B,#F3DC8A 50%,#C9A646)!important;color:#2A1C00!important;box-shadow:0 6px 16px -6px rgba(212,175,55,.7)!important}
+.at-head{margin-bottom:10px}
+.at-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;padding:4px;border-radius:14px;background:rgba(255,255,255,.05);border:1px solid var(--line);margin-bottom:10px}
+.at-tabs button{min-height:42px;border-radius:10px;font:800 14px var(--font,system-ui);color:var(--ink2)}
+.at-tabs button small{font-size:11px;opacity:.8}
+.at-tabs button[aria-pressed="true"]{color:#2A1C00;background:linear-gradient(135deg,#D4AF37,#FFF0B3 50%,#C9A646)}
+.at-gold{border-radius:18px;padding:12px;border:1px solid #F3DC8A;background:linear-gradient(160deg,rgba(212,175,55,.22),rgba(212,175,55,.04) 60%),var(--surface,#0E1422);margin-bottom:10px}
+.at-gh{font:900 16px var(--font,system-ui);color:#F3DC8A}.at-gh small{display:block;font:600 11.5px var(--font,system-ui);color:var(--ink3);margin-top:2px}
+.at-gn{margin:6px 0 4px;font-size:12px;color:var(--ink2);line-height:1.4}
+.at-gr{display:grid;grid-template-columns:30px 1fr auto;gap:10px;align-items:center;padding:9px 0;border-top:1px solid rgba(243,220,138,.18)}
+.at-gr .at-no{color:#2A1C00;background:linear-gradient(135deg,#D4AF37,#FFF0B3 50%,#C9A646)}
+.at-sr{display:grid;grid-template-columns:30px 1fr auto;gap:10px;align-items:center;padding:8px 0;border-top:1px solid rgba(255,255,255,.05)}.at-sr:first-child{border-top:0}
+.at-ok{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-weight:900}.at-ok.y{background:rgba(59,234,126,.18);color:#3BEA7E}.at-ok.n{background:rgba(255,69,58,.15);color:#FF8A80}
 #moreAt .ic{background:none!important;padding:0;overflow:hidden}#v-at .ltitle{display:none}#v-at #atBack{margin-top:6px}#moreAt .ic svg{width:100%;height:100%}
 </style>
 </head>
@@ -5496,7 +5513,7 @@ if((location.hash||"")==="#sonuclar") setTimeout(()=>$("navRes").click(),200);
 // =====================================================================
 // BULUTOXX v35: Otomatik sürüm güncelleme — yeni sürüm yayınlanınca uygulama kendini yeniler
 // =====================================================================
-const APP_V="2026-10-25.73";
+const APP_V="2026-10-25.74";
 (function autoUpdate(){
   let shown=false;
   async function check(auto){
@@ -7499,7 +7516,7 @@ setTimeout(()=>{ try{ renderTP(); }catch(e){} },1500);
 // =====================================================================
 (function(){
   const LOGO=(k)=>`<svg viewBox="0 0 64 64" aria-hidden="true"><defs><linearGradient id="atG%s" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFF3C2"/><stop offset=".35" stop-color="#E6C35C"/><stop offset=".7" stop-color="#B8892B"/><stop offset="1" stop-color="#F3DC8A"/></linearGradient><radialGradient id="atB%s" cx=".35" cy=".3" r=".9"><stop offset="0" stop-color="#1B2A4A"/><stop offset="1" stop-color="#060B18"/></radialGradient></defs><circle cx="32" cy="32" r="30" fill="url(#atB%s)"/><circle cx="32" cy="32" r="29" fill="none" stroke="url(#atG%s)" stroke-width="2.2"/><circle cx="32" cy="32" r="25.5" fill="none" stroke="url(#atG%s)" stroke-width=".6" opacity=".55"/><path d="M41 52 C43.5 45 45 38 43.5 31 C42 24 37.5 18.5 32 16.5 L30.5 10.5 L27.6 16 C22.8 17.2 18.6 21 16 26.5 L12.2 33.4 C11.2 35.6 12.4 38.2 14.8 38.2 L19.6 37 C22.2 38.6 23.8 41.5 23.8 45.2 L23.4 52 Z" fill="url(#atG%s)"/><path d="M32 16.5 C38 18 43.6 23.5 45.6 30.5 C47 36 46.4 43 44.2 50" fill="none" stroke="#FFF3C2" stroke-width="1.3" stroke-linecap="round" opacity=".85"/><path d="M34.5 20 C39 22.5 42 27 43 32 M36 26 C38.5 28.5 40 32 40.2 36" fill="none" stroke="#7A5A14" stroke-width="1" stroke-linecap="round" opacity=".55"/><circle cx="25.6" cy="24.6" r="1.6" fill="#0B1222"/><ellipse cx="14.6" cy="35.2" rx="1" ry=".8" fill="#0B1222" opacity=".8"/><path d="M18 52 H46" stroke="url(#atG%s)" stroke-width="1.4" stroke-linecap="round" opacity=".7"/></svg>`.replace(/%s/g,k);
-  const AT={days:[], d:null, data:{}, model:null, karne:null, hip:null, open:new Set(), busy:false};
+  const AT={days:[], d:null, data:{}, model:null, karne:null, hip:null, open:new Set(), busy:false, tab:"tah"};
   const pct=x=>x==null?"–":"%"+Math.round(x*100);
   const dISO=o=>istDay(new Date(Date.now()+o*864e5));
   const j=u=>fetch(u+"?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():null).catch(()=>null);
@@ -7509,6 +7526,12 @@ setTimeout(()=>{ try{ renderTP(); }catch(e){} },1500);
       AT.days.sort(); if(!AT.d||!AT.data[AT.d]) AT.d=AT.days.includes(dISO(0))?dISO(0):AT.days[AT.days.length-1]||null;
       const [m,k]=await Promise.all([j("data/at/model.json"),j("data/at/karne.json")]); AT.model=m; AT.karne=k;
     }finally{ AT.busy=false; } render(); }
+  function goldOfDay(D){ const out=[];
+    for(const r of D.kosular||[]){ const A=(r.atlar||[]).slice().sort((a,b)=>b.p_kazanma-a.p_kazanma); if(A.length<2) continue;
+      const a=A[0], gap=a.p_kazanma-A[1].p_kazanma; if(a.p_kazanma>=.35&&gap>=.12) out.push({r,h:a,s:a.p_kazanma+gap}); }
+    return out.sort((x,y)=>y.s-x.s).slice(0,3); }
+  function resOfDay(d){ return ((AT.karne&&AT.karne.kosular)||[]).map(x=>{ const k=String(x.kosu_id||"").split("/"); return Object.assign({tarih:k[0],hipodrom:k[1]||"",kosu:+k[2]||0},x); })
+      .filter(x=>x.tarih===d).sort((a,b)=>a.hipodrom.localeCompare(b.hipodrom,"tr")||a.kosu-b.kosu); }
   function dLbl(d){ const t=dISO(0); return d===t?"Bugün":d===dISO(1)?"Yarın":d===dISO(-1)?"Dün":d.slice(8,10)+"."+d.slice(5,7); }
   function hero(){ const M=AT.model&&AT.model.degerlendirme, me=M&&M.metrik||{}, h=me.harman||{}, f=me.favori||{}, n=(M&&M.kosu_sayisi&&M.kosu_sayisi.sinama)||0;
     const K=(AT.karne&&AT.karne.kosular||[]).filter(x=>x.kosudan_once!==false); const kn=K.length, kh=K.filter(x=>x.ilk_secim_tuttu).length;
@@ -7525,26 +7548,53 @@ setTimeout(()=>{ try{ renderTP(); }catch(e){} },1500);
     let h=hero();
     if(!AT.d){ box.innerHTML=h+`<div class="panel"><p class="note" style="margin:0">${AT.busy?"Yükleniyor…":"Bugün ve yakın günler için kilitli at yarışı tahmini bulunamadı. Laboratuvar her sabah 05:23 ve öğlen 12:23'te yeni programı işler."}</p></div>`; return; }
     const D=AT.data[AT.d], hips=[...new Set(D.kosular.map(r=>r.hipodrom))]; if(!AT.hip||!hips.includes(AT.hip)) AT.hip=hips[0];
+    const G=goldOfDay(D), S=resOfDay(AT.d);
+    h+=`<div class="at-tabs" role="tablist"><button type="button" data-t="tah" aria-pressed="${AT.tab==="tah"}">Tahminler</button><button type="button" data-t="altin" aria-pressed="${AT.tab==="altin"}">🥇 Altın${G.length?` <small>${G.length}</small>`:""}</button><button type="button" data-t="sonuc" aria-pressed="${AT.tab==="sonuc"}">Sonuçlar${S.length?` <small>${S.length}</small>`:""}</button></div>`;
     h+=`<div class="at-chips" role="group" aria-label="Gün">${AT.days.map(d=>`<button type="button" data-d="${d}" aria-pressed="${d===AT.d}">${dLbl(d)}</button>`).join("")}</div>`;
-    h+=`<div class="at-chips" role="group" aria-label="Hipodrom">${hips.map(x=>`<button type="button" data-h="${esc(x)}" aria-pressed="${x===AT.hip}">${esc(x)} · ${D.kosular.filter(r=>r.hipodrom===x).length}</button>`).join("")}</div>`;
-    h+=D.kosular.filter(r=>r.hipodrom===AT.hip).sort((a,b)=>a.kosu-b.kosu).map(race).join("");
+    if(AT.tab==="altin"){
+      h+=`<div class="at-gold"><div class="at-gh">🥇 Günün Altın atları <small>${esc(dLbl(AT.d))} · tüm hipodromlar · en fazla 3</small></div>
+        <p class="at-gn">Kural: koşusunda kazanma olasılığı en yüksek olan, en yakın rakibine en az 12 puan fark atan ve olasılığı %35+ olan at; günde en çok güvenilen 3 tanesi. Futboldaki Altın gibi temkinli seçilir.</p>
+        ${G.length?G.map(x=>`<div class="at-gr"><span class="at-no">${esc(x.h.no)}</span><span class="at-n"><b>${esc(x.h.ad)}</b><small>${esc(x.r.hipodrom)} ${x.r.kosu}. koşu · ${esc(x.r.saat||"")} · ${esc(x.r.mesafe+" m "+x.r.pist)}</small></span><span class="at-p"><b>${pct(x.h.p_kazanma)}</b><small>ilk 3: ${pct(x.h.p_ilk3)}</small></span></div>`).join("")
+          :`<p class="at-gn" style="margin:6px 0 0">Bu gün için Altın kuralına uyan at yok; model yeterince emin olmadığında Altın vermez.</p>`}</div>`;
+    } else if(AT.tab==="sonuc"){
+      h+=S.length?`<div class="at-race">${S.map(x=>`<div class="at-sr"><span class="at-no">${x.kosu}</span><span class="at-n"><b>${esc(x.hipodrom)} ${x.kosu}. koşu · kazanan: ${esc(x.kazanan||"–")}</b><small>Modelin ilk seçimi: ${esc(x.ilk_secim||"–")} · kazananın olasılığı ${pct(x.p_kazanan)}${x.kosudan_once===false?" · karneye sayılmaz":""}</small></span><span class="at-ok ${x.ilk_secim_tuttu?"y":"n"}">${x.ilk_secim_tuttu?"✓":"✗"}</span></div>`).join("")}</div>`
+        :`<div class="panel"><p class="note" style="margin:0">Bu günün sonuçları henüz arşive gelmedi. Açık arşiv her gece güncellenir; laboratuvar sabah 05:23'te kilitli tahminleri sonuçla karşılaştırır.</p></div>`;
+    } else {
+      h+=`<div class="at-chips" role="group" aria-label="Hipodrom">${hips.map(x=>`<button type="button" data-h="${esc(x)}" aria-pressed="${x===AT.hip}">${esc(x)} · ${D.kosular.filter(r=>r.hipodrom===x).length}</button>`).join("")}</div>`;
+      h+=D.kosular.filter(r=>r.hipodrom===AT.hip).sort((a,b)=>a.kosu-b.kosu).map(race).join("");
+    }
     h+=`<p class="note">Kilit: ${esc(D.kilit_zamani_tsi||"")} · model ${esc(D.model_surumu||"")}. Veri: herkese açık TJK sonuç arşivi (github.com/cenkozgur/tjk-data); BULUTOXX TJK sitesine istek atmaz. ${esc(D.not||"")}</p>`;
     box.innerHTML=h;
     box.querySelectorAll("[data-d]").forEach(b=>b.onclick=()=>{ AT.d=b.dataset.d; buzz(6); render(); });
+    box.querySelectorAll("[data-t]").forEach(b=>b.onclick=()=>{ AT.tab=b.dataset.t; buzz(6); try{ Sound.tap(); }catch(e){} render(); });
     box.querySelectorAll("[data-h]").forEach(b=>b.onclick=()=>{ AT.hip=b.dataset.h; buzz(6); render(); });
     box.querySelectorAll("[data-at]").forEach(b=>b.onclick=()=>{ const k=b.dataset.at; AT.open.has(k)?AT.open.delete(k):AT.open.add(k); render(); }); }
   // görünüm + menü girişi
   const main=document.querySelector("main"); if(main&&!$("v-at")){ const s=document.createElement("section"); s.className="view"; s.id="v-at"; s.hidden=true;
-    s.innerHTML=`<button class="backlink" type="button" id="atBack">‹ Menü</button><div class="ltitle"><div><h1>At Yarışı</h1><p>Deneme · kendini her gece eğiten olasılık modeli</p></div></div><div class="wrap"><div id="atBox"></div></div>`;
-    main.appendChild(s); $("atBack").onclick=()=>goView("more"); }
-  function openAt(){ goView("at","more"); render(); load(); }
+    s.innerHTML=`<div class="bt-head cmp at-head"><div class="tb-row" id="atRow"></div></div><div class="ltitle"><div><h1>At Yarışı</h1><p>Deneme · kendini her gece eğiten olasılık modeli</p></div></div><div class="wrap"><div id="atBox"></div></div>`;
+    main.appendChild(s); }
+  function openAt(){ showSport("at"); }
+  // ⚽ / 🏀 / 🐎 seçici: her seçiciye At düğmesi; At'a basınca tüm At bölümü (tahmin, Altın, sonuçlar) açılır
+  const LOGO_S=`<svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="30" fill="#0B1428"/><circle cx="32" cy="32" r="28.6" fill="none" stroke="#E6C35C" stroke-width="3"/><path d="M41 52 C43.5 45 45 38 43.5 31 C42 24 37.5 18.5 32 16.5 L30.5 10.5 L27.6 16 C22.8 17.2 18.6 21 16 26.5 L12.2 33.4 C11.2 35.6 12.4 38.2 14.8 38.2 L19.6 37 C22.2 38.6 23.8 41.5 23.8 45.2 L23.4 52 Z" fill="#EBC963"/><path d="M32 16.5 C38 18 43.6 23.5 45.6 30.5 C47 36 46.4 43 44.2 50" fill="none" stroke="#FFF3C2" stroke-width="2" stroke-linecap="round"/><circle cx="25.6" cy="24.6" r="2" fill="#0B1222"/></svg>`;
+  const ATB=`<button type="button" data-s="at" aria-pressed="false" class="sw-at"><span class="sw-logo">${LOGO_S}</span>At</button>`;
+  function swMount(){ document.querySelectorAll(".sport-sw").forEach(sw=>{ if(!sw.querySelector('[data-s="at"]')) sw.insertAdjacentHTML("beforeend",ATB);
+      sw.querySelectorAll("button").forEach(b=>{ if(b.dataset.s==="bk"&&!b.dataset.sh){ b.dataset.sh=1; b.innerHTML="🏀 Basket"; }
+        b.onclick=()=>{ const s=b.dataset.s; const vid=s==="bk"?"basket":s==="at"?"at":"bulten"; if(SPORT.get()!==s||$("v-"+vid).hidden){ buzz(8); showSport(s); } }; });
+      sw.querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.s===SPORT.get())); });
+    const row=$("atRow"); if(row&&!row.querySelector(".sport-sw")){ const src=document.querySelector("#v-bulten .sport-sw"); if(src){ const c=src.cloneNode(true); row.appendChild(c); swMount(); } } }
+  const _ss=showSport;
+  showSport=function(s){ if(s!=="at") return _ss.apply(this,arguments);
+    if(SPORT.get&&SPORT.get()==="at") try{ window.scrollTo({top:0,behavior:"smooth"}); }catch(e){}
+    SPORT.set("at"); swMount(); goView("at","bulten"); document.querySelectorAll(".sport-sw button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.s==="at")); render(); load(); };
+  swMount(); setTimeout(swMount,1500); setTimeout(swMount,5000);
+  setTimeout(()=>{ const h=(location.hash||"").slice(1), q=new URLSearchParams(location.search); if(!h&&!q.get("m")&&SPORT.get()==="at") showSport("at"); },400);
   window.openAt=openAt;
   function mountMenu(){ const g=$("mg-analiz")||document.querySelector("#v-more .mlist"); if(!g||$("moreAt")) return;
     const c=document.createElement("button"); c.className="cell"; c.id="moreAt"; c.type="button";
     c.innerHTML=`<span class="ic">${LOGO("m")}</span><span class="tx"><b>At Yarışı <span class="at-pill" style="vertical-align:1px">DENEME</span></b><small>Koşu koşu kazanma olasılıkları · her gece öğrenir</small></span><span class="ar">›</span>`;
     c.onclick=openAt; g.appendChild(c); }
   mountMenu(); setTimeout(mountMenu,1600); setTimeout(mountMenu,5200);
-  if((location.hash||"")==="#at") setTimeout(openAt,300);
+  if((location.hash||"")==="#at") setTimeout(openAt,450);
   setInterval(()=>{ const v=$("v-at"); if(v&&!v.hidden&&!document.hidden) load(); },10*60e3);
 })();
 </script>
