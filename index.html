@@ -1615,6 +1615,14 @@ details.sx>.sx-in{padding:0 10px 10px}
 details.sx>.sx-in>.panel,details.sx>.sx-in>.pw-card{margin-top:0}
 #installCard,#botKb,#liveBk{display:none!important}
 </style>
+<style id="canli-ara-v84">
+.cv-q{display:flex!important;flex-direction:row!important;align-items:center;gap:8px;margin:0 0 12px;padding:0 12px;min-height:48px;border-radius:14px;border:1px solid var(--line);background:rgba(255,255,255,.05)}
+.cv-q svg{width:20px;height:20px;flex:none;stroke:var(--ink3);fill:none;stroke-width:2;stroke-linecap:round}
+.cv-q input{flex:1;min-width:0;height:46px!important;border:0!important;background:none!important;box-shadow:none!important;padding:0!important;margin:0!important;border-radius:0!important;color:var(--ink);font:600 15px var(--font,system-ui);outline:none}
+.cv-q input::-webkit-search-cancel-button{display:none}
+.cv-q button{flex:none;width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.08);color:var(--ink2);font-size:16px}
+.cv-q:focus-within{border-color:rgba(34,211,255,.55)}
+</style>
 </head>
 <body>
 <div class="splash" id="splash" aria-hidden="true"><img src="icons/logo-full.png" alt=""></div>
@@ -5554,7 +5562,7 @@ if((location.hash||"")==="#sonuclar") setTimeout(()=>$("navRes").click(),200);
 // =====================================================================
 // BULUTOXX v35: Otomatik sürüm güncelleme — yeni sürüm yayınlanınca uygulama kendini yeniler
 // =====================================================================
-const APP_V="2026-10-25.83";
+const APP_V="2026-10-25.84";
 (function autoUpdate(){
   let shown=false;
   async function check(auto){
@@ -7884,6 +7892,26 @@ setTimeout(()=>{ try{ renderTP(); }catch(e){} },1500);
   }
   let raf=0; const mo=new MutationObserver(()=>{ if(raf) return; raf=requestAnimationFrame(()=>{ raf=0; mo.disconnect(); try{ apply(); }finally{ mo.observe(document.body,{childList:true,subtree:true}); } }); });
   apply(); mo.observe(document.body,{childList:true,subtree:true});
+})();
+</script>
+<script id="canli-ara-v84">
+// v84: Canlı sekmesinde maç arama — takım veya lig adıyla canlı listeyi süzer (futbol ve basketbol)
+(function(){
+  IDLV.q="";
+  const _l=idlListHtml; idlListHtml=function(sp,q){ if(q===undefined){ const v=$("v-canli"); if(v&&!v.hidden&&IDLV.q) q=IDLV.q; } return _l.call(this,sp,q); };
+  function mount(){ const cw=document.querySelector("#v-canli .wrap"); if(!cw||$("cvQ")) return;
+    const el=document.createElement("div"); el.className="cv-q"; el.id="cvQ"; el.onclick=e=>{ if(e.target===el) $("cvQi").focus(); };
+    el.innerHTML=`<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input id="cvQi" type="search" placeholder="Canlı maç ara: takım veya lig" autocomplete="off" enterkeyhint="search" aria-label="Canlı maç ara"><button type="button" id="cvQx" aria-label="Aramayı temizle" hidden>✕</button>`;
+    const idl=$("idlBox"); idl?idl.before(el):cw.prepend(el);
+    let t; $("cvQi").oninput=e=>{ clearTimeout(t); t=setTimeout(()=>{ IDLV.q=e.target.value.trim(); $("cvQx").hidden=!IDLV.q; try{ idlRenderAll(); }catch(_){} try{ cvLegacy(); }catch(_){} },180); };
+    $("cvQx").onclick=()=>{ $("cvQi").value=""; IDLV.q=""; $("cvQx").hidden=true; try{ idlRenderAll(); }catch(_){} try{ cvLegacy(); }catch(_){} $("cvQi").focus(); }; }
+  // yedek liste (resmi bülten alınamazsa görünen ESPN listesi) için basit süzme
+  function cvLegacy(){ const L=$("liveList"); if(!L) return; const q=(IDLV.q||"").toLocaleLowerCase("tr");
+    L.querySelectorAll(":scope > *").forEach(x=>{ x.style.display=!q||x.textContent.toLocaleLowerCase("tr").includes(q)?"":"none"; }); }
+  window.cvLegacy=cvLegacy;
+  // arama kutusu her zaman altın kupon ile liste arasında kalsın
+  const _ira=idlRenderAll; idlRenderAll=function(){ const r=_ira.apply(this,arguments); try{ mount(); const el=$("cvQ"), idl=$("idlBox"); if(el&&idl&&el.nextElementSibling!==idl) idl.before(el); if(IDLV.q) cvLegacy(); }catch(e){} return r; };
+  mount();
 })();
 </script>
 </body>
