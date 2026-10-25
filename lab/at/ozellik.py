@@ -17,7 +17,7 @@ from datetime import date
 
 import numpy as np
 
-from veri import piyasa_q
+from veri import piyasa_q, zemin_sira
 
 TUM_OZELLIKLER = [
     ("yeni", "form"), ("n_kosu", "form"), ("skor_son", "form"), ("skor3", "form"), ("skor5", "form"),
@@ -46,6 +46,11 @@ TUM_OZELLIKLER = [
     ("hiz_son", "hiz"), ("hiz_en_iyi", "hiz"), ("hiz_ort3", "hiz"), ("hiz_yok", "hiz"), ("hiz_pist", "hiz"),
     ("skor_sonum", "fark2"), ("geri_sonum", "fark2"), ("geri_en_iyi5", "fark2"),
     ("jokey_pz60", "jokey2"), ("antrenor_pz60", "jokey2"), ("jokey_r_degisim", "jokey2"), ("ekuri", "jokey2"),
+    # --- v3 adayları
+    ("zemin_ord", "zemin"), ("zemin_yok", "zemin"), ("zemin_uyum", "zemin"), ("zemin_x_kilo", "zemin"),
+    ("zemin_x_skor", "zemin"),
+    ("hz_son", "hiz3"), ("hz_en_iyi3", "hiz3"), ("hz_ort3", "hiz3"), ("hz_trend", "hiz3"), ("hz_yok", "hiz3"),
+    ("hz_alan", "hiz3"),
 ]
 TUM_ADLAR = [o[0] for o in TUM_OZELLIKLER]
 GRUP = dict(TUM_OZELLIKLER)
@@ -54,7 +59,7 @@ GRUP = dict(TUM_OZELLIKLER)
 # hiz ve jokey2 hesaplanır ama kapıdan geçemedi (log-loss'u az düşürdü, ilk-seçim isabetini düşürdü) → kullanılmıyor.
 V1_GRUPLAR = ["form", "fark", "piyasa_gecmisi", "dinlenme", "pist_mesafe_hipodrom", "sinif", "kilo", "yas",
               "jokey", "antrenor", "jokey_at", "alan"]
-SECILI_GRUPLAR = V1_GRUPLAR + ["piyasa_hafiza", "reyting", "sinif2", "fark2"]
+SECILI_GRUPLAR = V1_GRUPLAR + ["piyasa_hafiza", "reyting", "sinif2", "fark2", "hiz3"]   # v3: hiz3 kapıdan geçti; zemin elendi
 OZELLIKLER = [o for o in TUM_OZELLIKLER if o[1] in SECILI_GRUPLAR]
 ADLAR = [o[0] for o in OZELLIKLER]
 GRUPLAR = sorted({o[1] for o in OZELLIKLER})
@@ -69,6 +74,7 @@ PL_KADEME = 4          # bitiş sırasının ilk kaç kademesi kullanılır (ark
 PM_HIZ = 0.25          # piyasa reytingi öğrenme hızı
 EWMA_A = 0.4           # geçmiş koşu ağırlığı (son koşu 0.4, öncesi 0.6 ile birleşir)
 SONUM_GUN = 120.0      # zaman sönümlü formun yarı ömrü (gün)
+HZ_YONTEM = "projeksiyon"   # hız figürü gün değişkeni: "projeksiyon" (atların önceki figürleri) ya da "sinif" (par + sınıf ofseti)
 
 
 def gun_no(t):
@@ -168,6 +174,11 @@ class Durum:
         self.std = defaultdict(lambda: deque(maxlen=60))  # (hipodrom, pist, mesafe) -> kazanan derece/km
         self.gun_bekleyen = []                           # aynı günün koşuları (gün değişkeni için)
         self.jpz = defaultdict(lambda: _Ort(60)); self.tpz = defaultdict(lambda: _Ort(60))
+        # v3: Beyer tarzı hız figürü (bkz. _hz_* ve gun_sonu)
+        self.hz_taban = defaultdict(lambda: np.zeros(5))   # pist -> [n, Σx, Σy, Σxx, Σxy]  (x = log mesafe, y = log sn/m)
+        self.hz_par = defaultdict(lambda: [0, 0.0])        # (hipodrom, pist, mesafe) -> [n, Σ artık]
+        self.hz_sinif = defaultdict(lambda: [0, 0.0])      # sınıf anahtarı -> [n, Σ artık]
+        self.hz_bekleyen = []                              # bu günün koşuları (gün değişkeni gün sonunda)
 
     # --- sınıf düzeyi: o sınıfta koşan atların geçmiş galibiyet sayısının (log) kayan ortalaması
     def sinif_duzeyi(self, k):
@@ -199,6 +210,15 @@ class Durum:
         ant_say = defaultdict(int)
         for a in kosu["atlar"]:
             ant_say[a["antrenor"]] += 1
+        # v3: pist durumu (bugün) ve hız figürleri (alan düzeyi için önce hepsi)
+        z_bugun = zemin_sira(kosu.get("zemin"))
+        hz_l = []
+        for a in kosu["atlar"]:
+            v = [h["hz"] for h in self.at.get(a["ad"], [])[-6:] if h.get("hz") is not None][-3:]
+            hz_l.append(v)
+        eniyi = [max(v) for v in hz_l if v]
+        hz_alan_ort = sum(eniyi) / len(eniyi) if eniyi else 0.0
+        hz_alan_min = min(eniyi) if eniyi else 0.0
         satirlar = []
         for ai, a in enumerate(kosu["atlar"]):
             g = self.at.get(a["ad"], [])
@@ -326,8 +346,122 @@ class Durum:
             if n:
                 f["jokey_r_degisim"] = f["r_jokey"] - self.r["jokey"].get(g[-1]["jokey"], 0.0)
             f["ekuri"] = float(ant_say[a["antrenor"]] - 1) if a["antrenor"] else 0.0
+            # --- v3: pist durumu
+            zo = z_bugun if z_bugun is not None else 0
+            f["zemin_ord"] = float(zo)
+            f["zemin_yok"] = 1.0 if z_bugun is None else 0.0
+            f["zemin_x_kilo"] = zo * f["kilo_fark"]
+            f["zemin_x_skor"] = zo * f["skor5"]
+            if n and zo >= 1:
+                s = [h["skor"] for h in g if (h.get("zemin_s") or 0) >= 1]
+                f["zemin_uyum"] = (sum(s) + K_UYUM * ort_skor) / (len(s) + K_UYUM) - ort_skor
+            # --- v3: hız figürü (son 3 figürlü koşu)
+            v = hz_l[ai]
+            if v:
+                f["hz_son"] = v[-1]
+                f["hz_en_iyi3"] = max(v)
+                f["hz_ort3"] = sum(v) / len(v)
+                f["hz_trend"] = (v[-1] - sum(v[:-1]) / len(v[:-1])) if len(v) >= 2 else 0.0
+                f["hz_alan"] = max(v) - hz_alan_ort
+            else:
+                f["hz_yok"] = 1.0
+                f["hz_son"] = f["hz_en_iyi3"] = f["hz_ort3"] = hz_alan_min
+                f["hz_alan"] = hz_alan_min - hz_alan_ort
             satirlar.append([f[k] for k in adlar])
         return np.asarray(satirlar, dtype=np.float64)
+
+    # ---------------------------------------------------------------- v3 hız figürü (sıfırdan, Beyer tarzı)
+    # Model: y = log(derece / mesafe) = T_pist(log mesafe) + P(hipodrom, pist, mesafe) + C(sınıf) + V(gün, hipodrom, pist) + ε
+    #   T: pist başına log-mesafe doğrusu (geçmiş kazananlardan en küçük kareler)
+    #   P: hipodrom×pist×mesafe "par" artığı (küçültmeli ortalama, k=5)
+    #   C: sınıf ofseti (küçültmeli, k=20) — yalnız gün değişkenini doğru ayırmak için; figüre katılmaz
+    #   V: aynı gün + hipodrom + pist değişkeni (kırpılmış artıkların küçültmeli ortalaması, k=1.5). Varsayılan
+    #      "projeksiyon": koşudaki (ön sıradaki) atların ham figürü − kendi önceki figürleri, koşu medyanı (Beyer usulü;
+    #      cins/sınıf karışımına dayanıklı). Yedek "sinif": kazanan derecesi − par − sınıf ofseti.
+    # Figür = −1000·(y − T − P) − V: par'a göre binde kaç hızlı. Tamamen geçmişten: T/P/C gün sonunda, o günün
+    # figürleri hesaplandıktan SONRA güncellenir; figürler yalnız ertesi günlerin özelliklerine girer.
+    HZ_KIRP = 0.04
+
+    @staticmethod
+    def _hz_sinif_k(rc):
+        tur, no = sinif_turu(rc)
+        return f"{tur}{min(no // 4, 6) if tur in ('H', 'KV', 'G', 'S') else ''}"
+
+    def _hz_taban(self, pist, x):
+        a = self.hz_taban.get(pist)
+        if a is None or a[0] < 30:
+            a = sum((v for v in self.hz_taban.values()), np.zeros(5))
+            if a[0] < 30:
+                return None
+        n, sx, sy, sxx, sxy = a
+        vx = sxx / n - (sx / n) ** 2
+        b = (sxy / n - sx / n * sy / n) / vx if vx > 1e-9 else 0.0
+        return sy / n + b * (x - sx / n)
+
+    def _hz_beklenen(self, kosu):
+        """(T + P, C) ya da None."""
+        if not kosu["mesafe"]:
+            return None
+        t = self._hz_taban(kosu["pist"], math.log(kosu["mesafe"]))
+        if t is None:
+            return None
+        pn, ps = self.hz_par.get((kosu["hipodrom"], kosu["pist"], kosu["mesafe"]), (0, 0.0))
+        cn, cs = self.hz_sinif.get(self._hz_sinif_k(kosu["sinif"]), (0, 0.0))
+        return t + ps / (pn + 5.0), cs / (cn + 20.0)
+
+    def _hz_gun_sonu(self):
+        K = self.HZ_KIRP
+        grup = defaultdict(list)
+        for kosu, ys in self.hz_bekleyen:
+            grup[(kosu["hipodrom"], kosu["pist"])].append((kosu, ys))
+        for _, liste in grup.items():
+            bek = [self._hz_beklenen(kosu) for kosu, _ in liste]
+            # gün değişkeni V (figür biriminde, + = hızlı gün)
+            art = []
+            for (kosu, ys), b in zip(liste, bek):
+                if b is None:
+                    continue
+                if HZ_YONTEM == "projeksiyon":
+                    # Beyer projeksiyonu: atların bu günkü ham figürü − kendi önceki figür ortalaması (ön sıradakiler);
+                    # koşu medyanı → cins/sınıf karışımından bağımsız gün değişkeni
+                    N = len(kosu["atlar"])
+                    d = [(-1000.0 * (ys[a["ad"]] - b[0])) - ys["_on"][a["ad"]] for a in kosu["atlar"]
+                         if a["ad"] in ys and ys["_on"].get(a["ad"]) is not None and (a["sira"] or 99) <= max(3, N // 2)]
+                    if len(d) >= 2:
+                        art.append(min(max(float(np.median(d)), -1000 * K), 1000 * K))
+                else:
+                    yw = ys.get("_kazanan")
+                    if yw is not None:
+                        art.append(-1000.0 * min(max(yw - b[0] - b[1], -K), K))
+            V = sum(art) / (len(art) + 1.5) if art else 0.0
+            for (kosu, ys), b in zip(liste, bek):
+                if b is not None:
+                    yw = ys.get("_kazanan")
+                    fw = -1000.0 * (yw - b[0]) - V if yw is not None else None
+                    for a in kosu["atlar"]:
+                        y = ys.get(a["ad"])
+                        h = self.at[a["ad"]][-1]
+                        if y is None or h.get("gun") != gun_no(kosu["tarih"]):
+                            continue
+                        f = -1000.0 * (y - b[0]) - V
+                        if fw is not None:
+                            f = max(f, fw - 50.0)    # geride bırakılmış/eğilmiş atlar: en fazla %5 kazananın gerisi
+                        h["hz"] = min(max(f, -150.0), 150.0)
+                # öğrenme (bu günün figürlerinden SONRA): taban, par, sınıf — gün değişkeni ayıklanmış kazanan derecesiyle
+                yw = ys.get("_kazanan")
+                if yw is None or not kosu["mesafe"]:
+                    continue
+                x = math.log(kosu["mesafe"])
+                yv = yw + V / 1000.0
+                a = self.hz_taban[kosu["pist"]]
+                a += np.array([1.0, x, yv, x * x, x * yv])
+                if b is not None:
+                    p = self.hz_par[(kosu["hipodrom"], kosu["pist"], kosu["mesafe"])]
+                    t = self._hz_taban(kosu["pist"], x)
+                    p[0] += 1; p[1] += min(max(yv - t - b[1], -2 * K), 2 * K)
+                    c = self.hz_sinif[self._hz_sinif_k(kosu["sinif"])]
+                    c[0] += 1; c[1] += min(max(yv - b[0], -2 * K), 2 * K)
+        self.hz_bekleyen = []
 
     def _std_derece(self, kosu):
         """(hipodrom, pist, mesafe) için geçmiş kazanan derecelerinin medyanı (sn/km); az örnekte None."""
@@ -376,7 +510,7 @@ class Durum:
                 "mesafe": kosu["mesafe"], "hipodrom": kosu["hipodrom"], "sinif_k": kosu["sinif_k"],
                 "kilo": a["kilo"], "jokey": a["jokey"],
                 "q": qi, "p_sira": (p_sira[i] if p_sira else None), "sinif_r": 1.0,
-                "ham_hiz": ham_hiz, "hiz": ham_hiz})
+                "ham_hiz": ham_hiz, "hiz": ham_hiz, "hz": None, "zemin_s": zemin_sira(kosu.get("zemin"))})
             won = 1 if sira == 1 else 0
             for p, k in ((self.j60, a["jokey"]), (self.j365, a["jokey"]), (self.t60, a["antrenor"]), (self.t365, a["antrenor"])):
                 if k:
@@ -408,6 +542,20 @@ class Durum:
             self.std[(kosu["hipodrom"], kosu["pist"], kosu["mesafe"])].append(kaz_sure / km)
         if std is not None and kaz_sure and km:
             self.gun_bekleyen.append((kosu, std - kaz_sure / km))
+        # v3 hız figürü: o günün log(sn/m) değerleri gün sonunda figüre çevrilir
+        if kosu["mesafe"]:
+            ys = {}
+            for a in atlar:
+                if a["sure"] and a["sure"] > 0:
+                    ys[a["ad"]] = math.log(a["sure"] / kosu["mesafe"])
+            if kaz_sure:
+                ys["_kazanan"] = math.log(kaz_sure / kosu["mesafe"])
+            on = {}
+            for a in atlar:   # atın bu koşudan ÖNCEKİ figür ortalaması (son 3) — projeksiyon için
+                v = [h["hz"] for h in self.at[a["ad"]][:-1][-6:] if h.get("hz") is not None][-3:]
+                on[a["ad"]] = sum(v) / len(v) if v else None
+            ys["_on"] = on
+            self.hz_bekleyen.append((kosu, ys))
 
     def gun_sonu(self):
         """Gün bitti: hipodrom×pist gün değişkenini (kazananların standarda göre ortalama farkı, küçültülmüş)
@@ -423,6 +571,7 @@ class Durum:
                     if h.get("ham_hiz") is not None:
                         h["hiz"] = h["ham_hiz"] - deg
         self.gun_bekleyen = []
+        self._hz_gun_sonu()
 
 
 def tablo_kur(kosular, durum=None, adlar=None):
