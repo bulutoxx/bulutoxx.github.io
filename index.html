@@ -1504,6 +1504,7 @@ body.tb2 #hdrRefresh{display:flex!important}
 .lg-pan .pw-r{cursor:pointer}
 .lg-pan .lg-add{width:100%;min-height:48px;border-radius:14px;font:900 15px var(--font,system-ui);color:#2A1C00;background:linear-gradient(135deg,#D4AF37,#FFF0B3 45%,#C9A646);box-shadow:inset 0 1px 0 rgba(255,255,255,.7)}
 .lg-pan .lg-n{margin:0;font-size:11.5px;color:var(--ink3)}
+#btList .lg-on{box-shadow:0 0 0 2px #E6C35C,0 0 18px -4px rgba(230,195,92,.8)!important;border-radius:12px}
 .lv-c.lg-on{box-shadow:0 0 0 2px #E6C35C,0 0 18px -4px rgba(230,195,92,.8);border-radius:12px}
 @media (prefers-reduced-motion:reduce){.lg-btn::after{animation:none;display:none}.lg-btn.new{animation:none}}
 </style>
@@ -5534,7 +5535,7 @@ if((location.hash||"")==="#sonuclar") setTimeout(()=>$("navRes").click(),200);
 // =====================================================================
 // BULUTOXX v35: Otomatik sürüm güncelleme — yeni sürüm yayınlanınca uygulama kendini yeniler
 // =====================================================================
-const APP_V="2026-10-25.79";
+const APP_V="2026-10-25.80";
 (function autoUpdate(){
   let shown=false;
   async function check(auto){
@@ -7737,6 +7738,53 @@ setTimeout(()=>{ try{ renderTP(); }catch(e){} },1500);
       el.classList.add("out"); setTimeout(()=>el.remove(),300); try{ buzz(10); }catch(e){} return _doInstallL(); }; };
   // açılışta eski (uzun) onay ekranı açıksa sade olanla değiştir
   const g=$("gate"); if(g&&!termsAccepted()&&!g.classList.contains("g2")) showTerms(true);
+})();
+</script>
+<script id="bulten-v80">
+// =====================================================================
+// BULUTOXX v80: Bülten'de de gerçek altın renkli "Altın kupon" — Canlı'daki mantığın maç öncesi hâli.
+// Seçili bülten gününün başlamamış maçlarından (en az 5 dk sonra başlayan) %78+ olasılıklı, açık oranlı seçimler;
+// farklı maçlardan 2–4 seçim, birlikte tutma olasılığı %75+ kalan en yüksek oranlı kombinasyon; yoksa %85+ tek seçim.
+// Olasılıklar Bülten'deki ile aynıdır (aynı model, aynı kalibrasyon). Kupondaki maçlar listede altın çerçeveyle işaretlenir.
+// =====================================================================
+(function(){
+  const TH=.75, SOLO=.85, MINP=.78; let open=false, lastSig="";
+  function cands(){ const day=BT.day||istDay(new Date()), now=Date.now(), out=[];
+    for(const m of Pick.list()){ if(m.live||m.started) continue; const t=m.dt.getTime(); if(t<now+5*60e3||istDay(m.dt)!==day) continue;
+      const f=m.src==="fx"?FIXTURES.find(x=>x.lg===m.lg&&x.h===m.h&&x.a===m.a):fxOdds(m); if(!f||!f.odds) continue;
+      let p=null; try{ p=quickPred(m,f); }catch(e){} if(!p||!p.pm) continue;
+      let R=null; try{ R=recOf({H:p.pm[0],D:p.pm[1],A:p.pm[2],o25:p.o25m},f); }catch(e){}
+      if(R&&R.o&&R.o>=1.05&&R.cp>=MINP) out.push({m,R,f,p}); }
+    return out.sort((a,b)=>b.R.cp-a.R.cp).slice(0,12); }
+  function build(){ const c=cands(); let best=null;
+    (function rec(i,sel,p,o){ if(sel.length>=2&&p>=TH&&(!best||o>best.o+1e-9)) best={sel:sel.slice(),p,o};
+      if(sel.length>=4) return; for(let j=i;j<c.length;j++){ const np=p*c[j].R.cp; if(np<TH) continue; sel.push(c[j]); rec(j+1,sel,np,o*c[j].R.o); sel.pop(); } })(0,[],1,1);
+    if(!best){ const s=c.find(x=>x.R.cp>=SOLO); if(s) best={sel:[s],p:s.R.cp,o:s.R.o}; }
+    return best; }
+  const of2=o=>(+o).toLocaleString("tr-TR",{minimumFractionDigits:2,maximumFractionDigits:2});
+  function dayLbl(){ const d=BT.day||istDay(new Date()); return d===istDay(new Date())?"Bugün":d===istDay(new Date(Date.now()+864e5))?"Yarın":ist(new Date(d+"T12:00:00+03:00"),{weekday:"long"}); }
+  function paint(){ const v=$("v-bulten"), list=$("btList"); if(!v||!list) return;
+    let b=$("bgBtn"); if(!b){ b=document.createElement("button"); b.type="button"; b.id="bgBtn"; b.className="lg-btn"; b.style.marginTop="10px";
+      b.onclick=()=>{ open=!open; try{ buzz(8); Sound.tap(); }catch(e){} paint(); }; }
+    let pan=$("bgPan"); if(!pan){ pan=document.createElement("div"); pan.id="bgPan"; pan.className="lg-pan"; pan.hidden=true; }
+    if(list.previousElementSibling!==pan){ list.before(b); b.after(pan); }
+    const hide=BT.f==="live"||!!BT.q; b.hidden=hide; if(hide){ pan.hidden=true; return; }
+    const K=build(); document.querySelectorAll("#btList .lg-on").forEach(e=>e.classList.remove("lg-on"));
+    if(!K){ b.classList.add("off"); pan.hidden=true; b.setAttribute("aria-expanded","false");
+      b.innerHTML=`<span class="lg-ic">🥇</span><span class="lg-t"><b>${esc(dayLbl())} altın kupon</b><small>Taranıyor · bu gün için yeterince güvenli kombinasyon yok</small></span>`; lastSig=""; return; }
+    const sig=K.sel.map(x=>fkey(x.m)+x.R.k).join("|"); if(sig!==lastSig){ b.classList.remove("new"); void b.offsetWidth; if(lastSig) b.classList.add("new"); lastSig=sig; }
+    b.classList.remove("off"); b.setAttribute("aria-expanded",String(open));
+    b.innerHTML=`<span class="lg-ic">🥇</span><span class="lg-t"><b>${esc(dayLbl())} altın kupon · ${K.sel.length} maç</b><small>Birlikte tutma olasılığı · toplam oran ${of2(K.o)} · ${open?"kapat":"dokun, gör"}</small></span><span class="lg-p">%${pc9(K.p)}</span>`;
+    const ks=new Set(K.sel.map(x=>fkey(x.m)));
+    document.querySelectorAll("#btList .ib-r[data-i]").forEach(r=>{ try{ const x=IB.rows[+r.dataset.i]; if(x&&x.m&&ks.has(fkey(x.m))) r.classList.add("lg-on"); }catch(e){} });
+    pan.hidden=!open; if(!open) return;
+    pan.innerHTML=K.sel.map(x=>{ const m=x.m; return `<div class="pw-r"${omA(m)}><div class="pw-m"><b>${esc(m.h)} - ${esc(m.a)}</b><small>${goldOf(m)?"🥇 ":""}${esc(ist(m.dt,{hour:"2-digit",minute:"2-digit"}))} · ${esc((x.f&&(x.f.cn||x.f.ln))||(LEAGUES[m.lg]||{n:""}).n)}</small></div><div class="pw-s"><span>${esc(x.R.n)}</span><b>%${pc9(x.R.cp)}</b><i>${of2(x.R.o)}</i></div></div>`; }).join("")
+      +`<button type="button" class="lg-add" id="bgAdd">+ Altın kuponu listeye ekle</button><p class="lg-n">Seçili günün başlamamış maçları her veri yenilemesinde yeniden taranır; maç başlayınca kupondan çıkar. %${Math.round(TH*100)}+ birlikte tutma bile kesinlik değildir · 18+</p>`;
+    $("bgAdd").onclick=()=>{ buzz([10,30,10]); let n=0; for(const x of K.sel){ if(!CP.items.some(c=>c.k===cpKey(x.m)&&c.mk===x.R.k)){ cpToggle(x.m,x.R.k,+x.R.o,x.R.cp); n++; } } try{ paintCoupon(); }catch(e){} toast(n?`🥇 ${n} seçim listeye eklendi`:"Bu seçimler zaten listende"); }; }
+  window.bgPaint=paint;
+  const _rb=renderBulten; renderBulten=function(){ const r=_rb.apply(this,arguments); try{ paint(); }catch(e){} return r; };
+  setInterval(()=>{ const v=$("v-bulten"); if(v&&!v.hidden&&!document.hidden) try{ paint(); }catch(e){} },60e3);
+  try{ paint(); }catch(e){}
 })();
 </script>
 </body>
