@@ -1462,6 +1462,30 @@ body.tb2 #hdrRefresh{display:flex!important}
 /* Karne: tekrar eden satır ve başlıklar sade */
 .kz-g.dup{display:none}
 </style>
+<style id="pw-v70">
+/* v70 Power Now: en üstte "Şu anın tek maçı" + %70+ birlikte tutma kuponu */
+.pw-one1{position:relative;overflow:hidden;border-color:rgba(59,234,126,.45);background:radial-gradient(120% 140% at 0% 0%,rgba(59,234,126,.16),rgba(34,211,255,.06) 55%,var(--surface) 100%)}
+.pw-one1 .pw-h span{font-size:16px}
+.o1-st{display:inline-flex;align-items:center;gap:6px;font:800 12px var(--font,system-ui);padding:4px 9px;border-radius:999px;background:rgba(255,255,255,.08);color:var(--ink)}
+.o1-st.live{background:rgba(255,69,58,.18);color:#FF8A80}.o1-st.live i{width:7px;height:7px;border-radius:50%;background:#FF453A;animation:lvpulse 1.6s infinite}
+.o1-st.soon{background:rgba(255,214,10,.16);color:#FFD60A}
+.o1-m{display:flex;flex-direction:column;gap:2px;cursor:pointer}
+.o1-m b{font-size:19px;line-height:1.2}.o1-m small{color:var(--ink3);font-size:12px}
+.o1-pick{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;background:rgba(0,0,0,.28)}
+.o1-pick .k{font:800 16px var(--font,system-ui)}.o1-pick .p{margin-left:auto;font:900 26px var(--round,system-ui);color:#3BEA7E;font-variant-numeric:tabular-nums}
+.o1-pick .o{padding:3px 8px;border-radius:8px;background:rgba(255,255,255,.1);font:800 14px var(--round,system-ui)}
+.o1-why{margin:0;color:var(--ink2);font-size:12.5px}
+.o1-next{display:flex;gap:6px;flex-wrap:wrap}.o1-next button{font-size:12px;padding:6px 10px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid var(--line);color:var(--ink2);min-height:32px}
+.pw-one1.chg{animation:o1chg .7s var(--ease,ease)}@keyframes o1chg{0%{transform:scale(.98);box-shadow:0 0 0 0 rgba(59,234,126,.6)}100%{transform:none;box-shadow:0 0 0 14px rgba(59,234,126,0)}}
+.pw-k70{border-color:rgba(34,211,255,.4);background:linear-gradient(160deg,rgba(34,211,255,.10),var(--surface) 60%)}
+.pw-k70 .pw-add{background:linear-gradient(135deg,#22D3FF,#0A84FF);color:#fff;box-shadow:0 8px 20px -10px rgba(10,132,255,.8)}
+.k70-tag{font-style:normal;font-size:10.5px;font-weight:800;padding:1px 6px;border-radius:6px;margin-left:6px;vertical-align:1px}
+.k70-tag.l{background:rgba(255,69,58,.2);color:#FF8A80}.k70-tag.p{background:rgba(255,255,255,.1);color:var(--ink2)}
+.k70-sum{display:flex;justify-content:space-between;align-items:center;padding:8px 10px;border-radius:10px;background:rgba(0,0,0,.25);font-size:12.5px;color:var(--ink2)}
+.k70-sum b{font:900 18px var(--round,system-ui);color:#7FE3FF}
+#v-power .pw-star{display:none}
+@media (prefers-reduced-motion:reduce){.pw-one1.chg{animation:none}.o1-st.live i{animation:none}}
+</style>
 </head>
 <body>
 <div class="splash" id="splash" aria-hidden="true"><img src="icons/logo-full.png" alt=""></div>
@@ -7120,6 +7144,86 @@ setTimeout(()=>{ try{ renderTP(); }catch(e){} },1500);
   try{ const _ira=idlRenderAll; idlRenderAll=function(){ const r=_ira.apply(this,arguments);
       try{ const box=$("idlBox"); if(box){ const ok=IDL.ok[1]||IDL.ok[2]; box.style.display=(!ok&&IDL.failed)?"none":""; } }catch(e){} return r; };
     idlRenderAll(); }catch(e){}
+})();
+</script>
+<script id="pw-v70">
+// =====================================================================
+// BULUTOXX v70: Power Now — en üstte "Şu anın tek maçı" ve %70+ kupon önerisi
+// • Tek maç: önce şu an oynanan maçlardaki en olası canlı seçim (%80+, oran ≥1,15); yoksa yakında (3 saat içinde) başlayacak
+//   maçların en güçlü maç öncesi tahmini (%70+); o da yoksa günün kalanındaki en güçlü tahmin. Power Now her 15 sn'de
+//   yenilendiğinde maç durumuna göre (başladı, bitti, oran kapandı) kendiliğinden sıradakine geçer.
+// • %70+ kupon: canlı ve 24 saat içindeki maç öncesi adaylardan, birlikte tutma olasılığı %70 ve üstünde kalan,
+//   toplam oranı en yüksek 2–4 maçlık kombinasyon (farklı maçlardan). Altın kuralına dokunmaz.
+// =====================================================================
+(function(){
+  const P70=.70, SOON=3*3600e3, DAY=24*3600e3;
+  function pre70(){ const now=Date.now(), out=[];
+    for(const m of Pick.list()){ if(m.live||m.started) continue; const t=m.dt.getTime(); if(t<now||t>now+DAY) continue;
+      const f=m.src==="fx"?FIXTURES.find(x=>x.lg===m.lg&&x.h===m.h&&x.a===m.a):(typeof fxOdds==="function"?fxOdds(m):null); if(!f||!f.odds) continue;
+      let p=null; try{ p=quickPred(m,f); }catch(e){} if(!p||!p.pm) continue;
+      let R=null; try{ R=recOf({H:p.pm[0],D:p.pm[1],A:p.pm[2],o25:p.o25m},f); }catch(e){}
+      if(R&&R.o&&R.o>=1.05&&R.cp>=P70) out.push({m,R,t}); }
+    return out; }
+  const keyOf=x=>{ try{ return x.m.sp?"L"+x.m.id:fkey(x.m); }catch(e){ return x.m.h+"|"+x.m.a; } };
+  function pickOne(L,P){ const now=Date.now();
+    const lv=L.filter(x=>x.o>=1.15).sort((a,b)=>b.p-a.p||b.o-a.o); if(lv.length) return {x:lv[0],kind:"live",alt:lv.slice(1,3).concat(P.slice(0,2)).slice(0,2)};
+    const srt=(a,b)=>b.R.cp-a.R.cp, gd=x=>x.R.o>=1.15;
+    const soon=P.filter(x=>x.t-now<=SOON).sort(srt), sG=soon.filter(gd); if(sG.length) return {x:sG[0],kind:"soon",alt:sG.slice(1,3)};
+    const day=P.slice().sort(srt), dG=day.filter(gd); if(dG.length) return {x:dG[0],kind:"day",alt:dG.slice(1,3)};
+    if(soon.length) return {x:soon[0],kind:"soon",alt:soon.slice(1,3)}; if(day.length) return {x:day[0],kind:"day",alt:day.slice(1,3)};
+    const lv2=L.slice().sort((a,b)=>b.p-a.p); if(lv2.length) return {x:lv2[0],kind:"live",alt:lv2.slice(1,3)};
+    return null; }
+  function k70(L,P){ const pool=[], seen=new Set();
+    for(const x of L){ if(!(x.o>=1.05)) continue; const k=keyOf(x); if(seen.has(k)) continue; seen.add(k); pool.push({x,p:x.p,o:x.o,live:1}); }
+    for(const x of P){ const k=keyOf(x); if(seen.has(k)) continue; seen.add(k); pool.push({x,p:x.R.cp,o:x.R.o,live:0}); }
+    const c=pool.sort((a,b)=>b.p-a.p).slice(0,14); let best=null;
+    (function rec(i,sel,p,o){ if(sel.length>=2&&p>=P70&&(!best||o>best.o+1e-9||(Math.abs(o-best.o)<1e-9&&p>best.p))) best={sel:sel.slice(),p,o};
+      if(sel.length>=4) return; for(let j=i;j<c.length;j++){ const np=p*c[j].p; if(np<P70) continue; sel.push(c[j]); rec(j+1,sel,np,o*c[j].o); sel.pop(); } })(0,[],1,1);
+    return best; }
+  const of2=o=>(+o).toLocaleString("tr-TR",{minimumFractionDigits:2,maximumFractionDigits:2});
+  const lgN=m=>{ try{ return m.comp||(LEAGUES[m.lg]||{n:""}).n||""; }catch(e){ return ""; } };
+  function stHtml(sel){ const x=sel.x, m=x.m;
+    if(sel.kind==="live") return `<span class="o1-st live"><i></i>${esc(x.clock||"Canlı")} · ${m.hs}-${m.as}</span>`;
+    const mn=Math.round((x.t-Date.now())/60e3);
+    return mn<=180?`<span class="o1-st soon">⏱ ${mn<60?mn+" dk":Math.floor(mn/60)+" sa "+(mn%60)+" dk"} sonra · ${esc(ist(m.dt,{hour:"2-digit",minute:"2-digit"}))}</span>`
+      :`<span class="o1-st">🗓️ ${istDay(m.dt)===istDay(new Date())?"Bugün":"Yarın"} ${esc(ist(m.dt,{hour:"2-digit",minute:"2-digit"}))}</span>`; }
+  let lastKey=null;
+  const _rp70=renderPower;
+  renderPower=function(){ const r=_rp70.apply(this,arguments);
+    try{ const v=$("v-power"), body=v&&v.querySelector(".pw-body"); if(!body) return r;
+      let L=[]; try{ L=pwLiveCands(); }catch(e){} const P=pre70();
+      const S=pickOne(L,P), K=k70(L,P);
+      // ---- Tek maç kartı (en üstte) ----
+      let c1=$("pwOne"); if(!c1){ c1=document.createElement("div"); c1.id="pwOne"; c1.className="pw-card pw-one1"; }
+      if(body.firstElementChild!==c1) body.prepend(c1);
+      if(!S){ c1.innerHTML=`<div class="pw-h"><span>🎯 Şu anın tek maçı</span></div><p class="o1-why">${IDL.ok[1]?"Şu an %80 üzeri canlı seçim ya da önümüzdeki 24 saatte %70 üzeri maç öncesi tahmin yok. Durum değiştikçe burası kendiliğinden dolar.":"Canlı ve günün maçları yükleniyor…"}</p>`; lastKey=null; }
+      else{ const x=S.x, m=x.m, live=S.kind==="live", p=live?x.p:x.R.cp, o=live?x.o:x.R.o, n=live?x.n:x.R.n, k=keyOf(x)+"|"+(live?x.k:x.R.k);
+        const why=live?"Şu an oynanan maçlar arasında tutma olasılığı en yüksek canlı seçim. Maç durumu değişirse sıradakine geçer."
+          :S.kind==="soon"?"Yakında başlayacak maçlar arasında BULUTOXX'un en güçlü maç öncesi tahmini. Maç başlayınca canlı duruma göre yenilenir."
+          :"Günün kalan maçları arasında BULUTOXX'un en güçlü tahmini.";
+        c1.innerHTML=`<div class="pw-h"><span>🎯 Şu anın tek maçı</span><small>maç durumuna göre yenilenir</small></div>
+          ${stHtml(S)}
+          <div class="o1-m"${omA(m)}><b>${esc(m.h)} - ${esc(m.a)}</b><small>${esc(lgN(m))}</small></div>
+          <div class="o1-pick"><span class="k">${esc(n)}</span><span class="o">${of2(o)}</span><span class="p">%${pc9(p)}</span></div>
+          <p class="o1-why">${why}</p>
+          <button type="button" class="pw-add" id="pwOneAdd">+ Bu tahmini listeye ekle</button>
+          ${S.alt&&S.alt.length?`<div class="o1-next"><small style="color:var(--ink3);font-size:11.5px;align-self:center">Sıradakiler:</small>${S.alt.map(a=>`<button type="button"${omA(a.m)}>${esc(a.m.h)} · ${esc(a.R?a.R.n:a.n)} %${pc9(a.R?a.R.cp:a.p)}</button>`).join("")}</div>`:""}`;
+        if(lastKey&&lastKey!==k){ c1.classList.remove("chg"); void c1.offsetWidth; c1.classList.add("chg"); }
+        lastKey=k;
+        $("pwOneAdd").onclick=()=>{ buzz([10,30,10]); pwAdd([x]); }; }
+      // ---- %70+ kupon (tek maçın hemen altında) ----
+      let c2=$("pwK70"); if(!c2){ c2=document.createElement("div"); c2.id="pwK70"; c2.className="pw-card pw-k70"; }
+      if(c1.nextElementSibling!==c2) c1.after(c2);
+      if(!K){ c2.innerHTML=`<div class="pw-h"><span>💎 %70+ kupon önerisi</span></div><p class="o1-why">Şu an birlikte tutma olasılığı %70'in üstünde kalan en az 2 maçlık bir kombinasyon yok. Adaylar canlı maçlar ve 24 saat içindeki maçlardan her 15 saniyede yeniden taranır.</p>`; }
+      else{ c2.innerHTML=`<div class="pw-h"><span>💎 %70+ kupon önerisi</span><small>${K.sel.length} maç · en yüksek getirili</small></div>
+          ${K.sel.map(s=>{ const x=s.x, m=x.m; return `<div class="pw-r"${omA(m)}><div class="pw-m"><b>${esc(m.h)} - ${esc(m.a)}</b><small><i class="k70-tag ${s.live?"l":"p"}" style="margin:0 6px 0 0">${s.live?"CANLI "+esc(x.clock||"")+" · "+m.hs+"-"+m.as:esc((istDay(m.dt)===istDay(new Date())?"":"Yarın ")+ist(m.dt,{hour:"2-digit",minute:"2-digit"}))}</i>${esc(lgN(m))}</small></div><div class="pw-s"><span>${esc(s.live?x.n:x.R.n)}</span><b>%${pc9(s.p)}</b><i>${of2(s.o)}</i></div></div>`; }).join("")}
+          <div class="k70-sum"><span>Birlikte tutma <b>%${pc9(K.p)}</b></span><span>Toplam oran <b>${of2(K.o)}</b></span></div>
+          <button type="button" class="pw-add" id="pwK70Add">+ Kuponu listeye ekle</button>
+          <p class="o1-why" style="font-size:11.5px">%70 birlikte tutma, model tahminidir: benzer 10 kupondan yaklaşık 3'ü tutmaz. Canlı oranlar hızla değişir.</p>`;
+        $("pwK70Add").onclick=()=>{ buzz([10,30,10]); pwAdd(K.sel.map(s=>s.x)); }; }
+    }catch(e){}
+    return r; };
+  try{ if(!$("v-power").hidden) renderPower(); }catch(e){}
 })();
 </script>
 </body>
