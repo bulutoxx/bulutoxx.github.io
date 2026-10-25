@@ -160,6 +160,29 @@ def p2(out):
         out["robots_alt"][host] = {"durum": st, "metin": t[:1500]}
 
 
+STR_RE = re.compile(r"""["'`](/[A-Za-z0-9_\-]+(?:/[A-Za-z0-9_\-{}.$:]*)*(?:\?[^"'`\s]*)?)["'`]""")
+
+
+def js_ozet(js, kelimeler):
+    yollar = sorted(set(x for x in STR_RE.findall(js) if 3 < len(x) < 120 and not x.endswith((".css", ".png", ".svg", ".jpg", ".woff2"))))
+    return {"uzunluk": len(js), "yollar": yollar[:400], "urller": sorted(set(URL_RE.findall(js)))[:100],
+            "cevre": {k: cevre(js, k, 10, 220) for k in kelimeler}}
+
+
+def p3(out):
+    sc = "https://sc.atyarisi.com/10979123351/www/nsn-react/public/js/"
+    st, js, _ = get(sc + "StaticPages.min.js", "*/*", 15_000_000)
+    out["staticpages"] = dict(js_ozet(js, ["ContentMicroUrl", "kullanim", "Kullanım", "api/", "fetch\\(", "axios"]), durum=st)
+    st, js, _ = get(sc + "TJK.min.js", "*/*", 25_000_000)
+    out["tjk_js"] = dict(js_ozet(js, ["TjkApiUrl", "TjkGwApiUrl", "WebsiteUrl", "AGF", "Agf", "Handikap", "Program",
+                                      "RaceResult", "StartDate"]), durum=st)
+    st, t, _ = get(KOK + "/sitemap.xml", "application/xml")
+    out["sitemap"] = {"durum": st, "uzunluk": len(t), "loc": re.findall(r"<loc>(.*?)</loc>", t)[:80]}
+    for host in ["help.atyarisi.com", "rt.atyarisi.com", "comment.atyarisi.com"]:
+        st, t, _ = get(f"https://{host}/robots.txt", "text/plain")
+        out.setdefault("robots_alt", {})[host] = {"durum": st, "metin": t[:800]}
+
+
 def main():
     hedef = sys.argv[1] if len(sys.argv) > 1 else "p1"
     os.makedirs("lab/kesif/atyarisi", exist_ok=True)
@@ -198,6 +221,8 @@ def main():
             out.setdefault("sayfalar", []).append(o)
     elif hedef == "p2":
         p2(out)
+    elif hedef == "p3":
+        p3(out)
     out["istek_sayisi"] = SAYAC["n"]
     json.dump(out, open(f"lab/kesif/atyarisi/{hedef}.json", "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     print("tamam", SAYAC["n"], "istek")
