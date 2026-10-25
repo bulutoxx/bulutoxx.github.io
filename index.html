@@ -1536,6 +1536,7 @@ body.tb2 #hdrRefresh{display:flex!important}
 .at-pill{display:inline-block;vertical-align:4px;margin-left:8px;padding:2px 8px;border-radius:999px;font:800 10.5px var(--font,system-ui);letter-spacing:.08em;color:#2A1C00;background:linear-gradient(135deg,#D4AF37,#FFF0B3 50%,#C9A646)}
 .at-km{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:12px}
 .at-km div{padding:10px;border-radius:14px;background:var(--surface,#0E1422);border:1px solid var(--line);text-align:center}
+.at-km.at-km4{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}.at-km.at-km4 div{padding:8px 4px}.at-km.at-km4 b{font-size:17px}.at-km.at-km4 small{font-size:10.5px}
 .at-km b{display:block;font:900 20px var(--round,system-ui);color:#F3DC8A}.at-km small{color:var(--ink3);font-size:11px;line-height:1.3;display:block}
 .at-note{margin:0 0 12px;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.04);color:var(--ink2);font-size:12.5px;line-height:1.45}
 .at-chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;margin-bottom:10px;scrollbar-width:none}
@@ -5513,7 +5514,7 @@ if((location.hash||"")==="#sonuclar") setTimeout(()=>$("navRes").click(),200);
 // =====================================================================
 // BULUTOXX v35: Otomatik sürüm güncelleme — yeni sürüm yayınlanınca uygulama kendini yeniler
 // =====================================================================
-const APP_V="2026-10-25.74";
+const APP_V="2026-10-25.75";
 (function autoUpdate(){
   let shown=false;
   async function check(auto){
@@ -7533,11 +7534,11 @@ setTimeout(()=>{ try{ renderTP(); }catch(e){} },1500);
   function resOfDay(d){ return ((AT.karne&&AT.karne.kosular)||[]).map(x=>{ const k=String(x.kosu_id||"").split("/"); return Object.assign({tarih:k[0],hipodrom:k[1]||"",kosu:+k[2]||0},x); })
       .filter(x=>x.tarih===d).sort((a,b)=>a.hipodrom.localeCompare(b.hipodrom,"tr")||a.kosu-b.kosu); }
   function dLbl(d){ const t=dISO(0); return d===t?"Bugün":d===dISO(1)?"Yarın":d===dISO(-1)?"Dün":d.slice(8,10)+"."+d.slice(5,7); }
-  function hero(){ const M=AT.model&&AT.model.degerlendirme, me=M&&M.metrik||{}, h=me.harman||{}, f=me.favori||{}, n=(M&&M.kosu_sayisi&&M.kosu_sayisi.sinama)||0;
+  function hero(){ const M=AT.model&&AT.model.degerlendirme, me=M&&M.metrik||{}, h=me.harman||{}, f=me.favori||{}, mo=me.model||{}, n=(M&&M.kosu_sayisi&&M.kosu_sayisi.sinama)||0;
     const K=(AT.karne&&AT.karne.kosular||[]).filter(x=>x.kosudan_once!==false); const kn=K.length, kh=K.filter(x=>x.ilk_secim_tuttu).length;
     return `<div class="at-hero"><div class="at-logo">${LOGO("h")}</div><div><h2>At Yarışı<span class="at-pill">DENEME</span></h2><p>BULUTOXX at laboratuvarı: her gece geçmiş koşulardan yeniden öğrenir, yalnız isabeti artıran ayarı kabul eder.</p></div></div>
-      <div class="at-km"><div><b>${pct(h.ilk_secim_isabet)}</b><small>ilk seçim kazandı<br>(sınama ${n.toLocaleString("tr-TR")} koşu)</small></div><div><b>${pct(f.ilk_secim_isabet)}</b><small>ganyan favorisi<br>aynı koşularda</small></div><div><b>${kn?"%"+Math.round(kh/kn*100):"–"}</b><small>kilitli karne<br>${kn?kn+" koşu":"birikiyor"}</small></div></div>
-      <p class="at-note">🧪 Dürüst durum: model şu an <b>ganyan favorisi seviyesinde</b>, onu henüz geçmiyor. Bu bölüm geliştirme sürerken deneme olarak açık; olasılıklar yalnız modelindir, garanti değildir · 18+. Bahis sitesine yönlendirme yoktur.</p>`; }
+      <div class="at-km at-km4"><div><b>${pct(mo.ilk_secim_isabet)}</b><small>sabah tahmini<br>ilk seçim kazandı</small></div><div><b>${pct(h.ilk_secim_isabet)}</b><small>oranla harman<br>ilk seçim kazandı</small></div><div><b>${pct(f.ilk_secim_isabet)}</b><small>ganyan favorisi<br>aynı koşularda</small></div><div><b>${kn?"%"+Math.round(kh/kn*100):"–"}</b><small>kilitli karne<br>${kn?kn+" koşu":"birikiyor"}</small></div></div>
+      <p class="at-note">🧪 Dürüst durum (son ${n.toLocaleString("tr-TR")} koşuda sınandı): burada gördüğün <b>sabah tahmini</b> oran açılmadan yapılır ve ganyan favorisinin gerisindedir. Koşu öncesi oranla harmanlanınca olasılık hatasında piyasayı az farkla geçiyor, ama ilk seçim isabetinde henüz favori seviyesinde. Model her gece yeniden öğrenir. Garanti değildir · 18+. Bahis sitesine yönlendirme yoktur.</p>`; }
   function race(r){ const A=(r.atlar||[]).slice().sort((a,b)=>b.p_kazanma-a.p_kazanma), mx=A.length?A[0].p_kazanma:1, id=r.kosu_id, op=AT.open.has(id), L=op?A:A.slice(0,4);
     const ik=r.ikili_onerisi; return `<div class="at-race"><div class="at-rh"><b>${r.kosu}. Koşu</b><span>${esc(r.mesafe+" m · "+r.pist+" · "+r.sinif)}</span><span class="t">${esc(r.saat||"")}</span></div>
       ${r.kosudan_once===false?`<span class="at-tag">koşudan sonra kilitlendi · karneye sayılmaz</span>`:""}${r.mod&&/yalnız model/.test(r.mod)?` <span class="at-tag">sabah tahmini · ganyan oranı henüz yok</span>`:""}
