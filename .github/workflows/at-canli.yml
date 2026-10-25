@@ -10,7 +10,7 @@ on:
 permissions:
   contents: write
 concurrency:
-  group: at-lab          # gece akışıyla aynı grup: ikisi asla aynı anda çalışmaz
+  group: at-canli   # ayrı grup: at-lab (05:23 / 12:23) iptal edilmesin; çakışmayı push yeniden denemesi çözer
   cancel-in-progress: false
 jobs:
   canli:
