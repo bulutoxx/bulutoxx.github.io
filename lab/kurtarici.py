@@ -56,7 +56,7 @@ def main():
                 if not DENEME:
                     try: gh("run", "cancel", str(r["databaseId"]), js=False)
                     except Exception: pass
-                    try: gh("workflow", "run", dosya, js=False)
+                    try: gh("workflow", "run", dosya, "--ref", "main", js=False)
                     except Exception: pass
                 satir["durum"] = "takıldı → kurtarıldı"; calisan = [r]
                 break
@@ -85,7 +85,7 @@ def main():
             else:
                 eylem.append({"is": ad, "eylem": f"{son_basari_saat} saattir başarı yok → yeniden başlatıldı"})
                 if not DENEME:
-                    try: gh("workflow", "run", dosya, js=False)
+                    try: gh("workflow", "run", dosya, "--ref", "main", js=False)
                     except Exception as e: eylem[-1]["not"] = str(e)[:120]
                 satir["durum"] = "durmuştu → yeniden başlatıldı"
         durum.append(satir)
