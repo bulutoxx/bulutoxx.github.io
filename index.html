@@ -5514,7 +5514,7 @@ if((location.hash||"")==="#sonuclar") setTimeout(()=>$("navRes").click(),200);
 // =====================================================================
 // BULUTOXX v35: Otomatik sürüm güncelleme — yeni sürüm yayınlanınca uygulama kendini yeniler
 // =====================================================================
-const APP_V="2026-10-25.76";
+const APP_V="2026-10-25.77";
 (function autoUpdate(){
   let shown=false;
   async function check(auto){
@@ -6534,7 +6534,7 @@ renderPower=function(){ _renderPower4(); const v=$("v-power"); if(!v) return;
 const ml4=$("moreGel"); if(ml4){ const s=ml4.querySelector(".tx small"); if(s) s.textContent="Yenilikler ve sistemin kendi geliştirmeleri"; }
 // ---------- v63 Adım 5: 🥇 BULUTOXX Altın — günün en güvenilir seçimleri (temkinli, günde en fazla 3) ----------
 const GOLD={ thr:.78, omin:1.20, omax:2.00, perDay:3, set:null, at:0, karne:null };
-function goldCalc(){ const now=Date.now(), sig=Pick.list().length+"|"+FIXTURES.length+"|"+(MODEL&&MODEL.updated)+"|"+GOLD.thr; if(GOLD.set&&GOLD.sig===sig&&now-GOLD.at<60e3) return GOLD.set; GOLD.sig=sig;
+function goldCalc(){ const now=Date.now(), sig=Pick.list().length+"|"+FIXTURES.length+"|"+(MODEL&&MODEL.updated)+"|"+GOLD.thr+"|"+(window.RECV||0)+"|"+(()=>{ try{ const P=DAILY&&DAILY.canli&&DAILY.canli.platt; return P&&P.kabul?P.a+":"+P.b:"-"; }catch(e){ return "-"; } })(); if(GOLD.set&&GOLD.sig===sig&&now-GOLD.at<60e3) return GOLD.set; GOLD.sig=sig;
   const by={};
   for(const m of Pick.list()){ if(m.live||m.started) continue; const t=m.dt.getTime(); if(t<now+30*60e3||t>now+7*864e5) continue;
     const f=m.src==="fx"?FIXTURES.find(x=>x.lg===m.lg&&x.h===m.h&&x.a===m.a):fxOdds(m); if(!f||!f.odds) continue;
@@ -7447,7 +7447,7 @@ setTimeout(()=>{ try{ renderTP(); }catch(e){} },1500);
           :"Günün kalan maçları arasında BULUTOXX'un en güçlü tahmini.";
         c1.innerHTML=`<div class="pw-h"><span>🎯 Şu anın tek maçı</span><small>maç durumuna göre yenilenir</small></div>
           ${stHtml(S)}
-          <div class="o1-m"${omA(m)}><b>${esc(m.h)} - ${esc(m.a)}</b><small>${esc(lgN(m))}</small></div>
+          <div class="o1-m"${omA(m)}><b>${esc(m.h)} - ${esc(m.a)}</b><small>${esc(lgN(m))}${!live&&goldOf(m)?" · aynı zamanda günün 🥇 Altın tahmini":""}</small></div>
           <div class="o1-pick"><span class="k">${esc(n)}</span><span class="o">${of2(o)}</span><span class="p">%${pc9(p)}</span></div>
           <p class="o1-why">${why}</p>
           <button type="button" class="pw-add" id="pwOneAdd">+ Bu tahmini listeye ekle</button>
@@ -7460,7 +7460,7 @@ setTimeout(()=>{ try{ renderTP(); }catch(e){} },1500);
       if(c1.nextElementSibling!==c2) c1.after(c2);
       if(!K){ c2.innerHTML=`<div class="pw-h"><span>💎 %70+ kupon önerisi</span></div><p class="o1-why">Şu an birlikte tutma olasılığı %70'in üstünde kalan en az 2 maçlık bir kombinasyon yok. Adaylar canlı maçlar ve 24 saat içindeki maçlardan her 15 saniyede yeniden taranır.</p>`; }
       else{ c2.innerHTML=`<div class="pw-h"><span>💎 %70+ kupon önerisi</span><small>${K.sel.length} maç · en yüksek getirili</small></div>
-          ${K.sel.map(s=>{ const x=s.x, m=x.m; return `<div class="pw-r"${omA(m)}><div class="pw-m"><b>${esc(m.h)} - ${esc(m.a)}</b><small><i class="k70-tag ${s.live?"l":"p"}" style="margin:0 6px 0 0">${s.live?"CANLI "+esc(x.clock||"")+" · "+m.hs+"-"+m.as:esc((istDay(m.dt)===istDay(new Date())?"":"Yarın ")+ist(m.dt,{hour:"2-digit",minute:"2-digit"}))}</i>${esc(lgN(m))}</small></div><div class="pw-s"><span>${esc(s.live?x.n:x.R.n)}</span><b>%${pc9(s.p)}</b><i>${of2(s.o)}</i></div></div>`; }).join("")}
+          ${K.sel.map(s=>{ const x=s.x, m=x.m; return `<div class="pw-r"${omA(m)}><div class="pw-m"><b>${esc(m.h)} - ${esc(m.a)}</b><small>${!s.live&&goldOf(m)?"🥇 ":""}<i class="k70-tag ${s.live?"l":"p"}" style="margin:0 6px 0 0">${s.live?"CANLI "+esc(x.clock||"")+" · "+m.hs+"-"+m.as:esc((istDay(m.dt)===istDay(new Date())?"":"Yarın ")+ist(m.dt,{hour:"2-digit",minute:"2-digit"}))}</i>${esc(lgN(m))}</small></div><div class="pw-s"><span>${esc(s.live?x.n:x.R.n)}</span><b>%${pc9(s.p)}</b><i>${of2(s.o)}</i></div></div>`; }).join("")}
           <div class="k70-sum"><span>Birlikte tutma <b>%${pc9(K.p)}</b></span><span>Toplam oran <b>${of2(K.o)}</b></span></div>
           <button type="button" class="pw-add" id="pwK70Add">+ Kuponu listeye ekle</button>
           <p class="o1-why" style="font-size:11.5px">%70 birlikte tutma, model tahminidir: benzer 10 kupondan yaklaşık 3'ü tutmaz. Canlı oranlar hızla değişir.</p>`;
@@ -7626,6 +7626,48 @@ setTimeout(()=>{ try{ renderTP(); }catch(e){} },1500);
       chips:[...hips.slice(0,2).map(h=>`${h} 1. koşu`),"Altın atlar","At bölümünü aç"]}; }
   if(typeof botAnswer==="function"){ const _ba=botAnswer; botAnswer=async function(raw){ try{ const r=await atAnswer(raw); if(r) return r; }catch(e){} return _ba.apply(this,arguments); }; }
   setTimeout(()=>{ if(!AT.days.length) load(); },8000);
+})();
+</script>
+<script id="rec-v77">
+// =====================================================================
+// BULUTOXX v77: Futbol önerilerinde tek doğruluk kaynağı
+// Denetim bulgusu: Altın listesi 60 sn önbellekte kalıyordu; veri/kalibrasyon yüklenince Bülten/Power'daki Altın ile
+// "Hazır tahminler"deki Altın farklı çıkabiliyordu (ör. yarın: 1 maç ↔ 3 maç). Ayrıca maç başlamadan 30 dk önce Altın
+// mührü Bülten'den düşüyor ama Hazır tahminlerde kalıyordu.
+// Çözüm: (1) her veri yüklemesinde sürüm (RECV) artar, tüm önbellekler geçersizleşir; (2) Altın kilitlenir: bir maç
+// günün Altın'ı olduysa o gün boyunca (başlasa da) Altın kalır, günde en fazla 3 kuralı korunur; (3) her bölüm
+// Altın kararını tek yerden (goldOf) okur.
+// =====================================================================
+(function(){
+  window.RECV=window.RECV||0;
+  function bump(){ window.RECV++; try{ GOLD.at=0; }catch(e){} GL.cache=null; }
+  window.recBump=bump;
+  const wrapA=(o,k)=>{ try{ const f=o[k]; if(typeof f!=="function") return; o[k]=function(){ const r=f.apply(this,arguments); if(r&&typeof r.then==="function") return r.then(v=>{ bump(); return v; },e=>{ bump(); throw e; }); bump(); return r; }; }catch(e){} };
+  try{ const f=loadData; loadData=function(){ const r=f.apply(this,arguments); return Promise.resolve(r).finally(bump); }; }catch(e){}
+  try{ const f=loadFixtures; loadFixtures=function(){ const r=f.apply(this,arguments); return Promise.resolve(r).finally(bump); }; }catch(e){}
+  try{ const f=applyFixtureOdds; applyFixtureOdds=function(){ const r=f.apply(this,arguments); bump(); return r; }; }catch(e){}
+  try{ if(typeof dailyLoad==="function"){ const f=dailyLoad; dailyLoad=function(){ const r=f.apply(this,arguments); return Promise.resolve(r).finally(bump); }; } }catch(e){}
+  wrapA(Pick,"loadEspn");
+  // ---- Altın kilidi ----
+  const GL={cache:null, src:null, key:"bx-gold-lock"};
+  function rd(){ try{ return JSON.parse(localStorage.getItem(GL.key)||"{}"); }catch(e){ return {}; } }
+  function wr(o){ try{ const keep={}, t0=istDay(new Date(Date.now()-2*864e5)); for(const d in o) if(d>=t0) keep[d]=o[d]; localStorage.setItem(GL.key,JSON.stringify(keep)); }catch(e){} }
+  const _gc=goldCalc;
+  goldCalc=function(){ const S=_gc(); if(GL.cache&&GL.src===S) return GL.cache;
+    const lock=rd(), byDay={}, out=new Map(), list=Pick.list();
+    for(const [k,x] of S){ (byDay[istDay(x.m.dt)]=byDay[istDay(x.m.dt)]||[]).push([k,x]); }
+    const days=new Set([...Object.keys(byDay),...Object.keys(lock)]);
+    for(const d of days){ const L=lock[d]||[], fresh=byDay[d]||[], items=[];
+      for(const k of L){ const f=fresh.find(e=>e[0]===k); if(f){ items.push(f); continue; }
+        const m=list.find(mm=>{ try{ return fkey(mm)===k; }catch(e){ return false; } }); if(!m) continue;
+        try{ const fx=m.src==="fx"?FIXTURES.find(x=>x.lg===m.lg&&x.h===m.h&&x.a===m.a):fxOdds(m); if(!fx||!fx.odds) continue; const p=quickPred(m,fx); const R=recOf({H:p.pm[0],D:p.pm[1],A:p.pm[2],o25:p.o25m},fx); if(R) items.push([k,{m,f:fx,R,p,locked:true}]); }catch(e){} }
+      for(const e of fresh){ if(items.length>=GOLD.perDay) break; if(!items.some(i=>i[0]===e[0])) items.push(e); }
+      items.slice(0,GOLD.perDay).forEach(([k,x])=>out.set(k,x));
+      const ks=items.slice(0,GOLD.perDay).map(i=>i[0]); if(ks.length&&d>=istDay(new Date())) lock[d]=ks; }
+    wr(lock); GL.cache=out; GL.src=S; return out; };
+  // Hazır tahminler Altın kararını tek yerden okur
+  try{ const _tc=tpCands; tpCands=function(){ const L=_tc.apply(this,arguments); for(const x of L) x.gold=!!goldOf(x.m); return L; }; }catch(e){}
+  bump();
 })();
 </script>
 </body>
