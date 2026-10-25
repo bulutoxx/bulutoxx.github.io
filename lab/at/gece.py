@@ -27,6 +27,7 @@ IZ_DOSYA = os.path.join(CIKTI, "sinama_izi.json")     # kapı için koşu başı
 DENEY_DOSYA = os.path.join(CIKTI, "deneyler.json")
 YENILEME_GUN = 7   # aynı tarifte yayın katsayılarının yenilenme aralığı (gün)
 TAKIP = [("2026-10-25", "İstanbul", 5)]   # raporda kalıcı izlenen örnek koşu(lar)
+KAYNAKLAR = ["github.com/cenkozgur/tjk-data (herkese açık ayna; tjk.org'a istek yok)"]
 
 IFADE = {  # özellik -> (değeri koşu ortalamasından YÜKSEKSE, DÜŞÜKSE) — yön katkının işaretinden ayrı seçilir
     "yeni": ("ilk koşusu, geçmiş verisi yok", ""),
@@ -88,6 +89,16 @@ IFADE = {  # özellik -> (değeri koşu ortalamasından YÜKSEKSE, DÜŞÜKSE) �
     "antrenor_pz60": ("ahırının atları son dönemde gözde", "ahırının atları son dönemde gözde değil"),
     "jokey_r_degisim": ("daha güçlü bir jokeye geçti", "daha zayıf bir jokeye geçti"),
     "ekuri": ("koşuda aynı antrenörden başka at var", ""),
+    "zemin_ord": ("", ""), "zemin_yok": ("", ""),
+    "zemin_uyum": ("ağır/yumuşak zeminde iyi koşmuş", "ağır/yumuşak zeminde zayıf"),
+    "zemin_x_kilo": ("ağır zeminde üst kilo", "ağır zeminde hafif kilo avantajı"),
+    "zemin_x_skor": ("", ""),
+    "hz_son": ("son hız figürü yüksek", "son hız figürü düşük"),
+    "hz_en_iyi3": ("son 3 koşudaki en iyi hız figürü yüksek", "son 3 koşuda hız figürü düşük"),
+    "hz_ort3": ("hız figürleri istikrarlı yüksek", "hız figürleri düşük"),
+    "hz_trend": ("hız figürü yükselişte", "hız figürü düşüşte"),
+    "hz_yok": ("hız figürü yok", ""),
+    "hz_alan": ("hız figürü rakiplerinin üstünde", "hız figürü rakiplerinin altında"),
 }
 
 
@@ -144,7 +155,9 @@ def kosu_tahmini(m, kosu, durum, yayin_modu):
         p = np.asarray(q); mod = "yalnız piyasa (model sınamada piyasayı geçemedi)"
     else:
         p = m.p_model(X, K); mod = "yalnız model (piyasa oranı henüz yok)"
-    so = M.sirali_olasiliklar(p, m.gam, m.dlt)
+    # indirimli Harville: yalnız-model olasılıkları için ayrı (kendi kalibrasyonunda öğrenilen) γ, δ
+    g, d = (m.gam, m.dlt) if mod.startswith("model+") or mod.startswith("yalnız piyasa") else (m.gam_m, m.dlt_m)
+    so = M.sirali_olasiliklar(p, g, d)
     katki = m.katki(X)
     sapma = X - X.mean(0)
 
@@ -192,7 +205,7 @@ def kilitle(gunler, son_sonuc, m, durum, yayin_modu, surum):
             kt["kosudan_once"] = not (k.get("saat") and f"{t} {k['saat']}" <= simdi_tr)
             ks.append(kt)
         jyaz(yol, {"tarih": t, "kilit_zamani": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-                   "kilit_zamani_tsi": simdi_tr, "model_surumu": surum,
+                   "kilit_zamani_tsi": simdi_tr, "model_surumu": surum, "kaynaklar": KAYNAKLAR,
                    "not": "Hobi amaçlı olasılıklar; garanti değildir · 18+. kosudan_once=false olan koşular canlı karneye sayılmaz.",
                    "kosular": ks})
         yazilan.append(t)
@@ -281,6 +294,58 @@ def _deney_tablosu(a):
       f"Deney kaydı: `data/at/deneyler.json` ({dj.get('olusturma', '')}).")
 
 
+DENEY3_DOSYA = os.path.join(CIKTI, "deneyler_v3.json")
+
+
+def _ga(f):
+    return f"{f['dll']:+.4f} [{f['ga95'][0]:+.4f}, {f['ga95'][1]:+.4f}]"
+
+
+def _v3_ozet(a, mj):
+    """v3 turu (25.10.2026 akşam): atyarisi.com kararı + kapılı deneyler (deneyler_v3.json'dan)."""
+    dj = joku(DENEY3_DOSYA)
+    a("## Özet: v3 turu (25.10.2026 akşam)")
+    a("")
+    a("**Yeni veri kaynağı (atyarisi.com) — bağlanmadı.** Keşif (yalnız GitHub Actions'tan, ≤30 istek, ≥2 sn ara) şunu gösterdi: "
+      "www.atyarisi.com sayfaları yalnız boş bir uygulama kabuğu; program/AGF/sonuç verisi tarayıcıda "
+      "`tjkbulten.atyarisi.com/api` ve `tjkgw.atyarisi.com/api` adreslerinden çekiliyor ve bu iki alan adının robots.txt'i "
+      "**tüm robotlara `Disallow: /`** diyor. llms.txt izni yalnız `www.atyarisi.com` için. Kullanım Şartları metni de "
+      "robots ile kapalı `help.atyarisi.com`'dan yükleniyor (otomatik okunamadı). Kırmızı çizgi (robots'a uy) gereği "
+      "kaynak bağlanmadı; HP, kulvar, AGF, KGS, EİD, orijin özellikleri bu turda yok (bkz. model.json `kaynaklar`).")
+    a("")
+    if not dj:
+        a("- v3 deney kaydı yok.")
+        a("")
+        return
+    a("Kapılı deneyler (aynı 3.282 sınama koşusu; ΔLL = yeni − önceki kabul, koşu başına; köşeli parantez koşu-bootstrap %95 GA):")
+    a("")
+    a("| # | deney | sonuç | yalnız model LL / ilk seçim | harman LL / ilk seçim | ΔLL model [%95 GA] | ΔLL harman [%95 GA] |")
+    a("|---|---|---|---|---|---|---|")
+    for s_ in dj["adimlar"]:
+        m, h = s_["model"], s_["harman"]
+        sonuc = "taban" if s_["gecti"] is None else ("✅ kaldı" if s_["gecti"] else "❌ elendi")
+        fm = _ga(s_["fark_model"]) if s_.get("fark_model") else "–"
+        fh = _ga(s_["fark_harman"]) if s_.get("fark_harman") else "–"
+        a(f"| {s_['no']} | {s_['deney']} | {sonuc} | {m['ll']:.4f} / {_y(m['ilk'])} | {h['ll']:.4f} / {_y(h['ilk'])} | {fm} | {fh} |")
+    a("")
+    a(f"- Piyasa keskinleştirme kontrolü (q^β tek başına): keskin − piyasa {_ga(dj['piyasa_keskin_vs_piyasa'])}; "
+      f"**harman − keskin piyasa {_ga(dj['harman_vs_keskin'])}** (model ancak bu negatifse piyasaya bilgi katıyor demektir); "
+      f"harman − piyasa {_ga(dj['harman_vs_piyasa'])}; yalnız model − piyasa {_ga(dj['model_vs_piyasa'])}.")
+    hk = dj.get("hz_sinif_kiyas")
+    if hk:
+        a(f"- Hız figürü gün değişkeni: Beyer projeksiyonu (atların önceki figürleri) yerine kazanan − par − sınıf ofseti "
+          f"kullanılsaydı yalnız-model LL {_ga(hk['fark_model'])} kötüleşirdi (cins/sınıf karışımı yüzünden); projeksiyon yayında.")
+    sl = (mj.get("degerlendirme") or {}).get("sira_ll")
+    if sl:
+        a(f"- İndirimli Harville (ikili/üçlü sıralı log-loss, sınama): yalnız model γ,δ öğrenilmiş {sl['model']['ikili_ll']:.4f} / "
+          f"{sl['model']['uclu_ll']:.4f} vs düz Harville {sl['model_h1']['ikili_ll']:.4f} / {sl['model_h1']['uclu_ll']:.4f}; "
+          f"harman {sl['harman']['ikili_ll']:.4f} / {sl['harman']['uclu_ll']:.4f} vs {sl['harman_h1']['ikili_ll']:.4f} / "
+          f"{sl['harman_h1']['uclu_ll']:.4f} ({sl['model']['kosu']} koşu).")
+    a("- Sızıntı testi (`lab/at/test_sizinti.py`, her gece): aynı (at, gün) satırları özdeş; rastgele günlerde yalnız "
+      "geçmişten yeniden kurulan durum tam tabloyla birebir aynı; gün içi koşu sırası özellikleri değiştirmiyor.")
+    a("")
+
+
 def rapor_yaz(mj, karne, bugun, ayna_durumu):
     d = mj["degerlendirme"]; mt = d["metrik"]; kp = mj["kapi"]; kap = mj["kapsam"]
     L = []
@@ -293,6 +358,7 @@ def rapor_yaz(mj, karne, bugun, ayna_durumu):
     anlamli = hp["ll_fark"] + 2 * hp["std_hata"] < 0
     dj = joku(DENEY_DOSYA) or {}
     v1 = (dj.get("adimlar") or [{}])[0]
+    _v3_ozet(a, mj)
     a("## Özet: v2 güncellemesi (25.10.2026)")
     a("")
     a("Uygulamadaki **sabah tahminleri yalnız modeldir** (sabah programında ganyan oranı yok). Bu yüzden bu turda hedef, "
@@ -313,7 +379,7 @@ def rapor_yaz(mj, karne, bugun, ayna_durumu):
       "ikisinin karışımı, sıcaklık ve %25 üstü olasılıklar için ayrı bir \"üst uç\" eğimi son 90 günde kalibre edilir.")
     a("- Kapı artık **yalnız-model** ölçülerine bakıyor (sabah ekranı bunu gösteriyor), harman da kötüleşmemeli; tarif değişince eski ve "
       "yeni tahminler aynı sınama koşularında kıyaslanıyor (bkz. Kapı).")
-    a("- Elenenler: hız puanı, jokey/antrenör piyasa ilgisi + ekuri (log-loss'u çok az düşürdü ama ilk seçim isabetini düşürdü); "
+    a("- Elenenler: basit hız puanı (v3'te Beyer tarzı figür olarak yeniden yazıldı ve kapıdan geçti), jokey/antrenör piyasa ilgisi + ekuri (log-loss'u çok az düşürdü ama ilk seçim isabetini düşürdü); "
       "sabah programındaki form dizisi (yalnız 2026-04 sonrasında var, eğitim geçmişi yetersiz).")
     a("- Dürüst sonuç: model tek başına **hâlâ piyasa favorisinin gerisinde**. Sabah tahminleri bilgi amaçlıdır; koşu öncesi oran "
       "geldiğinde en güvenilir olasılık piyasa (ve harman) olur.")
@@ -523,9 +589,10 @@ def rapor_yaz(mj, karne, bugun, ayna_durumu):
 # ---------------------------------------------------------------- kapı
 def tarif():
     """Modelin tarifi (özellikler + ayarlar). Tarif aynıysa gece yalnız yeni veriyle yeniden eğitir."""
-    return {"surum": "v2", "ozellikler": list(ozellik.ADLAR), "gbm": M.lgb is not None, "gbm_ayar": M.GBM_AYAR,
+    return {"surum": "v3", "ozellikler": list(ozellik.ADLAR), "gbm": M.lgb is not None, "gbm_ayar": M.GBM_AYAR,
             "kal_gun": M.KAL_GUN, "yari_omur": M.YARI_OMUR, "pl_hiz": ozellik.PL_HIZ, "pl_kademe": ozellik.PL_KADEME,
-            "pm_hiz": ozellik.PM_HIZ, "ewma": ozellik.EWMA_A, "sonum_gun": ozellik.SONUM_GUN}
+            "pm_hiz": ozellik.PM_HIZ, "ewma": ozellik.EWMA_A, "sonum_gun": ozellik.SONUM_GUN,
+            "hz_yontem": ozellik.HZ_YONTEM, "henery_model": M.HENERY_MODEL}
 
 
 def kapi_karari(yeni, iz, trf, eski, eski_iz):
@@ -632,6 +699,13 @@ def main():
     mt = mj["degerlendirme"]["metrik"]
     mj["yayin_modu"] = "model+piyasa" if mt["harman"]["log_loss"] < mt["piyasa"]["log_loss"] else "yalniz_piyasa"
     mj["kaynak"] = {"ayna": veri.AYNA_URL, "lisans": "belirtilmemiş", "not": "Ham veri bu depoya kopyalanmaz; tjk.org'a istek atılmaz."}
+    mj["kaynaklar"] = [
+        {"ad": "github.com/cenkozgur/tjk-data", "durum": "bağlı", "lisans": "belirtilmemiş",
+         "kullanim": "sonuç, program, oran, pist durumu"},
+        {"ad": "atyarisi.com (llms.txt izni)", "durum": "bağlanmadı", "inceleme": "2026-10-25",
+         "neden": "veri tjkbulten.atyarisi.com / tjkgw.atyarisi.com API'lerinden geliyor ve robots.txt tüm robotlara "
+                  "Disallow: / diyor; llms.txt izni yalnız www için ve www sayfalarında veri yok; kullanım şartları da "
+                  "robots-kapalı help alanından yükleniyor."}]
     mj["uyari"] = "Hobi amaçlıdır; tahmin garanti değildir · 18+"
     mj["gbm_kurulu"] = M.lgb is not None
 

@@ -35,6 +35,43 @@ def sinif_anahtari(rc):
     return re.sub(r"\s*/.*", "", str(rc or "")).strip().upper() or "?"
 
 
+# Pist durumu (trackCondition): aynada yalnız günlük programlarda (2026-04'ten beri) var. Aynadaki değer bazen
+# kesik ("Çok", "Biraz" — asıl ifadenin ilk kelimesi); uydurmadan AYRI kategori olarak tutulur.
+# Sıra (ağırlık) ölçeği: 0 normal … 3 çok ağır/sulu. Bilinmeyen -> None.
+ZEMIN_SIRA = {"NORMAL": 0, "BİRAZ": 1, "NEMLİ": 1, "YUMUŞAK": 2, "ISLAK": 2, "ÇOK": 3, "AĞIR": 3, "SULU": 3}
+
+
+def zemin_norm(tc):
+    if not tc or not isinstance(tc, str):
+        return None
+    s = ad(tc)
+    return s if s in ZEMIN_SIRA else (s.split(" ")[0] if s.split(" ")[0] in ZEMIN_SIRA else s)
+
+
+def zemin_sira(z):
+    return ZEMIN_SIRA.get(z) if z else None
+
+
+def zemin_tablosu(kaynak=None):
+    """(tarih, hipodrom, koşu no) -> normalize pist durumu, günlük program dosyalarından (varsa)."""
+    d = os.path.join(kaynak or KAYNAK, "data", "daily")
+    out = {}
+    if not os.path.isdir(d):
+        return out
+    for f in sorted(os.listdir(d)):
+        if not re.match(r"\d{4}-\d{2}-\d{2}\.json$", f):
+            continue
+        try:
+            js = json.load(open(os.path.join(d, f), encoding="utf-8"))
+        except Exception:
+            continue
+        for r in js:
+            z = zemin_norm(r.get("trackCondition"))
+            if z and r.get("venue") in YERLI:
+                out[(r.get("date") or f[:10], r.get("venue"), int(r.get("raceNo") or 0))] = z
+    return out
+
+
 def _kosu(r, sonuc=True):
     atlar = []
     for h in r.get("horses") or []:
@@ -63,6 +100,7 @@ def _kosu(r, sonuc=True):
         "mesafe": int(r.get("distance") or 0), "pist": r.get("surface") or "", "sinif": r.get("raceClass") or "",
         "sinif_k": sinif_anahtari(r.get("raceClass")), "atlar": atlar,
         "saat": r.get("time"), "hava": r.get("weatherCondition"), "nem": r.get("humidity"),
+        "zemin": zemin_norm(r.get("trackCondition")),
     }
 
 
@@ -90,6 +128,10 @@ def sonuclari_yukle(kaynak=None):
                 continue
             out.append(k)
     out.sort(key=lambda k: (k["tarih"], k["hipodrom"], k["kosu"]))
+    zt = zemin_tablosu(kaynak)   # sonuç dosyalarında pist durumu yok: tarih+hipodrom+koşu no ile programdan eşlenir
+    for k in out:
+        if not k.get("zemin"):
+            k["zemin"] = zt.get((k["tarih"], k["hipodrom"], k["kosu"]))
     return out, atilan
 
 

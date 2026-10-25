@@ -30,6 +30,10 @@ jobs:
         env:
           AT_KAYNAK: ./_tjk-data
         run: python lab/at/gece.py || echo "gece.py başarısız; önceki çıktılar korunuyor"
+      - name: Sızıntı testi (kapalı-sol pencere, gün içi sıra; bilgi amaçlı)
+        env:
+          AT_KAYNAK: ./_tjk-data
+        run: timeout 300 python lab/at/test_sizinti.py || echo "sızıntı testi başarısız ya da zaman aşımı (bkz. log)"
       - name: Araştırmacı (yalnız GitHub arama API'si)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
