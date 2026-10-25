@@ -1586,7 +1586,11 @@ body.tb2 #hdrRefresh{display:flex!important}
 .g2-go{width:100%;min-height:58px;border-radius:18px;border:0;font:900 17px var(--font,system-ui);color:#fff;background:var(--grad,linear-gradient(135deg,#22D3FF,#0A84FF));box-shadow:0 12px 28px -12px rgba(10,132,255,.9);-webkit-tap-highlight-color:transparent}
 .g2-go:active{transform:scale(.98)}
 .g2-s{margin:12px 0 0;font-size:12.5px;color:var(--ink3);line-height:1.5}
-@media (max-height:700px){.g2 .glogo{width:110px}.g2 h2{font-size:19px;margin-bottom:8px}.g2-l li{padding:8px 10px;font-size:13.5px}}
+@media (max-height:700px){.gate.g2 .gbox{padding-top:14px}.g2 .glogo{width:84px;margin-bottom:2px}.g2 h2{font-size:18px;margin:2px 0 8px}.g2-l{gap:6px;margin-bottom:10px}.g2-l li{padding:7px 10px;font-size:13px}.g2-chk{padding:10px;font-size:12.5px;margin-bottom:10px}.g2-go{min-height:52px}.g2-s{margin-top:8px}}
+.g2-chk{display:flex!important;flex-direction:row!important;gap:12px;align-items:flex-start;text-align:left;margin:0 0 14px;padding:12px;border-radius:14px;border:1.5px solid rgba(127,227,255,.45);background:rgba(34,211,255,.07);font-size:13.5px;line-height:1.45;cursor:pointer}
+.g2-chk input{flex:none;width:26px;height:26px;margin:1px 0 0;accent-color:#22D3FF;cursor:pointer}
+.g2-chk button{background:none;border:0;padding:0;color:#7FE3FF;font:inherit;font-weight:700;text-decoration:underline;cursor:pointer}
+.g2-go:disabled{opacity:.45;box-shadow:none;filter:saturate(.6)}
 .g2-s button{background:none;border:0;padding:0;color:#7FE3FF;font:inherit;text-decoration:underline;cursor:pointer}
 .g2-no{margin-top:10px;width:100%;min-height:44px;border-radius:14px;background:none;border:1px solid var(--line);color:var(--ink2);font:700 14px var(--font,system-ui)}
 .g2-doc{text-align:left;max-height:55vh;overflow:auto;margin:10px 0;padding:12px;border-radius:12px;background:rgba(255,255,255,.04);font-size:13px}
@@ -5530,7 +5534,7 @@ if((location.hash||"")==="#sonuclar") setTimeout(()=>$("navRes").click(),200);
 // =====================================================================
 // BULUTOXX v35: Otomatik sürüm güncelleme — yeni sürüm yayınlanınca uygulama kendini yeniler
 // =====================================================================
-const APP_V="2026-10-25.78";
+const APP_V="2026-10-25.79";
 (function autoUpdate(){
   let shown=false;
   async function check(auto){
@@ -7708,15 +7712,17 @@ setTimeout(()=>{ try{ renderTP(); }catch(e){} },1500);
         <li><span>📊</span><div>Tahminler olasılıktır, <b>garanti değildir</b>.</div></li>
         <li><span>🔒</span><div>Hesap yok; listelerin yalnız bu telefonda kalır.</div></li>
       </ul>
-      <button class="g2-go" id="gGo" type="button">18 yaşındayım, kabul ediyorum</button>
-      <p class="g2-s">Devam ederek <button type="button" id="gT1">Kullanım Koşulları</button>'nı ve <button type="button" id="gT2">KVKK Aydınlatma Metni</button>'ni kabul etmiş olursun. Yasa dışı bahis suçtur · Destek: 115 (YEDAM)</p>
+      <label class="g2-chk"><input type="checkbox" id="gAll"><span><b>18 yaşını doldurdum.</b> BULUTOXX'un bahis amaçlı olmadığını ve tahminlerin garanti olmadığını anladım. <button type="button" id="gT1">Kullanım Koşulları</button>'nı ve <button type="button" id="gT2">KVKK Aydınlatma Metni</button>'ni okudum, kabul ediyorum.</span></label>
+      <button class="g2-go" id="gGo" type="button" disabled>Onaylıyorum, devam et</button>
+      <p class="g2-s">Yasa dışı bahis suçtur · Destek: 115 (YEDAM)</p>
     </div>`;
     document.body.appendChild(el);
-    $("gT1").onclick=()=>doc("Kullanım Koşulları",TERMS_HTML); $("gT2").onclick=()=>doc("KVKK Aydınlatma Metni",KVKK_HTML);
-    $("gGo").onclick=()=>{ try{ localStorage.setItem("bx-terms",JSON.stringify({v:TERMS_VER, at:Date.now(), kvkk:true, yas18:true, sade:1})); }catch(e){}
+    $("gT1").onclick=e=>{ e.preventDefault(); e.stopPropagation(); doc("Kullanım Koşulları",TERMS_HTML); }; $("gT2").onclick=e=>{ e.preventDefault(); e.stopPropagation(); doc("KVKK Aydınlatma Metni",KVKK_HTML); };
+    $("gAll").onchange=()=>{ $("gGo").disabled=!$("gAll").checked; try{ buzz(6); }catch(e){} };
+    $("gGo").onclick=()=>{ if(!$("gAll").checked) return; try{ localStorage.setItem("bx-terms",JSON.stringify({v:TERMS_VER, at:Date.now(), kvkk:true, yas18:true, bahisDegil:true, kosullar:true, onay:"tek kutu"})); }catch(e){}
       try{ Count.call("hit","accept"); }catch(e){} try{ buzz(10); Sound.ready(); }catch(e){} el.classList.add("out"); setTimeout(()=>el.remove(),350);
       if(window._pendInst){ window._pendInst=false; setTimeout(()=>doInstall(),380); } };
-    setTimeout(()=>{ try{ $("gGo").focus(); }catch(e){} },50); };
+    };
   // ana ekrana ekle: tek dokunuş
   doInstall=function(){ if(!termsAccepted()){ window._pendInst=true; showTerms(true); return; }
     const old=$("instGate"); if(old) old.remove();
