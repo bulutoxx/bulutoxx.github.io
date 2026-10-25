@@ -170,62 +170,62 @@
   "gamma": 1.35,
   "n": 675,
   "strength": {
-   "it": -0.161,
-   "es": -0.036,
-   "pl": -0.585,
-   "ecu": -0.5,
-   "fi": -0.843,
-   "fr": -0.129,
-   "br2": -0.5,
    "sc4": -0.5,
-   "at": -0.688,
-   "dk": -0.38,
-   "se": -0.706,
-   "ksa": -0.5,
-   "ar2": -0.5,
-   "no": -0.462,
-   "slv": -0.5,
-   "nl2": -0.5,
-   "es2": -0.5,
-   "nl": -0.465,
    "gr": -0.529,
+   "en3": -0.5,
+   "sc3": -0.5,
+   "slv": -0.5,
+   "us": -0.5,
+   "ie": -0.942,
+   "gua": -0.5,
+   "ar2": -0.5,
+   "uru": -0.5,
+   "ro": -0.735,
+   "de": -0.074,
+   "de2": -0.45,
+   "hon": -0.5,
+   "sc2": -0.75,
+   "es2": -0.5,
+   "mx2": -0.5,
+   "ecu": -0.5,
+   "br": -0.5,
+   "bol": -0.5,
+   "mx": -0.5,
    "en": 0.238,
-   "en2": -0.35,
-   "crc": -0.5,
    "ar": -0.5,
    "be": -0.332,
-   "sc": -0.799,
-   "chi": -0.5,
-   "de2": -0.45,
-   "bol": -0.5,
-   "gua": -0.5,
-   "br": -0.5,
-   "de": -0.074,
-   "rsa": -0.5,
-   "mx": -0.5,
-   "col": -0.5,
-   "ie": -0.942,
-   "sc2": -0.75,
-   "par": -0.5,
-   "ven": -0.5,
-   "en3": -0.5,
-   "uru": -0.5,
-   "cn": -0.5,
-   "hon": -0.5,
-   "mx2": -0.5,
-   "fr2": -0.6,
-   "tr1": -0.316,
-   "it2": -0.55,
-   "jp": -0.5,
-   "per": -0.5,
-   "pt": -0.305,
-   "ro": -0.735,
+   "ksa": -0.5,
+   "en2": -0.35,
+   "pl": -0.585,
    "usl": -0.5,
-   "us": -0.5,
+   "tr1": -0.316,
    "en4": -0.5,
-   "sc3": -0.5,
-   "en5": -0.5,
+   "fi": -0.843,
+   "pt": -0.305,
+   "cn": -0.5,
+   "per": -0.5,
+   "nl2": -0.5,
+   "nl": -0.465,
+   "no": -0.462,
+   "at": -0.688,
+   "fr2": -0.6,
+   "br2": -0.5,
+   "chi": -0.5,
+   "rsa": -0.5,
+   "es": -0.036,
+   "it2": -0.55,
+   "dk": -0.38,
+   "par": -0.5,
+   "sc": -0.799,
+   "ven": -0.5,
+   "fr": -0.129,
    "ch": -0.33,
+   "crc": -0.5,
+   "it": -0.161,
+   "se": -0.706,
+   "en5": -0.5,
+   "jp": -0.5,
+   "col": -0.5,
    "ru": -0.4
   },
   "unknown": -0.5,
@@ -987,13 +987,13 @@
    ]
   }
  },
- "updated": "2026-10-25 20:16",
- "tuned": "2026-10-25 19:24",
+ "updated": "2026-10-25 20:24",
+ "tuned": "2026-10-25 20:24",
  "fp": "7af65895a17bab01",
- "engine": "2026-10-25.ml70",
+ "engine": "2026-10-25.ml80",
  "data_v": 3,
- "checks": 82,
- "trainings": 38,
+ "checks": 83,
+ "trainings": 39,
  "tuned_n": 12856,
  "params": {
   "decay": 0.018,
@@ -1005,8 +1005,8 @@
   "marketW": 1.0,
   "calT": 1.05,
   "gscale": 1.02,
-  "dk": 1.03,
-  "cal_yol": "model",
+  "dk": 1.14,
+  "cal_yol": "sunulan",
   "risk": {
    "id": "beraberlik",
    "ad": "Beraberlik avcısı",
@@ -1282,21 +1282,21 @@
    ],
    "sunulan": {
     "T": 1.05,
-    "g": 1.01,
-    "dk": 1.1,
-    "kabul": false,
+    "g": 1.02,
+    "dk": 1.14,
+    "kabul": true,
     "yol": "sunulan",
-    "w_oranli": 0.528,
+    "w_oranli": 0.5,
     "ayrim": "2026-05-09",
     "n_piyasa": 64407,
     "n_derin": 51551,
     "son30": {
      "kimlik": {
-      "amac": 1.34178,
+      "amac": 1.34211,
       "piyasa_ll_1x2": 1.00113,
       "piyasa_ll_ou": 0.66831,
-      "model_ll_1x2": 1.01326,
-      "model_ll_ou": 0.67157,
+      "model_ll_1x2": 1.01323,
+      "model_ll_ou": 0.6714,
       "oneri_ll": 0.66491,
       "oneri_brier": 0.23634,
       "n70": 408,
@@ -1305,24 +1305,24 @@
       "altin_hit": 0.7692
      },
      "aday": {
-      "amac": 1.34165,
-      "piyasa_ll_1x2": 1.00032,
+      "amac": 1.34147,
+      "piyasa_ll_1x2": 1.0001,
       "piyasa_ll_ou": 0.66824,
-      "model_ll_1x2": 1.01426,
-      "model_ll_ou": 0.67091,
-      "oneri_ll": 0.66531,
-      "oneri_brier": 0.23651,
-      "n70": 435,
-      "hit70": 0.7448,
-      "altin_n": 77,
-      "altin_hit": 0.7662
+      "model_ll_1x2": 1.01332,
+      "model_ll_ou": 0.67078,
+      "oneri_ll": 0.66425,
+      "oneri_brier": 0.23601,
+      "n70": 421,
+      "hit70": 0.7553,
+      "altin_n": 74,
+      "altin_hit": 0.7703
      },
      "eski_model_yolu": {
-      "amac": 1.34171,
+      "amac": 1.34207,
       "piyasa_ll_1x2": 1.00152,
       "piyasa_ll_ou": 0.66835,
-      "model_ll_1x2": 1.01322,
-      "model_ll_ou": 0.67043,
+      "model_ll_1x2": 1.01328,
+      "model_ll_ou": 0.67034,
       "oneri_ll": 0.66537,
       "oneri_brier": 0.23649,
       "n70": 495,
@@ -1330,13 +1330,126 @@
       "altin_n": 92,
       "altin_hit": 0.7717
      }
-    }
+    },
+    "wf": {
+     "karar": true,
+     "secilen": [
+      1.05,
+      1.02,
+      1.14
+     ],
+     "mevcut": [
+      1.05,
+      1.02,
+      1.03
+     ],
+     "kat_sayisi": 5,
+     "kazanilan_kat": 5,
+     "n_sinama": 50835,
+     "aday": {
+      "n": 50835,
+      "oneri_brier": 0.23473,
+      "oneri_ll": 0.66119,
+      "n70": 4708,
+      "hit70": 0.7806,
+      "altin_n": 892,
+      "altin_hit": 0.7982,
+      "piyasa_amac": 1.33855
+     },
+     "mevcut_sonuc": {
+      "n": 50835,
+      "oneri_brier": 0.23481,
+      "oneri_ll": 0.66138,
+      "n70": 5441,
+      "hit70": 0.7659,
+      "altin_n": 1100,
+      "altin_hit": 0.7882,
+      "piyasa_amac": 1.33993
+     },
+     "fark_ci95": {
+      "altin_hit": [
+       -0.00202,
+       0.02158
+      ],
+      "hit70": [
+       0.00942,
+       0.02046
+      ],
+      "oneri_brier": [
+       -0.0003,
+       0.00011
+      ]
+     },
+     "katlar": [
+      {
+       "kat": "2022-07-01",
+       "secilen": [
+        1.05,
+        1.0,
+        1.14
+       ],
+       "n": 12592,
+       "piyasa_amac": 1.33353,
+       "piyasa_amac_mevcut": 1.33453
+      },
+      {
+       "kat": "2023-07-01",
+       "secilen": [
+        1.1,
+        0.98,
+        1.14
+       ],
+       "n": 12573,
+       "piyasa_amac": 1.33823,
+       "piyasa_amac_mevcut": 1.3396
+      },
+      {
+       "kat": "2024-07-01",
+       "secilen": [
+        1.05,
+        1.0,
+        1.14
+       ],
+       "n": 12405,
+       "piyasa_amac": 1.34186,
+       "piyasa_amac_mevcut": 1.34349
+      },
+      {
+       "kat": "2025-07-01",
+       "secilen": [
+        1.05,
+        1.0,
+        1.14
+       ],
+       "n": 10132,
+       "piyasa_amac": 1.34363,
+       "piyasa_amac_mevcut": 1.34524,
+       "model_amac": 1.35095,
+       "model_amac_mevcut": 1.3514
+      },
+      {
+       "kat": "2026-07-01",
+       "secilen": [
+        1.05,
+        1.01,
+        1.14
+       ],
+       "n": 3133,
+       "piyasa_amac": 1.33049,
+       "piyasa_amac_mevcut": 1.33165,
+       "model_amac": 1.34402,
+       "model_amac_mevcut": 1.34363
+      }
+     ],
+     "neden": "geçti"
+    },
+    "kabul_son30": false
    },
    "kullanilan": {
-    "yol": "model",
+    "yol": "sunulan",
     "T": 1.05,
     "g": 1.02,
-    "dk": 1.03
+    "dk": 1.14
    }
   },
   "risk": {
@@ -1565,9 +1678,9 @@
   "crc": "18 yeni, 2 istek",
   "gua": "28 yeni, 2 istek",
   "slv": "26 yeni, 2 istek",
-  "ind": "15 yeni, 2 istek",
+  "ind": "16 yeni, 2 istek",
   "rsa": "8 yeni, 2 istek",
-  "wsl": "17 yeni, 2 istek",
+  "wsl": "20 yeni, 2 istek",
   "esw": "23 yeni, 2 istek",
   "frw": "16 yeni, 2 istek",
   "mxw": "23 yeni, 2 istek",
@@ -2068,7 +2181,7 @@
   "arsiv": {
    "gun": 6,
    "kayit": 1213,
-   "puanli": 894,
+   "puanli": 903,
    "ilk": "2026-10-22",
    "eski_gun": 0
   }
