@@ -25,6 +25,20 @@ RAPOR = os.path.join(BURA, "RAPOR.md")
 GBM_DOSYA = os.path.join(CIKTI, "gbm_uretim.txt")      # yayın modelinin ağaçları (uygulama okumaz)
 IZ_DOSYA = os.path.join(CIKTI, "sinama_izi.json")     # kapı için koşu başına sınama izi
 DENEY_DOSYA = os.path.join(CIKTI, "deneyler.json")
+REPLAY_DOSYA = os.path.join(CIKTI, "replay.json")      # gün gün yeniden oynatma (lab/at/replay.py)
+# Altın at kuralı: replay.py seçer (seçim ilk 2/3 gün, rapor son 1/3) ve model.json'a yazar; gece korur.
+ALTIN_VARSAYILAN = {"p_min": 0.35, "fark_min": 0.12, "gunluk_max": 3, "kaynak": "varsayılan (arayüz kuralı)"}
+
+
+def altin_kural(eski):
+    """Önce kayıtlı model.json kuralı, yoksa replay.json'daki seçilen kural, o da yoksa arayüzün varsayılanı."""
+    k = (eski or {}).get("altin_kural")
+    if k and all(x in k for x in ("p_min", "fark_min", "gunluk_max")):
+        return k
+    r = (joku(REPLAY_DOSYA) or {}).get("secilen_altin") or {}
+    if r.get("kural"):
+        return dict(r["kural"], donem=(joku(REPLAY_DOSYA) or {}).get("donem"))
+    return dict(ALTIN_VARSAYILAN)
 YENILEME_GUN = 7   # aynı tarifte yayın katsayılarının yenilenme aralığı (gün)
 TAKIP = [("2026-10-25", "İstanbul", 5)]   # raporda kalıcı izlenen örnek koşu(lar)
 KAYNAKLAR = ["github.com/cenkozgur/tjk-data (herkese açık ayna; tjk.org'a istek yok)"]
@@ -505,6 +519,115 @@ def _canli_bolum(a):
     a("")
 
 
+def _ga_y(g):
+    return f"[{g[0]:+.4f}, {g[1]:+.4f}]" if g else "–"
+
+
+def _replay_ozet(a, mj):
+    """Gün gün yeniden oynatma (replay.json) özeti: senaryolar, kırılımlar, Altın at kuralı, deneyler, idman verisi."""
+    rj = joku(REPLAY_DOSYA)
+    if not rj or not rj.get("ozet"):
+        return
+    o = rj["ozet"]
+    a(f"## Yeniden oynatma (replay): {rj['donem'][0]} → {rj['donem'][1]}")
+    a("")
+    a(f"Geçmiş koşular hiç oynanmamış gibi yeniden yarıştırıldı: {rj['gun']} yarış günü, {rj['kosu']:,} koşu "
+      f"({rj.get('tam_oranli_kosu', 0):,} tam oranlı). Her gün için tahmin, yayındaki sistemin o sabah üreteceği gibi: katsayılar "
+      f"{rj['yenileme_gun']} günde bir yalnız o günden önceki sonuçlarla yeniden eğitildi ({rj['yenileme_sayisi']} yenileme), özellikler "
+      "o günden önceki sonuçlarla. **sabah** = yalnız model (oransız), **oran** = model + nihai ganyan oranı harmanı, **favori** = "
+      f"yalnız nihai oran. Süre: {rj.get('sure_sn', 0) // 60} dk {rj.get('sure_sn', 0) % 60} sn (yerel, 2 çekirdek). `lab/at/replay.py`, "
+      "çıktı `data/at/replay.json`; at bazında olasılıklar `data/at/replay_kosular.json`.")
+    a("")
+    a("| senaryo | koşu | ilk seçim kazandı | ilk seçim ilk 3'te | ikili sıralı | ikili sırasız | log-loss |")
+    a("|---|---|---|---|---|---|---|")
+    for s_ in ("sabah", "oran", "favori"):
+        x = o.get(s_)
+        if x:
+            a(f"| {s_} | {x['kosu']:,} | {_y(x['ilk_secim'])} | {_y(x['ilk3_icinde'])} | {_y(x['ikili_sirali'])} | "
+              f"{_y(x['ikili_sirasiz'])} | {x['log_loss']:.4f} |")
+    a("")
+    f = rj.get("fark") or {}
+    for s_ in ("sabah", "oran"):
+        x = f.get(s_ + "_eksi_piyasa")
+        if x:
+            a(f"- {s_} − piyasa (ortak {x['kosu']:,} koşu): log-loss {x['ll_fark']:+.4f} {_ga_y(x['ga95'])}, ilk seçim "
+              f"{100 * x['ilk_fark']:+.1f} puan {_ga_y(x['ilk_ga95'])}.")
+    a("")
+    kr = rj.get("kirilim") or {}
+    for ad_, bas in (("hipodrom", "hipodrom"), ("pist", "pist"), ("alan_buyuklugu", "alan (koşan at)"), ("sinif", "sınıf türü")):
+        t = kr.get(ad_)
+        if not t:
+            continue
+        a(f"| {bas} | koşu | sabah ilk | oran ilk | favori ilk | sabah LL | sabah − piyasa LL [%95 GA] |")
+        a("|---|---|---|---|---|---|---|")
+        for k, v in t.items():
+            sp = v.get("sabah_eksi_piyasa_ll") or {}
+            a(f"| {k} | {v['kosu']} | {_y((v.get('sabah') or {}).get('ilk_secim'))} | {_y((v.get('oran') or {}).get('ilk_secim'))} | "
+              f"{_y((v.get('favori') or {}).get('ilk_secim'))} | {(v.get('sabah') or {}).get('log_loss', '–')} | "
+              f"{sp.get('fark', 0):+.4f} {_ga_y(sp.get('ga95'))} |")
+        a("")
+    if rj.get("yorum"):
+        for y in rj["yorum"]:
+            a(f"- {y}")
+        a("")
+    sa = rj.get("secilen_altin") or {}
+    if sa:
+        b = sa["bolum"]
+        a(f"### Altın at kuralı (seçim {b['secim'][0]}→{b['secim'][1]}, {b['gun_secim']} gün; rapor {b['sinama'][0]}→{b['sinama'][1]}, "
+          f"{b['gun_sinama']} gün — sınama dilimine bakılmadan)")
+        a("")
+        a(f"Tarama: p_min × fark_min × günde en çok (sabah olasılığı; arayüzdeki gibi p + fark sırasıyla). Koşul: {b['kosul']}. "
+          "En iyi uygun 8 satır (seçim dilimi) ve aynı kuralların sınama dilimi sonucu:")
+        a("")
+        a("| p_min | fark_min | günde en çok | n | kazanma isabeti | ilk 3 isabeti | günde ort. | sınama: n / isabet / ilk 3 |")
+        a("|---|---|---|---|---|---|---|---|")
+        for r in [r for r in rj.get("altin_tarama", []) if r["uygun"]][:8]:
+            sn = r["sinama"]
+            a(f"| {r['p_min']:.2f} | {r['fark_min']:.2f} | {r['gunluk_max']} | {r['n']} | {_y(r['isabet'])} | {_y(r['ilk3_isabet'])} | "
+              f"{r['gunde_ort']:.2f} | {sn['n']} / {_y(sn['isabet'])} / {_y(sn['ilk3_isabet'])} |")
+        a("")
+        m = sa["mevcut"]
+        if sa.get("aday"):
+            ad = sa["aday"]
+            a(f"- Seçim dilimindeki en iyi aday: p ≥ {ad['p_min']:.2f}, fark ≥ {ad['fark_min']:.2f}, günde en çok {ad['gunluk_max']} → "
+              f"sınamada {ad['sinama']['n']} seçim, isabet {_y(ad['sinama']['isabet'])} (%95 GA {_ga_y(ad['sinama']['isabet_ga95'])}), "
+              f"ilk 3 {_y(ad['sinama']['ilk3_isabet'])}, günde {ad['sinama']['gunde_ort']:.2f}.")
+        a(f"- Mevcut arayüz kuralı (p ≥ .35, fark ≥ .12, günde 3) sınamada: {m['sinama']['n']} seçim, isabet {_y(m['sinama']['isabet'])} "
+          f"(%95 GA {_ga_y(m['sinama']['isabet_ga95'])}), ilk 3 {_y(m['sinama']['ilk3_isabet'])}, günde {m['sinama']['gunde_ort']:.2f}.")
+        k = sa["kural"]
+        a(f"- **Karar: {sa['karar']}** → `model.json` `altin_kural`: p ≥ {k['p_min']:.2f}, fark ≥ {k['fark_min']:.2f}, günde en çok "
+          f"{k['gunluk_max']} (sınama isabeti {_y(k['isabet_sinama'])}, n {k['n_sinama']}).")
+        a("")
+    dn = (rj.get("deneyler") or {}).get("adimlar")
+    if dn:
+        a("### Replay zayıflıklarına göre kapılı deneyler (v4 kapısı, iki kat)")
+        a("")
+        a("| deney | sonuç | ort. LL / ilk seçim | A: LL / ilk | B: LL / ilk | ΔLL birleşik [%95 GA] | ΔLL A | ΔLL B | harman ort. |")
+        a("|---|---|---|---|---|---|---|---|---|")
+        for d in dn:
+            fm = d.get("fark_model")
+            sonuc = "taban" if d["gecti"] is None else ("✅ kaldı" if d["gecti"] else "❌ elendi")
+            ka = d["katlar"]
+            a(f"| {d['deney']} | {sonuc} | {d['model']['ll']:.4f} / {_y(d['model']['ilk'])} | {ka['A']['model']['ll']:.4f} / "
+              f"{_y(ka['A']['model']['ilk'])} | {ka['B']['model']['ll']:.4f} / {_y(ka['B']['model']['ilk'])} | "
+              + (f"{fm['dll']:+.4f} {_ga_y(fm['ga95'])} | {fm['A']['dll']:+.4f} {_ga_y(fm['A']['ga95'])} | {fm['B']['dll']:+.4f} {_ga_y(fm['B']['ga95'])}"
+                 if fm else "– | – | –") + f" | {d['harman']['ll']:.4f} |")
+        a("")
+    iv = list(rj.get("idman_verisi") or [])
+    ar_ = joku(os.path.join(CIKTI, "arastirma.json")) or {}
+    if ar_.get("idman"):
+        im = ar_["idman"]
+        iv.append(f"Gece araştırmacısı ({ar_.get('guncelleme', '?')[:10]}): idman/galop ile ilgili {im['aday_sayisi']} GitHub adayı, "
+                  f"açık lisanslı {len(im['lisansli'])}" + (f" ({', '.join(im['lisansli'][:5])})" if im["lisansli"] else "") +
+                  "; hiçbiri otomatik bağlanmaz (`data/at/arastirma.json`).")
+    if iv:
+        a("### İdman (galop/sprint) verisi araştırması")
+        a("")
+        for y in iv:
+            a(f"- {y}")
+        a("")
+
+
 def rapor_yaz(mj, karne, bugun, ayna_durumu):
     d = mj["degerlendirme"]; mt = d["metrik"]; kp = mj["kapi"]; kap = mj["kapsam"]
     L = []
@@ -517,6 +640,7 @@ def rapor_yaz(mj, karne, bugun, ayna_durumu):
     anlamli = hp["ll_fark"] + 2 * hp["std_hata"] < 0
     dj = joku(DENEY_DOSYA) or {}
     v1 = (dj.get("adimlar") or [{}])[0]
+    _replay_ozet(a, mj)
     _v4_ozet(a, mj)
     _v3_ozet(a, mj)
     a("## Özet: v2 güncellemesi (25.10.2026)")
@@ -871,6 +995,7 @@ def main():
         mj["reddedilen_son_deneme"] = {"tarih": simdi, "metrik": sonuc["metrik"]}
         m_uretim = model_yukle(mj["uretim_modeli"])
     mj["guncelleme"] = simdi
+    mj["altin_kural"] = altin_kural(eski0)   # yeni model yazılsa da Altın kural korunur
     mj["kapsam"] = veri.kapsam(kosular)
     mj["atilan"] = atilan
     mj["kapi"] = kapi
