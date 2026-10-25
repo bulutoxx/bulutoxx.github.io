@@ -1,10 +1,10 @@
 name: BULUTOXX at yarisi kesif (hazirlik)
 # Yalnız at-hazirlik dalında çalışır; ana uygulamaya ve futbol robotlarına dokunmaz. Yalnız yapı özetini
 # (tablo başlıkları, bağlantılar) bu dala yazar; ham sayfa yayınlamaz.
+# DEVRE DIŞI (GOREV.md kırmızı çizgi 1): tjk.org robots.txt tüm botları yasaklıyor; bu keşif robotu artık
+# otomatik çalışmaz. Veri yalnız github.com/cenkozgur/tjk-data aynasından gelir (bkz. at-lab.yml).
 on:
-  push:
-    branches: [at-hazirlik]
-    paths: ["lab/at/**", ".github/workflows/at-kesif.yml"]
+  workflow_dispatch:
 permissions:
   contents: write
 jobs:
