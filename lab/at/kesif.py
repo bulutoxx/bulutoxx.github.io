@@ -77,6 +77,11 @@ def tablo_ozet(txt, n=3):
         cells = [[re.sub(r"\s+", " ", html.unescape(re.sub(r"<[^>]+>", " ", c))).strip() for c in re.findall(r"<t[hd][^>]*>(.*?)</t[hd]>", r, re.S | re.I)] for r in rows[:n + 1]]
         out.append({"satir": len(rows), "ornek": cells})
     return out
+oz = {}
+for f in sorted(os.listdir(OUT)):
+    if f.endswith(".html"): oz[f] = tablo_ozet(open(os.path.join(OUT, f), encoding="utf-8").read(), 1)
+os.makedirs("lab/at/rapor", exist_ok=True)
+json.dump({"kesif": rep, "tablolar": oz}, open("lab/at/rapor/kesif.json", "w", encoding="utf-8"), ensure_ascii=False, indent=1)
 print("=====KESIF_JSON_BASLA=====")
 print(json.dumps(rep, ensure_ascii=False)[:60000])
 print("=====KESIF_JSON_BITTI=====")
