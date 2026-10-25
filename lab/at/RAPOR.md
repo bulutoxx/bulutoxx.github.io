@@ -1,6 +1,6 @@
 # BULUTOXX 🐎 At Yarışı Laboratuvarı — Rapor
 
-_Otomatik üretildi: 2026-10-25T13:42:16+00:00 · model sürümü `20261025T1341` · hobi amaçlıdır, garanti değildir · 18+_
+_Otomatik üretildi: 2026-10-25T13:50:37+00:00 · model sürümü `20261025T1341` · hobi amaçlıdır, garanti değildir · 18+_
 
 ## Kısa sonuç (dürüst)
 
@@ -82,7 +82,7 @@ Yorum: jokeyin son 60 gün formu, at formu (son koşu sıraları, kazanana uzakl
 
 ## Kapı (sürekli öğrenme)
 
-- Son karar (2026-10-25T13:42:16+00:00): **RED** — log-loss düşmedi (1.8262 → 1.8262); dünkü model korunuyor
+- Son karar (2026-10-25T13:50:37+00:00): **RED** — log-loss düşmedi (1.8262 → 1.8262); dünkü model korunuyor
 - Yeni deneme: log-loss 1.8262, ilk seçim %34.0; kayıtlı model aynı sınamada: log-loss 1.8262, ilk seçim %34.0
 
 ## Canlı karne (kilitlenmiş tahminler, sonuç gelince)
