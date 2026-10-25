@@ -51,6 +51,14 @@ TUM_OZELLIKLER = [
     ("zemin_x_skor", "zemin"),
     ("hz_son", "hiz3"), ("hz_en_iyi3", "hiz3"), ("hz_ort3", "hiz3"), ("hz_trend", "hiz3"), ("hz_yok", "hiz3"),
     ("hz_alan", "hiz3"),
+    # --- v4 adayları
+    # hp: handikap reytingi vekili (handikapçı kiloyu HP'den verir; kilo = sınıf düzeyi + HP farkı)
+    ("hp_once", "hp"), ("hp_yok", "hp"), ("hp_bugun", "hp"), ("hp_degisim", "hp"), ("hp_alan", "hp"),
+    ("kilo_sira_h", "hp"), ("kilo_min_h", "hp"), ("kilo_x_sinif", "hp"),
+    # degisim: koşudan koşuya değişim sinyalleri
+    ("mesafe_deg_y", "degisim"), ("pist_degisti", "degisim"), ("pist_ilk", "degisim"), ("jokey_r_fark", "degisim"),
+    ("ara_10", "degisim"), ("ara_60_120", "degisim"), ("ara_120_240", "degisim"), ("ara_240p", "degisim"),
+    ("donus_2", "degisim"), ("yas2_mesafe", "degisim"), ("sinif_dus", "degisim"), ("sinif_cik", "degisim"),
 ]
 TUM_ADLAR = [o[0] for o in TUM_OZELLIKLER]
 GRUP = dict(TUM_OZELLIKLER)
@@ -59,7 +67,8 @@ GRUP = dict(TUM_OZELLIKLER)
 # hiz ve jokey2 hesaplanır ama kapıdan geçemedi (log-loss'u az düşürdü, ilk-seçim isabetini düşürdü) → kullanılmıyor.
 V1_GRUPLAR = ["form", "fark", "piyasa_gecmisi", "dinlenme", "pist_mesafe_hipodrom", "sinif", "kilo", "yas",
               "jokey", "antrenor", "jokey_at", "alan"]
-SECILI_GRUPLAR = V1_GRUPLAR + ["piyasa_hafiza", "reyting", "sinif2", "fark2", "hiz3"]   # v3: hiz3 kapıdan geçti; zemin elendi
+# v3: hiz3 kapıdan geçti; zemin elendi. v4 (iki katlı kapı, lab/at/deney4.py): degisim ve hp geçti.
+SECILI_GRUPLAR = V1_GRUPLAR + ["piyasa_hafiza", "reyting", "sinif2", "fark2", "hiz3", "degisim", "hp"]
 OZELLIKLER = [o for o in TUM_OZELLIKLER if o[1] in SECILI_GRUPLAR]
 ADLAR = [o[0] for o in OZELLIKLER]
 GRUPLAR = sorted({o[1] for o in OZELLIKLER})
@@ -74,6 +83,8 @@ PL_KADEME = 4          # bitiş sırasının ilk kaç kademesi kullanılır (ark
 PM_HIZ = 0.25          # piyasa reytingi öğrenme hızı
 EWMA_A = 0.4           # geçmiş koşu ağırlığı (son koşu 0.4, öncesi 0.6 ile birleşir)
 SONUM_GUN = 120.0      # zaman sönümlü formun yarı ömrü (gün)
+HP_K = 3          # atın HP vekili: son kaç handikap değerinin medyanı
+HP_TAVAN = 4.0    # apranti (jokey) kilo indirimi vekili üst sınırı (kg)
 HZ_YONTEM = "projeksiyon"   # hız figürü gün değişkeni: "projeksiyon" (atların önceki figürleri) ya da "sinif" (par + sınıf ofseti)
 
 
@@ -179,6 +190,11 @@ class Durum:
         self.hz_par = defaultdict(lambda: [0, 0.0])        # (hipodrom, pist, mesafe) -> [n, Σ artık]
         self.hz_sinif = defaultdict(lambda: [0, 0.0])      # sınıf anahtarı -> [n, Σ artık]
         self.hz_bekleyen = []                              # bu günün koşuları (gün değişkeni gün sonunda)
+        # v4: handikap reytingi vekili (kg biriminde)
+        self.hp_at = defaultdict(lambda: deque(maxlen=6))  # at -> örtük HP değerleri (handikap koşularından)
+        self.hp_sinif = defaultdict(lambda: [0, 0.0])      # handikap sınıf anahtarı -> [n, Σ düzey gözlemi]
+        self.hp_jokey = defaultdict(lambda: deque(maxlen=40))  # jokey -> kilo indirimi kalıntıları
+        self.hp_bekleyen = []                              # günün handikap koşuları (gün sonunda işlenir)
 
     # --- sınıf düzeyi: o sınıfta koşan atların geçmiş galibiyet sayısının (log) kayan ortalaması
     def sinif_duzeyi(self, k):
@@ -190,6 +206,37 @@ class Durum:
     def sinif_reyting(self, k):
         n, s = self.sinif_r[k]
         return s / (n + 5)   # önsel 0 (genel ortalama)
+
+    # --- v4: handikap reytingi vekili. Handikapta kiloyu handikapçı HP'den verir: kilo ≈ taban(sınıf) + k·HP.
+    # Örtük HP (kg biriminde) = L(sınıf) + (kilo + jokey indirimi − koşu medyanı). L(sınıf), sınıflar arasında
+    # geçiş yapan atların önceki HP'lerinden çevrimiçi öğrenilir; jokey (apranti) indirimi bilinmediği için
+    # jokeyin kalıntılarının medyanıyla (0–4 kg, küçültmeli) tahmin edilir. Atın HP'si son 3 değerin medyanı.
+    @staticmethod
+    def _handikap_mi(kosu):
+        return sinif_turu(kosu["sinif"])[0] == "H"
+
+    def _hp_indirim(self, jokey):
+        d = self.hp_jokey.get(jokey)
+        if not d:
+            return 0.0
+        return min(max(float(np.median(d)) * len(d) / (len(d) + 5.0), 0.0), HP_TAVAN)
+
+    def _hp_at(self, ad_):
+        d = self.hp_at.get(ad_)
+        return float(np.median(list(d)[-HP_K:])) if d else None
+
+    def _hp_duzey(self, k):
+        n, t = self.hp_sinif.get(k, (0, 0.0))
+        return t / (n + 0.5) if n else 0.0
+
+    def _hp_ofset(self, kosu):
+        """Handikap koşusunda her atın (kilo + indirim − medyan) değeri; kilosu olmayan at None."""
+        ad = [(a["kilo"] + self._hp_indirim(a["jokey"])) if a["kilo"] else None for a in kosu["atlar"]]
+        v = [x for x in ad if x is not None]
+        if len(v) < 2:
+            return None
+        md = float(np.median(v))
+        return [None if x is None else x - md for x in ad]
 
     def _alan_kalitesi(self, kosu):
         v = [math.log1p(sum(h["kazandi"] for h in self.at[a["ad"]])) for a in kosu["atlar"]]
@@ -219,6 +266,29 @@ class Durum:
         eniyi = [max(v) for v in hz_l if v]
         hz_alan_ort = sum(eniyi) / len(eniyi) if eniyi else 0.0
         hz_alan_min = min(eniyi) if eniyi else 0.0
+        # v4: handikap vekili (koşu düzeyi)
+        hnd = self._handikap_mi(kosu)
+        hp_o = [self._hp_at(a["ad"]) for a in kosu["atlar"]]
+        hp_b = list(hp_o)
+        kl = [a["kilo"] for a in kosu["atlar"] if a["kilo"]]
+        _, sno = sinif_turu(kosu["sinif"])
+        if hnd:
+            of = self._hp_ofset(kosu)
+            if of is not None:
+                L = self._hp_duzey(kosu["sinif_k"])
+                hp_b = [hp_o[i] if of[i] is None else L + of[i] for i in range(N)]
+        hv = [x for x in hp_b if x is not None]
+        hp_dol = [x if x is not None else (min(hv) if hv else 0.0) for x in hp_b]
+        hp_alan_ort = sum(hp_dol) / N
+        kl_sira = {}
+        if hnd and len(kl) >= 2:
+            ss = sorted(kl)
+            for a in kosu["atlar"]:
+                if a["kilo"]:
+                    lo = ss.index(a["kilo"]); hi = len(ss) - 1 - ss[::-1].index(a["kilo"])
+                    kl_sira[id(a)] = (lo + hi) / 2.0 / (len(ss) - 1)
+        kl_min = min(kl) if kl else 0.0
+        kl_med = float(np.median(kl)) if kl else 0.0
         satirlar = []
         for ai, a in enumerate(kosu["atlar"]):
             g = self.at.get(a["ad"], [])
@@ -367,6 +437,37 @@ class Durum:
                 f["hz_yok"] = 1.0
                 f["hz_son"] = f["hz_en_iyi3"] = f["hz_ort3"] = hz_alan_min
                 f["hz_alan"] = hz_alan_min - hz_alan_ort
+            # --- v4: handikap reytingi vekili
+            f["hp_yok"] = 1.0 if hp_o[ai] is None else 0.0
+            f["hp_once"] = hp_o[ai] if hp_o[ai] is not None else 0.0
+            f["hp_bugun"] = hp_dol[ai]
+            f["hp_alan"] = hp_dol[ai] - hp_alan_ort
+            if hnd and hp_o[ai] is not None and hp_b[ai] is not None:
+                f["hp_degisim"] = hp_b[ai] - hp_o[ai]
+            if hnd and a["kilo"]:
+                f["kilo_sira_h"] = kl_sira.get(id(a), 0.5) - 0.5
+                f["kilo_min_h"] = a["kilo"] - kl_min
+                f["kilo_x_sinif"] = (a["kilo"] - kl_med) * sno / 20.0
+            # --- v4: değişim sinyalleri
+            if n:
+                h0 = g[-1]
+                if h0["mesafe"] and kosu["mesafe"]:
+                    f["mesafe_deg_y"] = math.log(kosu["mesafe"] / h0["mesafe"])
+                f["pist_degisti"] = 1.0 if h0["pist"] != kosu["pist"] else 0.0
+                f["pist_ilk"] = 1.0 if not any(h["pist"] == kosu["pist"] for h in g) else 0.0
+                f["jokey_r_fark"] = self.r["jokey"].get(a["jokey"], 0.0) - self.r["jokey"].get(h0["jokey"], 0.0)
+                ara = max(bugun - h0["gun"], 1)
+                f["ara_10"] = 1.0 if ara <= 10 else 0.0
+                f["ara_60_120"] = 1.0 if 60 < ara <= 120 else 0.0
+                f["ara_120_240"] = 1.0 if 120 < ara <= 240 else 0.0
+                f["ara_240p"] = 1.0 if ara > 240 else 0.0
+                if n >= 2 and h0["gun"] - g[-2]["gun"] > 90 and ara <= 60:
+                    f["donus_2"] = 1.0
+                sd = f["sinif_r_degisim"]
+                f["sinif_dus"] = 1.0 if sd < -0.15 else 0.0
+                f["sinif_cik"] = 1.0 if sd > 0.15 else 0.0
+            if (a["yas"] or 0) == 2 and kosu["mesafe"]:
+                f["yas2_mesafe"] = math.log(kosu["mesafe"] / 1200.0)
             satirlar.append([f[k] for k in adlar])
         return np.asarray(satirlar, dtype=np.float64)
 
@@ -542,6 +643,9 @@ class Durum:
             self.std[(kosu["hipodrom"], kosu["pist"], kosu["mesafe"])].append(kaz_sure / km)
         if std is not None and kaz_sure and km:
             self.gun_bekleyen.append((kosu, std - kaz_sure / km))
+        # v4 handikap vekili: gün sonunda (aynı günün başka koşusuna sızmasın diye)
+        if self._handikap_mi(kosu):
+            self.hp_bekleyen.append(kosu)
         # v3 hız figürü: o günün log(sn/m) değerleri gün sonunda figüre çevrilir
         if kosu["mesafe"]:
             ys = {}
@@ -572,6 +676,37 @@ class Durum:
                         h["hiz"] = h["ham_hiz"] - deg
         self.gun_bekleyen = []
         self._hz_gun_sonu()
+        self._hp_gun_sonu()
+
+    def _hp_gun_sonu(self):
+        """Günün handikap koşularından: sınıf düzeyi, jokey indirimi ve atların örtük HP değerleri güncellenir.
+        Tüm hesap günün başındaki durumla yapılır (gün içi sıra bağımsız), güncellemeler sonra uygulanır."""
+        hesap = []
+        for kosu in self.hp_bekleyen:
+            of = self._hp_ofset(kosu)
+            if of is None:
+                continue
+            onc = [self._hp_at(a["ad"]) for a in kosu["atlar"]]
+            gz = [onc[i] - of[i] for i in range(len(of)) if onc[i] is not None and of[i] is not None]
+            # jokey indirimi kalıntısı: beklenen ofset (atın HP'si − sınıf düzeyi) − ham ofset (indirimsiz)
+            kl = [a["kilo"] for a in kosu["atlar"] if a["kilo"]]
+            md_ham = float(np.median(kl))
+            L0 = self._hp_duzey(kosu["sinif_k"])
+            jk = [(a["jokey"], (onc[i] - L0) - (a["kilo"] - md_ham)) for i, a in enumerate(kosu["atlar"])
+                  if onc[i] is not None and a["kilo"] and a["jokey"]]
+            hesap.append((kosu, of, gz, jk))
+        for kosu, of, gz, jk in hesap:
+            if len(gz) >= 2:
+                c = self.hp_sinif[kosu["sinif_k"]]
+                c[0] += 1; c[1] += float(np.median(gz))
+            for j, r in jk:
+                self.hp_jokey[j].append(min(max(r, -3.0), 6.0))
+        for kosu, of, gz, jk in hesap:
+            L = self._hp_duzey(kosu["sinif_k"])
+            for i, a in enumerate(kosu["atlar"]):
+                if of[i] is not None:
+                    self.hp_at[a["ad"]].append(L + of[i])
+        self.hp_bekleyen = []
 
 
 def tablo_kur(kosular, durum=None, adlar=None):
