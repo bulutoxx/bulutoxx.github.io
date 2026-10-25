@@ -5547,7 +5547,7 @@ if((location.hash||"")==="#sonuclar") setTimeout(()=>$("navRes").click(),200);
 // =====================================================================
 // BULUTOXX v35: Otomatik sürüm güncelleme — yeni sürüm yayınlanınca uygulama kendini yeniler
 // =====================================================================
-const APP_V="2026-10-25.81";
+const APP_V="2026-10-25.82";
 (function autoUpdate(){
   let shown=false;
   async function check(auto){
@@ -6566,7 +6566,7 @@ renderPower=function(){ _renderPower4(); const v=$("v-power"); if(!v) return;
   c.querySelector(".pw-kz").onclick=()=>{ goView("karne","more"); }; };
 const ml4=$("moreGel"); if(ml4){ const s=ml4.querySelector(".tx small"); if(s) s.textContent="Yenilikler ve sistemin kendi geliştirmeleri"; }
 // ---------- v63 Adım 5: 🥇 BULUTOXX Altın — günün en güvenilir seçimleri (temkinli, günde en fazla 3) ----------
-const GOLD={ thr:.78, omin:1.20, omax:2.00, perDay:3, set:null, at:0, karne:null };
+const GOLD={ thr:.78, omin:1.15, omax:2.00, perDay:3, set:null, at:0, karne:null };
 function goldCalc(){ const now=Date.now(), sig=Pick.list().length+"|"+FIXTURES.length+"|"+(MODEL&&MODEL.updated)+"|"+GOLD.thr+"|"+(window.RECV||0)+"|"+(()=>{ try{ const P=DAILY&&DAILY.canli&&DAILY.canli.platt; return P&&P.kabul?P.a+":"+P.b:"-"; }catch(e){ return "-"; } })(); if(GOLD.set&&GOLD.sig===sig&&now-GOLD.at<60e3) return GOLD.set; GOLD.sig=sig;
   const by={};
   for(const m of Pick.list()){ if(m.live||m.started) continue; const t=m.dt.getTime(); if(t<now+30*60e3||t>now+7*864e5) continue;
@@ -6715,7 +6715,7 @@ function tpCands(){ const now=Date.now(), out=[];
     const f=m.src==="fx"?FIXTURES.find(x=>x.lg===m.lg&&x.h===m.h&&x.a===m.a):fxOdds(m); if(!f||!f.odds) continue;
     let p=null; try{ p=quickPred(m,f); }catch(e){} if(!p||!p.pm) continue;
     let R=null; try{ R=recOf({H:p.pm[0],D:p.pm[1],A:p.pm[2],o25:p.o25m},f); }catch(e){}
-    if(!R||!R.o||R.cp<.70||R.o<GOLD.omin||R.o>GOLD.omax) continue;   // yalnız güçlü ve anlamlı oranlı (1,20–2,00) seçimler
+    if(!R||!R.o||R.cp<.70||R.o<GOLD.omin||R.o>GOLD.omax) continue;   // yalnız güçlü ve anlamlı oranlı (GOLD.omin–GOLD.omax) seçimler
     out.push({m,f,R,p,d:istDay(m.dt),on:m.live||m.started||t<=now}); }
   // Altın: günde en fazla 3, olasılık eşiği GOLD.thr (Bülten ve Power Now ile aynı kural)
   const by={}; for(const x of out) (by[x.d]=by[x.d]||[]).push(x);
@@ -6743,7 +6743,7 @@ function renderTP(){ const v=$("v-tahmin"); if(!v) return; let box=$("tpBox");
     <div class="tp-ch">${ch("near","En yakın")}${ch("today","Bugün")}${ch("tom","Yarın")}<label class="tp-dt${TP.mode==="date"?" on":""}">📅 <span>${TP.mode==="date"?esc(ist(new Date(TP.day+"T12:00:00+03:00"),{day:"numeric",month:"short"})):"Tarih"}</span><input type="date" id="tpDate" min="${tpDay(0)}" max="${maxDay}" value="${TP.day||tpDay(2)}" aria-label="Tarih seç"></label></div>
     ${G.length||S.length?`${G.map(tpRow).join("")}${S.length?`${G.length?`<div class="tp-sep">Güçlü tahminler</div>`:""}${S.map(tpRow).join("")}`:""}
     <button type="button" class="pw-add gold-btn" id="tpAll">+ ${G.length?"Altın tahminleri":"Tümünü"} listeye ekle</button>`
-    :`<p class="note tp-empty">Bu aralıkta kurala uyan tahmin yok. BULUTOXX zorlamaz: yalnız kazanma olasılığı %70+ ve oranı 1,20–2,00 olan seçimleri gösterir. Başka bir gün seç.</p>`}
+    :`<p class="note tp-empty">Bu aralıkta kurala uyan tahmin yok. BULUTOXX zorlamaz: yalnız kazanma olasılığı %70+ ve oranı ${GOLD.omin.toFixed(2).replace(".",",")}–${GOLD.omax.toFixed(2).replace(".",",")} olan seçimleri gösterir. Başka bir gün seç.</p>`}
     <p class="note tp-k">Altın: olasılık %${Math.round(GOLD.thr*100)}+, günde en fazla ${GOLD.perDay} · Güçlü: %70+. ${kl} Tahmindir, garanti değildir.</p>`;
   box.querySelectorAll("[data-tpm]").forEach(b=>b.onclick=()=>{ buzz(6); TP.mode=b.dataset.tpm; renderTP(); });
   const di=$("tpDate"); di.onchange=()=>{ if(!di.value) return; TP.mode="date"; TP.day=di.value; renderTP(); };
@@ -7032,7 +7032,7 @@ setTimeout(()=>{ try{ renderTP(); }catch(e){} },1500);
     if(T&&T.n&&(!Lf||T.n!==Lf.n)) rows.push(`📒 Kilitli arşivde toplam ${T.n} öneri: <b>%${Math.round(T.hit*100)}</b> tuttu${T.guclu_n?`; güçlülerde <b>%${Math.round(T.guclu_hit*100)}</b>`:""}.`);
     if(GOLD.karne&&GOLD.karne.n) rows.push(`🥇 Altın kuralına uyan geçmiş tahminler: <b>${GOLD.karne.h}/${GOLD.karne.n}</b> tuttu (%${Math.round(GOLD.karne.h/GOLD.karne.n*100)})${GOLD.karne.n<20?" — örnek az, temkinli oku":""}.`);
     else if(/altin/.test(s)) rows.push(`🥇 Altın tahminlerin kilitli arşivde henüz yeterli puanlanmış örneği yok.`);
-    if(TP.karne&&TP.karne.n>=10) rows.push(`💪 Güçlü + anlamlı oranlı (1,20–2,00) tahminler, ${TP.karne.g==null?"son 30 gün":TP.karne.g<=1?"şimdilik 1 günlük kilitli kayıt (örnek az)":"son "+TP.karne.g+" günün kilitli kayıtları"}: <b>${TP.karne.h}/${TP.karne.n}</b> tuttu (%${Math.round(TP.karne.h/TP.karne.n*100)}).`);
+    if(TP.karne&&TP.karne.n>=10) rows.push(`💪 Güçlü + anlamlı oranlı (${GOLD.omin.toFixed(2).replace(".",",")}–${GOLD.omax.toFixed(2).replace(".",",")}) tahminler, ${TP.karne.g==null?"son 30 gün":TP.karne.g<=1?"şimdilik 1 günlük kilitli kayıt (örnek az)":"son "+TP.karne.g+" günün kilitli kayıtları"}: <b>${TP.karne.h}/${TP.karne.n}</b> tuttu (%${Math.round(TP.karne.h/TP.karne.n*100)}).`);
     if(C&&C.n) rows.push(`🔴 Canlı seçimler: ${C.n} seçimde isabet <b>%${Math.round(C.hit*100)}</b>.`);
     if(k.n) rows.push(`☁️ Sana önerdiklerim: ${Math.round(k.hit*k.n)}/${k.n} tuttu (%${Math.round(k.hit*100)}).`);
     try{ const O=oynStats(); if(O.n) rows.push(`📋 Takip ettiğin listeler: ${O.n} seçimden ${O.h} tanesi tuttu (%${Math.round(O.h/O.n*100)}), ${O.sl} listenin ${O.slw}'inde tüm tahminler tuttu.`); }catch(e){}
@@ -7688,7 +7688,7 @@ setTimeout(()=>{ try{ renderTP(); }catch(e){} },1500);
   try{ if(typeof dailyLoad==="function"){ const f=dailyLoad; dailyLoad=function(){ const r=f.apply(this,arguments); return Promise.resolve(r).finally(bump); }; } }catch(e){}
   wrapA(Pick,"loadEspn");
   // ---- Altın kilidi ----
-  const GL={cache:null, src:null, key:"bx-gold-lock"};
+  const GL={cache:null, src:null, key:"bx-gold-lock2"};   // 2: Altın oran alt sınırı 1,15 ile kilitler sıfırlandı
   function rd(){ try{ return JSON.parse(localStorage.getItem(GL.key)||"{}"); }catch(e){ return {}; } }
   function wr(o){ try{ const keep={}, t0=istDay(new Date(Date.now()-2*864e5)); for(const d in o) if(d>=t0) keep[d]=o[d]; localStorage.setItem(GL.key,JSON.stringify(keep)); }catch(e){} }
   const _gc=goldCalc;

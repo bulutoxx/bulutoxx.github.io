@@ -575,7 +575,7 @@ def _gold_stats(q, O, items, idx):
     pp = np.array([x[1] for x in picks]); yy = np.array([x[3] for x in picks], float); pc = np.clip(pp, 1e-4, 1 - 1e-4)
     m70 = pp >= .70; byd = collections.defaultdict(list)
     for x in picks:
-        if x[1] >= .78 and 1.20 <= x[2] <= 2.00: byd[x[0]].append(x)
+        if x[1] >= .78 and 1.15 <= x[2] <= 2.00: byd[x[0]].append(x)   # Altın alt oran sınırı 1,15 (2026-10-25)
     gold = [x for L in byd.values() for x in sorted(L, key=lambda x: -x[1])[:3]]
     return {"oneri_ll": round(float(-np.mean(yy * np.log(pc) + (1 - yy) * np.log(1 - pc))), 5), "oneri_brier": round(float(np.mean((pp - yy) ** 2)), 5),
             "n70": int(m70.sum()), "hit70": round(float(yy[m70].mean()), 4) if m70.any() else None,
@@ -711,7 +711,7 @@ def _served_walkforward(items, cs, cm, res, tot, dts, rs, ovs, hou, w, legacy, T
         return pp, od, y
     def gold(dd, pp, od):
         m = np.zeros(len(pp), bool); by = collections.defaultdict(list)
-        for i in np.where((pp >= .78) & (od >= 1.2) & (od <= 2.0))[0]: by[dd[i]].append(i)
+        for i in np.where((pp >= .78) & (od >= 1.15) & (od <= 2.0))[0]: by[dd[i]].append(i)   # Altın: oran 1,15–2,00
         for L in by.values():
             for i in sorted(L, key=lambda i: -pp[i])[:3]: m[i] = True
         return m
