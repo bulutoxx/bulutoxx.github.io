@@ -1596,6 +1596,18 @@ body.tb2 #hdrRefresh{display:flex!important}
 .g2-no{margin-top:10px;width:100%;min-height:44px;border-radius:14px;background:none;border:1px solid var(--line);color:var(--ink2);font:700 14px var(--font,system-ui)}
 .g2-doc{text-align:left;max-height:55vh;overflow:auto;margin:10px 0;padding:12px;border-radius:12px;background:rgba(255,255,255,.04);font-size:13px}
 </style>
+<style id="sade-v81">
+/* v81: sade ekranlar — nadiren gereken/teknik bloklar kapalı kutuda */
+details.sx{margin:10px 0;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.03);overflow:hidden}
+details.sx>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:10px;min-height:48px;padding:10px 14px;font:800 14.5px var(--font,system-ui);color:var(--ink)}
+details.sx>summary::-webkit-details-marker{display:none}
+details.sx>summary::after{content:"";margin-left:auto;width:9px;height:9px;border-right:2px solid var(--ink3);border-bottom:2px solid var(--ink3);transform:rotate(45deg);transition:transform .2s}
+details.sx[open]>summary::after{transform:rotate(225deg)}
+details.sx>summary small{color:var(--ink3);font-weight:600;font-size:12px}
+details.sx>.sx-in{padding:0 10px 10px}
+details.sx>.sx-in>.panel,details.sx>.sx-in>.pw-card{margin-top:0}
+#installCard,#botKb,#liveBk{display:none!important}
+</style>
 </head>
 <body>
 <div class="splash" id="splash" aria-hidden="true"><img src="icons/logo-full.png" alt=""></div>
@@ -5535,7 +5547,7 @@ if((location.hash||"")==="#sonuclar") setTimeout(()=>$("navRes").click(),200);
 // =====================================================================
 // BULUTOXX v35: Otomatik sürüm güncelleme — yeni sürüm yayınlanınca uygulama kendini yeniler
 // =====================================================================
-const APP_V="2026-10-25.80";
+const APP_V="2026-10-25.81";
 (function autoUpdate(){
   let shown=false;
   async function check(auto){
@@ -7543,7 +7555,7 @@ setTimeout(()=>{ try{ renderTP(); }catch(e){} },1500);
   const dISO=o=>istDay(new Date(Date.now()+o*864e5));
   const j=u=>fetch(u+"?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():null).catch(()=>null);
   async function load(){ if(AT.busy) return; AT.busy=true;
-    try{ const offs=[1,0,-1,-2,-3], got=await Promise.all(offs.map(o=>j("data/at/tahmin/"+dISO(o)+".json")));
+    try{ let offs=[0,1], got=await Promise.all(offs.map(o=>j("data/at/tahmin/"+dISO(o)+".json"))); if(!got.some(Boolean)){ offs=[-1,-2]; got=await Promise.all(offs.map(o=>j("data/at/tahmin/"+dISO(o)+".json"))); }
       AT.days=[]; offs.forEach((o,i)=>{ const d=got[i]; if(d&&d.kosular&&d.kosular.length){ AT.data[d.tarih]=d; AT.days.push(d.tarih); } });
       AT.days.sort(); if(!AT.d||!AT.data[AT.d]) AT.d=AT.days.includes(dISO(0))?dISO(0):AT.days[AT.days.length-1]||null;
       const [m,k]=await Promise.all([j("data/at/model.json"),j("data/at/karne.json")]); AT.model=m; AT.karne=k;
@@ -7558,8 +7570,9 @@ setTimeout(()=>{ try{ renderTP(); }catch(e){} },1500);
   function hero(){ const M=AT.model&&AT.model.degerlendirme, me=M&&M.metrik||{}, h=me.harman||{}, f=me.favori||{}, mo=me.model||{}, n=(M&&M.kosu_sayisi&&M.kosu_sayisi.sinama)||0;
     const K=(AT.karne&&AT.karne.kosular||[]).filter(x=>x.kosudan_once!==false); const kn=K.length, kh=K.filter(x=>x.ilk_secim_tuttu).length;
     return `<div class="at-hero"><div class="at-logo">${LOGO("h")}</div><div><h2>At Yarışı<span class="at-pill">DENEME</span></h2><p>BULUTOXX at laboratuvarı: her gece geçmiş koşulardan yeniden öğrenir, yalnız isabeti artıran ayarı kabul eder.</p></div></div>
+      <details class="sx" id="atOz"${(()=>{ try{ return localStorage.getItem("bx-at-oz")==="1"?" open":""; }catch(e){ return ""; } })()}><summary>📈 Model ne kadar başarılı? <small>sınama ve karne</small></summary><div class="sx-in">
       <div class="at-km at-km4"><div><b>${pct(mo.ilk_secim_isabet)}</b><small>sabah tahmini<br>ilk seçim kazandı</small></div><div><b>${pct(h.ilk_secim_isabet)}</b><small>oranla harman<br>ilk seçim kazandı</small></div><div><b>${pct(f.ilk_secim_isabet)}</b><small>ganyan favorisi<br>aynı koşularda</small></div><div><b>${kn?"%"+Math.round(kh/kn*100):"–"}</b><small>kilitli karne<br>${kn?kn+" koşu":"birikiyor"}</small></div></div>
-      <p class="at-note">🧪 Dürüst durum (son ${n.toLocaleString("tr-TR")} koşuda sınandı): burada gördüğün <b>sabah tahmini</b> oran açılmadan yapılır ve ganyan favorisinin gerisindedir. Koşu öncesi oranla harmanlanınca olasılık hatasında piyasayı az farkla geçiyor, ama ilk seçim isabetinde henüz favori seviyesinde. Model her gece yeniden öğrenir. Garanti değildir · 18+. Bahis sitesine yönlendirme yoktur.</p>`; }
+      <p class="at-note">🧪 Dürüst durum (son ${n.toLocaleString("tr-TR")} koşuda sınandı): burada gördüğün <b>sabah tahmini</b> oran açılmadan yapılır ve ganyan favorisinin gerisindedir. Koşu öncesi oranla harmanlanınca olasılık hatasında piyasayı az farkla geçiyor, ama ilk seçim isabetinde henüz favori seviyesinde. Model her gece yeniden öğrenir. Garanti değildir · 18+. Bahis sitesine yönlendirme yoktur.</p></div></details>`; }
   function race(r){ const A=(r.atlar||[]).slice().sort((a,b)=>b.p_kazanma-a.p_kazanma), mx=A.length?A[0].p_kazanma:1, id=r.kosu_id, op=AT.open.has(id), L=op?A:A.slice(0,4);
     const ik=r.ikili_onerisi; return `<div class="at-race"><div class="at-rh"><b>${r.kosu}. Koşu</b><span>${esc(r.mesafe+" m · "+r.pist+" · "+r.sinif)}</span><span class="t">${esc(r.saat||"")}</span></div>
       ${r.kosudan_once===false?`<span class="at-tag">koşudan sonra kilitlendi · karneye sayılmaz</span>`:""}${r.mod&&/yalnız model/.test(r.mod)?` <span class="at-tag">sabah tahmini · ganyan oranı henüz yok</span>`:""}
@@ -7583,11 +7596,16 @@ setTimeout(()=>{ try{ renderTP(); }catch(e){} },1500);
         :`<div class="panel"><p class="note" style="margin:0">Bu günün sonuçları henüz arşive gelmedi. Açık arşiv her gece güncellenir; laboratuvar sabah 05:23'te kilitli tahminleri sonuçla karşılaştırır.</p></div>`;
     } else {
       h+=`<div class="at-chips" role="group" aria-label="Hipodrom">${hips.map(x=>`<button type="button" data-h="${esc(x)}" aria-pressed="${x===AT.hip}">${esc(x)} · ${D.kosular.filter(r=>r.hipodrom===x).length}</button>`).join("")}</div>`;
-      h+=D.kosular.filter(r=>r.hipodrom===AT.hip).sort((a,b)=>a.kosu-b.kosu).map(race).join("");
+      const KS=D.kosular.filter(r=>r.hipodrom===AT.hip).sort((a,b)=>a.kosu-b.kosu), now=Date.now();
+      const bitti=r=>{ const t=Date.parse(AT.d+"T"+(r.saat||"23:59")+":00+03:00"); return isFinite(t)&&t+15*60e3<now; };
+      const ac=KS.filter(r=>!bitti(r)), bt=KS.filter(bitti);
+      h+=ac.map(race).join("")||`<div class="panel"><p class="note" style="margin:0">Bu hipodromda bugün başlamamış koşu kalmadı.</p></div>`;
+      if(bt.length) h+=`<details class="sx"><summary>🏁 Biten koşular <small>${bt.length}</small></summary><div class="sx-in">${bt.map(race).join("")}</div></details>`;
     }
     h+=`<p class="note">Kilit: ${esc(D.kilit_zamani_tsi||"")} · model ${esc(D.model_surumu||"")}. Veri: herkese açık TJK sonuç arşivi (github.com/cenkozgur/tjk-data); BULUTOXX TJK sitesine istek atmaz. ${esc(D.not||"")}</p>`;
     box.innerHTML=h;
     box.querySelectorAll("[data-d]").forEach(b=>b.onclick=()=>{ AT.d=b.dataset.d; buzz(6); render(); });
+    const oz=$("atOz"); if(oz) oz.addEventListener("toggle",()=>{ try{ localStorage.setItem("bx-at-oz",oz.open?"1":"0"); }catch(e){} });
     box.querySelectorAll("[data-t]").forEach(b=>b.onclick=()=>{ AT.tab=b.dataset.t; buzz(6); try{ Sound.tap(); }catch(e){} render(); });
     box.querySelectorAll("[data-h]").forEach(b=>b.onclick=()=>{ AT.hip=b.dataset.h; buzz(6); render(); });
     box.querySelectorAll("[data-at]").forEach(b=>b.onclick=()=>{ const k=b.dataset.at; AT.open.has(k)?AT.open.delete(k):AT.open.add(k); render(); }); }
@@ -7785,6 +7803,41 @@ setTimeout(()=>{ try{ renderTP(); }catch(e){} },1500);
   const _rb=renderBulten; renderBulten=function(){ const r=_rb.apply(this,arguments); try{ paint(); }catch(e){} return r; };
   setInterval(()=>{ const v=$("v-bulten"); if(v&&!v.hidden&&!document.hidden) try{ paint(); }catch(e){} },60e3);
   try{ paint(); }catch(e){}
+})();
+</script>
+<script id="sade-v81">
+// =====================================================================
+// BULUTOXX v81: Sade ekranlar (UX denetimi önerileri). Teknik/uzun/tekrarlı bloklar kapanır kutuya alınır; açık/kapalı
+// tercihi hatırlanır. Ekranlar yeniden çizildikçe (MutationObserver) kurallar kendiliğinden yeniden uygulanır.
+// =====================================================================
+(function(){
+  let OPEN=new Set(); try{ OPEN=new Set(JSON.parse(localStorage.getItem("bx-sx")||"[]")); }catch(e){}
+  const saveO=()=>{ try{ localStorage.setItem("bx-sx",JSON.stringify([...OPEN].slice(-60))); }catch(e){} };
+  function wrap(el,key,title,sub){ if(!el||!el.parentNode) return null; const p=el.parentNode;
+    if(p.classList&&p.classList.contains("sx-in")) return p.parentNode;
+    const d=document.createElement("details"); d.className="sx"; d.dataset.k=key; if(OPEN.has(key)) d.open=true;
+    d.innerHTML=`<summary>${title}${sub?` <small>${sub}</small>`:""}</summary><div class="sx-in"></div>`;
+    p.insertBefore(d,el); d.querySelector(".sx-in").appendChild(el);
+    d.addEventListener("toggle",()=>{ d.open?OPEN.add(key):OPEN.delete(key); saveO(); }); return d; }
+  const txt=e=>((e&&e.textContent)||"").trim();
+  function apply(){
+    try{ wrap($("legal"),"legal","📄 Kullanım koşulları ve KVKK (tam metin)"); }catch(e){}
+    try{ document.querySelectorAll("#v-rehber .wrap > .panel, #v-rehber > .panel").forEach(p=>{ const h=txt(p.querySelector("h2")); if(/nasıl çalış/i.test(h)) wrap(p,"reh-nasil","⚙️ Nasıl çalışır?"); else if(/veri/i.test(h)&&!/telefon/i.test(h)) wrap(p,"reh-veri","🗂️ Veri kaynakları"); }); }catch(e){}
+    try{ const T=$("kzTech"); if(T) T.querySelectorAll(":scope > .panel").forEach((p,i)=>{ const h=txt(p.querySelector("h2"))||("Bölüm "+(i+1)); wrap(p,"kz-"+h.slice(0,24),esc(h)); }); }catch(e){}
+    try{ document.querySelectorAll("#karne > .panel").forEach(p=>{ if(/Maç öncesi kilitli/.test(txt(p.querySelector("h2")))) wrap(p,"kz-mo","🔒 Maç öncesi ayrıntılar"); }); }catch(e){}
+    try{ const tp=$("tpBox"); if(tp&&tp.innerHTML){ const n=tp.querySelectorAll(".tp-r").length; const d=wrap(tp,"tp","🥇 Hazır tahminler",n?n+" tahmin":""); if(d){ const s=d.querySelector("summary small"); if(s) s.textContent=n?n+" tahmin":""; } } }catch(e){}
+    try{ document.querySelectorAll("#v-power .pw-body > .pw-card").forEach(c=>{ const h=txt(c.querySelector(".pw-h span"));
+      if(/Canlı tekli yıldız/.test(h)&&!c.querySelector(".pw-line")) c.style.display="none";
+      else if(/en güçlü öneriler/.test(h)) wrap(c,"pw-guclu","✅ Bugünün en güçlü önerileri",c.querySelectorAll(".pw-line").length+" maç"); }); }catch(e){}
+    try{ const n=document.querySelector("#v-canli .wrap > p.note"); if(n) wrap(n,"canli-not","🔔 Gol uyarısı nasıl çalışır?"); }catch(e){}
+    try{ const p=document.querySelector("#v-sonuc .wrap > .panel"); if(p&&/sonuçlarını gir/i.test(txt(p.querySelector("h2")))) wrap(p,"snc-not","ℹ️ Sonuçlar nasıl işlenir?"); }catch(e){}
+    try{ document.querySelectorAll(".lgchips").forEach((c,i)=>{ const n=c.querySelectorAll('button[aria-pressed="true"]').length; const d=wrap(c,"lg-"+i,"Ligleri göster / düzenle",n+" seçili"); if(d){ const s=d.querySelector("summary small"); if(s) s.textContent=n+" seçili"; } }); }catch(e){}
+    try{ const g=$("gelList"); if(g&&!g.querySelector(":scope > details.sx")){ const hs=[...g.querySelectorAll(":scope > h3.gel-d")]; if(hs.length>1){ const d=document.createElement("details"); d.className="sx"; d.dataset.k="gel-eski"; if(OPEN.has("gel-eski")) d.open=true;
+        d.innerHTML=`<summary>🗂️ Önceki güncellemeler <small>${hs.length-1} gün</small></summary><div class="sx-in"></div>`; const inn=d.querySelector(".sx-in"); let n=hs[1]; g.insertBefore(d,n); while(d.nextSibling) inn.appendChild(d.nextSibling);
+        d.addEventListener("toggle",()=>{ d.open?OPEN.add("gel-eski"):OPEN.delete("gel-eski"); saveO(); }); } } }catch(e){}
+  }
+  let raf=0; const mo=new MutationObserver(()=>{ if(raf) return; raf=requestAnimationFrame(()=>{ raf=0; mo.disconnect(); try{ apply(); }finally{ mo.observe(document.body,{childList:true,subtree:true}); } }); });
+  apply(); mo.observe(document.body,{childList:true,subtree:true});
 })();
 </script>
 </body>
