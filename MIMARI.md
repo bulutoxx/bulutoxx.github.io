@@ -48,8 +48,11 @@ Futbolda tek maçın sonucu doğası gereği belirsizdir; hiçbir model her maç
    (maç öncesi: 9.000+ maç; canlı: kilitli canlı seçimler; lig bazında: analist).
    Maç öncesi ayarlar (calT keskinleştirme, gscale gol ölçeği, dk beraberlik payı) **uygulamanın gerçekten gösterdiği yolda**
    öğrenilir (`calibrate_served`, `params.cal_yol = "sunulan"`): power marj ayırma → gol beklentisi tablosu → iki yarı Dixon-Coles → T/dk.
-   Amaç = oranlı maç payı × piyasa yolu + kalanı × model yolu; ilk %70 (+ derin arşiv) öğrenme, son %30 sınama; şu anki yapılandırmadan
-   iyi değilse veya Altın isabetini düşürürse eski (model yolu) ayar kalır. Koruyucu `cal_yol`'u izler, geri almada dondurur.
+   Amaç = oranlı maç payı × piyasa yolu + kalanı × model yolu. **ml80'den beri karar yürüyen pencereyle verilir** (`_served_walkforward`):
+   derin arşiv + sezon 1 Temmuz sınırlarıyla yıllık katlara bölünür; her kat yalnız önceki maçlarla T/g/dk seçer, kendi yılında sınanır
+   (≈51 bin oranlı maç sınama). Kabul: birleşik sınamada piyasa amacı daha düşük + katların çoğunda daha düşük + öneri Brier'i düşmüyor +
+   Altın isabeti düşmüyor (her iki tarafta ≥100 Altın) + model yolu son katta en fazla 0,002 kötüleşir. Geçerse tüm veride seçilen değer uygulanır;
+   geçemezse eski (model yolu) ayar kalır. Sonuç `backtest.kalibrasyon.sunulan.wf` (katlar, %95 bootstrap aralıkları). Koruyucu `cal_yol`'u izler, geri almada dondurur.
 3. **Seçicilik (pas geçme):** Güven %58'in altındaysa öneri verilmez ("⏸️ Pas"). Güçlü öneri %70+, Power Now canlı %80+.
    Az ama isabetli öneri, çok ama yarı yarıya öneriden iyidir.
 4. **Dürüst ölçüm ve geri alma:** Her öneri maçtan önce kilitlenir, sonuçla puanlanır; koruyucu bozulan değişikliği geri alır.
@@ -62,7 +65,7 @@ Futbolda tek maçın sonucu doğası gereği belirsizdir; hiçbir model her maç
 | model.json | Motor | Uygulama, koruyucu, bekçi | Ayarlar (`cal_yol`), geriye dönük test (`backtest.kalibrasyon.sunulan`: son %30 kimlik/eski/aday karşılaştırması), öneri kalibrasyonu, kupa gücü, `veritabani` (sezon/derin/arşiv büyüklüğü) |
 | fixtures.json | Motor | Uygulama | Yaklaşan maçlar + iddaa oranları, MBS, yarışma adı |
 | iddaa.json | Motor | Uygulama, canlı kayıt | Maç öncesi gol beklentisi (8 gün) |
-| archive/GGGG-AA-GG.json | Toplayıcı | Motor, analist, araştırmacı, koruyucu, uygulama (son 30 gün) | Kilitli öneri + oran + sonuç (son 120 gün) |
+| archive/GGGG-AA-GG.json | Toplayıcı | Motor, analist, araştırmacı, koruyucu, uygulama (son 30 gün) | Kilitli öneri + oran + sonuç (son 120 gün). `rk/rp/ok` = ham piyasa ölçeği; ml80: `sk/sp/sok` = uygulamanın gösterdiği öneri (calT/gscale/dk dahil) ve sonucu — koruyucu ikisinde de ≥400 kayıt varsa bunu ölçer |
 | archive/eski/GGGG-AA-GG.json | Toplayıcı (`scripts/arsiv.py`) | Motor, analist, araştırmacı, koruyucu | 120 günden eski günler: yalnız puanlı kayıtlar, `lam` atılmış; bir kez yazılır, **silinmez** |
 | derin/<lig>-<sezon>.json, derin/index.json | Derin arşiv (`lab/derin.py`) | Motor (`load_deep` → kalibrasyon) | football-data bitmiş eski sezonlar (son 5): `m` = [tarih, ev, dep, ev_gol, dep_gol, o1, oX, o2, o2.5üst, o2.5alt]; `tam: false` = ağ yokken season.json'dan geçici kopya |
 | archive/live/*.json | Canlı kayıt | Toplayıcı | Kilitli canlı seçimler ve sonuçları |
@@ -113,3 +116,18 @@ Yerel deneme: `node lab/bot_coach.mjs --dry` (dosya yazmaz) · `node lab/bot_coa
 - **Eğitim:** saatlik motor yeni sonuç gelince tam öğrenir; kalibrasyon artık uygulamanın sunduğu yolda ve derin arşivle öğrenilir.
   Ölçüm (8.990 maç, Ocak–Ekim 2026, aylık yürüyen pencere, piyasa yolu): 1X2 log-loss 1,00220 → 1,00106; öneri Brier 0,23661 → 0,23611;
   %70+ öneri isabeti %74,2 → %75,9; Altın (≥%78, oran 1,20–2,00, günde ≤3) %76,1 → %77,9. Bedel: oransız (yalnız model) yolda 1X2 log-loss 1,0095 → 1,0104.
+
+## Öğrenme ml80 (2026-10-25): yürüyen pencere kararı
+
+- **Sorun:** ml70'in sunulan yol kalibrasyonu tek bir "son %30" sınamasıyla (65–92 Altın seçim) karar veriyordu; CI'da Altın %77,2 → %76,6
+  (gürültü düzeyinde) farkla reddedildi ve uygulama model yolunda öğrenilmiş calT=1,05 / gscale=1,02 / dk=1,03 ile kaldı.
+  Teşhis: bu ayarlar piyasa yolunda yüksek güvenli önerileri ~2 puan fazla gösteriyordu (%78–86 diliminde gerçek isabet 2 puan düşük).
+- **Değişiklik:** karar 5 yıllık katla (2022-07 … 2026-07) verilir; seçilen ayar T=1,05, g=1,01, dk=1,14 (beraberlik payı: piyasa
+  power marj ayırmada beraberliği sistemli olarak az gösteriyor; 5 katın 5'inde de dk=1,14 seçildi).
+- **Ölçüm (50.835 maç, yalnız geçmişle seçilmiş ayarlar, uygulamanın öneri kuralıyla):** piyasa amacı 1,33993 → 1,33855 (5/5 kat);
+  öneri Brier 0,23481 → 0,23473; %70+ öneri isabeti %76,6 → %78,1 (5.441 → 4.708 öneri; fark %95 aralığı +0,9…+2,0 puan);
+  Altın %78,8 → %79,8 (1.100 → 892 seçim; aralık −0,2…+2,2 puan); model yolu son kat +0,0004 (sınır 0,002).
+- **Reddedilenler (kanıt yok):** öneri düzeyinde kova kalibrasyonu (MODEL.oneri; Brier'i kötüleştirdi), lig bazında model/piyasa karışımı
+  (ikinci yarıda LL 1,00572 → 1,00589), kademe bazında dk (1,00092 → 1,00095), lig bazında ev sahibi kayması (1,00105 → 1,00102, ihmal edilebilir).
+- **İzleme:** toplayıcı artık uygulamanın gösterdiği öneriyi (`sp`) de kilitler; koruyucu kalibrasyon değişikliklerini bununla ölçer.
+

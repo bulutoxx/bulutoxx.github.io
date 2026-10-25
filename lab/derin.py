@@ -4,7 +4,7 @@ BİTMİŞ eski sezonları bir kez indirir ve data/derin/<lig>-<sezon>.json olara
   - Bitmiş sezon dosyası bir kez yazılır, bir daha değişmez (git'te günlük büyüme yok).
   - Ağ yoksa season.json'daki bitmiş sezonlardan geçici ('tam': false) dosya kurar; ağ gelince kaynaktan tamamlanır.
   - Anahtar/ücretli API kullanılmaz; ham API-Football yanıtı yazılmaz.
-Kullanan: scripts/update.py → calibrate_served() (olasılık kalibrasyonu daha çok maçla öğrenilir; kabul yine son %30 sınamasıyla)."""
+Kullanan: scripts/update.py → calibrate_served() (olasılık kalibrasyonu daha çok maçla öğrenilir; ml80'den beri kabul, derin arşiv + sezon üzerinde yıllık yürüyen pencere katlarıyla)."""
 import json, os, sys, time, collections
 from datetime import date
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))

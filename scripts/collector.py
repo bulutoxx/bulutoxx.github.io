@@ -33,7 +33,27 @@ def rec_for(ms, ou, rho):
     if ou: c += [("U", pO, ou[0]), ("A", 1 - pO, ou[1])]   # alt/üst oranı yoksa gol beklentisi belirsiz: alt/üst önerilmez
     # en olası seçenek önerilir; oranı düşük olsa bile (eski kural oran <1,15 ise favoriyi atlayıp %7'lik seçeneği öneriyordu)
     k, pp, o = max(c, key=lambda x: x[1])
-    return {"lam": [lh, la], "p": [round(float(x), 4) for x in p], "o25": round(pO, 4), "kg": round(float(pB[0]), 4), "rk": k, "rp": round(pp, 4), "ro": o}
+    out = {"lam": [lh, la], "p": [round(float(x), 4) for x in p], "o25": round(pO, 4), "kg": round(float(pB[0]), 4), "rk": k, "rp": round(pp, 4), "ro": o}
+    try: out.update(served_pick(ms, ou))
+    except Exception: pass
+    return out
+
+_SRV_P = None
+def served_pick(ms, ou):
+    """ml80: uygulamanın GÖSTERDİĞİ öneri (piyasa yolu: power marj → gol tablosu → iki yarı Dixon-Coles → calT/gscale/dk,
+    model.json'daki o anki ayarlarla). 'sk' seçenek, 'sp' olasılık; sonuçta 'sok' puanlanır. 'rp' (ham ölçek) değişmeden kalır;
+    koruyucu kalibrasyon değişikliklerini artık 'sp' ile izleyebilir (rp bu ayarlardan etkilenmiyordu)."""
+    global _SRV_P
+    if _SRV_P is None:
+        try: _SRV_P = json.load(open(os.path.join(DATA, "model.json"), encoding="utf-8"))["params"]
+        except Exception: _SRV_P = {}
+    P = _SRV_P; rho = P.get("rho", -0.06)
+    lam = U.ui_market_lam([ms], [ou], rho)
+    p, O = U.served_probs(lam[:, 0], lam[:, 1], P.get("gscale", 1.0), rho, P.get("h1", .4442))
+    q = U._cal3(p, P.get("calT", 1.0), P.get("dk", 1.0))[0]; O = float(O[0])
+    c = [("1", q[0]), ("X", q[1]), ("2", q[2])] + ([("U", O), ("A", 1 - O)] if ou else [])
+    k, pp = max(c, key=lambda x: x[1])
+    return {"sk": k, "sp": round(float(pp), 4)}
 
 def hit(rk, hs, as_):
     if rk == "1": return hs > as_
@@ -283,6 +303,7 @@ def main():
             r["hs"], r["as"] = int(s["ht"]["c"]), int(s["at"]["c"])
             if s["ht"].get("ht") is not None: r["h1"], r["a1"] = s["ht"]["ht"], s["at"]["ht"]
             r["ok"] = hit(r.get("rk"), r["hs"], r["as"]); n_res += 1
+            if r.get("sk"): r["sok"] = hit(r["sk"], r["hs"], r["as"])   # ml80: uygulamanın gösterdiği önerinin sonucu
     for d, recs in days.items(): save_day(d, recs)
     # eski arşivler artık SİLİNMEZ: 120 günden eski günler data/archive/eski/ katmanına sıkıştırılarak taşınır (veritabanı büyür)
     try:
