@@ -1,0 +1,19 @@
+name: BULUTOXX kaynak kurallari kontrolu (tek seferlik)
+on:
+  push:
+    branches: [kesif-kaynak]
+    paths: ["lab/kesif/robots.py", ".github/workflows/kaynak-kontrol.yml"]
+permissions:
+  contents: write
+jobs:
+  k:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: python lab/kesif/robots.py || true
+      - run: |
+          git config user.name "bulutoxx-bot"; git config user.email "bulutoxx-bot@users.noreply.github.com"
+          git add lab/kesif/robots.json && git commit -qm "Kaynak kuralları [skip ci]" && git push -q origin HEAD:kesif-kaynak || true
