@@ -1647,6 +1647,17 @@ details.sx>.sx-in>.panel,details.sx>.sx-in>.pw-card{margin-top:0}
 .tc-warn,.tc-tip{border:1px solid rgba(255,214,10,.4)!important;background:rgba(255,214,10,.08)!important;font-size:13.5px;line-height:1.5}
 .linkbtn{background:none;border:0;padding:0;color:#7FE3FF;font:inherit;font-weight:700;text-decoration:underline;cursor:pointer}
 </style>
+<style id="bulutbot-v88">
+/* v88: Sohbet robotu Bulut'un yeni altın boğa logosu */
+.bt-av{background:#080604 url(icons/bulut-bot-96.png) center/cover no-repeat!important;color:transparent!important;font-size:0!important;box-shadow:0 0 0 2px rgba(233,199,102,.55),0 6px 16px -6px rgba(212,175,55,.8)!important}
+.topbar .iconbtn#hdrBot{background:linear-gradient(160deg,rgba(233,199,102,.18),rgba(80,60,10,.15))!important;border-color:rgba(233,199,102,.5)!important}
+.topbar .iconbtn#hdrBot svg{display:none}
+.topbar .iconbtn#hdrBot .bb-img{width:26px;height:26px;border-radius:50%;background:#080604 url(icons/bulut-bot-96.png) center/cover no-repeat;box-shadow:0 0 0 1px rgba(233,199,102,.6)}
+.topbar .iconbtn#hdrBot .tbl{color:#F3DC8A}
+.bt-msg.bot{position:relative;margin-left:34px}
+.bt-msg.bot::before{content:"";position:absolute;left:-34px;bottom:0;width:26px;height:26px;border-radius:50%;background:#080604 url(icons/bulut-bot-96.png) center/cover no-repeat;box-shadow:0 0 0 1px rgba(233,199,102,.55)}
+.bb-hero{display:block;margin:2px auto 10px;width:min(260px,70%);border-radius:16px;box-shadow:0 12px 30px -14px rgba(212,175,55,.8)}
+</style>
 </head>
 <body>
 <div class="splash" id="splash" aria-hidden="true"><img src="icons/logo-full.png" alt=""></div>
@@ -5586,7 +5597,7 @@ if((location.hash||"")==="#sonuclar") setTimeout(()=>$("navRes").click(),200);
 // =====================================================================
 // BULUTOXX v35: Otomatik sürüm güncelleme — yeni sürüm yayınlanınca uygulama kendini yeniler
 // =====================================================================
-const APP_V="2026-10-25.87";
+const APP_V="2026-10-25.88";
 (function autoUpdate(){
   let shown=false;
   async function check(auto){
@@ -8025,6 +8036,15 @@ setTimeout(()=>{ try{ renderTP(); }catch(e){} },1500);
       if(hit){ const Li=liveInfo(hit), clk=(()=>{ try{ return idlClockTxt(hit); }catch(_){ return "oynanıyor"; } })();
         return {html:`🔴 <b>${esc(hit.h)} ${hit.hs}-${hit.as} ${esc(hit.a)}</b> · ${esc(clk)}${hit.comp?" · "+esc(hit.comp):""}<br>`+(Li?`Canlı tahmin (skor ve dakika hesaba katıldı): <b>${esc(Li.K.best.n)} %${pc9(Li.cp)}</b>${Li.K.best.o?" · oran "+of2(Li.K.best.o):""} · tahmini son skor <b>${esc(Li.P.ft)}</b>.`:"Canlı tahmin için bülten verisi bekleniyor.")+`<br><small>Maç başladığı için maç öncesi tahmin geçerli değil. Garanti değildir.</small>`,chips:["Canlı maçlar","Canlı altın kupon"]}; }
     }catch(e){} return _ba.apply(this,arguments); }; }
+})();
+</script>
+<script id="bulutbot-v88">
+// v88: Bulut sohbet robotuna altın boğa logosu (başlık, üst çubuk düğmesi, mesaj avatarı, açılış görseli)
+(function(){
+  function hdr(){ const b=$("hdrBot"); if(b&&!b.querySelector(".bb-img")){ const i=document.createElement("span"); i.className="bb-img"; i.setAttribute("aria-hidden","true"); b.prepend(i); } }
+  function hero(){ const L=$("botLog"); if(L&&!$("bbHero")){ const im=document.createElement("img"); im.id="bbHero"; im.className="bb-hero"; im.src="icons/bulut-bot-full.jpg"; im.alt="BULUTOXX Bulut"; im.loading="lazy"; L.prepend(im); } }
+  const _o=botOpen; botOpen=function(){ const r=_o.apply(this,arguments); try{ hero(); }catch(e){} return r; };
+  hdr(); setTimeout(hdr,1500); setTimeout(hdr,4500);
 })();
 </script>
 </body>
