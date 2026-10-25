@@ -206,6 +206,33 @@ def p4(out):
     out["sart_toplam_uzunluk"] = sum(len(s) for s in sec)
 
 
+def p5(out):
+    """Kullanım şartları: sayfadaki window.termsOfUseContent değişkeni (bileşen bunu basar)."""
+    st, h, _ = get(KOK + "/hakkimizda/kullanim-sartlari")
+    out["durum"] = st
+    out["bayraklar"] = re.findall(r"(NewHelpAboutEnabled[^;\n]{0,80})", h)[:5]
+    out["degisken_cevre"] = [h[max(0, m.start() - 80): m.start() + 300] for m in re.finditer(r"termsOfUseContent", h)][:5]
+    m = re.search(r"termsOfUseContent\s*=\s*(['\"`])", h)
+    metin = ""
+    if m:
+        q = m.group(1); i = m.end(); buf = []
+        while i < len(h):
+            c = h[i]
+            if c == "\\" and i + 1 < len(h):
+                buf.append(h[i:i + 2]); i += 2; continue
+            if c == q:
+                break
+            buf.append(c); i += 1
+        ham = "".join(buf)
+        try:
+            ham = json.loads('"' + ham.replace('"', '\\"').replace("\\'", "'") + '"')
+        except Exception:
+            ham = ham.encode("utf-8").decode("unicode_escape", "replace") if "\\u" in ham else ham
+        metin = gorunur(html.unescape(ham))
+    out["sartlar_metni"] = metin[:80000]
+    out["sartlar_uzunluk"] = len(metin)
+
+
 def main():
     hedef = sys.argv[1] if len(sys.argv) > 1 else "p1"
     os.makedirs("lab/kesif/atyarisi", exist_ok=True)
@@ -248,6 +275,8 @@ def main():
         p3(out)
     elif hedef == "p4":
         p4(out)
+    elif hedef == "p5":
+        p5(out)
     out["istek_sayisi"] = SAYAC["n"]
     json.dump(out, open(f"lab/kesif/atyarisi/{hedef}.json", "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     print("tamam", SAYAC["n"], "istek")
