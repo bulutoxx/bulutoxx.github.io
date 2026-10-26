@@ -1,7 +1,7 @@
 """🤖 Robot arenası (robot ordusu + öğrenen konsey).
 Birbirinden bağımsız düşünen tahmin robotları her maçı yalnızca o güne kadarki bilgiyle tahmin eder:
   R1 Piyasa      — iddaa/bahis oranları (marj 'power' yöntemiyle ayrılır)
-  R2 Poisson     — BULUTOXX motoru (takım hücum/savunma gücü, piyasa beklenen golüyle eğitilmiş)
+  R2 Poisson     — OXXai motoru (takım hücum/savunma gücü, piyasa beklenen golüyle eğitilmiş)
   R3 Elo         — gol farkına duyarlı Elo derecesi
   R4 Form        — son 6 maçın attığı/yediği gol ortalaması (ev/deplasman ayrı)
   R5 Momentum    — piyasa beklentisine göre son maçlarda fazla/eksik gol (sürpriz eğilimi)
@@ -87,7 +87,7 @@ def main():
     for s in seasons:
         te = [r for r in rows if r["s"] == s]; tr = [r for r in rows if r["s"] != s]
         We = fit_stacker(elo_feat(tr), y(tr), 3); pe_te = softmax(elo_feat(te) @ We); pe_tr = softmax(elo_feat(tr) @ We)
-        R3 = {"Piyasa": ("m", "mo"), "Poisson (BULUTOXX)": ("p", "po"), "Form": ("f", "fo"), "Momentum": ("mm", "mmo")}
+        R3 = {"Piyasa": ("m", "mo"), "Poisson (OXXai)": ("p", "po"), "Form": ("f", "fo"), "Momentum": ("mm", "mmo")}
         yy = y(te); ov = np.array([r["ov"] for r in te])
         for nm, (k, ko) in R3.items():
             Pm = np.array([r[k] for r in te]); po = np.array([r[ko] for r in te])

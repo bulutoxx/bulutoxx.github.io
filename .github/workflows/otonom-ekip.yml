@@ -1,15 +1,15 @@
-name: BULUTOXX otonom ekip
+name: OXXai otonom ekip
 # Her gün: 🗄️ derin arşiv (bitmiş eski sezonlar, bir kez), 🔬 araştırmacı (kaynak keşfi, kütüphane takibi, marj deneyi), 📊 analist (lig güven katsayıları),
 # 🎨 tasarımcı/kalite (yayındaki uygulamayı telefonda açıp her düğmeyi dener, ekran görüntüsü alır),
-# 💬 sohbet koçu (Bulut'a günün verisinden yeni takım/lig adları, kalıplar, terimler öğretir; test başarısını düşürmüyorsa yayınlar).
+# 💬 sohbet koçu (OXXai'ye günün verisinden yeni takım/lig adları, kalıplar, terimler öğretir; test başarısını düşürmüyorsa yayınlar).
 # Doğrulanan bulgular data/*.json üzerinden motora ve uygulamaya otomatik geçer; sorun varsa GitHub'da uyarı kaydı açılır.
 on:
   schedule:
-    - cron: "7 3,15 * * *"    # günde iki kez: gece + öğleden sonra (Bulut koçu ve ekip daha sık öğrenir)
+    - cron: "7 3,15 * * *"    # günde iki kez: gece + öğleden sonra (OXXai koçu ve ekip daha sık öğrenir)
   workflow_dispatch:
   push:
     branches: [main]
-    paths: ["lab/research.py", "lab/analyst.py", "lab/qa.mjs", "lab/guardian.py", "lab/dq.py", "lab/derin.py", "scripts/arsiv.py", "lab/bot_coach.mjs", "lab/bot/**", ".github/workflows/otonom-ekip.yml"]
+    paths: ["lab/research.py", "lab/analyst.py", "lab/qa.mjs", "lab/guardian.py", "lab/dq.py", "lab/derin.py", "scripts/arsiv.py", "lab/bot_coach.mjs", "lab/bot/**", "lab/oxx_ogren.py", ".github/workflows/otonom-ekip.yml"]
 permissions:
   contents: write
 concurrency:
@@ -18,7 +18,7 @@ concurrency:
 jobs:
   ekip:
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 47   # +7 dk: OXXai öğrenme döngüsü (en fazla 420 sn); diğer adımların bütçesi değişmedi
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -35,18 +35,22 @@ jobs:
         run: python lab/analyst.py || echo "analist atlandı"
       - name: 🛡️ Koruyucu (değişiklik izleme, gerekirse geri alma)
         run: python lab/guardian.py || echo "koruyucu atlandı"
+      - name: 🔁 OXXai öğrenme döngüsü (deney kuyruğu → ileriye dönük sanal oynatma → kapı; 14 gün sonra yeniden sınama/geri alma)
+        env: { OXX_N: "3", OXX_BUDGET: "300" }
+        run: timeout 420 python lab/oxx_ogren.py || echo "OXXai öğrenme döngüsü atlandı"
       - name: 🧹 Veri ve güvenlik denetçisi
         run: python lab/dq.py || echo "denetçi atlandı"
       - name: 🎨 Tasarımcı / kalite
         run: |
           cd lab && npm init -y >/dev/null && npm i playwright@1.48.2 >/dev/null && npx playwright install --with-deps chromium >/dev/null
           cd .. && node lab/qa.mjs || echo "kalite botu atlandı"
-      - name: 💬 Sohbet koçu (Bulut'a yeni bilgi + test kapısı)
+      - name: 💬 Sohbet koçu (OXXai'ye yeni bilgi + test kapısı)
         run: timeout 900 node lab/bot_coach.mjs || echo "sohbet koçu atlandı"
       - name: Kaydet
         run: |
           git config user.name "bulutoxx-bot"; git config user.email "bulutoxx-bot@users.noreply.github.com"
           git add data/derin data/research.json data/analyst.json data/qa.json data/qa data/changes.json data/rollback.json data/dq.json data/gelisim.json data/bot_kb.json data/bot_coach.json data/bot_tests.json 2>/dev/null || true
+          git add data/oxx_ayar.json data/deney_kuyrugu.json data/ogrenme_gunlugu.json data/oxx_rollback.json 2>/dev/null || true
           git diff --cached --quiet && exit 0
           git commit -qm "Otonom ekip raporu $(date -u +%F)"
           for i in 1 2 3; do git pull -q --rebase -X theirs origin main && git push -q origin HEAD:main && break; sleep 8; done

@@ -1,4 +1,4 @@
-# BULUTOXX at yarışı laboratuvarı — deney masası (elle çalıştırılır; gece akışının parçası değildir).
+# OXXai at yarışı laboratuvarı — deney masası (elle çalıştırılır; gece akışının parçası değildir).
 # Her deney AYNI sınama dilimiyle (son %30, tam oranlı koşular) ölçülür. Kapı (her adım için):
 #   yalnız-model sınama log-loss'u düşmeli VE yalnız-model ilk-seçim isabeti düşmemeli. Geçen adım kalır.
 # Çıktı: data/at/deneyler.json (yalnız türetilmiş metrikler).

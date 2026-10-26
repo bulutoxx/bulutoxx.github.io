@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#03060D">
 <title>At Yarışı Prototipi</title>
-<!-- BULUTOXX · At Yarışı bölümü yeniden tasarım PROTOTİPİ (lab/at/TASARIM.md).
+<!-- OXXai · At Yarışı bölümü yeniden tasarım PROTOTİPİ (lab/at/TASARIM.md).
      Tek dosya, dış kaynak yok. Veri: ../../data/at/ (tahmin, canli, altili, jokeyler, karne, kupon_karne, model).
      Uygulamaya (index.html) bağlı değildir; kupon satırları yalnız bu prototipin "bx-proto-atk" anahtarına yazılır.
      Hobi amaçlı olasılıklar; garanti değildir · 18+ -->
@@ -575,18 +575,18 @@ function vBahis(){ const d=S.d; let h=`<div class="seg sm" role="group" aria-lab
 
 // ---------- 8) KUPONUM (KUPO ile aynı veri) ----------
 function vKupon(){ let h=`<div class="syn">${ICON.sync}<span>Bu liste KUPO'daki <b>At Kuponu</b> ile aynıdır: burada eklediğin satır KUPO'da, KUPO'da eklediğin burada görünür.</span></div>`;
-  if(!KUP.length) h+=`<div class="card empty"><div class="e">🎟️</div><b>At kuponun boş</b><p>Bir koşu kartında “＋ Kupona ekle”ye dokun ya da aşağıdaki OXX kuponlarından birini kopyala.</p><a class="btn p" href="#/program">Programa git</a></div>`;
+  if(!KUP.length) h+=`<div class="card empty"><div class="e">🎟️</div><b>At kuponun boş</b><p>Bir koşu kartında “＋ Kupona ekle”ye dokun ya da aşağıdaki OXXai kuponlarından birini kopyala.</p><a class="btn p" href="#/program">Programa git</a></div>`;
   else{ const ps=KUP.map(R=>({R,s:rowStatus(R)})), all=KUP.reduce((a,R)=>a*(R.p||0),1), kom=KUP.reduce((a,R)=>a*(R.k||1),1);
     h+=`<div class="card gold"><div class="ch"><h2>At Kuponu</h2><small>${KUP.length} satır</small></div>
       ${ps.map(({R,s})=>`<div class="kr"><span class="tt">${esc(R.ad)}</span><span class="tx"><b>${esc(R.baslik)}</b><small>${esc(R.secim)}</small><small>${R.k} kombinasyon · tutma olasılığı <b style="color:var(--gi)">${P(R.p,1)}</b> · ${s==="tuttu"?'<b class="up">✓ tuttu</b>':s==="tutmadi"?'<b class="dn">✗ tutmadı</b>':"bekliyor"}</small></span><button class="x" type="button" data-del="${esc(R.id)}" aria-label="Satırı sil">✕</button></div>`).join("")}
       ${KUP.length>1?`<p class="note" style="margin:10px 0 0">Tüm satırların birlikte tutma olasılığı ${P(all,2)} · toplam ${kom.toLocaleString("tr-TR")} kombinasyon.</p>`:""}
       <div class="row2" style="margin-top:12px"><button class="btn q" type="button" data-kupo>KUPO'da aç</button><button class="btn q" type="button" data-clear>Temizle</button></div></div>`; }
-  // OXX önerileri
+  // OXXai önerileri
   const d=S.d, O=oxx(d);
-  h+=`<div class="sec">OXX'un at kuponları</div>`+(O.length?`<div class="card">${O.map((o,i)=>`<div class="kr"><span class="tt">${esc(o.ad)}</span><span class="tx"><b>${esc(o.baslik)}</b><small>${esc(o.secim)} · ${P(o.p,1)}</small></span><button class="x" type="button" data-oxx="${i}" aria-label="Kuponuma ekle" style="color:var(--gi)">＋</button></div>`).join("")}</div>`:`<div class="card"><p class="note" style="margin:0">Kalan koşularda OXX önerisi yok.</p></div>`);
+  h+=`<div class="sec">OXXai'nin at kuponları</div>`+(O.length?`<div class="card">${O.map((o,i)=>`<div class="kr"><span class="tt">${esc(o.ad)}</span><span class="tx"><b>${esc(o.baslik)}</b><small>${esc(o.secim)} · ${P(o.p,1)}</small></span><button class="x" type="button" data-oxx="${i}" aria-label="Kuponuma ekle" style="color:var(--gi)">＋</button></div>`).join("")}</div>`:`<div class="card"><p class="note" style="margin:0">Kalan koşularda OXXai önerisi yok.</p></div>`);
   // karne
   const K=S.kk&&S.kk.turler||{};
-  h+=`<div class="sec">OXX karnesi · geri test</div><div class="card"><div class="kb">${["ganyan","plase","ikili","sirali_ikili","cifte","uclu"].filter(k=>K[k]).map(k=>{ const z=K[k], r=z.isabet_orani, e=z.beklenen_oran, sc=Math.max(r,e,.0001);
+  h+=`<div class="sec">OXXai karnesi · geri test</div><div class="card"><div class="kb">${["ganyan","plase","ikili","sirali_ikili","cifte","uclu"].filter(k=>K[k]).map(k=>{ const z=K[k], r=z.isabet_orani, e=z.beklenen_oran, sc=Math.max(r,e,.0001);
       return `<div class="kbr"><span class="t">${esc(z.ad)}</span><span class="tr" aria-hidden="true"><i style="width:${r/sc*90}%"></i><u style="left:${e/sc*90}%"></u></span><span class="v">${P(r,1)}</span></div>`; }).join("")}</div>
     <p class="note" style="margin:10px 0 0">En olası tek kombinasyonun geçmiş ${fx((K.ganyan||{}).n,0)} koşudaki isabeti (çubuk) ve modelin beklentisi (çizgi). Yakınlık, olasılıkların dürüst olduğunu gösterir. ${esc((S.kk||{}).uyari||"")}</p></div>`;
   return h+foot(); }
@@ -669,7 +669,7 @@ function bind(rt){ const q=s=>$("main").querySelectorAll(s);
   q("[data-alt]").forEach(b=>b.onclick=()=>{ const X=(S.A[S.d].altililar||[]).find(x=>x.id===b.dataset.alt), sv=S.sev||"orta", L=X.seviyeler[sv];
     KUP=KUP.filter(R=>!(R.tur==="altili"&&R.kid===X.id)); KUP.push({id:Date.now().toString(36),tur:"altili",ad:"6'lı",kid:X.id,d:S.d,sev:sv,baslik:`${X.hipodrom} ${X.no}. 6'lı · ${({dar:"Dar",orta:"Orta",genis:"Geniş"})[sv]}`,secim:L.ayaklar.map(a=>a.secim.join(",")).join(" / "),p:L.p,k:L.kombinasyon});
     saveKup(); toast("🎟️ 6'lı at kuponuna eklendi"); render(); });
-  q("[data-oxx]").forEach(b=>b.onclick=()=>{ const o=oxx(S.d)[+b.dataset.oxx]; if(!o) return; KUP=KUP.filter(R=>!(R.kid===o.kid&&R.tur===o.tur)); KUP.push(Object.assign({id:Date.now().toString(36),d:S.d},o)); saveKup(); toast("🎟️ OXX önerisi kuponuna kopyalandı"); render(); });
+  q("[data-oxx]").forEach(b=>b.onclick=()=>{ const o=oxx(S.d)[+b.dataset.oxx]; if(!o) return; KUP=KUP.filter(R=>!(R.kid===o.kid&&R.tur===o.tur)); KUP.push(Object.assign({id:Date.now().toString(36),d:S.d},o)); saveKup(); toast("🎟️ OXXai önerisi kuponuna kopyalandı"); render(); });
   q("[data-del]").forEach(b=>b.onclick=()=>{ KUP=KUP.filter(R=>R.id!==b.dataset.del); saveKup(); render(); });
   q("[data-clear]").forEach(b=>b.onclick=()=>{ if(confirm("At kuponundaki tüm satırlar silinsin mi?")){ KUP=[]; saveKup(); render(); } });
   q("[data-kupo]").forEach(b=>b.onclick=()=>toast("Uygulamada KUPO › Kuponlarım › At Kuponu açılır"));

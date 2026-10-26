@@ -48,19 +48,21 @@ def _sov(x):
     except (TypeError, ValueError): return None
 
 _BAD = re.compile(r"(korner|kart|handikap|dakika|ev sahibi|deplasman|takım|tek ?/ ?çift|tam skor|ilk gol|son gol|penalt|kırmızı|aralık|gol sayısı|her iki yarı|kazanır|sıradaki)")
+_Y1 = r"(?:ilk|birinci|1\.?) ?yarı"      # "İlk Yarı", "1. Yarı", "1.Yarı" (resmi bülten "1. Yarı ..." yazar)
+_Y2 = r"(?:ikinci|2\.?) ?yarı"            # "İkinci Yarı", "2. Yarı"
 def _kind(name):
     """Pazar adı → tür. Bilinmeyen → None."""
     n = _low(name).replace("altı/üstü", "alt/üst").replace("alt / üst", "alt/üst")
     if _BAD.search(n): return None
     if "hangi yarı" in n and "gol" in n: return "dgy"
-    if re.match(r"^ilk yarı ?/ ?maç sonucu\s*$", n): return "iyms"
+    if re.match(r"^" + _Y1 + r" ?/ ?maç sonucu\s*$", n): return "iyms"
     if n.startswith("maç sonucu ve alt/üst"): return "msau"
     if n.startswith("maç sonucu ve karşılıklı gol"): return "mskg"
     if n.startswith("çifte şans") and "ve" not in n: return "cs"
-    if n.startswith("ilk yarı sonucu") and " ve " not in n: return "iy"
-    if (n.startswith("ikinci yarı sonucu") or n.startswith("2. yarı sonucu")) and " ve " not in n: return "2y"
-    if (n.startswith("ilk yarı alt/üst") or n.startswith("ilk yarı toplam gol")) and " ve " not in n: return "iyau"
-    if (n.startswith("ikinci yarı alt/üst") or n.startswith("2. yarı alt/üst")) and " ve " not in n: return "2yau"
+    if re.match(r"^" + _Y1 + r" sonucu", n) and " ve " not in n: return "iy"
+    if re.match(r"^" + _Y2 + r" sonucu", n) and " ve " not in n: return "2y"
+    if re.match(r"^" + _Y1 + r" (?:alt/üst|toplam gol)", n) and " ve " not in n: return "iyau"
+    if re.match(r"^" + _Y2 + r" (?:alt/üst|toplam gol)", n) and " ve " not in n: return "2yau"
     if (n.startswith("alt/üst") or n.startswith("toplam gol alt/üst") or n == "toplam gol") and " ve " not in n: return "au"
     if n.startswith("karşılıklı gol") and " ve " not in n and "yarı" not in n: return "kg"
     return None

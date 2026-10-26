@@ -1,4 +1,4 @@
-# BULUTOXX at yarışı laboratuvarı — koşu içi koşullu logit (Benter) + isteğe bağlı GBM + piyasa harmanı + Harville/Henery.
+# OXXai at yarışı laboratuvarı — koşu içi koşullu logit (Benter) + isteğe bağlı GBM + piyasa harmanı + Harville/Henery.
 # Değerlendirme zaman sıralıdır: ısınma | eğitim | SINAMA (son %30, aylık walk-forward yeniden eğitimle).
 import math
 import os

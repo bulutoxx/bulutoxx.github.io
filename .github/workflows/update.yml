@@ -1,4 +1,4 @@
-name: BULUTOXX güncelle ve yayınla
+name: OXXai güncelle ve yayınla
 
 on:
   schedule:
@@ -41,6 +41,8 @@ jobs:
         env:
           APISPORTS_KEY: ${{ secrets.APISPORTS_KEY }}
           ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
+      - name: 🎟️ OXXai kupon robotu (maçtan önce kilit, sonuç puanı, karne)
+        run: timeout 300 python scripts/oxx_kupon.py || echo "OXXai kupon robotu bu sefer atlandı"
       - name: Değişiklikleri kaydet
         run: |
           git config user.name "bulutoxx-bot"

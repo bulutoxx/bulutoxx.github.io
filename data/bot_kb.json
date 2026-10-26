@@ -51,7 +51,13 @@
   "cumaretsi": "cumartesi",
   "carasmba": "carsamba",
   "cmartesi": "cumartesi",
-  "caramba": "carsamba"
+  "caramba": "carsamba",
+  "cumaresi": "cumartesi",
+  "casamba": "carsamba",
+  "cmuartesi": "cumartesi",
+  "peresmbe": "persembe",
+  "cumatesi": "cumartesi",
+  "persmbe": "persembe"
  },
  "lig": {
   "ispanya segunda rfef": "i91400",
@@ -121,7 +127,9 @@
   "bulgaristan parva ligi": "i31585",
   "parva ligi": "i31585",
   "isvec superettan": "i349",
-  "superettan": "i349"
+  "superettan": "i349",
+  "portekiz lig kupasi turu": "i1898",
+  "lig kupasi turu": "i1898"
  },
  "para": {
   "mac programi": "bugün hangi maçlar var",
@@ -131,27 +139,27 @@
   {
    "k": "xg",
    "re": "\\bxg\\b|gol beklenti",
-   "html": "<b>Gol beklentisi (xG)</b>: bir takımın o maçta atması beklenen ortalama gol sayısı. BULUTOXX bunu lig gol ortalaması, iç/dış saha gücü ve piyasa oranlarından hesaplar; ör. 1,8'e 0,9 beklenti ev sahibini favori yapar ama sonucu garanti etmez."
+   "html": "<b>Gol beklentisi (xG)</b>: bir takımın o maçta atması beklenen ortalama gol sayısı. OXXai bunu lig gol ortalaması, iç/dış saha gücü ve piyasa oranlarından hesaplar; ör. 1,8'e 0,9 beklenti ev sahibini favori yapar ama sonucu garanti etmez."
   },
   {
    "k": "form",
    "re": "\\bform\\w*",
-   "html": "<b>Form</b>: takımın son maçlardaki gidişatı (son 5-6 maçın sonuçları ve golleri). BULUTOXX formu tek başına değil, lig gücü ve piyasa oranlarıyla birlikte kullanır; form tek başına yanıltıcı olabilir."
+   "html": "<b>Form</b>: takımın son maçlardaki gidişatı (son 5-6 maçın sonuçları ve golleri). OXXai formu tek başına değil, lig gücü ve piyasa oranlarıyla birlikte kullanır; form tek başına yanıltıcı olabilir."
   },
   {
    "k": "elo",
    "re": "\\belo\\b",
-   "html": "<b>Elo puanı</b>: takımların güç puanı; her maçtan sonra kazanan, kaybedenden puan alır, sürpriz galibiyet daha çok puan getirir. BULUTOXX'un robot arenasında Elo robotu da yarışır; piyasaya bilgi eklemediği ölçüldüğü için ana tahminde ağırlığı yoktur."
+   "html": "<b>Elo puanı</b>: takımların güç puanı; her maçtan sonra kazanan, kaybedenden puan alır, sürpriz galibiyet daha çok puan getirir. OXXai'nin robot arenasında Elo robotu da yarışır; piyasaya bilgi eklemediği ölçüldüğü için ana tahminde ağırlığı yoktur."
   },
   {
    "k": "kalibrasyon",
    "re": "kalibr",
-   "html": "<b>Kalibrasyon</b>: gösterilen yüzdenin, geçmişte aynı güvendeki tahminlerin gerçek tutma oranına göre düzeltilmesi. Yani %80 dediğim seçimler, kilitli arşivde gerçekten yaklaşık %80 tutmuş seviyededir. Kilitli arşivde şimdiye kadar 1.154 öneri puanlandı; %58'i tuttu."
+   "html": "<b>Kalibrasyon</b>: gösterilen yüzdenin, geçmişte aynı güvendeki tahminlerin gerçek tutma oranına göre düzeltilmesi. Yani %80 dediğim seçimler, kilitli arşivde gerçekten yaklaşık %80 tutmuş seviyededir. Kilitli arşivde şimdiye kadar 1.205 öneri puanlandı; %59'i tuttu."
   },
   {
    "k": "marj",
    "re": "\\bmarj\\w*",
-   "html": "<b>Bahis marjı</b>: şirketin oranlara eklediği pay; oranların ters çevrilmiş toplamı %100'ü aşar (ör. toplam %107 → %7 marj). BULUTOXX piyasa olasılığını hesaplarken bu marjı ayıklar. Şu an kullanılan ayıklama yöntemi: <b>power</b> (araştırmacı bot her gece sınar)."
+   "html": "<b>Bahis marjı</b>: şirketin oranlara eklediği pay; oranların ters çevrilmiş toplamı %100'ü aşar (ör. toplam %107 → %7 marj). OXXai piyasa olasılığını hesaplarken bu marjı ayıklar. Şu an kullanılan ayıklama yöntemi: <b>power</b> (araştırmacı bot her gece sınar)."
   },
   {
    "k": "brier",
@@ -161,7 +169,7 @@
   {
    "k": "mbs",
    "re": "\\bmbs\\b|minimum bahis",
-   "html": "<b>MBS</b> (minimum bahis sayısı): iddaa'da bir maçın kuponda en az kaç maçla birlikte oynanabileceği. BULUTOXX bir bahis aracı olmadığı için MBS göstermez; yalnız tutma olasılığını gösterir."
+   "html": "<b>MBS</b> (minimum bahis sayısı): iddaa'da bir maçın kuponda en az kaç maçla birlikte oynanabileceği. OXXai bir bahis aracı olmadığı için MBS göstermez; yalnız tutma olasılığını gösterir."
   },
   {
    "k": "powernow",
@@ -181,7 +189,7 @@
   {
    "k": "evsahibi",
    "re": "ev sahibi avantaj|saha avantaj|ic saha",
-   "html": "<b>Ev sahibi avantajı</b>: kendi sahasında oynayan takımın istatistiksel üstünlüğü. BULUTOXX modeli bunu iç/dış saha gücü olarak hesaba katar."
+   "html": "<b>Ev sahibi avantajı</b>: kendi sahasında oynayan takımın istatistiksel üstünlüğü. OXXai modeli bunu iç/dış saha gücü olarak hesaba katar."
   },
   {
    "k": "deplasman",
@@ -196,12 +204,12 @@
   {
    "k": "kilitli",
    "re": "kilitli|kilitlen\\w*",
-   "html": "<b>Kilitli tahmin</b>: maç başlamadan arşive yazılan ve sonradan değiştirilemeyen öneri. Karnedeki tüm isabet rakamları bu kilitli kayıtlardan hesaplanır. Kilitli arşivde şimdiye kadar 1.154 öneri puanlandı; %58'i tuttu."
+   "html": "<b>Kilitli tahmin</b>: maç başlamadan arşive yazılan ve sonradan değiştirilemeyen öneri. Karnedeki tüm isabet rakamları bu kilitli kayıtlardan hesaplanır. Kilitli arşivde şimdiye kadar 1.205 öneri puanlandı; %59'i tuttu."
   },
   {
    "k": "korner",
    "re": "\\bkorner\\w*|\\bkorner\\b",
-   "html": "<b>Korner</b> (köşe vuruşu) sayısı üzerine pazarlar vardır ama BULUTOXX korner tahmini üretmez; uydurmamak için bu pazarı önermem. Gol, MS, KG ve İY olasılıklarını sorabilirsin."
+   "html": "<b>Korner</b> (köşe vuruşu) sayısı üzerine pazarlar vardır ama OXXai korner tahmini üretmez; uydurmamak için bu pazarı önermem. Gol, MS, KG ve İY olasılıklarını sorabilirsin."
   }
  ],
  "gor": {
@@ -216,51 +224,51 @@
   "auxere": "2026-10-25",
   "auksere": "2026-10-25",
   "renes": "2026-10-25",
-  "lecse": "2026-10-26",
+  "lecse": "2026-10-27",
   "sitard": "2026-10-25",
   "exselsior": "2026-10-25",
   "eksselsior": "2026-10-25",
-  "burnemuth": "2026-10-26",
-  "burnemut": "2026-10-26",
+  "burnemuth": "2026-10-27",
+  "burnemut": "2026-10-27",
   "anderlest": "2026-10-25",
   "anderlekt": "2026-10-25",
-  "yuventus": "2026-10-26",
+  "yuventus": "2026-10-27",
   "selta": "2026-10-25",
-  "koeln": "2026-10-26",
-  "copenhagen": "2026-10-26"
+  "koeln": "2026-10-27",
+  "copenhagen": "2026-10-27"
  },
  "onemli": [
   {
-   "h": "Galatasaray",
-   "a": "Fenerbahçe",
-   "lg": "tr1",
-   "d": "2026-10-26"
+   "h": "Bayern Münih (K)",
+   "a": "Real Madrid (K)",
+   "lg": "i54684",
+   "d": "2026-10-28"
   },
   {
-   "h": "Paris Saint-Germain",
-   "a": "Lyon",
-   "lg": "fr",
-   "d": "2026-10-26"
+   "h": "Liverpool",
+   "a": "Chelsea",
+   "lg": "i151",
+   "d": "2026-10-28"
   }
  ],
  "karne": {
-  "n": 1154,
-  "hit": 0.5841,
-  "guclu_n": 211,
-  "guclu_hit": 0.7393
+  "n": 1205,
+  "hit": 0.5867,
+  "guclu_n": 222,
+  "guclu_hit": 0.7432
  },
  "sayim": {
   "takim": 23,
-  "lig": 68,
+  "lig": 70,
   "esanlam": 7,
-  "yazim": 18,
+  "yazim": 24,
   "para": 2,
   "sozluk": 15,
-  "toplam": 133
+  "toplam": 141
  },
- "v": "2026-10-26.9",
- "tarih": "2026-10-26",
- "uretim": "2026-10-26T17:00:06.037Z",
+ "v": "2026-10-27.12",
+ "tarih": "2026-10-27",
+ "uretim": "2026-10-26T22:25:46.882Z",
  "not": "Bu dosya her gece lab/bot_coach.mjs tarafından yalnız uygulama verisinden üretilir; kullanıcı mesajı içermez.",
- "surum_no": 9
+ "surum_no": 12
 }

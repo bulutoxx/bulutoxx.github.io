@@ -1,4 +1,4 @@
-// BULUTOXX sohbet testi hakemi (lab/bot_coach.mjs kullanır).
+// OXXai sohbet testi hakemi (lab/bot_coach.mjs kullanır).
 // Ölçütler: her cevap için {intent: doğru niyet mi, useful: faydalı/somut mu, unk: "anlamadım" mı}
 const fold = s => String(s || '').toLocaleLowerCase('tr').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/ı/g, 'i');
 const UNK = /tam anlayamadım|kafası biraz karıştı|ters gitti|anlayamadım|anlamadım/i;
@@ -72,7 +72,7 @@ function judge(t, r, prev) {
       intent = !unk && c.kw.test(text) && (!c.kw2 || c.kw2.test(text)); useful = intent; break;
     case 'selam': intent = useful = /selam|merhaba|hoş geldin|günaydın|iyi akşamlar/i.test(text); break;
     case 'tesekkur': intent = useful = /rica|ne demek|eyvallah|ne zaman istersen/i.test(text); break;
-    case 'kim': intent = useful = /Bulut/.test(text) && !unk; break;
+    case 'kim': intent = useful = /OXXai/.test(text) && !unk; break;
     case 'ad': intent = useful = /Ali/.test(text); break;
     case 'kayip': intent = useful = /geçmiş olsun|üzülme|top yuvarlak/i.test(text); break;
     case 'anlamsiz': intent = C.length === 0 && chips.length >= 2; useful = intent; break;

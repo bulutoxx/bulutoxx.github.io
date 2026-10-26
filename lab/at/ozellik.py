@@ -1,4 +1,4 @@
-# BULUTOXX at yarışı laboratuvarı — sızıntısız özellikler.
+# OXXai at yarışı laboratuvarı — sızıntısız özellikler.
 # Kural: bir koşunun özellikleri yalnız o GÜNDEN ÖNCEKİ sonuçlarla hesaplanır. Günler sırayla işlenir:
 # önce o günün bütün koşuları için özellik çıkarılır, sonra durum o günün sonuçlarıyla güncellenir.
 # Aynanın memory/*.json özetleri geleceği de içerdiği için KULLANILMAZ.

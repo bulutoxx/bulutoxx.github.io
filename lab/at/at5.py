@@ -1,4 +1,4 @@
-# BULUTOXX at yarışı laboratuvarı — v5 at özellikleri (sınıf-ayarlı form, göreli kilo değişimi, dinlenme eğrisi).
+# OXXai at yarışı laboratuvarı — v5 at özellikleri (sınıf-ayarlı form, göreli kilo değişimi, dinlenme eğrisi).
 #
 # Aynadaki alanlarla (sonuç: sıra, derece, kilo, oran, sınıf, mesafe, pist; program: aynı + pist durumu) kurulabilenler.
 # Aynada start/kulvar numarası ve koşu içi pozisyon (tempo, erken hız) YOK; bu yüzden kulvar yanlılığı ve koşu stili

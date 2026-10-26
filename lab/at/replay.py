@@ -1,4 +1,4 @@
-# BULUTOXX at yarışı laboratuvarı — gün gün YENİDEN OYNATMA (replay) sınaması.
+# OXXai at yarışı laboratuvarı — gün gün YENİDEN OYNATMA (replay) sınaması.
 # "Geçmiş koşuları hiç oynanmamış gibi yeniden yarıştır": dönemin her yarış günü için tahmin, yayındaki sistemin o
 # sabah üreteceği gibi üretilir:
 #   - katsayılar: yayındaki gibi `--yenileme` günde bir (varsayılan 7, gece.py YENILEME_GUN) yeniden eğitilir; her

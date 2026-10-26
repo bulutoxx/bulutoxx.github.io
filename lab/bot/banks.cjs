@@ -1,4 +1,4 @@
-// BULUTOXX sohbet koçu — aday bilgi bankası.
+// OXXai sohbet koçu — aday bilgi bankası.
 // Koç her gece buradan (ve günün verisinden) aday üretir; aday yalnız telefondaki bot üzerinde sınanıp işe yararsa ve
 // tüm test kümesinin başarısını düşürmezse data/bot_kb.json'a girer. Burada kullanıcı mesajı YOKTUR; hepsi elle yazılmış örnek cümlelerdir.
 
@@ -134,21 +134,21 @@ const esanlamIfade = {
 // ---- Terim sözlüğü (v69'un kendi terimlerinde olmayanlar). {veri} kısımları koç tarafından günün verisiyle doldurulur. ----
 const sozluk = [
   { k: "xg", re: "\\bxg\\b|gol beklenti", q: "xg ne demek", kw: /gol beklentisi/i,
-    html: "<b>Gol beklentisi (xG)</b>: bir takımın o maçta atması beklenen ortalama gol sayısı. BULUTOXX bunu lig gol ortalaması, iç/dış saha gücü ve piyasa oranlarından hesaplar; ör. 1,8'e 0,9 beklenti ev sahibini favori yapar ama sonucu garanti etmez." },
+    html: "<b>Gol beklentisi (xG)</b>: bir takımın o maçta atması beklenen ortalama gol sayısı. OXXai bunu lig gol ortalaması, iç/dış saha gücü ve piyasa oranlarından hesaplar; ör. 1,8'e 0,9 beklenti ev sahibini favori yapar ama sonucu garanti etmez." },
   { k: "form", re: "\\bform\\w*", q: "form ne demek", kw: /son maç/i,
-    html: "<b>Form</b>: takımın son maçlardaki gidişatı (son 5-6 maçın sonuçları ve golleri). BULUTOXX formu tek başına değil, lig gücü ve piyasa oranlarıyla birlikte kullanır; form tek başına yanıltıcı olabilir." },
+    html: "<b>Form</b>: takımın son maçlardaki gidişatı (son 5-6 maçın sonuçları ve golleri). OXXai formu tek başına değil, lig gücü ve piyasa oranlarıyla birlikte kullanır; form tek başına yanıltıcı olabilir." },
   { k: "elo", re: "\\belo\\b", q: "elo puanı nedir", kw: /güç/i,
-    html: "<b>Elo puanı</b>: takımların güç puanı; her maçtan sonra kazanan, kaybedenden puan alır, sürpriz galibiyet daha çok puan getirir. BULUTOXX'un robot arenasında Elo robotu da yarışır; piyasaya bilgi eklemediği ölçüldüğü için ana tahminde ağırlığı yoktur." },
+    html: "<b>Elo puanı</b>: takımların güç puanı; her maçtan sonra kazanan, kaybedenden puan alır, sürpriz galibiyet daha çok puan getirir. OXXai'nin robot arenasında Elo robotu da yarışır; piyasaya bilgi eklemediği ölçüldüğü için ana tahminde ağırlığı yoktur." },
   { k: "poisson", re: "poisson", q: "poisson modeli nedir", kw: /skor/i,
     html: "<b>Poisson modeli</b>: iki takımın gol beklentisinden her skorun olasılığını hesaplayan klasik yöntem (ör. 1-0, 1-1, 2-1 için ayrı yüzdeler). Robot arenasındaki Poisson robotu bu yöntemi kullanır; uygulamadaki skor olasılıkları da gol beklentisine dayanır." },
   { k: "kalibrasyon", re: "kalibr", q: "kalibrasyon ne demek", kw: /geçmiş|arşiv/i,
     html: "<b>Kalibrasyon</b>: gösterilen yüzdenin, geçmişte aynı güvendeki tahminlerin gerçek tutma oranına göre düzeltilmesi. Yani %80 dediğim seçimler, kilitli arşivde gerçekten yaklaşık %80 tutmuş seviyededir.{karne}" },
   { k: "marj", re: "\\bmarj\\w*", q: "bahis marjı nedir", kw: /marj/i, kw2: /ayıkla/i,
-    html: "<b>Bahis marjı</b>: şirketin oranlara eklediği pay; oranların ters çevrilmiş toplamı %100'ü aşar (ör. toplam %107 → %7 marj). BULUTOXX piyasa olasılığını hesaplarken bu marjı ayıklar.{devig}" },
+    html: "<b>Bahis marjı</b>: şirketin oranlara eklediği pay; oranların ters çevrilmiş toplamı %100'ü aşar (ör. toplam %107 → %7 marj). OXXai piyasa olasılığını hesaplarken bu marjı ayıklar.{devig}" },
   { k: "brier", re: "brier", q: "brier skoru ne demek", kw: /0'a/i,
     html: "<b>Brier skoru</b>: olasılık tahminlerinin isabet ölçüsü; 0'a ne kadar yakınsa o kadar iyi. Koruyucu bot, otomatik bir değişiklikten sonra Brier skoru belirgin kötüleşirse (+0,01) değişikliği 14 gün geri alır." },
-  { k: "mbs", re: "\\bmbs\\b|minimum bahis", q: "mbs ne demek", kw: /minimum bahis/i,
-    html: "<b>MBS</b> (minimum bahis sayısı): iddaa'da bir maçın kuponda en az kaç maçla birlikte oynanabileceği. BULUTOXX bir bahis aracı olmadığı için MBS göstermez; yalnız tutma olasılığını gösterir." },
+  { k: "mbs", re: "\\bmbs\\b|minimum bahis", q: "mbs ne demek", kw: /minimum (bahis|seçim) sayısı/i,
+    html: "<b>MBS</b> (minimum bahis sayısı): iddaa'da bir maçın kuponda en az kaç maçla birlikte oynanabileceği. OXXai bir bahis aracı olmadığı için MBS göstermez; yalnız tutma olasılığını gösterir." },
   { k: "powernow", re: "power ?now", q: "power now nedir", kw: /canlı/i, kw2: /%\s?80/,
     html: "<b>Power Now</b>: canlı maçlarda tutma olasılığı %80 ve üstü olan anlık seçimlerin ekranı (alt menü). Canlı oranlar saniyeler içinde değişir; seçimler maç içinde kilitlenip sonradan puanlanır." },
   { k: "favori", re: "\\bfavori\\w*", q: "favori ne demek", kw: /olasılığı en yüksek/i,
@@ -156,7 +156,7 @@ const sozluk = [
   { k: "surpriz", re: "\\bsurpriz\\w*", q: "sürpriz sonuç ne demek", kw: /olasılığı düşük/i,
     html: "<b>Sürpriz</b>: olasılığı düşük görülen sonucun gerçekleşmesi (ör. %20 görülen deplasman galibiyeti). Futbolda sık olur; bu yüzden tek maçta \"kesin\" yoktur." },
   { k: "evsahibi", re: "ev sahibi avantaj|saha avantaj|ic saha", q: "ev sahibi avantajı ne demek", kw: /kendi sahasında/i,
-    html: "<b>Ev sahibi avantajı</b>: kendi sahasında oynayan takımın istatistiksel üstünlüğü. BULUTOXX modeli bunu iç/dış saha gücü olarak hesaba katar." },
+    html: "<b>Ev sahibi avantajı</b>: kendi sahasında oynayan takımın istatistiksel üstünlüğü. OXXai modeli bunu iç/dış saha gücü olarak hesaba katar." },
   { k: "deplasman", re: "\\bdeplasman\\w*", q: "deplasman ne demek", kw: /konuk|rakip sahada/i,
     html: "<b>Deplasman</b>: rakip sahada oynayan (konuk) takım; maç adında ikinci yazılan takımdır. <b>MS 2</b> deplasman galibiyeti demektir." },
   { k: "beraberlik", re: "\\bberaber\\w*", q: "beraberlik ne demek", kw: /eşit/i,
@@ -164,7 +164,7 @@ const sozluk = [
   { k: "kilitli", re: "kilitli|kilitlen\\w*", q: "kilitli tahmin ne demek", kw: /maç başlamadan/i,
     html: "<b>Kilitli tahmin</b>: maç başlamadan arşive yazılan ve sonradan değiştirilemeyen öneri. Karnedeki tüm isabet rakamları bu kilitli kayıtlardan hesaplanır.{karne}" },
   { k: "korner", re: "\\bkorner\\w*|\\bkorner\\b", q: "korner tahmini var mı ne demek", kw: /korner/i,
-    html: "<b>Korner</b> (köşe vuruşu) sayısı üzerine pazarlar vardır ama BULUTOXX korner tahmini üretmez; uydurmamak için bu pazarı önermem. Gol, MS, KG ve İY olasılıklarını sorabilirsin." },
+    html: "<b>Korner</b> (köşe vuruşu) sayısı üzerine pazarlar vardır ama OXXai korner tahmini üretmez; uydurmamak için bu pazarı önermem. Gol, MS, KG ve İY olasılıklarını sorabilirsin." },
 ];
 
 // ---- Yazım hatası adayları: [doğru kelime, test kalıbı, kategori, ölçüt] ----
