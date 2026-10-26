@@ -29,16 +29,23 @@ jobs:
       - uses: actions/setup-python@v5
         with: { python-version: "3.12" }
       - run: pip install -q numpy lightgbm || pip install -q numpy
+      - name: 🗃️ Yayın modelinin ağaçları ve yeniden oynatma arşivden (sürüm uyuşmazsa model doğrusal yedeğe düşer)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 lab/adim.py arsiv-indir --onem bilgi -- python3 lab/arsiv.py indir data/at/gbm_uretim.txt data/at/replay_kosular.json
       - name: Aynayı sığ klonla (yalnız okunur, depoya yazılmaz)
         run: python3 lab/adim.py ayna -- git clone -q --depth 1 https://github.com/cenkozgur/tjk-data _tjk-data
       - name: 🐎 Gün içi döngü (15 dk arayla tahmin + aynı akşam puanlama + 🎟️ OXXai at kuponları)
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           for i in $(seq 1 "$TUR"); do
             t0=$(date +%s)
             GUNC="--guncelleme-yok"
             if [ "$i" -gt 1 ]; then
               GUNC=""   # canli.py aynayı kendisi günceller (yalnız github.com/cenkozgur/tjk-data)
-              python3 lab/gonder.py --tazele data/at/model.json data/at/gbm_uretim.txt data/at/tahmin data/at/jokeyler.json data/at/kariyer.json
+              python3 lab/gonder.py --tazele data/at/model.json data/at/tahmin data/at/jokeyler.json data/at/kariyer.json
+              python3 lab/arsiv.py indir data/at/gbm_uretim.txt   # model.json ile aynı sürüm değilse yazılmaz
             fi
             python3 lab/adim.py at-canli -- timeout 420 python lab/at/canli.py $GUNC
             python3 lab/adim.py at-kupon -- timeout 60 python scripts/oxx_kupon.py --at

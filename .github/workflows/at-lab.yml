@@ -27,6 +27,10 @@ jobs:
         with: { python-version: "3.12" }
       # lightgbm: modelin ağaç katmanı (kurulamazsa model doğrusal yedeğe düşer)
       - run: pip install -q numpy lightgbm || pip install -q numpy
+      - name: 🗃️ Model ağaçları, sınama izi, yeniden oynatma arşivden (yoksa gece.py yeniden üretir / doğrusal yedek)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 lab/adim.py arsiv-indir --onem bilgi -- python3 lab/arsiv.py indir data/at/gbm_uretim.txt data/at/sinama_izi.json data/at/replay_kosular.json
       - name: Aynayı sığ klonla (yalnız okunur, depoya yazılmaz)
         run: python3 lab/adim.py ayna -- git clone -q --depth 1 https://github.com/cenkozgur/tjk-data _tjk-data
       - name: Gece boru hattı (eğitim, kapı, kilit, karne, rapor)
@@ -37,6 +41,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: python3 lab/adim.py arastirmaci --onem bilgi -- python lab/at/arastirma.py
+      - name: 🗃️ Arşive yükle (yalnız değiştiyse; model.json ile aynı çalışmada, commit'ten önce)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 lab/adim.py arsiv-yukle -- python3 lab/arsiv.py yukle --en-az-saat 0 data/at/gbm_uretim.txt data/at/sinama_izi.json data/at/replay_kosular.json
       - name: Yalnız türetilmiş çıktıları kaydet
         run: |
           python3 lab/gonder.py -m "At lab: gece eğitimi, kilit ve karne [skip ci]" data/at lab/at/RAPOR.md data/saglik

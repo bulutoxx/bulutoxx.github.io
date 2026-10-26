@@ -27,6 +27,10 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: "20" }
       - run: pip install numpy==2.1.3
+      - name: 🗃️ Önbellekleri arşivden al (OXXai öğrenme döngüsünün basket ve at sanal oynatması için)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 lab/adim.py arsiv-indir --onem bilgi -- python3 lab/arsiv.py indir data/bk_games.json data/at/replay_kosular.json
       - name: 🗄️ Derin arşiv (football-data bitmiş sezonlar; bir kez indirilir, sonra yalnız eksik sezon)
         env: { DERIN_SEZON: "5", DERIN_BUDGET: "600" }
         run: python3 lab/adim.py derin-arsiv --onem bilgi -- python lab/derin.py
