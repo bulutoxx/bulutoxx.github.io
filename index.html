@@ -5660,7 +5660,7 @@ if((location.hash||"")==="#sonuclar") setTimeout(()=>$("navRes").click(),200);
 // =====================================================================
 // BULUTOXX v35: Otomatik sürüm güncelleme — yeni sürüm yayınlanınca uygulama kendini yeniler
 // =====================================================================
-const APP_V="2026-10-26.97";
+const APP_V="2026-10-26.98";
 (function autoUpdate(){
   let shown=false;
   async function check(auto){
@@ -8838,13 +8838,29 @@ small>.tvar.d:first-child{margin-left:0;margin-right:2px}
     return n+"'"+(n===0?"ı":n%10?L[n%10]:n%100?T[Math.floor(n/10)%10]:n%1000?"ü":"i"); }
   const accP=p=>"%"+acc(Math.round((p||0)*100));
   // ---------- depo ----------
-  function saveL(){ try{ localStorage.setItem(LSK,JSON.stringify(KX.L)); localStorage.setItem(LSA,KX.aktif||""); }catch(e){} }
+  // İki sekme güvenliği: yazmadan önce diskteki listeyle id'ye göre birleştir (yeni olan kazanır); bu sekmede silinenler geri gelmez
+  const DEL=(()=>{ try{ return new Set(JSON.parse(localStorage.getItem("bx-kuponlar-sil")||"[]")); }catch(e){ return new Set(); } })();
+  const ts=c=>c.upd||c.bitti||c.arsivAt||c.olusturma||0;
+  function saveL(){ try{
+      let D=null; try{ D=JSON.parse(localStorage.getItem(LSK)||"null"); }catch(e){}
+      try{ const ds=JSON.parse(localStorage.getItem("bx-kuponlar-sil")||"[]"); if(Array.isArray(ds)) ds.forEach(x=>DEL.add(x)); }catch(e){}
+      if(Array.isArray(D)){ const M=new Map(KX.L.map(c=>[c.id,c]));
+        for(const d of D){ if(!d||!d.id||!Array.isArray(d.items)||DEL.has(d.id)) continue; const m=M.get(d.id);
+          if(!m){ d.items=d.items.filter(x=>x&&x.h&&x.a); KX.L.push(d); } else if(ts(d)>ts(m)){ Object.assign(m,d); m.items=d.items.filter(x=>x&&x.h&&x.a); } } }
+      KX.L=KX.L.filter(c=>!DEL.has(c.id));
+      // sınır: arşiv/biten kuponlardan en eski olanlar 300'ü aşarsa düşer (açık kuponlara dokunulmaz)
+      const P=KX.L.filter(c=>c.durum!=="acik").sort((a,b)=>ts(b)-ts(a)); if(P.length>300){ const drop=new Set(P.slice(300).map(c=>c.id)); KX.L=KX.L.filter(c=>!drop.has(c.id)); }
+      localStorage.setItem(LSK,JSON.stringify(KX.L)); localStorage.setItem(LSA,KX.aktif||"");
+      localStorage.setItem("bx-kuponlar-sil",JSON.stringify([...DEL].slice(-500)));
+    }catch(e){} }
+  function kxDel(id){ DEL.add(id); KX.L=KX.L.filter(z=>z.id!==id); }
   function nextNo(){ let mx=0; for(const c of KX.L){ const m=/^Kuponum (\d+)$/.exec(c.ad||""); if(m) mx=Math.max(mx,+m[1]); } return Math.max(mx,0)+1; }
   function kxNew(ad,items){ const c={id:uid(),ad:ad||("Kuponum "+nextNo()),items:items||[],olusturma:NOW(),durum:"acik"}; KX.L.push(c); return c; }
-  function load(){ let L=null; try{ L=JSON.parse(localStorage.getItem(LSK)||"null"); }catch(e){}
+  function load(){ let L=null, raw=null; try{ raw=localStorage.getItem(LSK); L=JSON.parse(raw||"null"); }catch(e){}
+    if(raw&&!Array.isArray(L)){ try{ localStorage.setItem("bx-kuponlar-bozuk",raw); }catch(e){} }   // bozuk kayıt silinmeden önce yedeklenir
     if(!Array.isArray(L)){ let old=[]; try{ old=JSON.parse(localStorage.getItem("bx-coupon")||"[]"); }catch(e){} if(!Array.isArray(old)) old=[];
       KX.L=[]; const c=kxNew("Kuponum 1",old.filter(x=>x&&x.h&&x.a)); c.tasindi=old.length?1:0; KX.aktif=c.id; saveL(); }
-    else { KX.L=L.filter(c=>c&&c.id&&Array.isArray(c.items)); try{ KX.aktif=localStorage.getItem(LSA)||null; }catch(e){} } }
+    else { KX.L=L.filter(c=>c&&c.id&&Array.isArray(c.items)&&!DEL.has(c.id)); KX.L.forEach(c=>{ c.items=c.items.filter(x=>x&&x.h&&x.a); }); try{ KX.aktif=localStorage.getItem(LSA)||null; }catch(e){} } }
   function act(){ let c=null; for(const x of KX.L) if(x.id===KX.aktif){ c=x; break; }
     if(!c||c.durum!=="acik"){ c=KX.L.filter(x=>x.durum==="acik").sort((a,b)=>(b.upd||b.olusturma)-(a.upd||a.olusturma))[0]||kxNew(); KX.aktif=c.id; saveL(); }
     return c; }
@@ -8854,7 +8870,7 @@ small>.tvar.d:first-child{margin-left:0;margin-right:2px}
   load(); act();
   Object.defineProperty(CP,"items",{configurable:true,enumerable:true,get(){ return act().items; },set(v){ act().items=Array.isArray(v)?v:[]; }});
   window.kxAct=act; window.kxSave=saveL;
-  function kxSetActive(id){ const c=byId(id); if(!c||c.durum!=="acik") return; KX.aktif=id; saveL(); try{ paintCoupon(); }catch(e){} }
+  function kxSetActive(id){ const c=byId(id); if(!c||c.durum!=="acik") return; KX.aktif=id; saveL(); try{ localStorage.setItem("bx-coupon",JSON.stringify(c.items)); }catch(e){} try{ paintCoupon(); }catch(e){} }
   // ---------- hesaplar ----------
   const kOdd=c=>c.items.reduce((a,x)=>a*(+x.odd||1),1), kP=c=>c.items.reduce((a,x)=>a*(x.p||.5),1);
   const done=i=>i.ok!=null||!!i.need;
@@ -8913,7 +8929,7 @@ small>.tvar.d:first-child{margin-left:0;margin-right:2px}
   // ---------- ekle / çıkar ----------
   const inAct=(h,a,k)=>CP.items.find(c=>(k&&c.k===k)||(tmEq(c.h,h)&&tmEq(c.a,a)));
   function kxAdd(O,opt,quiet){ if(!O||!opt) return false; const mm=O.mm, ex=O.ex||{}, t=tms(mm.dt), c=act();
-    if(!ex.live&&t&&t<NOW()-110*60e3){ toast("Bu maç bitmiş; kupona eklenemez"); return false; }
+    if(!ex.live&&t&&t<NOW()-5*60e3){ toast(t<NOW()-110*60e3?"Bu maç bitmiş; kupona eklenemez":"Bu maç başladı; maç öncesi tahmini kupona eklenemez"); return false; }
     const I=CP.items, k=cpKey(mm);
     const dup=I.findIndex(x=>x.k!==k&&tmEq(x.h,mm.h)&&tmEq(x.a,mm.a)); let repl=dup>=0; if(dup>=0) I.splice(dup,1);
     const had=I.find(x=>x.k===k); if(had&&had.mk!==opt.k) repl=true;
@@ -8995,7 +9011,7 @@ small>.tvar.d:first-child{margin-left:0;margin-right:2px}
     document.body.appendChild(s);
     s.addEventListener("click",e=>{ if(e.target===s){ closePick(); return; } const b=e.target.closest("[data-pk]"); if(!b) return; e.stopPropagation(); const id=b.dataset.pk; closePick(); if(id==="x") return;
       const c=id==="new"?kxNew():byId(id); if(!c) return; kxSetActive(c.id); saveL();
-      if(O&&!switchOnly){ if(has(c)) toast(`Bu maç zaten ${esc(c.ad)} içinde`); else kxAdd(O,O.rec); }
+      if(O&&!switchOnly){ if(has(c)) toast(`Bu maç zaten ${c.ad} içinde`); else kxAdd(O,O.rec); }
       else if(O&&switchOnly){ toast(`Aktif kupon: ${c.ad}`); }
       kxPaint(); kxRefresh(); });
     const f=s.querySelector("[data-pk]"); if(f) try{ f.focus({preventScroll:true}); }catch(_){} }
@@ -9114,7 +9130,7 @@ small>.tvar.d:first-child{margin-left:0;margin-right:2px}
     if(a==="del"){ UI.cf="del"; kxRenderCp(); const cf=document.querySelector("#cpBox .kx-cf"); if(cf) cf.scrollIntoView({block:"nearest",behavior:"smooth"}); return; }
     if(a==="cfno"){ UI.cf=null; kxRenderCp(); return; }
     if(a==="cfclr"){ UI.cf=null; c.items.length=0; cpSave(); toast(`${c.ad} temizlendi`); renderKupon(); return; }
-    if(a==="cfdel"){ UI.cf=null; const ad=c.ad; KX.L=KX.L.filter(z=>z.id!==c.id); KX.aktif=null; act(); saveL(); try{ paintCoupon(); }catch(_){} toast(`${ad} silindi`); renderKupon(); return; }
+    if(a==="cfdel"){ UI.cf=null; const ad=c.ad; kxDel(c.id); KX.aktif=null; act(); saveL(); try{ paintCoupon(); }catch(_){} toast(`${ad} silindi`); renderKupon(); return; }
     // Eski kuponlarım
     if(a==="oo"){ UI.od=UI.od===b.dataset.c?null:b.dataset.c; UI.ocf=null; renderOld(); return; }
     const oc=byId(b.dataset.c);
@@ -9123,12 +9139,12 @@ small>.tvar.d:first-child{margin-left:0;margin-right:2px}
     if(a==="osh"&&oc){ openShare({title:"Kuponu paylaş",text:shareText(oc),url:appLink()}); return; }
     if(a==="odel"&&oc){ UI.ocf=oc.id; renderOld(); return; }
     if(a==="ocfno"){ UI.ocf=null; renderOld(); return; }
-    if(a==="ocfdel"&&oc){ KX.L=KX.L.filter(z=>z.id!==oc.id); UI.ocf=null; UI.od=null; saveL(); toast(`${oc.ad} silindi`); renderOld(); applyTab("eski"); return; }
+    if(a==="ocfdel"&&oc){ kxDel(oc.id); UI.ocf=null; UI.od=null; saveL(); toast(`${oc.ad} silindi`); renderOld(); applyTab("eski"); return; }
     if(a==="oman"&&oc){ const x=oc.items[i]; if(!x) return; x.ok=b.dataset.v==="1"; x.man=1; saveL(); renderOld(); return; }
   },true);
   // ---------- Eski kuponlarım + istatistik ----------
   function kxStats(){ const P=past().filter(c=>c.items.length), D=P.filter(c=>{ const s=kxSt(c); return s==="g"||s==="x"; }), W=D.filter(c=>kxSt(c)==="g");
-    const items=KX.L.flatMap(c=>c.items).filter(i=>i.ok!=null), ih=items.filter(i=>i.ok).length, ip=items.filter(i=>i.p);
+    const _u=new Map(); KX.L.flatMap(c=>c.items).filter(i=>i&&i.ok!=null).forEach(i=>_u.set((i.k||i.h+"|"+i.a)+"|"+i.mk,i)); const items=[..._u.values()], ih=items.filter(i=>i.ok).length, ip=items.filter(i=>i.p);
     const seq=D.slice().sort((a,b)=>(a.bitti||a.arsivAt||0)-(b.bitti||b.arsivAt||0)).map(c=>kxSt(c)==="g");
     let cur=0; for(let i=seq.length-1;i>=0&&seq[i]===seq[seq.length-1];i--) cur++;
     let best=0,run=0; for(const s of seq){ run=s?run+1:0; best=Math.max(best,run); }
@@ -9161,9 +9177,14 @@ small>.tvar.d:first-child{margin-left:0;margin-right:2px}
   const _rk=renderKupon; renderKupon=function(){ shell(); const r=_rk.apply(this,arguments); try{ kxRenderCp(); }catch(e){ console.error(e); } try{ kxGrade(); }catch(e){} return r; };
   const _pc=paintCoupon; paintCoupon=function(){ const r=_pc.apply(this,arguments); try{ hdrPaint(); kxPaintLite(); }catch(e){} return r; };
   let pq=0; function kxPaintLite(){ if(pq) return; pq=1; requestAnimationFrame(()=>{ pq=0; kxPaint(); }); }
-  const _cs=cpSave; cpSave=function(){ try{ const c=act(); c.upd=NOW(); saveL(); }catch(e){} return _cs.apply(this,arguments); };
-  function kxRefresh(){ try{ hdrPaint(); kxPaint(); const v=$("v-kupon"); if(v&&!v.hidden){ if(KP.tab==="eski") renderOld(); else kxRenderCp(); } }catch(e){} }
+  const _cs=cpSave; cpSave=function(){ try{ const c=act(); c.upd=NOW(); saveL(); }catch(e){} const r=_cs.apply(this,arguments); try{ settle(); }catch(e){} return r; };
+  function kxRefresh(){ try{ hdrPaint(); kxPaint(); if(UI.edit) return; const v=$("v-kupon"); if(v&&!v.hidden){ if(KP.tab==="eski") renderOld(); else kxRenderCp(); } }catch(e){} }
   window.kxRefresh=kxRefresh;
+  window.addEventListener("storage",e=>{ if(e.key===LSK||e.key===LSA||e.key==="bx-kuponlar-sil"){ try{ if(e.key==="bx-kuponlar-sil"){ JSON.parse(e.newValue||"[]").forEach(x=>DEL.add(x)); } load(); kxRefresh(); }catch(_){} } });
+  try{ const _ct=cpToggle; cpToggle=function(m,mk){ try{ const k=cpKey(m), I=CP.items, had=I.find(x=>x.k===k&&x.mk===mk);
+        if(!had){ const t=tms(m.dt); if(!m.live&&t&&t<NOW()-5*60e3){ toast("Bu maç başladı; maç öncesi tahmini kupona eklenemez"); return; }
+          const d=I.findIndex(x=>x.k!==k&&tmEq(x.h,m.h)&&tmEq(x.a,m.a)); if(d>=0) I.splice(d,1); } }catch(e){}
+      return _ct.apply(this,arguments); }; }catch(e){}
   // ---------- adlar: Menü, sekme, Power Now, Kayıtlı ----------
   try{ TAB_NAMES.kupon="Kuponum"; }catch(e){}
   try{ for(const g of MENU_PLAN) for(const it of g[1]) if(it[0]==="#moreCp"){ it[1]="Kuponum"; it[2]="Kuponların, sonuçları ve eski kuponların"; } menuOrganize(); }catch(e){}
