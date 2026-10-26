@@ -5661,7 +5661,7 @@ if((location.hash||"")==="#sonuclar") setTimeout(()=>$("navRes").click(),200);
 // =====================================================================
 // OXXai v35: Otomatik sürüm güncelleme — yeni sürüm yayınlanınca uygulama kendini yeniler
 // =====================================================================
-const APP_V="2026-10-27.114";
+const APP_V="2026-10-27.115";
 (function autoUpdate(){
   let shown=false;
   async function check(auto){
@@ -10059,6 +10059,8 @@ small>.tvar.d:first-child{margin-left:0;margin-right:2px}
     const w=WIN.find(x=>x[0]===NX.win); return [now,now+(w?w[2]:3*3600e3)]; }
   function list(){ const q=fold(IDLV&&IDLV.q||""), now=Date.now(); let [a,b]=range(); if(q){ a=now; b=now+7*864e5; }
     let L=[]; try{ L=Pick.list().filter(m=>!m.live&&!m.started&&m.dt&&m.dt.getTime()>=a&&m.dt.getTime()<b); }catch(e){}
+    NX.auto=false;
+    if(!q&&NX.win==="bug"&&!L.some(m=>!m.live&&!m.started)){ try{ L=Pick.list().filter(m=>!m.live&&!m.started&&m.dt&&m.dt.getTime()>=now&&m.dt.getTime()<now+864e5); NX.auto=L.length>0; }catch(e){} }
     const lv=(typeof IDL!=="undefined"&&IDL.live&&IDL.live[1])||[]; L=L.filter(m=>!lv.some(x=>tmEq(x.h,m.h)&&tmEq(x.a,m.a)));
     L=L.map(m=>({m,lg:lgN(m)}));
     if(NX.lg) L=L.filter(x=>x.lg===NX.lg);
@@ -10070,10 +10072,10 @@ small>.tvar.d:first-child{margin-left:0;margin-right:2px}
         const all=(()=>{ const s=NX.lg; NX.lg=""; const r=[...new Set(list().map(x=>x.lg))]; NX.lg=s; return r; })();
     const cnt={}; (()=>{ const s=NX.lg; NX.lg=""; list().forEach(x=>cnt[x.lg]=(cnt[x.lg]||0)+1); NX.lg=s; })();
     const topL=all.sort((x,y)=>(cnt[y]||0)-(cnt[x]||0)).slice(0,14);
-    let h=`<div class="nx-h"><b>Sıradaki maçlar</b><small>${q?`"${esc(q)}" için 7 gün`:`${L.length} maç`}</small></div>`;
+    let h=`<div class="nx-h"><b>Sıradaki maçlar</b><small>${q?`"${esc(q)}" için 7 gün`:`${L.length} maç`}</small></div>`+(NX.auto&&!q?`<p class="nx-auto">Bugün başlamamış maç kalmadı · sonraki 24 saatin maçları gösteriliyor</p>`:"");
     try{ const D=lastFull(); if(D){ const g=D.guclu&&D.guclu.n?D.guclu:null, y=D.d===istDay(new Date(Date.now()-864e5));
         h+=`<button type="button" class="dayban nx-ban" data-nxr="${esc(D.d)}"><span>${y?"Dün":esc(ist(new Date(D.d+"T12:00:00+03:00"),{day:"numeric",month:"long"}))}</span><b>${g?`güçlü önerilerin %${Math.round(g.hit*100)}'i tuttu`:`önerilerin %${Math.round(D.hit*100)}'i tuttu`}</b><small>${g?`${Math.round(g.hit*g.n)}/${g.n}`:""} ›</small></button>`; } }catch(e){}
-    try{ const G=L.filter(x=>goldOf(x.m)); if(G.length&&!q) h+=`<div class="nx-gold"><span class="gold-seal"><img src="icons/oxxai-mark.webp" alt="">ALTIN</span><span><b>${G.length} altın tahmin</b> ${esc(NX.win==="yar"?"yarın":"bu aralıkta")} · ${G.map(x=>esc(x.m.h)).slice(0,3).join(", ")}${G.length>3?"…":""}</span></div>`; }catch(e){}
+    try{ const G=L.filter(x=>goldOf(x.m)); if(G.length&&!q) h+=`<div class="nx-gold"><span class="gold-seal"><img src="icons/oxxai-mark.webp" alt="">ALTIN</span><span><b>${G.length} altın tahmin</b> ${esc(NX.win==="yar"?"yarın":NX.auto?"sonraki 24 saatte":"bu aralıkta")} · ${G.map(x=>esc(x.m.h)).slice(0,3).join(", ")}${G.length>3?"…":""}</span></div>`; }catch(e){}
     if(!q) h+=`<div class="nx-ch" role="group" aria-label="Zaman">${WIN.map(([k,l])=>`<button type="button" data-nxw="${k}" aria-pressed="${NX.win===k}">${l}</button>`).join("")}</div>`;
     if(topL.length>1) h+=`<div class="nx-ch" role="group" aria-label="Lig"><button type="button" data-nxl="" aria-pressed="${!NX.lg}">Tüm ligler</button>${(NX.lg&&!topL.includes(NX.lg)?[NX.lg].concat(topL):topL).map(l=>`<button type="button" data-nxl="${esc(l)}" aria-pressed="${NX.lg===l}">${esc(l)} <small>${cnt[l]||0}</small></button>`).join("")}</div>`;
     if(!L.length) return h+`<p class="nx-e">${q?"Aramana uyan başlamamış maç yok.":"Bu aralıkta başlamamış maç yok. Daha geniş bir zaman seç."}</p>`;
@@ -12328,5 +12330,64 @@ nav.tabs .pw-btn .pw-lb{background:linear-gradient(180deg,#FFE9A3,#F7CD55 45%,#C
 .a2-hd h1 .a2-emb{display:inline-block;width:56px;height:56px;vertical-align:-14px;margin-right:10px;filter:drop-shadow(0 4px 12px rgba(212,175,55,.4))}
 @media (max-width:380px){.a2-hd h1 .a2-emb{width:46px;height:46px;margin-right:8px}}
 </style>
+<style id="canli-gece-v115">
+#nxBox .nx-auto{margin:2px 2px 10px;font-size:13px;color:var(--ink3,#9aa4b8)}
+#lgPreBtn[hidden],#lgPrePan[hidden]{display:none!important}
+</style>
+<script id="canli-gece-v115">
+// v115 · Gece yarısı ve "canlı maç yok" durumları:
+// 1) Gün değişince (İstanbul saati) uygulama açık olsa da Bülten/Canlı yeni güne geçer, veri tazelenir.
+// 2) Canlı altın kupon yoksa (canlı maç yok / canlı bülten alınamadı) yerine sonraki 24 saatin altın kuponu gösterilir.
+(function(){
+  const TH=.75, SOLO=.85, MINP=.78; let open=false;
+  const of2=o=>(+o).toLocaleString("tr-TR",{minimumFractionDigits:2,maximumFractionDigits:2});
+  function cands(){ const now=Date.now(), out=[];
+    for(const m of Pick.list()){ if(m.live||m.started||!m.dt) continue; const t=m.dt.getTime(); if(t<now+5*60e3||t>now+864e5) continue;
+      const f=m.src==="fx"?FIXTURES.find(x=>x.lg===m.lg&&x.h===m.h&&x.a===m.a):fxOdds(m); if(!f||!f.odds) continue;
+      let p=null; try{ p=quickPred(m,f); }catch(e){} if(!p||!p.pm) continue;
+      let R=null; try{ R=recOf({H:p.pm[0],D:p.pm[1],A:p.pm[2],o25:p.o25m},f); }catch(e){}
+      if(R&&R.o&&R.o>=1.05&&R.cp>=MINP) out.push({m,R,f}); }
+    return out.sort((a,b)=>b.R.cp-a.R.cp).slice(0,12); }
+  function build(){ const c=cands(); let best=null;
+    (function rec(i,sel,p,o){ if(sel.length>=2&&p>=TH&&(!best||o>best.o+1e-9)) best={sel:sel.slice(),p,o};
+      if(sel.length>=4) return; for(let j=i;j<c.length;j++){ const np=p*c[j].R.cp; if(np<TH) continue; sel.push(c[j]); rec(j+1,sel,np,o*c[j].R.o); sel.pop(); } })(0,[],1,1);
+    if(!best){ const s=c.find(x=>x.R.cp>=SOLO); if(s) best={sel:[s],p:s.R.cp,o:s.R.o}; }
+    return best; }
+  function paint(){ const lg=$("lgBtn"); if(!lg) return;
+    let b=$("lgPreBtn"), pan=$("lgPrePan");
+    if(!b){ b=document.createElement("button"); b.type="button"; b.id="lgPreBtn"; b.className="lg-btn"; b.onclick=()=>{ open=!open; try{ buzz(8); Sound.tap(); }catch(e){} paint(); }; }
+    if(!pan){ pan=document.createElement("div"); pan.id="lgPrePan"; pan.className="lg-pan"; pan.hidden=true; }
+    const lp=$("lgPan")||lg; if(lp.nextElementSibling!==b) lp.after(b); if(b.nextElementSibling!==pan) b.after(pan);
+    const liveOn=!lg.classList.contains("off");
+    if(liveOn){ b.hidden=true; pan.hidden=true; return; }
+    const ok=typeof IDL!=="undefined"&&IDL.ok&&IDL.ok[1], failed=typeof IDL!=="undefined"&&IDL.failed, nLive=((typeof IDL!=="undefined"&&IDL.live&&IDL.live[1])||[]).length;
+    const why=failed&&!ok?"Canlı bülten şu an alınamıyor · birazdan yeniden denenecek":ok&&!nLive?"Şu an oynanan canlı maç yok":ok?"Taranıyor · şu an yeterince güvenli canlı seçim yok":"Canlı bülten bekleniyor";
+    lg.querySelector(".lg-t small")&&(lg.querySelector(".lg-t small").textContent=why);
+    const K=build(); b.hidden=false;
+    if(!K){ b.classList.add("off"); pan.hidden=true; b.innerHTML=`<span class="lg-ic">🥇</span><span class="lg-t"><b>Sıradaki altın kupon</b><small>Sonraki 24 saatte yeterince güvenli kombinasyon yok</small></span>`; return; }
+    b.classList.remove("off"); b.setAttribute("aria-expanded",String(open));
+    const t0=K.sel.map(x=>x.m.dt).sort((a,c)=>a-c)[0];
+    b.innerHTML=`<span class="lg-ic">🥇</span><span class="lg-t"><b>Sıradaki altın kupon · ${K.sel.length} maç</b><small>Sonraki 24 saat · ilk maç ${esc((istDay(t0)===istDay(new Date())?"bugün ":"yarın ")+ist(t0,{hour:"2-digit",minute:"2-digit"}))} · toplam oran ${of2(K.o)} · ${open?"kapat":"dokun, gör"}</small></span><span class="lg-p">%${pc9(K.p)}</span>`;
+    pan.hidden=!open; if(!open) return;
+    pan.innerHTML=K.sel.map(x=>{ const m=x.m; return `<div class="pw-r"${omA(m)}><div class="pw-m"><b>${esc(m.h)} - ${esc(m.a)}</b><small>${goldOf(m)?"🥇 ":""}${esc(istDay(m.dt)===istDay(new Date())?"Bugün":"Yarın")} ${esc(ist(m.dt,{hour:"2-digit",minute:"2-digit"}))} · ${esc((x.f&&(x.f.cn||x.f.ln))||m.lg||"")}</small></div><div class="pw-s"><span>${esc(x.R.n||x.R.label||"")}</span><b>%${pc9(x.R.cp)}</b><small>oran ${of2(x.R.o)}</small></div></div>`; }).join("")
+      +`<button type="button" class="lg-add" id="lgPreAdd">+ Altın kuponu listeye ekle</button><p class="lg-n">Canlı maç başlayınca üstte canlı altın kupon yeniden taranır. Birlikte tutma olasılığı %${Math.round(TH*100)}+ olsa da kesinlik değildir · 18+</p>`;
+    $("lgPreAdd").onclick=()=>{ try{ buzz([10,30,10]); }catch(e){} let n=0; for(const x of K.sel){ if(!CP.items.some(c=>c.k===cpKey(x.m)&&c.mk===x.R.k)){ cpToggle(x.m,x.R.k,+x.R.o,x.R.cp); n++; } } try{ paintCoupon(); }catch(e){} try{ toast(n?`🥇 ${n} seçim listeye eklendi`:"Bu seçimler zaten listende"); }catch(e){} };
+  }
+  try{ const _lp=window.lgPaint; if(_lp){ window.lgPaint=function(){ const r=_lp.apply(this,arguments); try{ paint(); }catch(e){} return r; }; } }catch(e){}
+  try{ const _ira=idlRenderAll; idlRenderAll=function(){ const r=_ira.apply(this,arguments); try{ paint(); }catch(e){} return r; }; }catch(e){}
+  // gün değişimi
+  let DAY=istDay(new Date());
+  function rollover(){ const d=istDay(new Date()); if(d===DAY) return; const old=DAY; DAY=d;
+    try{ if(BT.day===old) BT.day=d; }catch(e){}
+    try{ if(typeof RS!=="undefined"&&RS.day===old) RS.day=d; }catch(e){}
+    try{ renderBulten(); }catch(e){} try{ idlRenderAll(); }catch(e){} try{ paint(); }catch(e){}
+    try{ loadData(true); }catch(e){} }
+  setInterval(()=>{ try{ rollover(); }catch(e){} },30e3);
+  document.addEventListener("visibilitychange",()=>{ if(!document.hidden) try{ rollover(); const v=$("v-canli"); if(v&&!v.hidden){ idlRenderAll(); } }catch(e){} });
+  window.addEventListener("focus",()=>{ try{ rollover(); }catch(e){} });
+  setInterval(()=>{ const v=$("v-canli"); if(v&&!v.hidden&&!document.hidden) try{ paint(); }catch(e){} },60e3);
+  setTimeout(()=>{ try{ paint(); }catch(e){} },1500);
+})();
+</script>
 </body>
 </html>
