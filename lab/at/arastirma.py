@@ -1,4 +1,4 @@
-# BULUTOXX at yarışı laboratuvarı — araştırmacı.
+# OXXai at yarışı laboratuvarı — araştırmacı.
 # GitHub arama API'si ile yeni açık TJK veri kaynakları ve at yarışı modelleme depoları arar; adayları
 # data/at/arastirma.json'a yazar. HİÇBİR kaynağa otomatik bağlanmaz (bağlantı ancak lisans/erişim uygun ve
 # sınamada katkısı ölçülürse elle yapılır). tjk.org'a istek atmaz. GITHUB_TOKEN varsa (Actions) kullanır.

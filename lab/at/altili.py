@@ -1,4 +1,4 @@
-# BULUTOXX at yarışı laboratuvarı — 🎯 6'LI GANYAN modülü.
+# OXXai at yarışı laboratuvarı — 🎯 6'LI GANYAN modülü.
 # Görev: lab/at/ALTILI_GOREV.md. Hobi amaçlı: yalnız olasılık ve KOMBİNASYON SAYISI; para tutarı, bahis bağlantısı yok.
 #
 # Kurallar (araştırma): 6'lı ganyan, programda "ganyan başlangıcı" işaretli koşudan (aynada isGanyanStart) başlayan

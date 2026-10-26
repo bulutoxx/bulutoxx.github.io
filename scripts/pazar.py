@@ -1,4 +1,4 @@
-"""🧮 BULUTOXX pazar motoru (v1, 2026-10-26) — tüm pazarlar TEK skor ızgarasından.
+"""🧮 OXXai pazar motoru (v1, 2026-10-26) — tüm pazarlar TEK skor ızgarasından.
 
 Uygulamanın sunduğu yol (index.html dist() ile aynı): oranlı maçta power marj ayırma → gol beklentisi tablosu (fitMarket) →
 gol ölçeği g → ilk yarı / ikinci yarı ayrı Dixon-Coles (İY payı = lig h1, 2Y rho×0,6) → maç sonu = iki yarının birleşimi.

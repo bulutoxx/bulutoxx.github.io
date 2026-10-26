@@ -1,4 +1,4 @@
-# BULUTOXX 🐎 At Yarışı Laboratuvarı — Rapor
+# OXXai 🐎 At Yarışı Laboratuvarı — Rapor
 
 _Otomatik üretildi: 2026-10-26T19:05:29+00:00 · model sürümü `20261026T1431` · hobi amaçlıdır, garanti değildir · 18+_
 
@@ -412,4 +412,4 @@ Yorum: sabah tahmininde en çok taşıyan bilgiler reytingler (at/jokey/antrenö
 
 `.github/workflows/at-lab.yml` her gün 05:23 ve 12:23 TSİ'de, ayrıca `lab/at/**` değişince veya elle çalışır (main dalı). Çıktılar yalnız `data/at/` ve `lab/at/RAPOR.md`'ye yazılır. Gece akışı 2 çekirdekte ≈5–6 dakika sürer (ablasyon haftada bir; ölçüldü: ablasyonlu tam akış 347 sn).
 
-_Kaynak atfı: TJK verilerinin herkese açık aynası https://github.com/cenkozgur/tjk-data. Model ve olasılıklar BULUTOXX laboratuvarınındır._
+_Kaynak atfı: TJK verilerinin herkese açık aynası https://github.com/cenkozgur/tjk-data. Model ve olasılıklar OXXai laboratuvarınındır._

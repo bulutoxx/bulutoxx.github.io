@@ -1,6 +1,6 @@
-name: BULUTOXX at yarisi canli (gun ici)
+name: OXXai at yarisi canli (gun ici)
 # Yarış günü 11:00–00:30 TSİ arası her 30 dakikada: güncel ganyan oranlarıyla olasılıkları tazeler, aynı akşam
-# sonuçları puanlar. Yalnız data/at/canli/, data/at/oran_izi/, data/at/karne.json, 6'lı (data/at/altili/, altili_karne.json) ve OXX at kuponlarını
+# sonuçları puanlar. Yalnız data/at/canli/, data/at/oran_izi/, data/at/karne.json, 6'lı (data/at/altili/, altili_karne.json) ve OXXai at kuponlarını
 # (data/oxx_kupon/at/) yazar; futbol sistemine, index.html'e dokunmaz.
 # Veri: github.com/cenkozgur/tjk-data aynası sığ klonlanır (_tjk-data, gitignore'da); tjk.org'a istek YOK.
 # Yeniden eğitim yok: gece akışının (at-lab.yml) kaydettiği yayın modeli kullanılır.
@@ -28,8 +28,8 @@ jobs:
         env:
           AT_KAYNAK: ./_tjk-data
         run: timeout 420 python lab/at/canli.py --guncelleme-yok || echo "canli.py başarısız; önceki çıktılar korunuyor"
-      - name: 🎟️ OXX at kuponları (koşudan önce kilit + puan; data/oxx_kupon/at)
-        run: timeout 60 python scripts/oxx_kupon.py --at || echo "OXX at kuponu bu sefer atlandı"
+      - name: 🎟️ OXXai at kuponları (koşudan önce kilit + puan; data/oxx_kupon/at)
+        run: timeout 60 python scripts/oxx_kupon.py --at || echo "OXXai at kuponu bu sefer atlandı"
       - name: Yalnız değişen türetilmiş çıktıları kaydet
         run: |
           git config user.name "bulutoxx-bot"; git config user.email "bulutoxx-bot@users.noreply.github.com"

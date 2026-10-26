@@ -1,4 +1,4 @@
-# BULUTOXX at yarışı laboratuvarı — 🏇 jokey/ahır deney masası (elle çalıştırılır; gece akışının parçası değil).
+# OXXai at yarışı laboratuvarı — 🏇 jokey/ahır deney masası (elle çalıştırılır; gece akışının parçası değil).
 # v4'ün iki katlı kapısı (lab/at/deney4.py: Masa, gecer, bootstrap) aynen kullanılır:
 #   katların ORTALAMA yalnız-model log-loss'u düşmeli (> 0,0001), ortalama ilk-seçim isabeti düşmemeli, en güncel kat (B)
 #   kötüleşmemeli, harman 0,001'den fazla bozulmamalı. Her adımda önceki kabule göre koşu başına eşleştirilmiş ΔLL ve

@@ -1,4 +1,4 @@
-"""BULUTOXX otomatik laboratuvar (haftalık, GitHub Actions).
+"""OXXai otomatik laboratuvar (haftalık, GitHub Actions).
 Açık kaynak penaltyblog (MIT) modellerini kendi motorumuzla aynı veride, hafta hafta ileriye dönük (oynanmamış gibi) yarıştırır.
 Ölçüt: maç sonucu log-loss. Karşılaştırılanlar: piyasa (oran, marj 'power' yöntemiyle ayrılır), bizim model, penaltyblog Dixon-Coles,
 ve bunların piyasa ile karışımları. Bir aday yalnızca SON İKİ SEZONUN İKİSİNDE de mevcut sistemi geçerse 'kabul' önerilir.
