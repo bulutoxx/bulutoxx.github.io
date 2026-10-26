@@ -1,9 +1,12 @@
 name: OXXai at yarisi canli (gun ici)
-# Yarış günü 11:00–00:30 TSİ arası her 30 dakikada: güncel ganyan oranlarıyla olasılıkları tazeler, aynı akşam
-# sonuçları puanlar. Yalnız data/at/canli/, data/at/oran_izi/, data/at/karne.json, 6'lı (data/at/altili/, altili_karne.json) ve OXXai at kuponlarını
-# (data/oxx_kupon/at/) yazar; futbol sistemine, index.html'e dokunmaz.
-# Veri: github.com/cenkozgur/tjk-data aynası sığ klonlanır (_tjk-data, gitignore'da); tjk.org'a istek YOK.
-# Yeniden eğitim yok: gece akışının (at-lab.yml) kaydettiği yayın modeli kullanılır.
+# Yarış günü 11:00–00:30 TSİ: güncel ganyan oranlarıyla olasılıkları tazeler, aynı akşam sonuçları puanlar. Yalnız data/at/canli/,
+# data/at/oran_izi/, data/at/karne.json, 6'lı (data/at/altili/, altili_karne.json) ve OXXai at kuponlarını (data/oxx_kupon/at/) yazar;
+# futbol sistemine, index.html'e dokunmaz.
+# Tek iş içinde döngü: 3 tur × 15 dk (≈32 dk). Zamanlayıcı 30 dakikada bir tetikler; concurrency kuyruğu üst üste binmeyi önler,
+# böylece zamanlayıcı gecikmesine rağmen (30 dk hedef → gerçekte ~56 dk) tazeleme pratikte 15 dk aralıkla sürer. Turlar tek commit.
+# Veri: github.com/cenkozgur/tjk-data aynası sığ klonlanır (_tjk-data, gitignore'da); 2. turdan itibaren canli.py aynı aynayı
+# yalnız GitHub'dan günceller. tjk.org'a / atyarisi.com'a istek YOK.
+# Yeniden eğitim yok: gece akışının (at-lab.yml) kaydettiği yayın modeli kullanılır (her turda uzak daldan tazelenir).
 on:
   schedule:
     - cron: "*/30 8-21 * * *"
@@ -11,32 +14,47 @@ on:
 permissions:
   contents: write
 concurrency:
-  group: at-canli   # ayrı grup: at-lab (05:23 / 12:23) iptal edilmesin; çakışmayı push yeniden denemesi çözer
+  group: at-canli   # ayrı grup: at-lab (05:23 / 12:23) iptal edilmesin; aynı dosyalar lab/gonder.py ile anahtar düzeyinde birleşir
   cancel-in-progress: false
 jobs:
   canli:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 42   # kurtarıcının "45 dk kuyrukta bekleyen" kuralının altında kalsın
+    env:
+      TUR: "3"
+      ARALIK_SN: "900"
+      AT_KAYNAK: ./_tjk-data
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: { python-version: "3.12" }
       - run: pip install -q numpy lightgbm || pip install -q numpy
-      - name: Aynayı sığ klonla (yalnız okunur, depoya yazılmaz)
-        run: git clone -q --depth 1 https://github.com/cenkozgur/tjk-data _tjk-data || echo "ayna klonlanamadı"
-      - name: Gün içi tahmin + aynı akşam puanlama
+      - name: 🗃️ Yayın modelinin ağaçları ve yeniden oynatma arşivden (sürüm uyuşmazsa model doğrusal yedeğe düşer)
         env:
-          AT_KAYNAK: ./_tjk-data
-        run: timeout 420 python lab/at/canli.py --guncelleme-yok || echo "canli.py başarısız; önceki çıktılar korunuyor"
-      - name: 🎟️ OXXai at kuponları (koşudan önce kilit + puan; data/oxx_kupon/at)
-        run: timeout 60 python scripts/oxx_kupon.py --at || echo "OXXai at kuponu bu sefer atlandı"
-      - name: Yalnız değişen türetilmiş çıktıları kaydet
+          GH_TOKEN: ${{ github.token }}
+        run: python3 lab/adim.py arsiv-indir --onem bilgi -- python3 lab/arsiv.py indir data/at/gbm_uretim.txt data/at/replay_kosular.json
+      - name: Aynayı sığ klonla (yalnız okunur, depoya yazılmaz)
+        run: python3 lab/adim.py ayna -- git clone -q --depth 1 https://github.com/cenkozgur/tjk-data _tjk-data
+      - name: 🐎 Gün içi döngü (15 dk arayla tahmin + aynı akşam puanlama + 🎟️ OXXai at kuponları)
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          git config user.name "bulutoxx-bot"; git config user.email "bulutoxx-bot@users.noreply.github.com"
-          git add data/at/canli data/at/karne.json 2>/dev/null || true
-          git add data/at/altili data/at/altili_karne.json 2>/dev/null || true
-          git add data/oxx_kupon/at 2>/dev/null || true
-          git add data/at/oran_izi 2>/dev/null || true   # gün içi oran izi (eski günlerin silinmesi de)
-          git diff --cached --quiet && { echo "değişiklik yok"; exit 0; }
-          git commit -qm "At canlı: $(TZ=Europe/Istanbul date '+%Y-%m-%d %H:%M') [skip ci]"
-          for i in 1 2 3; do git pull -q --rebase -X theirs origin main && git push -q origin HEAD:main && break; sleep 8; done
+          for i in $(seq 1 "$TUR"); do
+            t0=$(date +%s)
+            GUNC="--guncelleme-yok"
+            if [ "$i" -gt 1 ]; then
+              GUNC=""   # canli.py aynayı kendisi günceller (yalnız github.com/cenkozgur/tjk-data)
+              python3 lab/gonder.py --tazele data/at/model.json data/at/tahmin data/at/jokeyler.json data/at/kariyer.json
+              python3 lab/arsiv.py indir data/at/gbm_uretim.txt   # model.json ile aynı sürüm değilse yazılmaz
+            fi
+            python3 lab/adim.py at-canli -- timeout 420 python lab/at/canli.py $GUNC
+            python3 lab/adim.py at-kupon -- timeout 60 python scripts/oxx_kupon.py --at
+            if [ "$i" -lt "$TUR" ]; then
+              s=$(( t0 + ARALIK_SN - $(date +%s) ))
+              if [ "$s" -gt 0 ]; then sleep "$s"; fi
+            fi
+          done
+      - name: Yalnız değişen türetilmiş çıktıları kaydet (tüm turlar tek commit)
+        run: |
+          python3 lab/gonder.py -m "At canlı: $(TZ=Europe/Istanbul date '+%Y-%m-%d %H:%M') [skip ci]" \
+            data/at/canli data/at/karne.json data/at/altili data/at/altili_karne.json data/oxx_kupon/at data/at/oran_izi data/saglik

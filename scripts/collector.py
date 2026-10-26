@@ -81,12 +81,11 @@ def _pois_cdf(k, l):
     for i in range(1, k + 1): p *= l / i; c += p
     return min(1.0, c)
 
-def live_pred(lh, la, hs, as_, t, rc, h1=0.4428):
-    """Uygulamadaki canlı tahminin aynısı: kalan süre payı + skor durumu + kırmızı kart."""
-    rem = ((45 - t) / 45 * h1 + (1 - h1)) if t < 45 else max(.012, (90 - t) / 45 * (1 - h1)) if t <= 90 else max(.012, (120 - t) / 45 * (1 - h1))
-    d = hs - as_; st = t >= 15; up, dn = math.exp(.1), math.exp(-.1)
-    LH = lh * rem * ((up if d < 0 else dn) if st else 1); LA = la * rem * ((up if d > 0 else dn) if st else 1)
-    LH *= .72 ** rc[0] * 1.25 ** rc[1]; LA *= .72 ** rc[1] * 1.25 ** rc[0]
+def live_pred(lh, la, hs, as_, t, rc, h1=0.4428, pd=None, Z=None):
+    """Uygulamadaki canlı tahminin aynısı (canli-gt-v107 core + canli-dr-v117 remShare): kalan süre payı + skor durumu + kırmızı kart.
+    Kalan süre tek kaynaktan: canli_istat.rem_lams (pd: devre 1/2/0=devre arası; Z: daily.json → canli.zaman, None → eski model)."""
+    import canli_istat as CI
+    LH, LA = CI.rem_lams(lh, la, hs, as_, t, rc, h1, pd, Z)
     ph = [math.exp(-LH) * LH ** i / math.factorial(i) for i in range(9)]; pa = [math.exp(-LA) * LA ** j / math.factorial(j) for j in range(9)]
     H = D = A = 0.0
     for i in range(9):
@@ -111,6 +110,8 @@ def live_snapshot():
     except Exception: pass
     try: h1 = json.load(open(os.path.join(DATA, "model.json"), encoding="utf-8"))["params"].get("h1", .4428)
     except Exception: h1 = .4428
+    import canli_istat as CI
+    Z = CI.zaman(DATA)                                   # v117: kabul edilmiş kalan süre modeli (yoksa eski model)
     get = lambda u: json.loads(urllib.request.urlopen(urllib.request.Request(u, headers=ID.UA), timeout=40).read().decode("utf-8")).get("data") or {}
     lr = get("https://statisticsv2.iddaa.com/live-results?sportId=1"); ev = get("https://sportsbookv2.iddaa.com/sportsbook/events?st=1&type=1&version=0")
     sc = lr.get("sc") or {}
@@ -121,11 +122,12 @@ def live_snapshot():
     for e in (ev.get("events") or []):
         if e.get("s") != 1: continue
         k = str(e["i"]); s = sc.get(k); L = lam.get(k)
-        if not s or not L or s.get("min") is None or s.get("s") not in (2, 3): continue
-        t = s["min"] + (s.get("sec") or 0) / 60; hs, as_ = int(s["ht"].get("c") or 0), int(s["at"].get("c") or 0)
+        if not s or not L or s.get("min") is None or s.get("s") not in (2, 3, 49): continue      # 49 = devre arası
+        pd = CI.period_of(s.get("s"))
+        t = 45.0 if pd == 0 else s["min"] + (s.get("sec") or 0) / 60; hs, as_ = int(s["ht"].get("c") or 0), int(s["at"].get("c") or 0)
         rc = [int(s["ht"].get("rc") or 0), int(s["at"].get("rc") or 0)]
-        P = live_pred(L[0], L[1], hs, as_, t, rc, h1)
-        st_c.append({"id": k, "t": t, "hs": hs, "as": as_, "rc": rc, "lam": [float(L[0]), float(L[1])], "h": e.get("hn") or "", "a": e.get("an") or ""})
+        P = live_pred(L[0], L[1], hs, as_, t, rc, h1, pd, Z)
+        st_c.append({"id": k, "t": t, "pd": pd, "hs": hs, "as": as_, "rc": rc, "lam": [float(L[0]), float(L[1])], "h": e.get("hn") or "", "a": e.get("an") or ""})
         cands = []
         for m in e.get("m") or []:
             if m.get("s") != 1 or m.get("t") != 4: continue     # yalnız canlı pazarlar
@@ -143,18 +145,19 @@ def live_snapshot():
         key = f"{k}-{int(t)}"
         if key in log: continue
         log[key] = {"id": k, "t": round(t, 1), "hs": hs, "as": as_, "rk": b[0], "p": round(b[1], 4), "o": b[2], "c": e.get("ci"), "h": e.get("hn"), "a": e.get("an"),
-                    "ts": int(now.timestamp())}   # kayıt anı: canlı kalibrasyonun zaman sıralı sınaması için
+                    "ts": int(now.timestamp()),    # kayıt anı: canlı kalibrasyonun zaman sıralı sınaması için
+                    "pd": pd, "rc": rc, "lam": [round(float(L[0]), 4), round(float(L[1]), 4)], "mv": 117 if Z else 0}   # v117: yeniden hesap için   # kayıt anı: canlı kalibrasyonun zaman sıralı sınaması için
         n += 1
     json.dump(log, open(fp, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
     print(f"Canlı kayıt: {n} yeni seçim ({len(log)} bugün)", flush=True)
-    try: live_stats_snapshot(st_c, h1, now)
+    try: live_stats_snapshot(st_c, h1, now, Z=Z)
     except Exception as ex: print("canlı istatistik atlandı:", ex.__class__.__name__, flush=True)
 
 # ---------------------------------------------------------------- v107 · canlı istatistik anlık görüntüsü (gelecekte kalibrasyon için)
 LIVE_ST = os.path.join(ARC, "live_stats")
 LIVE_ST_MAX, LIVE_ST_KEEP = 800, 90          # gün başına en çok kayıt · tutulan gün sayısı
 
-def live_stats_snapshot(cands, h1, now, espn=None):
+def live_stats_snapshot(cands, h1, now, espn=None, Z=None):
     """ESPN'den erişilebiliyorsa oynanan maçların istatistik anlık görüntüsü + ayarsız (p0) ve ayarlı (p1) olasılık.
     Yalnız türetilmiş sayılar yazılır (ham API yanıtı yok). Ağ yoksa ya da eşleşme yoksa sessizce atlar."""
     import canli_istat as CI
@@ -177,10 +180,10 @@ def live_stats_snapshot(cands, h1, now, espn=None):
             if r.get("id") == c["id"] and 8 <= c["t"] - r.get("t", -99) <= 20 and (prev is None or r["t"] < prev["t"]): prev = r
         F = CI.feats(m["st"], prev and prev.get("st"), c["lam"], c["t"], C)
         mH, mA = CI.mult(F, C)
-        LH, LA = CI.rem_lams(c["lam"][0], c["lam"][1], c["hs"], c["as"], c["t"], c["rc"], h1)
+        LH, LA = CI.rem_lams(c["lam"][0], c["lam"][1], c["hs"], c["as"], c["t"], c["rc"], h1, c.get("pd"), Z)
         p0, p1 = CI.probs(LH, LA, c["hs"], c["as"]), CI.probs(LH * mH, LA * mA, c["hs"], c["as"])
         K = ("H", "D", "A", "r05", "kg")
-        log[key] = {"id": c["id"], "e": m["e"], "lg": m["lg"], "ts": int(now.timestamp()), "t": round(c["t"], 1), "hs": c["hs"], "as": c["as"], "rc": c["rc"],
+        log[key] = {"id": c["id"], "e": m["e"], "lg": m["lg"], "ts": int(now.timestamp()), "t": round(c["t"], 1), "pd": c.get("pd"), "mv": 117 if Z else 0, "hs": c["hs"], "as": c["as"], "rc": c["rc"],
                     "lam": [r4(c["lam"][0]), r4(c["lam"][1])], "L0": [r4(LH), r4(LA)], "st": m["st"],
                     "f": {k: (None if v is None else r4(v)) for k, v in F.items()}, "k": C["kappa"], "m": [r4(mH), r4(mA)],
                     "p0": [r4(p0[k]) for k in K], "p1": [r4(p1[k]) for k in K]}
@@ -275,6 +278,113 @@ def live_platt(stats, edges):
             "dogrulama": {"sinama_n": int(len(y)), "dilim": nf, "kazanilan_dilim": int(win), "brier_ham": B["ham"], "brier_kova": B["kova"], "brier_platt": B["platt"]},
             "aciklama": "p' = 1/(1+exp(-(a + b·ln(p/(1-p)))))  — kabul ise canlı yüzde bununla düzeltilir (kova yöntemi yerine)"}
 
+# ---------------------------------------------------------------- v117 · canlı kalan süre modeli kapısı (eski doğrusal ↔ uzatma + artan yoğunluk)
+def _live_lam_map():
+    """Canlı kayıtların maç öncesi gol beklentileri (arşiv günleri + iddaa.json); yeni kayıtlar lam'ı kendisi taşır."""
+    lam = {}
+    for f in sorted(glob.glob(os.path.join(ARC, "*.json"))):
+        try:
+            for k, r in json.load(open(f, encoding="utf-8")).items():
+                if isinstance(r, dict) and r.get("lam"): lam[k] = r["lam"]
+        except Exception: pass
+    try: lam.update({k: v[:2] for k, v in json.load(open(os.path.join(DATA, "iddaa.json"), encoding="utf-8")).get("lam", {}).items() if k not in lam})
+    except Exception: pass
+    return lam
+
+def _infer_pd(stats):
+    """Eski kayıtlarda devre (pd) yok: 45–50. dakikalar ilk yarı uzatması mı ikinci yarı başı mı? Aynı maçın kesin kayıtlarından
+    başlama anı kestirilir (ilk yarı: ts − t·60; ikinci yarı referansı aynı ölçüyle ≈ +17 dk). Kestirilemezse None (≥45 → 2. yarı)."""
+    by = collections.defaultdict(list)
+    for r in stats: by[r["id"]].append(r)
+    for rs in by.values():
+        k1 = sorted(r["ts"] - r["t"] * 60 for r in rs if r.get("ts") and r["t"] < 40)
+        k2 = sorted(r["ts"] - r["t"] * 60 for r in rs if r.get("ts") and 50 < r["t"] <= 90)
+        for r in rs:
+            if "pd" in r and r["pd"] is not None: r["_pd"] = r["pd"]; continue
+            if r["t"] < 45: r["_pd"] = 1; continue
+            if r["t"] >= 50 or not r.get("ts"): r["_pd"] = 2 if r["t"] >= 50 else None; continue
+            if k1: r["_pd"] = 1 if r["ts"] - k1[len(k1) // 2] < (r["t"] + 8) * 60 else 2
+            elif k2: r["_pd"] = 1 if r["ts"] - k2[len(k2) // 2] < (r["t"] - 8) * 60 else 2
+            else: r["_pd"] = None
+
+def live_p_of(r, lam, h1, Z):
+    """Kayıtlı seçimin (rk) olasılığını verilen kalan süre modeliyle yeniden hesapla (uygulama formülü)."""
+    P = live_pred(lam[0], lam[1], r["hs"], r["as"], r["t"], r.get("rc") or [0, 0], h1, r.get("_pd", r.get("pd")), Z); k = r["rk"]
+    if k == "1": return P["H"]
+    if k == "X": return P["D"]
+    if k == "2": return P["A"]
+    if k[0] in "UA" and k[1:]:
+        po = 1 - _pois_cdf(int(math.floor(float(k[1:]))) - (r["hs"] + r["as"]), P["LT"]); return po if k[0] == "U" else 1 - po
+    if k == "G1": return P["nh"]
+    if k == "G2": return P["na"]
+    if k == "G0": return P["none"]
+    return None
+
+def _match_folds(stats, nf=6):
+    first = {}
+    for r in stats:
+        o = (r.get("_d", ""), r.get("ts") or 0, str(r["id"]))
+        if r["id"] not in first or o < first[r["id"]]: first[r["id"]] = o
+    ids = sorted(first, key=first.get)
+    return {m: min(nf - 1, j * nf // len(ids)) for j, m in enumerate(ids)}
+
+def _app_cal(tr, p):
+    """Uygulamadaki liveCal'ın aynısı, yalnız eğitim kayıtlarıyla: live_platt kabul ederse Platt, etmezse kova (n≥30, 50'lik küçültme)."""
+    edges = [0.5, 0.6, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.01]
+    pl = live_platt(tr, edges) if len(tr) >= LIVE_PLATT_MIN else {"kabul": False}
+    if pl.get("kabul"): return np.minimum(_platt(p, (pl["a"], pl["b"])), .99), "platt"
+    B = []
+    for lo, hi in zip(edges[:-1], edges[1:]):
+        s_ = [r for r in tr if lo <= r["p"] < hi]; B.append([lo, hi, len(s_), sum(r["ok"] for r in s_) / len(s_) if s_ else None])
+    return _bins_cal(p, B), "kova"
+
+def live_model_gate(stats, h1, Z=None, nboot=1000, seed=7, test_from=1):
+    """Kapı: eski doğrusal model + kendi Platt'ı ↔ v117 modeli + kendi Platt'ı. Aynı kilitli seçimler, olasılık iki modelle yeniden
+    hesaplanır. ZAMAN SIRALI genişleyen pencere (maçlar ilk kayıt anına göre 6 dilim; k. dilimin Platt'ı yalnız önceki dilimlerle
+    öğrenilir). Fark maç-blok bootstrap ile; kabul: ΔBrier %95 GA üst sınırı < 0 ve ΔLL < 0."""
+    Z = Z or dict(__import__("canli_istat").ZDEF)
+    lam = _live_lam_map(); rs = [r for r in stats if (r.get("lam") or lam.get(str(r["id"])))]
+    if len(rs) < LIVE_PLATT_MIN: return {"kabul": False, "n": len(rs), "aciklama": f"en az {LIVE_PLATT_MIN} eşleşen canlı seçim gerekli"}
+    _infer_pd(rs)
+    for r in rs:
+        L = r.get("lam") or lam[str(r["id"])]
+        r["_p0"] = live_p_of(r, L, h1, None); r["_p1"] = live_p_of(r, L, h1, Z)
+    rs = [r for r in rs if r["_p0"] is not None and r["_p1"] is not None]
+    fold = _match_folds(rs); y_all = np.array([float(r["ok"]) for r in rs])
+    out = {m: [] for m in ("ham0", "ham1", "q0", "q1")}; te_ix = []; fw = 0; nfo = 0; secim = []
+    for k in range(test_from, 6):
+        tr = [i for i, r in enumerate(rs) if fold[r["id"]] < k]; te = [i for i, r in enumerate(rs) if fold[r["id"]] == k]
+        if len(tr) < 50 or not te: continue
+        nfo += 1; te_ix += te; yt = y_all[te]; bb = []; sc = []
+        for j, key in ((0, "_p0"), (1, "_p1")):
+            pt = np.array([rs[i][key] for i in te]); q, nm = _app_cal([dict(rs[i], p=rs[i][key]) for i in tr], pt)
+            out[f"ham{j}"].append(np.minimum(pt, .99)); out[f"q{j}"].append(q); bb.append(float(np.mean((q - yt) ** 2))); sc.append(nm)
+        fw += bb[1] < bb[0]; secim.append(sc)
+    if not nfo: return {"kabul": False, "n": len(rs), "aciklama": "sınama dilimi oluşmadı"}
+    te_ix = np.array(te_ix); y = y_all[te_ix]; A = {k: np.concatenate(v) for k, v in out.items()}
+    br = lambda p: (p - y) ** 2
+    ll = lambda p: -(y * np.log(np.clip(p, 1e-6, 1)) + (1 - y) * np.log(np.clip(1 - p, 1e-6, 1)))
+    dB = br(A["q1"]) - br(A["q0"]); dL = ll(A["q1"]) - ll(A["q0"]); dH = br(A["ham1"]) - br(A["q0"])   # dH: yalnız bilgi
+    ids = np.array([str(rs[i]["id"]) for i in te_ix]); uid = sorted(set(ids)); ix = {u: np.where(ids == u)[0] for u in uid}
+    rng = np.random.default_rng(seed); bsB = []; bsL = []; bsH = []
+    for _ in range(nboot):
+        sm = np.concatenate([ix[u] for u in rng.choice(uid, len(uid))]); bsB.append(dB[sm].mean()); bsL.append(dL[sm].mean()); bsH.append(dH[sm].mean())
+    ciB = [float(np.percentile(bsB, 2.5)), float(np.percentile(bsB, 97.5))]; ciL = [float(np.percentile(bsL, 2.5)), float(np.percentile(bsL, 97.5))]
+    def band(p):
+        o = []
+        for lo, hi in ((0, .6), (.6, .7), (.7, .8), (.8, .9), (.9, 1.01)):
+            m = (p >= lo) & (p < hi)
+            if m.any(): o.append([lo, hi, int(m.sum()), round(float(p[m].mean()), 4), round(float(y[m].mean()), 4), round(float(y[m].mean() - p[m].mean()), 4)])
+        return o
+    R = lambda x: round(float(x), 5)
+    tab = {k: {"brier": R(br(v).mean()), "ll": R(ll(v).mean()), "ort_p": round(float(v.mean()), 4), "bant": band(v)} for k, v in A.items()}
+    ok = ciB[1] < 0 and float(dL.mean()) < 0
+    return {"kabul": bool(ok), "n": len(rs), "mac": len({r["id"] for r in rs}), "sinama_n": int(len(y)), "sinama_mac": len(uid), "gercek": round(float(y.mean()), 4),
+            "dilim": nfo, "kazanilan_dilim": int(fw), "kalibrasyon_secimi": secim, "d_brier": R(dB.mean()), "d_brier_ga95": [R(ciB[0]), R(ciB[1])],
+            "d_ll": R(dL.mean()), "d_ll_ga95": [R(ciL[0]), R(ciL[1])], "tablo": tab,
+            "bilgi_v117_ham_vs_eski_kal": {"d_brier": R(dH.mean()), "ga95": [R(np.percentile(bsH, 2.5)), R(np.percentile(bsH, 97.5))]},
+            "aciklama": "ham0/q0: eski doğrusal model (ham / uygulamanın kalibrasyonu), ham1/q1: v117 uzatma + artan yoğunluk. Kalibrasyon her dilimde yalnız önceki dilimlerle, uygulamadaki kuralla seçilir (Platt kabul ise Platt, değilse kova). bant: [alt, üst, n, ort tahmin, gerçek, fark]"}, rs
+
 def live_grade():
     """Biten maçlarla canlı seçimleri puanla; olasılık dilimine göre gerçek isabet (Power Now kalibrasyonu)."""
     import urllib.request
@@ -309,15 +419,35 @@ def live_grade():
                 r["ok"] = ok; changed = True
             if changed: json.dump(log, open(f, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
         stats += [dict(r, _d=d) for r in log.values() if r.get("ok") is not None]
+    return live_cal_block(stats)
+
+def live_cal_block(stats, h1=None):
+    """Canlı kalibrasyon bloğu (daily.json → canli). Ağ kullanmaz. v117: önce kalan süre modeli kapısı (canli.zaman); kabul ise
+    kova ve Platt, kayıtlı seçimlerin v117 modeliyle YENİDEN hesaplanan olasılığı üzerinden öğrenilir (uygulama ile aynı ölçek)."""
+    import canli_istat as CI
+    if h1 is None:
+        try: h1 = json.load(open(os.path.join(DATA, "model.json"), encoding="utf-8"))["params"].get("h1", .4428)
+        except Exception: h1 = .4428
+    zm = {"v": 117, **{k: v for k, v in CI.ZDEF.items() if k != "v"}, "kabul": False}
+    try:
+        G = live_model_gate([dict(r) for r in stats], h1)
+        if isinstance(G, tuple):
+            G, rs = G
+            if G.get("kabul") and _rollback_frozen("canli_zaman"): G["kabul"] = False; G["aciklama"] = "Koruyucu geri alma süresince dondurulmuş"
+            if G.get("kabul"): stats = [dict(r, p=round(r["_p1"], 4)) for r in rs]      # yeni ölçekte kova + Platt
+        zm.update(kabul=bool(G.get("kabul")), kapi=G)
+    except Exception as ex:
+        print("canlı zaman kapısı atlandı:", ex.__class__.__name__, ex, flush=True)
     edges = [0.5, 0.6, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.01]; bins = []
     for lo, hi in zip(edges[:-1], edges[1:]):
         s_ = [r for r in stats if lo <= r["p"] < hi]
         bins.append([lo, hi, len(s_), round(sum(r["ok"] for r in s_) / len(s_), 4) if s_ else None])
-    out = {"n": len(stats), "hit": round(sum(r["ok"] for r in stats) / len(stats), 4) if stats else None, "bins": bins}
+    out = {"n": len(stats), "hit": round(sum(r["ok"] for r in stats) / len(stats), 4) if stats else None, "bins": bins, "zaman": zm}
     # 🎯 Canlı Platt kalibrasyonu (yeni alan, 'bins' biçimi değişmedi): zaman sıralı sınamayı geçerse kabul=true
     try:
         pl = live_platt(stats, edges)
         if pl.get("kabul") and _rollback_frozen("canli_platt"): pl["kabul"] = False; pl["aciklama"] = "Koruyucu geri alma süresince dondurulmuş"
+        pl["model"] = "v117" if zm["kabul"] else "eski"
         out["platt"] = pl
     except Exception as ex:
         print("canlı Platt atlandı:", ex.__class__.__name__, ex, flush=True)
@@ -409,8 +539,8 @@ def main():
 if __name__ == "__main__":
     if len(sys.argv) > 1 and sys.argv[1] == "live":      # 15 dakikada bir: yalnız canlı seçim kaydı
         try: live_snapshot()
-        except Exception as e: print("canlı kayıt hata:", e)
+        except Exception as e: print("canlı kayıt hata:", e); sys.exit(1)   # adım kaydı (lab/adim.py) görsün
         sys.exit(0)
     try: main()
     except Exception as e:
-        import traceback; traceback.print_exc(); print("toplayıcı hata verdi, sonraki saatte tekrar denenecek")
+        import traceback; traceback.print_exc(); print("toplayıcı hata verdi, sonraki saatte tekrar denenecek"); sys.exit(1)

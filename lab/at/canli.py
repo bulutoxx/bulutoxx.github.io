@@ -23,6 +23,7 @@ sys.path.insert(0, BURA)
 import gece  # noqa: E402  (AT_KAYNAK varsayılanını da ayarlar)
 import veri, ozellik, model as M  # noqa: E402
 import altili  # noqa: E402  (6'lı ganyan: data/at/altili/<gün>.json)
+import kilit  # noqa: E402  (oran olgunluk kapısı + koruyucu)
 
 CANLI = os.path.join(gece.CIKTI, "canli")
 KAYNAK_ATIF = "açık TJK sonuç arşivi (github.com/cenkozgur/tjk-data)"
@@ -115,7 +116,7 @@ def _ilk3(p, g, d):
     return M.sirali_olasiliklar(p, g, d)["ilk3"]
 
 
-def kosu_canli(m, kosu, gecmis, yayin_modu, sonuc, ekuri=None):
+def kosu_canli(m, kosu, gecmis, yayin_modu, sonuc, ekuri=None, yakalama=None):
     atlar = kosu["atlar"]
     n = len(atlar)
     X = gecmis.durum.ozellik(kosu, m.adlar)
@@ -123,11 +124,12 @@ def kosu_canli(m, kosu, gecmis, yayin_modu, sonuc, ekuri=None):
     K = M.Kume(X, sifir, sifir, sifir, np.zeros(n, int))
     p_s = m.p_model(X, K)
     i3_s = _ilk3(p_s, m.gam_m, m.dlt_m)
-    # güncel oran: 0/boş = henüz yok ya da koşmuyor (aynada koşmayan atın oranı 0). Alanın en az yarısında oran
-    # varsa piyasa hesaplanır; oranı olmayan atlar piyasa/harman dışında kalır (null).
-    oran = [a["oran"] for a in atlar]
+    # güncel oran: 0/boş/999.99 = henüz yok ya da koşmuyor. Piyasa ve harman yalnız oran olgunluk kapısı geçince
+    # (lab/at/kilit.py: koşuya ≤15 dk, alanın ≥%80'inde geçerli oran, makul toplam olasılık); oranı olmayan atlar null.
+    kp = kilit.kapi([a["oran"] for a in atlar], kosu["tarih"], kosu.get("saat"), yakalama)
+    oran = [kilit.gecerli(a["oran"]) for a in atlar]
     idx = np.array([i for i, o in enumerate(oran) if o is not None], int)
-    oran_var = len(idx) >= 2 and len(idx) >= math.ceil(n / 2)
+    oran_var = kp["gecti"] and len(idx) >= 2
     q = p_o = i3_o = None
     if oran_var:
         inv = np.array([1.0 / oran[i] for i in idx])
@@ -136,10 +138,10 @@ def kosu_canli(m, kosu, gecmis, yayin_modu, sonuc, ekuri=None):
             Xs = X[idx]
             z = np.zeros(len(idx))
             p_o = m.p_harman(Xs, M.Kume(Xs, z, z, z, np.zeros(len(idx), int)), q)
-            i3_o = _ilk3(p_o, m.gam, m.dlt)
         else:   # yayın modu yalnız piyasa: gece ile aynı kural
             p_o = q
-            i3_o = _ilk3(q, m.gam, m.dlt)
+        p_o, kp["kirpilan"] = kilit.koruyucu(p_o, p_s[idx], (yakalama or {}).get("havuz"))
+        i3_o = _ilk3(p_o, m.gam, m.dlt)
     pos = {int(i): r for r, i in enumerate(idx)} if oran_var else {}
     cikti = []
     for i, a in enumerate(atlar):
@@ -173,7 +175,7 @@ def kosu_canli(m, kosu, gecmis, yayin_modu, sonuc, ekuri=None):
     ekuri_k = [g for g in ([str(x) for x in grp if str(x) in prog_no] for grp in (ekuri or [])) if len(g) > 1]
     return {"kosu_id": f'{kosu["tarih"]}/{kosu["hipodrom"]}/{kosu["kosu"]}', "hipodrom": kosu["hipodrom"],
             "kosu": kosu["kosu"], "saat": kosu.get("saat"), "mesafe": kosu["mesafe"], "pist": kosu["pist"],
-            "sinif": kosu["sinif"], "durum": durum, "ekuri": ekuri_k, "atlar": cikti, "sonuc": s}, ek
+            "sinif": kosu["sinif"], "durum": durum, "ekuri": ekuri_k, "kapi": kp, "atlar": cikti, "sonuc": s}, ek
 
 
 # ---------------------------------------------------------------- dosya
@@ -305,9 +307,10 @@ def main():
         except Exception:
             gprog = {}
         ks, ekler = [], []
+        yak = kilit.yakalama_tablosu(t, kaynak)   # oranın yakalandığı an (oran olgunluk kapısı)
         for k in progs[t]:
             kc, ek = kosu_canli(m, k, gecmis, yayin_modu, sonuclar.get((k["hipodrom"], k["kosu"])),
-                                (gprog.get((k["hipodrom"], k["kosu"])) or (None, []))[1])
+                                (gprog.get((k["hipodrom"], k["kosu"])) or (None, []))[1], yak.get((k["hipodrom"], k["kosu"])))
             ks.append(kc); ekler.append(ek)
         ks.sort(key=lambda k: (k.get("saat") or "99:99", k["hipodrom"], k["kosu"]))
         out = {"tarih": t, "guncelleme_tsi": simdi.strftime("%Y-%m-%d %H:%M"), "model_surumu": mj.get("surum", "?"),

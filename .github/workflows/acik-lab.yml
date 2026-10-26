@@ -29,11 +29,6 @@ jobs:
           restore-keys: acik-
       - name: Açık veri deneyi (seçim dilimi → sınama dilimi kapısı)
         env: { ACIK_ONBELLEK: _acik_onbellek, ACIK_BUDGET: "1020" }
-        run: timeout 1200 python lab/acik_lab.py || echo "açık veri laboratuvarı atlandı; önceki karar korunuyor"
+        run: python3 lab/adim.py acik-lab -- timeout 1200 python lab/acik_lab.py   # başarısızsa önceki karar korunur
       - name: Yalnız türetilmiş çıktıları kaydet
-        run: |
-          git config user.name "bulutoxx-bot"; git config user.email "bulutoxx-bot@users.noreply.github.com"
-          git add data/acik_lab.json data/acik 2>/dev/null || true
-          git diff --cached --quiet && { echo "değişiklik yok"; exit 0; }
-          git commit -qm "Açık veri laboratuvarı $(date -u +%F) [skip ci]"
-          for i in 1 2 3; do git pull -q --rebase -X theirs origin main && git push -q origin HEAD:main && break; sleep 8; done
+        run: python3 lab/gonder.py -m "Açık veri laboratuvarı $(date -u +%F) [skip ci]" data/acik_lab.json data/acik data/saglik
