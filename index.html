@@ -5661,7 +5661,7 @@ if((location.hash||"")==="#sonuclar") setTimeout(()=>$("navRes").click(),200);
 // =====================================================================
 // OXXai v35: Otomatik sürüm güncelleme — yeni sürüm yayınlanınca uygulama kendini yeniler
 // =====================================================================
-const APP_V="2026-10-27.115";
+const APP_V="2026-10-27.116";
 (function autoUpdate(){
   let shown=false;
   async function check(auto){
@@ -12389,10 +12389,10 @@ nav.tabs .pw-btn .pw-lb{background:linear-gradient(180deg,#FFE9A3,#F7CD55 45%,#C
   setTimeout(()=>{ try{ paint(); }catch(e){} },1500);
 })();
 </script>
-<style id="at5-v111s">
+<style id="at5-v116">
 /* =====================================================================
-   v111 · AT YARIŞI 2.0 — lab/at/TASARIM.md Aşama 5 (arama + "Atım koşuyor" hatırlatması).
-   at2-v106 / at3-v109'un üstüne biner; bu blok ve script#at5-v111 silinirse 🔍 düğmesi, arama ekranı ve hatırlatma kaybolur,
+   v116 · AT YARIŞI 2.0 — lab/at/TASARIM.md Aşama 5 (arama + "Atım koşuyor" hatırlatması).
+   at2-v106 / at3-v109'un üstüne biner; bu blok ve script#at5-v116 silinirse 🔍 düğmesi, arama ekranı ve hatırlatma kaybolur,
    geri kalan her şey aynen çalışır. Arama/kart stilleri yalnız #v-at içinde; şerit (#a5Strip) ve Ayarlar satırı uygulama genelinde.
    ===================================================================== */
 /* ---------- arama ekranı ---------- */
@@ -12417,7 +12417,7 @@ nav.tabs .pw-btn .pw-lb{background:linear-gradient(180deg,#FFE9A3,#F7CD55 45%,#C
 .a5-r .a2-pill{max-width:96px;overflow:hidden;text-overflow:ellipsis}
 #at2Box .a5-tk{width:44px;height:44px;background:none;border-color:transparent}
 #at2Box .a5-tk[aria-pressed="true"]{color:var(--a2-g1)}
-.a5-mark{background:none;color:var(--a2-gi);font-weight:800}
+.a5-mark,.a2-hn b .a5-mark{display:inline;background:none;color:var(--a2-gi);font:inherit;font-weight:800;white-space:inherit;overflow:visible}
 .a5-more{margin-top:6px}
 .a5-hint p{margin:0 0 6px}
 .a5-hint p:last-child{margin:0}
@@ -12449,26 +12449,30 @@ nav.tabs .pw-btn .pw-lb{background:linear-gradient(180deg,#FFE9A3,#F7CD55 45%,#C
 #a5Strip .go span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:600 14px/1.25 var(--font)}
 #a5Strip .go b{color:var(--g);font-weight:750}
 #a5Strip .go small{color:#B6C0D3;font-weight:500}
+#a5Strip .go .m{flex:none;white-space:nowrap;font:600 13px/1.25 var(--font);color:var(--g)}
 #a5Strip .x{flex:none;width:44px;height:44px;border-radius:12px;display:grid;place-items:center;color:#B6C0D3}
 #a5Strip .x svg{width:16px;height:16px}
 #a5Strip button:focus-visible{outline:none;box-shadow:0 0 0 3px rgba(34,211,255,.55);border-radius:12px}
 @keyframes a5in{from{transform:translateY(-6px);opacity:0}to{transform:none;opacity:1}}
+.a5-mc{cursor:pointer;min-height:56px;box-sizing:border-box}
+.a5-mc .sw input,#a5Set .sw input{inset:-7px -4px}
+#a5Set .btn.sm,.a5-mc .btn.sm{min-height:44px}
 @media (prefers-reduced-motion:reduce){#a5Strip .in{animation:none}#at2Box .a5-sw::before,#at2Box .a5-sw::after{transition:none}}
-@media (max-width:370px){#at2Box .a2-hd .a2-ib{width:42px}.a2-hd{gap:6px}#at2Box .a5-nb{padding:0 10px}}
+@media (max-width:370px){#at2Box .a5-nb{padding:0 10px}}
 </style>
-<script id="at5-v111">
+<script id="at5-v116">
 // =====================================================================
-// v111 · AT YARIŞI 2.0 — lab/at/TASARIM.md Aşama 5 (at2-v106 ve at3-v109'u SARAR; onların kodu değişmez)
+// v116 · AT YARIŞI 2.0 — lab/at/TASARIM.md Aşama 5 (at2-v106 ve at3-v109'u SARAR; onların kodu değişmez)
 // • 🔍 Arama: At başlık satırına düğme → #at/ara. At, jokey, antrenör adıyla; Türkçe harf duyarsız (İ/ı/ş/ğ/ü/ö/ç), kısmi
 //   eşleşme, küçük yazım hatası toleransı. Önce bugünün/yarının programı (saat + hipodrom + koşu no → At profili / jokey
 //   profili), sonra geçmiş dizin data/at/dizin.json (lab/at/dizin.py; son 365 gün, yalnız türetilmiş özet). Sonuçtan takip.
 // • "Atım koşuyor" hatırlatması: takip edilen at/jokey/antrenör bugün koşuyorsa koşudan 30 dk önce At Bugün ekranında kart
-//   ve uygulamanın üstünde ince, kapatılabilir şerit (yalnız bir cümle; futbol/basket verisine karışmaz). Ayarlar'da anahtar
+//   ve uygulamanın üstünde ince, kapatılabilir şerit (yalnız bir cümle; futbol/basket verisine karışmaz). Menü'de ve Ayarlar'da anahtar
 //   (varsayılan açık, uygulama içi). Sistem bildirimi YALNIZ kullanıcı ayrı düğmeye basıp izin verirse, uygulama açıkken yerel
 //   (registration.showNotification / new Notification). Push sunucusu yok; izin istemi kendiliğinden çıkmaz.
 // • OXX: "X atı bugün koşuyor mu", "jokey Y bugün nerede" → program + dizin (mevcut at niyetlerinden önce, dar kalıpla).
 // Kullanıcı verisi yalnız localStorage: bx-at-hatirlat {on,sys} · bx-at-hatirlat-iz {d,k[],x[]} · bx-at-ara-son [..].
-// tjk.org / atyarisi.com'a istek yok, bahis bağlantısı yok, para tutarı yok · 18+.
+// tjk.org / atyarisi.com'a istek yok, şans oyunu sitesi bağlantısı yok, para tutarı yok · 18+.
 // =====================================================================
 (function(){
   const X=window.BX_AT, A2=window.BX_AT2; if(!X||!X.AT||!A2) return;
@@ -12662,12 +12666,12 @@ nav.tabs .pw-btn .pw-lb{background:linear-gradient(180deg,#FFE9A3,#F7CD55 45%,#C
   function paintStrip(D){ const pr=PR(), z=IZ(), L=(D||[]).filter(o=>!z.x.includes(o.key));
     if(!pr.on||!L.length||atBugun()){ if(!strip.hidden) strip.hidden=true; return; }
     const o=L[0], more=L.length>1?` · +${L.length-1}`:"";
-    const html=`<div class="in"><button class="go" type="button" data-k="${E(o.key)}" aria-label="${E(plain(o))}, ${o.mn} dakika sonra. At bölümünde aç"><span aria-hidden="true">🐎</span><span>${sentence(o)} <small>· ${o.mn} dk${more}</small></span></button><button class="x" type="button" aria-label="Hatırlatmayı kapat">${IC.x}</button></div>`;
+    const html=`<div class="in"><button class="go" type="button" data-k="${E(o.key)}" aria-label="${E(plain(o))}, ${o.mn} dakika sonra. At bölümünde aç"><span aria-hidden="true">🐎</span><span>${sentence(o)}</span><span class="m">${o.mn} dk${more}</span></button><button class="x" type="button" aria-label="Hatırlatmayı kapat">${IC.x}</button></div>`;
     if(strip.innerHTML!==html) strip.innerHTML=html; if(strip.hidden) strip.hidden=false; }
   // ---- At Bugün kartı ----
   function dueCard(D){ if(!PR().on||!D.length) return "";
     return `<div class="a2-card gold a5-due" data-a5d><div class="a2-ch"><h2><i aria-hidden="true">🔔</i> Atım koşuyor</h2><small>${WIN} dk içinde</small></div>${D.slice(0,5).map(o=>`<a class="a2-hrow" href="#${hrefOf(o)}"><span class="a2-no">${E(o.it.no)}</span><span class="a2-hn"><b>${E(o.it.ad)}</b><small>${E(o.it.r.hipodrom)} ${o.it.r.kosu}. koşu · ${E(o.it.r.saat)}${o.why!=="at"?" · "+(o.why==="jokey"?"jokey ":"antrenör ")+E(o.it[o.why]):""}</small></span><span class="a2-pill">${o.mn} dk</span></a>`).join("")}
-      <p class="a2-note">Takip listendekiler koşudan ${WIN} dk önce burada ve uygulamanın üstünde görünür. Ayarlar › Atım koşuyor hatırlatması ile kapatabilirsin.</p></div>`; }
+      <p class="a2-note">Takip listendekiler koşudan ${WIN} dk önce burada ve uygulamanın üstünde görünür. Menü › Atım koşuyor hatırlatması ile kapatabilirsin.</p></div>`; }
   function decoBugun(D){ if(box.querySelector("[data-a5d]")) return; const h=dueCard(D); if(!h) return; const first=box.querySelector(":scope > .a2-card, :scope > .a2-sec"); if(first) first.insertAdjacentHTML("beforebegin",h); }
   // ---- uygulama içi hatırlatma (toast) + isteğe bağlı sistem bildirimi; her koşu için bir kez ----
   function fire(D){ if(!PR().on||!D.length) return; const z=IZ(), yeni=D.filter(o=>!z.k.includes(o.key)); if(!yeni.length) return;
@@ -12676,10 +12680,10 @@ nav.tabs .pw-btn .pw-lb{background:linear-gradient(180deg,#FFE9A3,#F7CD55 45%,#C
     sysNote(o,yeni.length); }
   function sysNote(o,n){ const pr=PR(); if(!pr.sys||!("Notification" in window)||Notification.permission!=="granted") return;
     const title="🐎 Atım koşuyor", body=plain(o)+` · ${o.it.r.hipodrom} ${o.it.r.kosu}. koşu · ${o.mn} dk sonra`+(n>1?` (+${n-1})`:""), url="./#"+hrefOf(o);
-    const opt={body,icon:"icons/icon-192.png",badge:"icons/icon-192.png",tag:"at-"+o.key,data:{url}};
+    const opt={body,icon:"icons/oxxai-192.png",badge:"icons/oxxai-192.png",tag:"at-"+o.key,data:{url}};
     const fb=()=>{ try{ const x=new Notification(title,opt); x.onclick=()=>{ try{ window.focus(); }catch(_){} openTarget(hrefOf(o)); x.close(); }; }catch(_){} };
     try{ if(navigator.serviceWorker&&navigator.serviceWorker.controller) navigator.serviceWorker.ready.then(r=>r.showNotification(title,opt)).catch(fb); else fb(); }catch(_){ fb(); } }
-  function refresh(){ let D=[]; try{ D=due(); }catch(e){} paintStrip(D); fire(D);
+  function refresh(){ let D=[]; try{ D=due(); }catch(e){} paintStrip(D); fire(D); try{ const mi=$("a5MenuOn"); if(mi) mi.checked=PR().on; }catch(e){}
     if(atBugun()){ const c=box.querySelector("[data-a5d]"); if(c) c.remove(); decoBugun(D); } }
   setInterval(()=>{ if(!document.hidden||PR().sys) refresh(); },30000);
   document.addEventListener("visibilitychange",()=>{ if(!document.hidden) refresh(); });
@@ -12699,8 +12703,8 @@ nav.tabs .pw-btn .pw-lb{background:linear-gradient(180deg,#FFE9A3,#F7CD55 45%,#C
     if(p==="granted"){ setPR({sys:true,on:true}); toast("🔔 Atın koşmadan 30 dk önce telefon bildirimi de gelir (uygulama açıkken)"); }
     else toast(p==="denied"?"Bildirim izni kapalı; telefon ayarlarından açabilirsin":"İzin verilmedi"); }
   function setRows(){ const pr=PR();
-    return `<div class="group" id="a5Set"><div class="cell"><span class="ic" style="background:#B8892B;font-size:15px;display:grid;place-items:center" aria-hidden="true">🐎</span><span class="tx"><b>Atım koşuyor hatırlatması</b><small>Takip ettiğin at, jokey ya da antrenör koşudan 30 dk önce, uygulama içinde</small></span>
-      <label class="sw"><input type="checkbox" id="a5On" ${pr.on?"checked":""} aria-label="Atım koşuyor hatırlatması"><i></i></label></div>
+    return `<div class="group" id="a5Set"><label class="cell a5-mc"><span class="ic" style="background:#B8892B;font-size:15px;display:grid;place-items:center" aria-hidden="true">🐎</span><span class="tx"><b>Atım koşuyor hatırlatması</b><small>Takip ettiğin at, jokey ya da antrenör koşudan 30 dk önce, uygulama içinde</small></span>
+      <span class="sw"><input type="checkbox" id="a5On" ${pr.on?"checked":""} aria-label="Atım koşuyor hatırlatması"><i></i></span></label>
       <div class="cell"><span class="ic" style="background:#FF375F"><svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0"/></svg></span><span class="tx"><b>At için telefon bildirimi</b><small id="a5SysSt">${E(sysTxt())}</small></span><button class="btn sm ghost" type="button" id="a5SysBtn">${sysBtnTxt()}</button></div></div>`; }
   function wireSet(root){ const on=root.querySelector("#a5On"), sb=root.querySelector("#a5SysBtn");
     if(on) on.addEventListener("change",()=>{ setPR({on:on.checked}); try{ buzz(6); }catch(e){} toast(on.checked?"🐎 Atım koşuyor hatırlatması açık":"Atım koşuyor hatırlatması kapalı"); });
@@ -12708,6 +12712,15 @@ nav.tabs .pw-btn .pw-lb{background:linear-gradient(180deg,#FFE9A3,#F7CD55 45%,#C
   const sh=$("sheet");
   if(sh) new MutationObserver(()=>{ const bx=sh.querySelector('.box[aria-label="Ayarlar"]'); if(!bx||bx.querySelector("#a5Set")) return;
       const groups=bx.querySelectorAll(":scope > .group"), at=groups[1]||groups[0]; if(!at) return; at.insertAdjacentHTML("afterend",setRows()); wireSet(bx); }).observe(sh,{childList:true});
+  // ---- Menü (Uygulama grubu, Ayarlar'ın altında): doğrudan anahtar ----
+  function menuCell(){ const v=$("v-more"); if(!v) return; let c=$("a5Menu");
+    if(!c){ const st=v.querySelector('[data-act="settings"]'); if(!st||!st.parentElement) return;
+      st.insertAdjacentHTML("afterend",`<label class="cell a5-mc" id="a5Menu"><span class="ic" style="background:#B8892B;font-size:15px" aria-hidden="true">🐎</span><span class="tx"><b>Atım koşuyor hatırlatması</b><small>Takip ettiğin at, jokey ya da antrenör koşmadan 30 dk önce</small></span><span class="sw"><input type="checkbox" id="a5MenuOn" aria-label="Atım koşuyor hatırlatması"><i></i></span></label>`);
+      c=$("a5Menu"); const inp=$("a5MenuOn");
+      inp.addEventListener("change",()=>{ setPR({on:inp.checked}); tap(); toast(inp.checked?"🐎 Atım koşuyor hatırlatması açık":"Atım koşuyor hatırlatması kapalı"); }); }
+    const inp=$("a5MenuOn"); if(inp) inp.checked=PR().on; }
+  menuCell(); setTimeout(menuCell,1600); setTimeout(menuCell,5200);
+  document.addEventListener("click",e=>{ if(e.target.closest('nav.tabs button[data-v="more"]')) setTimeout(menuCell,10); });
   // ---- Takip ekranındaki "yakında" kartı → çalışan denetim ----
   function decoTakip(){ const c=[...box.querySelectorAll(":scope > .a2-card")].find(x=>/Atım koşuyor/.test((x.querySelector("h2")||{}).textContent||"")); if(!c||c.dataset.a5t) return;
     const pr=PR(), D=followed(); c.dataset.a5t="1";
