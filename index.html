@@ -11488,5 +11488,327 @@ small>.tvar.d:first-child{margin-left:0;margin-right:2px}
   window.cgtRefresh=refresh;
 })();
 </script>
+<style id="oxx-kupon-v110s">
+/* =====================================================================
+   v110 · OXX'in kuponları — OXX'in kendi kilitlediği günlük kuponlar (salt okunur), karne ve öğrenme olayları.
+   KUPO "Kuponlarım" sekmesinin üstünde, kullanıcı kuponlarından ayrık altın çerçeveli bölüm. At kuponları yalnız At › Kupon sekmesinde.
+   Dokunma hedefi ≥ 40 px, 360/390 px'te yatay taşma yok. Para tutarı / olası kazanç / bahis bağlantısı yok.
+   ===================================================================== */
+:root{--ox-g:#E9C766;--ox-g2:#F3DC8A;--ox-bd:rgba(233,199,102,.30);--ox-sf:linear-gradient(170deg,rgba(233,199,102,.075),rgba(255,255,255,.02) 60%);--ox-ok:#3BEA7E;--ox-no:#FF6B78;--ox-lv:#5CC8FF}
+.oxk{margin:0 0 16px;border:1px solid var(--ox-bd);border-radius:20px;background:var(--ox-sf);padding:14px 14px 12px;min-width:0;overflow:hidden}
+.oxk *{box-sizing:border-box;min-width:0}
+.oxk-hd{display:flex;align-items:center;gap:10px}
+.oxk-bdg{flex:none;display:inline-flex;align-items:center;justify-content:center;height:24px;padding:0 9px;border-radius:12px;font:800 11.5px/1 var(--font);letter-spacing:.06em;color:#241800;background:linear-gradient(135deg,#C9A227 0%,#F5E08A 55%,#D4AF37 100%);box-shadow:0 2px 8px rgba(212,175,55,.25)}
+.oxk-hd h2{margin:0;font:700 17px/1.2 var(--font-d,var(--font));letter-spacing:-.01em;color:var(--ink);flex:1}
+.oxk-hd small{display:block;font:500 12px/1.3 var(--font);color:var(--ink3);margin-top:2px;letter-spacing:0}
+.oxk-tg{flex:none;min-width:40px;height:40px;border-radius:12px;border:1px solid var(--line2,rgba(255,255,255,.12));background:rgba(255,255,255,.04);color:var(--ink2);font:600 13px var(--font);display:inline-flex;align-items:center;justify-content:center;padding:0 10px;cursor:pointer}
+.oxk-seg{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin:12px 0 10px;padding:3px;border-radius:13px;background:rgba(255,255,255,.05)}
+.oxk-seg button{height:40px;border:0;border-radius:10px;background:none;color:var(--ink2);font:600 14px var(--font);cursor:pointer}
+.oxk-seg button[aria-pressed="true"]{background:rgba(233,199,102,.16);color:var(--ox-g2);box-shadow:inset 0 0 0 1px rgba(233,199,102,.35)}
+.oxk-day{display:flex;align-items:center;gap:6px;margin:0 0 10px}
+.oxk-day button{flex:none;width:40px;height:40px;border-radius:12px;border:1px solid var(--line2,rgba(255,255,255,.12));background:rgba(255,255,255,.04);color:var(--ink);font:600 18px var(--font);cursor:pointer}
+.oxk-day button:disabled{opacity:.35;cursor:default}
+.oxk-day b{flex:1;text-align:center;font:600 14px/1.25 var(--font);color:var(--ink)}
+.oxk-day b small{display:block;font:500 11.5px var(--font);color:var(--ink3)}
+.oxk-gd{display:inline-block;margin-left:6px;padding:2px 7px;border-radius:8px;font:700 10.5px/1.3 var(--font);color:#FFD89A;background:rgba(255,170,60,.14);border:1px solid rgba(255,170,60,.35);vertical-align:1px}
+.oxk-note{margin:0 0 10px;font:500 12.5px/1.45 var(--font);color:var(--ink3)}
+.oxk-note b{color:var(--ink2)}
+.oxk-c{border-radius:16px;background:rgba(0,0,0,.18);border:1px solid rgba(255,255,255,.07);padding:12px;margin:0 0 10px}
+.oxk-ch{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.oxk-nm{font:700 15px/1.25 var(--font);color:var(--ox-g2)}
+.oxk-sp{font:600 11.5px var(--font);color:var(--ink3)}
+.oxk-st{margin-left:auto;flex:none;display:inline-flex;align-items:center;height:24px;padding:0 9px;border-radius:12px;font:700 12px/1 var(--font);background:rgba(255,255,255,.07);color:var(--ink2)}
+.oxk-st.g{background:rgba(59,234,126,.14);color:var(--ox-ok)} .oxk-st.x{background:rgba(255,107,120,.14);color:var(--ox-no)}
+.oxk-st.l{background:rgba(92,200,255,.14);color:var(--ox-lv)} .oxk-st.v{background:rgba(255,255,255,.05);color:var(--ink3)}
+.oxk-mt{display:flex;flex-wrap:wrap;gap:4px 12px;margin:8px 0 6px;font:500 12.5px/1.35 var(--font);color:var(--ink3)}
+.oxk-mt b{color:var(--ink);font-weight:700}
+.oxk-l{display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid rgba(255,255,255,.06)}
+.oxk-l .t{flex:1;min-width:0}
+.oxk-l .t b{display:block;font:600 14px/1.3 var(--font);color:var(--ink);overflow-wrap:anywhere}
+.oxk-l .t small{display:block;font:500 12px/1.35 var(--font);color:var(--ink3);margin-top:2px;overflow-wrap:anywhere}
+.oxk-l .t em{font-style:normal;color:var(--ink2);font-weight:600}
+.oxk-l .r{flex:none;text-align:right;font:600 12px/1.3 var(--font);color:var(--ink3);max-width:92px}
+.oxk-l .r i{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:12px;font:800 13px/1 var(--font);font-style:normal;background:rgba(255,255,255,.07);color:var(--ink3)}
+.oxk-l .r i.g{background:rgba(59,234,126,.16);color:var(--ox-ok)} .oxk-l .r i.x{background:rgba(255,107,120,.16);color:var(--ox-no)} .oxk-l .r i.l{background:rgba(92,200,255,.16);color:var(--ox-lv)}
+.oxk-l .r span{display:block;margin-top:3px;color:var(--ink2);white-space:nowrap}
+.oxk-cp{width:100%;min-height:42px;margin-top:8px;border-radius:12px;border:1px solid rgba(233,199,102,.42);background:rgba(233,199,102,.08);color:var(--ox-g2);font:600 14px var(--font);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;padding:0 10px}
+.oxk-cp:disabled{opacity:.5;cursor:default;border-color:rgba(255,255,255,.12);color:var(--ink3);background:none}
+.oxk-cp:active:not(:disabled){transform:scale(.98)}
+.oxk-emp{padding:14px 4px 6px;text-align:center;font:500 13px/1.45 var(--font);color:var(--ink3)}
+.oxk-emp b{display:block;color:var(--ink2);font-size:14px;margin-bottom:3px}
+.oxk-k{border-radius:16px;background:rgba(0,0,0,.18);border:1px solid rgba(255,255,255,.07);padding:12px;margin:0 0 10px}
+.oxk-k h3{text-transform:none;letter-spacing:0;margin:0 0 2px;font:700 14.5px/1.25 var(--font);color:var(--ox-g2)}
+.oxk-k p{margin:0 0 8px;font:500 11.5px/1.4 var(--font);color:var(--ink3)}
+.oxk-kt{display:grid;grid-template-columns:minmax(0,1.25fr) repeat(4,minmax(0,1fr));gap:0;font:500 12px/1.3 var(--font);color:var(--ink2)}
+.oxk-kt>span{padding:6px 2px;border-top:1px solid rgba(255,255,255,.06);text-align:right;font-variant-numeric:tabular-nums}
+.oxk-kt>span:nth-child(5n+1){text-align:left;font-weight:600;color:var(--ink)}
+.oxk-kt>span.h{border-top:0;color:var(--ink3);font-size:11px;font-weight:600;padding-top:0}
+.oxk-kt>span.gdr{color:#FFD89A}
+.oxk-kt small{display:block;font-size:10.5px;color:var(--ink3);font-weight:500}
+.oxk-ev{margin:0;padding:0;list-style:none}
+.oxk-ev li{padding:8px 0;border-top:1px solid rgba(255,255,255,.06);font:500 12.5px/1.45 var(--font);color:var(--ink2)}
+.oxk-ev li:first-child{border-top:0}
+.oxk-ev li b{color:var(--ink)} .oxk-ev li .ok{color:var(--ox-ok)} .oxk-ev li .no{color:var(--ox-no)} .oxk-ev li .gb{color:#FFD89A}
+.oxk-ev li small{display:block;color:var(--ink3);font-size:11.5px}
+.oxk-ft{margin:6px 2px 0;font:500 11.5px/1.4 var(--font);color:var(--ink3)}
+.oxk.min .oxk-bd{display:none}
+/* At › Kupon sekmesi kartı */
+.oxk-at{margin:14px 0 12px}
+.oxk-at .oxk-gr{margin:0 0 10px}
+.oxk-at .oxk-gh{display:flex;align-items:baseline;gap:8px;margin:12px 2px 6px;font:700 14px/1.3 var(--font);color:var(--ox-g2)}
+.oxk-at .oxk-gh small{font:500 12px var(--font);color:var(--ink3)}
+.oxk-at .oxk-ay{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+.oxk-at .oxk-ay span{display:inline-flex;align-items:center;gap:3px;padding:3px 7px;border-radius:8px;background:rgba(255,255,255,.05);font:600 11.5px/1.3 var(--font);color:var(--ink2)}
+.oxk-at .oxk-ay span.g{background:rgba(59,234,126,.12);color:var(--ox-ok)} .oxk-at .oxk-ay span.x{background:rgba(255,107,120,.12);color:var(--ox-no)}
+.oxk-more{width:100%;min-height:40px;border-radius:12px;border:1px dashed rgba(255,255,255,.16);background:none;color:var(--ink2);font:600 13px var(--font);cursor:pointer}
+</style>
+<script id="oxx-kupon-v110">
+// =====================================================================
+// v110 · OXX'in kuponları (sözleşme: lab/OXX_KUPON.md). Arayüz yalnız OKUR; data/ dosyalarına yazmaz.
+// • KUPO › Kuponlarım üstünde #oxkBox: gün seçici, kilitli futbol+basket kuponları (strateji adı, bacaklar, kilit, OXX olasılığı,
+//   toplam oran, canlı durum), "Kopyala → kuponuma" (KX deposuna yeni kupon + kxAdd; kullanıcı verisi yalnız localStorage).
+//   Bacak sonucu dosyada varsa o; yoksa uygulamanın sonuç verisi (RS.load / BK canlı) + mkHit.
+// • Karne: strateji başına CANLI ve GERİYE DÖNÜK ayrı satır (kupon, tutan, beklenen, bacak isabeti) + son öğrenme olayları.
+// • At kuponları futbol listesine karışmaz: window.oxxAtKartHtml() bağımsız kart; At › Kupon sekmesi çizilince #at2Box sonuna
+//   ince kanca (MutationObserver) ile eklenir; #at2Box yoksa sessizce atlanır.
+// • OXX sohbeti: "oxx kuponları", "bugün ne oynadın", "oxx karnesi" → kısa cevap + KUPO'ya yönlendirme.
+// =====================================================================
+(function(){
+  const NOW=()=>Date.now(), $$=id=>document.getElementById(id);
+  const E=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  const today=()=>{ try{ return istDay(new Date()); }catch(e){ return new Date().toISOString().slice(0,10); } };
+  const addD=(d,k)=>{ const t=new Date(Date.parse(d+"T12:00:00Z")+k*864e5); return t.toISOString().slice(0,10); };
+  const pct=p=>p==null||isNaN(p)?"–":(p>0&&p<.1?(p*100).toLocaleString("tr-TR",{maximumFractionDigits:1}):String(Math.round(p*100)));
+  const f2=x=>x==null||isNaN(x)?"–":(+x).toLocaleString("tr-TR",{minimumFractionDigits:2,maximumFractionDigits:2});
+  const f1=x=>x==null||isNaN(x)?"–":(+x).toLocaleString("tr-TR",{maximumFractionDigits:1});
+  const tU=s=>{ if(!s) return 0; const t=Date.parse(String(s).replace(/Z?$/,"Z").replace(/ZZ$/,"Z")); return isNaN(t)?0:t; };
+  const hm=t=>{ try{ return ist(new Date(t),{hour:"2-digit",minute:"2-digit"}); }catch(e){ return ""; } };
+  const dLbl=d=>{ const t=today(); if(d===t) return "Bugün"; if(d===addD(t,-1)) return "Dün"; if(d===addD(t,1)) return "Yarın";
+    try{ return new Date(d+"T12:00:00Z").toLocaleDateString("tr-TR",{day:"numeric",month:"long",weekday:"short",timeZone:"UTC"}); }catch(e){ return d; } };
+  const dKisa=d=>{ try{ return new Date(d+"T12:00:00Z").toLocaleDateString("tr-TR",{day:"numeric",month:"short",timeZone:"UTC"}); }catch(e){ return d; } };
+  const AD={fb_altin:"Altın",fb_70:"%70+",fb_3lu:"En olası 3'lü",fb_deger:"Değer",fb_guvenli:"Güvenli",bk_en_olasi:"Basket en olası",
+    at_altin:"Altın atlar",at_sirali_ikili:"Sıralı ikili",at_ikili:"İkili",at_cifte:"Çifte",at_altili_dar:"6'lı dar (64)",at_altili_orta:"6'lı orta (192)",at_altili_genis:"6'lı geniş (576)"};
+  const ACK={fb_altin:"oxx'in en güvendiği, oranı makul maçlar",fb_70:"birlikte tutma olasılığı ≥ %70",fb_3lu:"günün en olası 3 seçimi",fb_deger:"olasılık × oran en yüksek",fb_guvenli:"yeni pazarlarda ≥ %80 seçimler",bk_en_olasi:"basketin en olası seçimleri"};
+  const SIRA=["fb_altin","fb_70","fb_3lu","fb_deger","fb_guvenli","bk_en_olasi"], SIRA_AT=["at_altin","at_sirali_ikili","at_ikili","at_cifte","at_altili_dar","at_altili_orta","at_altili_genis"];
+  const ad=s=>AD[s]||s;
+  // ---------- veri (yalnız okuma; 5 dk bellek önbelleği) ----------
+  const C=new Map();
+  function j(url,ttl){ const c=C.get(url); if(c&&(c.p||NOW()-c.at<(ttl||300e3))) return c.p||Promise.resolve(c.v);
+    const p=fetch(url,{cache:"no-cache"}).then(r=>r.ok?r.json():null).catch(()=>null).then(v=>{ C.set(url,{at:NOW(),v}); return v; }); C.set(url,{at:NOW(),p}); return p; }
+  const peek=url=>{ const c=C.get(url); return c&&!c.p?c.v:undefined; };
+  const U={gun:d=>`data/oxx_kupon/${d}.json`, at:d=>`data/oxx_kupon/at/${d}.json`, karne:"data/oxx_karne.json", gunluk:"data/ogrenme_gunlugu.json", ayar:"data/oxx_ayar.json", rb:"data/oxx_rollback.json"};
+  const S={d:null, tab:"gun", acik:true, atAll:{}};
+  try{ const v=localStorage.getItem("bx-oxk"); if(v){ const o=JSON.parse(v); if(o&&o.acik===false) S.acik=false; if(o&&o.tab==="karne") S.tab="karne"; } }catch(e){}
+  const saveUI=()=>{ try{ localStorage.setItem("bx-oxk",JSON.stringify({acik:S.acik,tab:S.tab})); }catch(e){} };
+  // ---------- bacak / kupon durumu ----------
+  const RSV={};   // gün → RS.load sonucu (uygulamanın sonuç önbelleği)
+  let gradeAt=0;
+  function fbRes(l){ const d=(()=>{ try{ return istDay(new Date(tU(l.bas_utc))); }catch(e){ return null; } })(); const R=d&&RSV[d];
+    if(!R||!R.list) return null; const m=(l.iid&&R.list.find(x=>x.id===l.iid))||R.list.find(x=>{ try{ return tmEq(x.h,l.h)&&tmEq(x.a,l.a); }catch(e){ return false; } });
+    return m||null; }
+  function fbLive(l){ try{ const L=typeof IDL!=="undefined"&&IDL.live&&IDL.live[1]||[]; return (l.iid&&L.find(x=>x.id===l.iid))||L.find(x=>tmEq(x.h,l.h)&&tmEq(x.a,l.a))||null; }catch(e){ return null; } }
+  function bkF(l){ try{ return (BK.data&&BK.data.fixtures||[]).find(x=>x.h===l.h&&x.a===l.a)||null; }catch(e){ return null; } }
+  // s: g tuttu · x tutmadı · l sürüyor · w bekliyor · q sonuç bekleniyor (maç bitti, sonuç yok) ; sc: skor metni
+  function legSt(l,sp){ if(l.tuttu===true) return {s:"g",sc:l.sonuc||""}; if(l.tuttu===false) return {s:"x",sc:l.sonuc||""};
+    const t0=tU(l.bas_utc), now=NOW(); if(!t0||t0>now) return {s:"w"};
+    if(sp==="bk"){ const f=bkF(l); let lv=null; try{ lv=f&&bkLiveOf(f); }catch(e){}
+      if(lv&&lv.state==="post"&&lv.hs!=null){ const ok=mkHit(l.kod,+lv.hs,+lv.as,null,null,null); return {s:ok===true?"g":ok===false?"x":"q",sc:`${lv.hs}-${lv.as}`}; }
+      if(lv&&lv.state==="in") return {s:"l",sc:lv.hs!=null?`${lv.hs}-${lv.as}`:""};
+      return {s:now-t0<3*3600e3?"l":"q"}; }
+    const m=fbRes(l); if(m){ const ok=mkHit(l.kod,m.hs,m.as,m.h1,m.a1,null); return {s:ok===true?"g":ok===false?"x":"q",sc:`${m.hs}-${m.as}`}; }
+    const lv=fbLive(l); if(lv) return {s:"l",sc:lv.hs!=null?`${lv.hs}-${lv.as}`:""};
+    return {s:now-t0<130*60e3?"l":"q"}; }
+  function kupSt(k,sp){ const L=(k.bacaklar||[]).map(l=>legSt(l,sp));
+    if(k.durum==="gecersiz") return {s:"v",t:"Geçersiz",L};
+    if(k.durum==="tuttu"||k.tuttu===true) return {s:"g",t:"Tuttu",L};
+    if(k.durum==="tutmadi"||k.tuttu===false) return {s:"x",t:"Tutmadı",L};
+    if(L.some(x=>x.s==="x")) return {s:"x",t:"Tutmadı",L};
+    if(L.length&&L.every(x=>x.s==="g")) return {s:"g",t:"Tuttu",L};
+    if(L.some(x=>x.s!=="w")) return {s:"l",t:"Sürüyor",L};
+    return {s:"w",t:"Bekliyor",L}; }
+  // Başlamış ve sonucu dosyada olmayan futbol bacakları için uygulamanın sonuç verisini (RS.load) bir kez yükle
+  function needGrade(D){ if(!D||typeof RS==="undefined"||!RS.load) return; const days=new Set();
+    for(const k of (D.futbol&&D.futbol.kuponlar)||[]) for(const l of k.bacaklar||[]) if(l.tuttu==null&&tU(l.bas_utc)&&NOW()-tU(l.bas_utc)>100*60e3){ try{ days.add(istDay(new Date(tU(l.bas_utc)))); }catch(e){} }
+    const due=[...days].filter(d=>!RSV[d]||(d===today()&&NOW()-(RSV[d].at||0)>120e3)); if(!due.length||NOW()-gradeAt<30e3) return; gradeAt=NOW();
+    Promise.all(due.slice(0,3).map(d=>RS.load(d).then(r=>{ if(r&&r.list) RSV[d]=r; }).catch(()=>{}))).then(()=>paint()); }
+  // ---------- KUPO bölümü ----------
+  const legHtml=(l,sp,st)=>{ const t0=tU(l.bas_utc);
+    const ic=st.s==="g"?`<i class="g" role="img" aria-label="Tuttu">✓</i>`:st.s==="x"?`<i class="x" role="img" aria-label="Tutmadı">✗</i>`:st.s==="l"?`<i class="l" role="img" aria-label="Sürüyor">●</i>`:`<i role="img" aria-label="${st.s==="q"?"Sonuç bekleniyor":"Bekliyor"}">${st.s==="q"?"…":"⏳"}</i>`;
+    return `<div class="oxk-l"><div class="t"><b>${sp==="bk"?"🏀 ":""}${E(l.h)} – ${E(l.a)}</b><small>${E(l.lig||"")}${t0?` · ${E(hm(t0))}`:""}</small>
+      <small><em>${E(l.secim||l.kod)}</em> · OXX %${pct(l.p)}${l.oran?` · oran ${f2(l.oran)}`:""}${l.tahmin?` · tahmin ${E(l.tahmin)}`:""}</small></div>
+      <div class="r">${ic}${st.sc?`<span>${E(st.sc)}${l.iy?` <small style="color:var(--ink3)">(İY ${E(l.iy)})</small>`:""}</span>`:""}</div></div>`; };
+  function kupHtml(k,sp,blk,D){ const st=kupSt(k,sp), L=k.bacaklar||[], lk=blk.kilit_tsi||D.kilit_tsi||"";
+    const up=L.filter(l=>tU(l.bas_utc)>NOW()).length;
+    return `<div class="oxk-c" data-oxid="${E(k.id)}"><div class="oxk-ch"><span class="oxk-nm">${E(ad(k.strateji))}</span><span class="oxk-sp">${sp==="bk"?"🏀 basket":"⚽ futbol"}</span><span class="oxk-st ${st.s}">${st.s==="g"?"✓ ":st.s==="x"?"✗ ":""}${E(st.t)}</span></div>
+      <div class="oxk-mt"><span>${L.length} maç</span><span>Toplam oran <b>${k.oran?f2(k.oran):"–"}</b></span><span>OXX <b>%${pct(k.p)}</b></span>${lk?`<span>🔒 ${E(D.geriye_donuk?"sonradan kuruldu":String(lk).slice(11,16))}</span>`:""}</div>
+      ${L.map((l,i)=>legHtml(l,sp,st.L[i])).join("")}
+      ${D.geriye_donuk?"":`<button type="button" class="oxk-cp" data-oxk="cp" data-id="${E(k.id)}" ${up?"":"disabled"} aria-label="${E(ad(k.strateji))} kuponunu kendi kuponuma kopyala">${up?`⧉ Kopyala → kuponuma${up<L.length?` <small style="font-weight:500;color:var(--ink3)">(${up}/${L.length} maç)</small>`:""}`:"Maçlar başladı · kopyalanamaz"}</button>`}</div>`; }
+  function gunHtml(D,d){ const t=today();
+    const nav=`<div class="oxk-day"><button type="button" data-oxk="dp" aria-label="Önceki gün">‹</button><b>${E(dLbl(d))}${D&&D.geriye_donuk?`<span class="oxk-gd" title="Kilit sistemi bu gün çalışmıyordu; kuponlar sonradan, yalnız o günden önce bilinenle kuruldu">geriye dönük</span>`:""}<small>${E(dKisa(d))}</small></b><button type="button" data-oxk="dn" aria-label="Sonraki gün" ${d>=t?"disabled":""}>›</button></div>`;
+    if(D===undefined) return nav+`<div class="oxk-emp">Yükleniyor…</div>`;
+    if(!D) return nav+`<div class="oxk-emp"><b>Bu gün için OXX kuponu yok</b>${d===t?"Kuponlar gün içinde, yeterli aday maç hazır olunca kilitlenir.":"O gün kilit yapılmamış."}</div>`;
+    const K=[]; for(const sp of ["futbol","basket"]){ const b=D[sp]; if(b&&Array.isArray(b.kuponlar)) for(const k of b.kuponlar) K.push([k,sp==="basket"?"bk":"fb",b]); }
+    K.sort((a,b)=>SIRA.indexOf(a[0].strateji)-SIRA.indexOf(b[0].strateji));
+    let h=nav;
+    if(D.geriye_donuk) h+=`<p class="oxk-note"><b>Geriye dönük:</b> bu günün kuponları sonradan, yalnız o günden önce bilinen bilgiyle kuruldu. Karnede canlı kuponlardan ayrı sayılır.</p>`;
+    const fbL=D.futbol&&D.futbol.kilit_tsi;
+    if(!K.length) return h+`<div class="oxk-emp"><b>Henüz kilitli kupon yok</b>Futbol kuponları günün en az 10 aday maçı hazır olunca kilitlenir; kilitten sonra değişmez.</div>`;
+    h+=K.map(([k,sp,b])=>kupHtml(k,sp,b,D)).join("");
+    if(!D.futbol&&d===t) h+=`<p class="oxk-note">Futbol kuponları henüz kilitlenmedi.</p>`;
+    if(!D.basket&&D.futbol) h+=`<p class="oxk-note">Bugün basket kuponu yok (en olası seçimler eşiği geçmedi ya da maç yok).</p>`;
+    h+=`<p class="oxk-ft">${fbL&&!D.geriye_donuk?`Kilit ${E(String(fbL).slice(11,16))}: kuponlar kilitten sonra değişmez. `:""}Olasılık bacakların çarpımıdır (maçlar bağımsız sayılır). At kuponları At › Kupon sekmesinde. ${E(D.uyari||"Hobi amaçlı · 18+")}</p>`;
+    return h; }
+  // karne satırı
+  const ozet=(o,cls,lbl)=>{ o=o||{n:0}; const b=o.bacak||null;
+    return `<span class="${cls||""}">${lbl}</span><span class="${cls||""}">${o.n||0}</span><span class="${cls||""}">${o.n?`${o.tutan}<small>%${pct(o.isabet)}</small>`:"–"}</span><span class="${cls||""}">${o.n?f1(o.beklenen):"–"}</span><span class="${cls||""}">${b&&b.n?`${b.tutan}/${b.n}<small>%${pct(b.isabet)}</small>`:"–"}</span>`; };
+  function karneBlok(id,s){ return `<div class="oxk-k"><h3>${E(ad(id))}</h3><p>${E(s.ad||"")}${ACK[id]?` · ${E(ACK[id])}`:""}${s.bekleyen?` · ${s.bekleyen} kupon sonuç bekliyor`:""}</p>
+      <div class="oxk-kt" role="table" aria-label="${E(ad(id))} karnesi"><span class="h"></span><span class="h">Kupon</span><span class="h">Tutan</span><span class="h">Beklenen</span><span class="h">Bacak</span>
+      ${ozet(s.canli,"","Canlı")}${ozet(s.geriye_donuk,"gdr","Geriye dönük")}</div></div>`; }
+  const sayi=x=>String(x).replace(/(\d)\.(\d)/g,"$1,$2");
+  function olayMetni(r){ let a=String(r.aciklama||r.anahtar||""); for(const [k,v] of Object.entries(AD)) a=a.split(k).join(v+" kuponu");
+    a=a.replace(/\bp_min\b/g,"olasılık eşiği").replace(/\bomin\b/g,"en düşük oran").replace(/\bomax\b/g,"en yüksek oran").replace(/\bgunde\b/g,"günlük maç sayısı").replace(/^keşif:\s*/i,"Keşif denemesi: ");
+    return sayi(a); }
+  function olayKarar(r){ const k=String(r.karar||""), n=String(r.neden||"");
+    if(/kabul/i.test(k)) return `<span class="ok">kabul edildi, uygulanıyor</span>`;
+    if(/GER[İI] ALIND/i.test(k)) return `<span class="no">geri alındı</span> (kabulden sonra kötüleşti; 14 gün dondu)`;
+    if(/kal[ıi]c[ıi]/i.test(k)) return `<span class="ok">kalıcı oldu</span> (14 gün sonra da iyi)`;
+    if(/uzat/i.test(k)) return `yeniden sınama uzatıldı (veri az)`;
+    if(/veri_yetersiz/.test(k)) return `veri yetersiz, denenemedi`;
+    if(/dondur/.test(k)) return `dondurulmuş anahtar, denenmedi`;
+    if(/ret/.test(k)){ const why=/Altın isabeti düştü/.test(n)?"Altın kupon isabeti düşüyordu":/güçlü/.test(n)?"güçlü seçimlerin isabeti düşüyordu":/iyileşme yok|alt sınır/.test(n)?"sınamada anlamlı iyileşme yok":/kupon sayısı/.test(n)?"kupon sayısı çok azalıyordu":"ölçüt geçilemedi";
+      return `<span class="no">reddedildi</span>: ${why}`; }
+    return E(k||"–"); }
+  function olaylarHtml(G,A,R){ const ev=[];
+    for(const r of (G&&G.kayitlar)||[]) ev.push({t:r.tarih||"",h:`<b>${E(olayMetni(r))}</b> → ${olayKarar(r)}`});
+    for(const g of (A&&A.gecmis)||[]) if(g&&g.olay==="geri_alindi"&&!ev.some(x=>x.t===g.tarih&&/geri alındı/.test(x.h))) ev.push({t:g.tarih||"",h:`<b>${E(sayi(g.anahtar||""))}</b> → <span class="no">geri alındı</span>`});
+    ev.sort((a,b)=>String(b.t).localeCompare(String(a.t)));
+    let h=""; if(R&&R.aktif) h+=`<li><span class="gb">Geri alma etkin</span>${R.neden?`: ${E(R.neden)}`:""}${R.bitis?` <small>${E(R.bitis)} tarihine kadar yeni ayar kabul edilmez</small>`:""}</li>`;
+    const izl=(A&&A.izlenen)||[]; if(izl.length) h+=`<li><span class="gb">İzlenen ayar</span>: ${izl.map(z=>E(sayi(`${z.anahtar||""}`))).join(", ")} <small>kabulden 14 gün sonra yeniden sınanır</small></li>`;
+    h+=ev.slice(0,5).map(x=>`<li>${x.h}<small>${E(x.t?dKisa(String(x.t).slice(0,10)):"")}</small></li>`).join("");
+    if(!h) h=`<li>Henüz öğrenme olayı yok.</li>`;
+    const ay=A&&A.surum?`<p class="oxk-ft">Etkin ayar: <b style="color:var(--ink2)">${E(A.surum)}</b>. OXX her gece en fazla 3 küçük ayar dener; yalnız ileriye dönük sınamada anlamlı iyileşme varsa kabul eder.</p>`:"";
+    return `<div class="oxk-k"><h3>Son öğrenme olayları</h3><ul class="oxk-ev">${h}</ul>${ay}</div>`; }
+  function karneHtml(K,G,A,R){ if(K===undefined) return `<div class="oxk-emp">Yükleniyor…</div>`;
+    if(!K||!K.stratejiler) return `<div class="oxk-emp"><b>Karne henüz yok</b>İlk kuponlar sonuçlanınca burada görünür.</div>`;
+    const dn=K.donem||{}, gd=dn.geriye_donuk||[], cn=dn.canli||[];
+    let h=`<p class="oxk-note"><b>Canlı</b> = maçtan önce gerçekten kilitlenen kuponlar${cn.length?` (${E(dKisa(cn[0]))}'den beri)`:""}. <b style="color:#FFD89A">Geriye dönük</b> = kilit sistemi kurulmadan önceki günler için sonradan, yalnız o günden önce bilinenle kurulanlar${gd.length?` (${E(dKisa(gd[0]))} – ${E(dKisa(gd[1]))})`:""}. İkisi toplanmaz. <b>Beklenen</b> = OXX olasılıklarının toplamı; iyi ayarlı robotta tutan ≈ beklenen.</p>`;
+    for(const id of SIRA){ const s=K.stratejiler[id]; if(s) h+=karneBlok(id,s); }
+    h+=G===undefined?`<div class="oxk-k"><h3>Son öğrenme olayları</h3><div class="oxk-emp">Yükleniyor…</div></div>`:olaylarHtml(G,A,R);
+    h+=`<p class="oxk-ft">At kuponlarının karnesi At › Kupon sekmesinde. ${E(K.uyari||"")}</p>`; return h; }
+  function shell(){ const v=$$("v-kupon"); if(!v) return null; let b=$$("oxkBox");
+    if(!b){ b=document.createElement("section"); b.id="oxkBox"; b.className="oxk"; b.setAttribute("aria-label","OXX'in kuponları");
+      const ch=$$("kxChips"), cb=$$("cpBox"), anc=ch||cb; if(anc) anc.before(b); else v.appendChild(b);
+      b.addEventListener("click",onClick); }
+    return b; }
+  function paint(){ const b=shell(); if(!b) return; const tab=(typeof KP!=="undefined"&&KP.tab)||"cp"; b.hidden=tab!=="cp"; if(b.hidden) return;
+    if(!S.d) S.d=today(); const d=S.d;
+    const D=peek(U.gun(d)), K=peek(U.karne);
+    let n=0, w=0; if(D) for(const sp of ["futbol","basket"]) for(const k of (D[sp]&&D[sp].kuponlar)||[]){ n++; const s=kupSt(k,sp==="basket"?"bk":"fb").s; if(s==="g") w++; }
+    const sub=D===undefined?"yükleniyor":D?`${dLbl(d)} · ${n} kupon${w?` · ${w} tuttu`:""}`:`${dLbl(d)} · kupon yok`;
+    let h=`<div class="oxk-hd"><span class="oxk-bdg" aria-hidden="true">OXX</span><h2>OXX'in kuponları<small>${E(sub)} · kendi oynadığı, kilitli</small></h2><button type="button" class="oxk-tg" data-oxk="tg" aria-expanded="${S.acik}" aria-controls="oxkBd">${S.acik?"Gizle":"Göster"}</button></div>`;
+    h+=`<div class="oxk-bd" id="oxkBd"><div class="oxk-seg" role="group" aria-label="OXX bölümü"><button type="button" data-oxk="t" data-t="gun" aria-pressed="${S.tab==="gun"}">Kuponlar</button><button type="button" data-oxk="t" data-t="karne" aria-pressed="${S.tab==="karne"}">Karne</button></div>`;
+    h+=S.tab==="karne"?karneHtml(K,peek(U.gunluk),peek(U.ayar),peek(U.rb)):gunHtml(D,d);
+    h+=`</div>`;
+    b.classList.toggle("min",!S.acik); b.innerHTML=h;
+    // eksik veriyi getir
+    const need=[]; if(D===undefined) need.push(j(U.gun(d))); if(S.tab==="karne"){ for(const u of [U.karne,U.gunluk,U.ayar,U.rb]) if(peek(u)===undefined) need.push(j(u)); } else if(K===undefined) need.push(j(U.karne));
+    if(need.length) Promise.all(need).then(()=>{ if(S.d===d) paint(); });
+    else if(S.acik&&S.tab==="gun") needGrade(D); }
+  window.oxkPaint=paint;
+  function onClick(e){ const t=e.target.closest("[data-oxk]"); if(!t) return; e.stopPropagation(); const a=t.dataset.oxk; try{ buzz(6); }catch(_){}
+    if(a==="tg"){ S.acik=!S.acik; saveUI(); paint(); return; }
+    if(a==="t"){ S.tab=t.dataset.t==="karne"?"karne":"gun"; S.acik=true; saveUI(); paint(); return; }
+    if(a==="dp"||a==="dn"){ const nd=addD(S.d||today(),a==="dp"?-1:1); if(nd>today()) return; S.d=nd; paint(); return; }
+    if(a==="cp"){ kopyala(t.dataset.id); return; } }
+  // ---------- Kopyala → kuponuma: KX deposunda yeni kupon, bacaklar mevcut ekleme yolu (kxAdd) ile ----------
+  function kupBul(id){ for(const [u,c] of C) if(c&&c.v&&/oxx_kupon\/\d/.test(u)) for(const sp of ["futbol","basket"]) for(const k of (c.v[sp]&&c.v[sp].kuponlar)||[]) if(k.id===id) return [k,sp==="basket"?"bk":"fb"]; return [null]; }
+  function kopyala(id){ const [k,sp]=kupBul(id); if(!k) return; const KX=window.KX;
+    if(!KX||!Array.isArray(KX.L)||typeof window.kxAdd!=="function"){ try{ toast("KUPO hazır değil, biraz sonra tekrar dene"); }catch(e){} return; }
+    const L=(k.bacaklar||[]).filter(l=>tU(l.bas_utc)>NOW()); if(!L.length){ toast("Bu kuponun maçları başladı; kopyalanamaz"); return; }
+    const c={id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),ad:`OXX ${ad(k.strateji)} · ${dKisa(String(k.id).slice(0,10))}`.slice(0,32),items:[],olusturma:NOW(),durum:"acik",oxx:k.id};
+    KX.L.push(c); KX.aktif=c.id; let n=0;
+    for(const l of L){ try{ if(typeof MKT_N!=="undefined"&&l.kod&&!MKT_N[l.kod]&&l.secim) MKT_N[l.kod]=String(l.secim).replace(/ \((ev|dep\.?)\)$/,""); }catch(e){}
+      const mm={lg:sp==="bk"?"bk-"+(l.lg||"bk"):(l.lg||"oxx"),h:l.h,a:l.a,dt:new Date(tU(l.bas_utc))};
+      const ex=sp==="bk"?{sp:"bk"}:(l.iid?{iid:l.iid}:{});
+      try{ if(window.kxAdd({mm,ex},{k:l.kod,n:l.secim,o:l.oran||null,p:l.p},true)) n++; }catch(e){} }
+    if(!n){ const i=KX.L.indexOf(c); if(i>=0) KX.L.splice(i,1); try{ window.kxSave&&window.kxSave(); }catch(e){} toast("Kopyalanamadı"); return; }
+    try{ window.kxSave&&window.kxSave(); localStorage.setItem("bx-coupon",JSON.stringify(c.items)); }catch(e){}
+    toast(`${c.ad} açıldı · ${n} maç${n<(k.bacaklar||[]).length?` (${(k.bacaklar||[]).length-n} maç başladığı için eklenmedi)`:""}`);
+    try{ renderKupon(); }catch(e){} try{ paintCoupon(); }catch(e){}
+    setTimeout(()=>{ const cb=$$("kxChips")||$$("cpBox"); if(cb) cb.scrollIntoView({block:"start",behavior:"smooth"}); },60); }
+  window.oxxKopyala=kopyala;
+  // ---------- KUPO zincirleri ----------
+  try{ const _rk=renderKupon; renderKupon=function(){ const r=_rk.apply(this,arguments); try{ paint(); }catch(e){ console.warn("oxx-kupon-v110",e); } return r; }; }catch(e){}
+  try{ const _kt=kuponTab; kuponTab=function(){ const r=_kt.apply(this,arguments); try{ paint(); }catch(e){} return r; }; }catch(e){}
+  try{ const b=document.querySelector('nav.tabs button[data-v="kupon"]'); if(b) b.addEventListener("click",()=>setTimeout(()=>{ try{ paint(); }catch(e){} },40)); }catch(e){}
+  setInterval(()=>{ const v=$$("v-kupon"); if(v&&!v.hidden&&!document.hidden&&S.acik&&S.tab==="gun"&&S.d===today()){ C.delete(U.gun(S.d)); paint(); } },5*60e3);
+
+  // =====================================================================
+  // At › Kupon sekmesi: "OXX'in at kuponları" (bağımsız kart + ince kanca)
+  // =====================================================================
+  const atSel=l=>{ const s=l.secim||[], a=l.adlar||[]; return s.map((no,i)=>`${no}${a[i]?" "+a[i]:""}`).join(l.tur==="sirali_ikili"?" → ":" + "); };
+  function atLegSt(l){ return l.tuttu===true?"g":l.tuttu===false?"x":tU(l.bas_utc)&&tU(l.bas_utc)<NOW()?"l":"w"; }
+  function atKupHtml(k){ const st=kupSt({durum:k.durum,tuttu:k.tuttu,bacaklar:[]},"at"); let s=st.s;
+    const L=k.bacaklar||[];
+    if(s==="w"){ if(L.some(l=>l.tuttu===false)) s="x"; else if(L.some(l=>l.tuttu!=null||atLegSt(l)==="l")) s="l"; }
+    const tt={g:"✓ Tuttu",x:"✗ Tutmadı",l:"Sürüyor",w:"Bekliyor",v:"Geçersiz"}[s];
+    if(/^at_altili/.test(k.strateji)){
+      return `<div class="oxk-c"><div class="oxk-ch"><span class="oxk-nm">${E(k.hipodrom||"")} 6'lı</span><span class="oxk-sp">${E(ad(k.strateji))}</span><span class="oxk-st ${s}">${tt}</span></div>
+        <div class="oxk-mt"><span>${E(k.kombinasyon||"–")} kombinasyon</span><span>OXX <b>%${pct(k.p)}</b></span>${k.kilit_tsi?`<span>🔒 ${E(String(k.kilit_tsi).slice(11,16))}</span>`:""}</div>
+        <div class="oxk-ay">${L.map(l=>`<span class="${l.tuttu===true?"g":l.tuttu===false?"x":""}">${E(l.kosu)}. k: ${E((l.secim||[]).join(","))}${l.tuttu===true?" ✓":l.tuttu===false?` ✗${l.kazanan?" ("+E(l.kazanan)+")":""}`:""}</span>`).join("")}</div></div>`; }
+    return `<div class="oxk-c"><div class="oxk-ch"><span class="oxk-nm">${E(L[0]?`${L[0].hipodrom} ${L[0].kosu}. koşu`:"")}${k.tur==="cifte"&&L[1]?` + ${E(L[1].kosu)}.`:""}</span><span class="oxk-sp">${E(L[0]&&L[0].saat||"")}</span><span class="oxk-st ${s}">${tt}</span></div>
+      ${L.map(l=>{ const ls=atLegSt(l); return `<div class="oxk-l"><div class="t"><b>${E(atSel(l))}</b><small>${k.tur==="cifte"?`${E(l.kosu)}. koşu · `:""}OXX %${pct(l.p)}${l.sonuc&&l.sonuc.length?` · sonuç ${E(l.sonuc.slice(0,4).join("-"))}`:""}</small></div>
+        <div class="r"><i class="${ls==="g"?"g":ls==="x"?"x":ls==="l"?"l":""}" role="img" aria-label="${ls==="g"?"Tuttu":ls==="x"?"Tutmadı":ls==="l"?"Koşuldu, sonuç bekleniyor":"Bekliyor"}">${ls==="g"?"✓":ls==="x"?"✗":ls==="l"?"…":"⏳"}</i></div></div>`; }).join("")}
+      ${k.tur==="cifte"?`<div class="oxk-mt" style="margin-bottom:0"><span>İkisi birlikte OXX <b>%${pct(k.p)}</b></span></div>`:""}</div>`; }
+  function atKarneSatir(s){ const o=(x,l)=>x&&x.n?`${l}: ${x.n} kupon · ${x.tutan} tuttu · beklenen ${f1(x.beklenen)}`:`${l}: henüz yok`;
+    return `<small style="display:block;margin-top:1px">${E(o(s.canli,"Canlı"))}</small><small style="display:block;color:#FFD89A">${E(o(s.geriye_donuk,"Geriye dönük"))}</small>`; }
+  window.oxxAtKartHtml=function(){ const d=today(), A=peek(U.at(d)), G=peek(U.gun(d)), K=peek(U.karne);
+    let D=A; if(!D&&G&&G.at) D={kuponlar:G.at.kuponlar,kilit_tsi:G.at.kilit_tsi,geriye_donuk:G.geriye_donuk};
+    let h=`<div class="oxk oxk-at" id="oxkAt" aria-label="OXX'in at kuponları"><div class="oxk-hd"><span class="oxk-bdg" aria-hidden="true">OXX</span><h2>OXX'in at kuponları<small>${E(dLbl(d))}${D&&D.kilit_tsi?` · 🔒 ${E(String(D.kilit_tsi).slice(11,16))}`:""} · kendi oynadığı, kilitli</small></h2></div>`;
+    if(A===undefined&&G===undefined) return h+`<div class="oxk-emp">Yükleniyor…</div></div>`;
+    const Ks=(D&&D.kuponlar)||[];
+    if(!Ks.length) h+=`<div class="oxk-emp"><b>Bugün OXX at kuponu yok</b>Kuponlar gece robotunun tahmini hazır olduktan sonra, henüz başlamamış koşular için kilitlenir.</div>`;
+    else { const by={}; for(const k of Ks) (by[k.strateji]=by[k.strateji]||[]).push(k);
+      for(const id of [...SIRA_AT,...Object.keys(by).filter(x=>!SIRA_AT.includes(x))]){ const L=by[id]; if(!L) continue; const w=L.filter(k=>k.tuttu===true||k.durum==="tuttu").length, all=S.atAll[id], sh=all?L:L.slice(0,3);
+        const ks=K&&K.stratejiler&&K.stratejiler[id];
+        h+=`<div class="oxk-gr"><div class="oxk-gh">${E(ad(id))}<small>${L.length} kupon${w?` · ${w} tuttu`:""}</small></div>${ks?`<div class="oxk-note" style="margin:-2px 2px 8px">${atKarneSatir(ks)}</div>`:""}
+          ${sh.map(atKupHtml).join("")}${L.length>3?`<button type="button" class="oxk-more" data-oxat="${E(id)}" aria-expanded="${!!all}">${all?"Daha az göster":`Tümünü göster (${L.length})`}</button>`:""}</div>`; } }
+    h+=`<p class="oxk-ft">Olasılıklar OXX at modelinin koşudan önce kilitlediği tahminden. Hobi amaçlı ölçümdür; tutar ve bahis bağlantısı yoktur · 18+</p></div>`;
+    return h; };
+  // ince kanca: #at2Box "kupon" sekmesini çizince sona ekle (yoksa sessizce atla)
+  function atKanca(){ const box=$$("at2Box"); if(!box) return false; if(box.__oxk) return true; box.__oxk=1;
+    const put=()=>{ if(!/^#at\/kupon(\/|$)/.test(location.hash||"")) return; const v=$$("v-at"); if(v&&v.hidden) return;
+      const d=today(); if(peek(U.at(d))===undefined||peek(U.gun(d))===undefined||peek(U.karne)===undefined){ Promise.all([j(U.at(d)),j(U.gun(d)),j(U.karne)]).then(()=>{ const o=$$("oxkAt"); if(o) o.outerHTML=window.oxxAtKartHtml(); else put(); }); }
+      if($$("oxkAt")) return; box.insertAdjacentHTML("beforeend",window.oxxAtKartHtml()); };
+    new MutationObserver(()=>{ try{ if(!$$("oxkAt")) put(); }catch(e){} }).observe(box,{childList:true});
+    box.addEventListener("click",e=>{ const b=e.target.closest("[data-oxat]"); if(!b) return; e.preventDefault(); e.stopPropagation(); const id=b.dataset.oxat; S.atAll[id]=!S.atAll[id]; const o=$$("oxkAt"); if(o) o.outerHTML=window.oxxAtKartHtml(); });
+    put(); return true; }
+  if(!atKanca()){ let n=0; const tm=setInterval(()=>{ if(atKanca()||++n>20) clearInterval(tm); },1500); window.addEventListener("hashchange",()=>{ try{ atKanca(); }catch(e){} }); }
+
+  // =====================================================================
+  // OXX sohbeti: OXX'in kuponları / bugün ne oynadın / OXX karnesi
+  // =====================================================================
+  const NZ=t=>String(t||"").toLocaleLowerCase("tr").replace(/ç/g,"c").replace(/ğ/g,"g").replace(/ı/g,"i").replace(/ö/g,"o").replace(/ş/g,"s").replace(/ü/g,"u").replace(/[^a-z0-9 ]/g," ").replace(/\s+/g," ").trim();
+  const RX_KAR=/\b(oxx|bulutoxx)\w*( (in|un|nin|nun))? (kupon\w* )?(karne\w*|isabet\w*|performans\w*|basari\w*)\b|\b(senin|kendi) (kupon\w* )?karne(n|ni|si|sini)\b/;
+  const RX_KUP=/\b(oxx|bulutoxx)\w*( (in|un|nin|nun))? (gunluk |bugunku |kendi |kilitli )?kupon\w*|\b(bugun|dun|bu aksam)? ?ne oynadin\b|\bne oynuyorsun\b|\bhangi kupon\w* (oynadin|yaptin|kurdun)|\bsenin kupon(un|lar|larin|larini)\b|\bkendi kupon(un|lar|larin)\b|\boxx ne oynadi\b/;
+  async function oxxBot(raw){ const s=NZ(raw); if(!s) return null; const kar=RX_KAR.test(s), kup=!kar&&RX_KUP.test(s); if(!kar&&!kup) return null;
+    const ch=["KUPO'yu aç",kar?"OXX kuponları":"OXX karnesi"]; S.tab=kar?"karne":"gun"; S.acik=true; S.d=today(); saveUI();
+    if(kar){ const [K,G]=await Promise.all([j(U.karne),j(U.gunluk)]); if(!K||!K.stratejiler) return {html:"🤖 OXX karnesi henüz hazır değil; ilk kilitli kuponlar sonuçlanınca KUPO'da görünecek.",chips:ch};
+      const satir=id=>{ const z=K.stratejiler[id]; if(!z) return ""; const c=z.canli||{}, g=z.geriye_donuk||{};
+        return `<li><b>${E(ad(id))}</b>: canlı ${c.n?`${c.tutan}/${c.n}`:"henüz yok"} · geriye dönük ${g.n?`${g.tutan}/${g.n} (beklenen ${f1(g.beklenen)})`:"–"}</li>`; };
+      const son=((G&&G.kayitlar)||[]).slice(-1)[0];
+      return {html:`🤖 <b>OXX karnesi</b> (tutan/kupon; canlı ve geriye dönük ayrı):<ul class="bt-ul">${SIRA.map(satir).join("")}</ul>${son?`Son öğrenme: ${E(olayMetni(son))} → ${olayKarar(son)}.<br>`:""}Ayrıntı ve bacak isabeti KUPO › OXX'in kuponları › Karne'de.`,chips:ch}; }
+    const d=today(), D=await j(U.gun(d));
+    const K=[]; if(D) for(const sp of ["futbol","basket"]) for(const k of (D[sp]&&D[sp].kuponlar)||[]) K.push([k,sp==="basket"?"bk":"fb"]);
+    if(!K.length) return {html:`🤖 Bugün henüz kuponumu kilitlemedim. Futbol kuponları günün en az 10 aday maçı hazır olunca kilitlenir; kilitten sonra değişmez. Önceki günleri KUPO › OXX'in kuponları'nda görebilirsin.`,chips:ch};
+    const li=K.map(([k,sp])=>{ const st=kupSt(k,sp); return `<li><b>${E(ad(k.strateji))}</b>: ${(k.bacaklar||[]).length} maç${k.oran?` · oran ${f2(k.oran)}`:""} · OXX %${pct(k.p)} · ${E(st.t)}</li>`; }).join("");
+    const lk=D.futbol&&D.futbol.kilit_tsi;
+    return {html:`🤖 Bugün ${K.length} kupon oynadım${lk?` (kilit ${E(String(lk).slice(11,16))})`:""}:<ul class="bt-ul">${li}</ul>Bacakları görmek ya da birini kendi kuponuna kopyalamak için KUPO'ya bak.`,chips:ch}; }
+  window.oxxBot=oxxBot;
+  if(typeof botAnswer==="function"){ const _ba=botAnswer; botAnswer=async function(raw){ try{ const r=await oxxBot(raw); if(r) return r; }catch(e){} return _ba.apply(this,arguments); }; }
+  document.addEventListener("click",e=>{ const b=e.target.closest("#botChips button[data-q]"); if(!b) return; const t=b.dataset.q;
+    if(t==="OXX kuponları"||t==="OXX karnesi"){ S.tab=t==="OXX karnesi"?"karne":"gun"; S.acik=true; S.d=today(); saveUI(); } },true);
+})();
+</script>
 </body>
 </html>
