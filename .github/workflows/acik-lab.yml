@@ -1,0 +1,39 @@
+name: BULUTOXX acik veri laboratuvari
+# Haftada bir: açık kaynakların (Club Elo — api.clubelo.com, atıf clubelo.com; openfootball/champions-league — CC0)
+# tahmine katkısını yürüyen pencereyle ("hiç oynanmamış gibi") sınar (lab/acik_lab.py).
+# Yalnız data/acik_lab.json (toplu metrik) ve data/acik/elo_kupa.json (üretim bayrağı) yazar; ham kaynak dosyaları
+# depoya girmez (geçici önbellek, actions/cache). Anahtar/ücretli API yok; ana iş akışlarını etkilemez.
+on:
+  schedule:
+    - cron: "37 4 * * 1"
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: acik-lab
+  cancel-in-progress: false
+jobs:
+  lab:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install numpy==2.1.3
+      - name: Kaynak önbelleği (geçmiş Elo anlık görüntüleri değişmez; yeniden indirilmez)
+        uses: actions/cache@v4
+        with:
+          path: _acik_onbellek
+          key: acik-${{ github.run_id }}
+          restore-keys: acik-
+      - name: Açık veri deneyi (seçim dilimi → sınama dilimi kapısı)
+        env: { ACIK_ONBELLEK: _acik_onbellek, ACIK_BUDGET: "1020" }
+        run: timeout 1200 python lab/acik_lab.py || echo "açık veri laboratuvarı atlandı; önceki karar korunuyor"
+      - name: Yalnız türetilmiş çıktıları kaydet
+        run: |
+          git config user.name "bulutoxx-bot"; git config user.email "bulutoxx-bot@users.noreply.github.com"
+          git add data/acik_lab.json data/acik 2>/dev/null || true
+          git diff --cached --quiet && { echo "değişiklik yok"; exit 0; }
+          git commit -qm "Açık veri laboratuvarı $(date -u +%F) [skip ci]"
+          for i in 1 2 3; do git pull -q --rebase -X theirs origin main && git push -q origin HEAD:main && break; sleep 8; done

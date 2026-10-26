@@ -32,6 +32,8 @@ jobs:
         env:
           APISPORTS_KEY: ${{ secrets.APISPORTS_KEY }}   # API-Football / API-Basketball (ücretsiz üyelik, günde 100 istek)
           ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}     # The Odds API (ücretsiz üyelik, ayda 500 kredi)
+      - name: Açık veri (Club Elo → kupa güçleri; bayrak data/acik/elo_kupa.json, geri alınabilir)
+        run: timeout 120 python scripts/acik_veri.py || true
       - name: Veri toplayıcı (öneri arşivi, sonuç puanlama, günlük özet)
         run: python scripts/collector.py || echo "Toplayıcı bu sefer atlandı"
       - name: Basketbol verilerini indir ve modeli eğit
