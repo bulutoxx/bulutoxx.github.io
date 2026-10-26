@@ -227,7 +227,7 @@ Uygulamadaki **sabah tahminleri yalnız modeldir** (sabah programında ganyan or
 - Sonuçlar: 2025-01-01 → 2026-10-26, **10,929 yerli koşu**, 106,211 koşan at; tam oranlı koşu 10,895. Yabancı (simulcast) koşular ve kazananı belirsiz koşular çıkarıldı ({'yabanci': 3205, 'kazanansiz': 21, 'az_at': 0}).
 - Hipodromlar: İstanbul 2078, İzmir 1720, Bursa 1420, Adana 1306, Ankara 1291, Şanlıurfa 811, Antalya 764, Elazığ 688, Kocaeli 572, Diyarbakır 279.
 - Zaman sıralı ölçüm: ısınma (yalnız geçmiş biriktirme) < 2025-03-01; **sınama (son %30) 2026-03-18→2026-10-26 (3279 tam oranlı koşu)**. aylık walk-forward: sınamanın her ayı için yalnız o aydan önceki verilerle yeniden eğitim; kalibrasyon ayın hemen öncesindeki 90 günde; zaman ağırlığı yarı ömrü 180 gün.
-- Piyasa olasılığı q: **nihai** ganyan oranından (1/oran, marj ayrılmış). Bu, "son koşu öncesi" piyasayı temsil eder; sabah programında oran yoktur. Yani harman ancak koşudan hemen önce kullanılabilir; sabah kilitlenen tahminler yalnız modeldir. Geçmiş koşuların oranları ise (o koşular bittiği için) sabah da bilinir ve modelde "piyasa hafızası" olarak kullanılır.
+- Piyasa olasılığı q: **nihai** ganyan oranından (1/oran, marj ayrılmış). Bu, "son koşu öncesi" piyasayı temsil eder; sabah programındaki oranlar erken havuzdandır (işlem görmeyen at 999.99 yer tutucusuyla gelir). Bu yüzden harman ancak koşudan hemen önce, oran olgunluk kapısı geçince (`lab/at/kilit.py`) kullanılır; sabah kilitleri 27 Ekim 2026'dan beri her zaman yalnız modeldir. 26 Ekim kilitleri erken oranla 'model+piyasa' modunda atıldı ve karnede `mod_hatali` işaretlidir. Geçmiş koşuların oranları ise (o koşular bittiği için) sabah da bilinir ve modelde "piyasa hafızası" olarak kullanılır.
 - Kullanılmayanlar: aynanın memory/*.json özetleri (geleceği içerir → sızıntı), gün içi oran görüntüleri (yalnız 57 gün), hava/nem ve form dizileri (yalnız 2026-04 sonrası programlarda).
 
 ## Sınama metrikleri (son %30, yalnız tam oranlı koşular)
@@ -352,9 +352,19 @@ Yorum: sabah tahmininde en çok taşıyan bilgiler reytingler (at/jokey/antrenö
 
 ## Canlı karne (kilitlenmiş tahminler, sonuç gelince)
 
-- Koşudan önce kilitlenmiş toplam 28 koşu: log-loss 2.6733, ilk seçim isabeti %25.0, ikili isabeti %7.1.
-  - 2026-10-25: 12 koşu, ilk seçim %25.0, log-loss 2.078
-  - 2026-10-26: 16 koşu, ilk seçim %25.0, log-loss 3.1197
+Koşudan önce kilitlenmiş tahminler. 16 koşu `mod_hatali` (26 Ekim: erken havuz oranıyla 'model+piyasa' kilidi); geçmiş silinmedi, iki sütunda gösteriliyor.
+
+| | etkilenenler hariç | dahil |
+|---|---|---|
+| koşu | 12 | 28 |
+| log-loss | 2.078 | 2.6733 |
+| ilk seçim isabeti | %25.0 | %25.0 |
+| ikili isabeti | %0.0 | %7.1 |
+
+| gün | hariç: koşu / LL / ilk seçim | dahil: koşu / LL / ilk seçim |
+|---|---|---|
+| 2026-10-25 | 12 / 2.078 / %25.0 | 12 / 2.078 / %25.0 |
+| 2026-10-26 | – (hepsi etkilendi) | 16 / 3.1197 / %25.0 |
 
 ## Gösteri: 2026-10-27 İstanbul tahminleri
 
@@ -397,7 +407,7 @@ Yorum: sabah tahmininde en çok taşıyan bilgiler reytingler (at/jokey/antrenö
 - At adları kimlik olarak kullanılıyor (aynı adlı iki at nadir ama mümkün). Ekürili atlarda ganyan oranı ortaktır.
 - v4'ten beri ölçüm iki zaman katında (A ≈4,5 ay, B ≈7 ay). Yine de deneylerdeki 0,001–0,003'lük farklar gürültü düzeyinde; katlar arasında işaret değiştiren sonuçlar (ör. üst kova kalibrasyonu) dönemsel dalgalanmadır. İlk seçim isabetinin standart hatası kat başına ≈ ±0,8–1,0 puan; "ilk seçim düşmemeli" kuralı bu yüzden bazı gerçek log-loss kazançlarını da eler (bilerek temkinli).
 - GBM katmanı `lightgbm` paketine dayanır (iş akışı kurar). Kurulamazsa model doğrusal yedeğe düşer; gerekçeler yalnız doğrusal katmandan üretilir.
-- Sabah kilitleri yalnız model olasılığıdır; piyasa harmanı için koşu öncesi oran gerekir (ayna gün içi oranları düzenli yayınlamıyor).
+- Sabah kilitleri 27 Ekim 2026'dan beri her zaman yalnız model olasılığıdır (mod `model`; kilit anındaki geçerli oranlar ve yakalama zamanı `oran_an` alanına yalnız kayıt için yazılır). 26 Ekim kilitleri bu kural yokken erken havuz oranıyla 'model+piyasa' modunda atıldı; karnede `mod_hatali: true` işaretlidir ve iki sütunlu karnede ayrı gösterilir. Gün içi piyasa harmanı yalnız oran kapısı geçince kullanılır: oran yakalandığında koşuya ≤15 dk kalmış, koşan atların ≥%80'inde geçerli oran, toplam olasılık 1.05–1.6; havuz küçük ya da bilinmiyorsa hiçbir atın olasılığı modelden 0.40'tan fazla sapamaz.
 - Uygulamadaki üst özet kutusu `degerlendirme.metrik.harman` isabetini gösteriyor; sabah tahmininin kendi isabeti (yalnız model) daha düşüktür.
 
 ## Sonraki deneyler

@@ -20,6 +20,7 @@ os.environ.setdefault("AT_KAYNAK", os.path.join(KOK, "_tjk-data"))
 import veri, ozellik, model as M  # noqa: E402
 import at5  # noqa: E402  (v5 at özellikleri: a5_* grupları, lab/at/deney5.py)
 import jokey  # noqa: E402  (🏇 jokey/ahır uzmanı: data/at/jokeyler.json + jk_* özellik grupları)
+import kilit  # noqa: E402  (sabah kilidi yalnız model + oran olgunluk kapısı + karne mod_hatali)
 
 CIKTI = os.path.join(KOK, "data", "at")
 TAHMIN = os.path.join(CIKTI, "tahmin")
@@ -245,8 +246,10 @@ def kilitle(gunler, son_sonuc, m, durum, yayin_modu, surum):
             continue
         simdi_tr = (datetime.now(timezone.utc) + timedelta(hours=3)).strftime("%Y-%m-%d %H:%M")
         ks = []
+        yak = kilit.yakalama_tablosu(t)
         for k in prog:
-            kt = kosu_tahmini(m, k, durum, yayin_modu)
+            # sabah kilidi her zaman yalnız model (erken havuz oranı harmana girmez); o anki oranlar yalnız kayda yazılır
+            kt = kilit.sabah_tahmini(kosu_tahmini, m, k, durum, yak.get((k["hipodrom"], k["kosu"])))
             # koşu saati geçtiyse kilit "canlı" sayılmaz (sızıntısızdır ama koşudan sonra atılmıştır)
             kt["kosudan_once"] = not (k.get("saat") and f"{t} {k['saat']}" <= simdi_tr)
             ks.append(kt)
@@ -320,6 +323,7 @@ def puanla(kosular, yalniz_degisince=False):
                            "ilk_secim_isabet": round(float(np.mean([x["ilk_secim_tuttu"] for x in ks])), 4),
                            "ikili_isabet": round(float(np.mean([x["ikili_tuttu"] for x in ks])), 4),
                            "kovalar": M.kovalar(pw[:, 0], pw[:, 1])}
+    kilit.karne_ek(karne)   # mod_hatali işareti + "hariç" sütunu (geçmiş silinmez)
     karne["guncelleme"] = datetime.now(timezone.utc).isoformat(timespec="seconds")
     jyaz(os.path.join(CIKTI, "karne.json"), karne)
     return karne, yeni
@@ -782,7 +786,9 @@ def rapor_yaz(mj, karne, bugun, ayna_durumu):
     a(f"- Zaman sıralı ölçüm: ısınma (yalnız geçmiş biriktirme) < {b['isinma_bitis']}; **sınama (son %30) {b['sinama'][0]}→{b['sinama'][1]} "
       f"({d['kosu_sayisi']['sinama']} tam oranlı koşu)**. {d.get('protokol', '')}.")
     a("- Piyasa olasılığı q: **nihai** ganyan oranından (1/oran, marj ayrılmış). Bu, \"son koşu öncesi\" piyasayı temsil eder; "
-      "sabah programında oran yoktur. Yani harman ancak koşudan hemen önce kullanılabilir; sabah kilitlenen tahminler yalnız modeldir. "
+      "sabah programındaki oranlar erken havuzdandır (işlem görmeyen at 999.99 yer tutucusuyla gelir). Bu yüzden harman ancak "
+      "koşudan hemen önce, oran olgunluk kapısı geçince (`lab/at/kilit.py`) kullanılır; sabah kilitleri 27 Ekim 2026'dan beri "
+      "her zaman yalnız modeldir. 26 Ekim kilitleri erken oranla 'model+piyasa' modunda atıldı ve karnede `mod_hatali` işaretlidir. "
       "Geçmiş koşuların oranları ise (o koşular bittiği için) sabah da bilinir ve modelde \"piyasa hafızası\" olarak kullanılır.")
     a("- Kullanılmayanlar: aynanın memory/*.json özetleri (geleceği içerir → sızıntı), gün içi oran görüntüleri (yalnız 57 gün), "
       "hava/nem ve form dizileri (yalnız 2026-04 sonrası programlarda).")
@@ -871,13 +877,8 @@ def rapor_yaz(mj, karne, bugun, ayna_durumu):
     a("")
     a("## Canlı karne (kilitlenmiş tahminler, sonuç gelince)")
     a("")
-    if karne.get("toplam"):
-        tp = karne["toplam"]
-        a(f"- Koşudan önce kilitlenmiş toplam {tp['kosu']} koşu: log-loss {tp['log_loss']}, ilk seçim isabeti {_y(tp['ilk_secim_isabet'])}, ikili isabeti {_y(tp['ikili_isabet'])}.")
-        for t, g in sorted(karne["gunler"].items())[-7:]:
-            a(f"  - {t}: {g['kosu']} koşu, ilk seçim {_y(g['ilk_secim_isabet'])}, log-loss {g['log_loss']}")
-    else:
-        a("- Henüz puanlanmış kilitli tahmin yok (sonuçlar aynaya düştükçe her gece puanlanır).")
+    for s in kilit.karne_satirlari(karne):   # iki sütun: mod_hatali kilitler hariç / dahil
+        a(s)
     a("")
     a(f"## Gösteri: {bugun} İstanbul tahminleri")
     a("")
@@ -940,7 +941,12 @@ def rapor_yaz(mj, karne, bugun, ayna_durumu):
       "katlar arasında işaret değiştiren sonuçlar (ör. üst kova kalibrasyonu) dönemsel dalgalanmadır. İlk seçim isabetinin standart "
       "hatası kat başına ≈ ±0,8–1,0 puan; \"ilk seçim düşmemeli\" kuralı bu yüzden bazı gerçek log-loss kazançlarını da eler (bilerek temkinli).")
     a("- GBM katmanı `lightgbm` paketine dayanır (iş akışı kurar). Kurulamazsa model doğrusal yedeğe düşer; gerekçeler yalnız doğrusal katmandan üretilir.")
-    a("- Sabah kilitleri yalnız model olasılığıdır; piyasa harmanı için koşu öncesi oran gerekir (ayna gün içi oranları düzenli yayınlamıyor).")
+    a("- Sabah kilitleri 27 Ekim 2026'dan beri her zaman yalnız model olasılığıdır (mod `model`; kilit anındaki geçerli oranlar ve "
+      "yakalama zamanı `oran_an` alanına yalnız kayıt için yazılır). 26 Ekim kilitleri bu kural yokken erken havuz oranıyla "
+      "'model+piyasa' modunda atıldı; karnede `mod_hatali: true` işaretlidir ve iki sütunlu karnede ayrı gösterilir. "
+      f"Gün içi piyasa harmanı yalnız oran kapısı geçince kullanılır: oran yakalandığında koşuya ≤{kilit.KAPI_DK} dk kalmış, "
+      f"koşan atların ≥%{round(100 * kilit.KAPSAM_MIN)}'inde geçerli oran, toplam olasılık {kilit.OV_ALT}–{kilit.OV_UST}; havuz "
+      f"küçük ya da bilinmiyorsa hiçbir atın olasılığı modelden {kilit.SAPMA_MAX:.2f}'tan fazla sapamaz.")
     a("- Uygulamadaki üst özet kutusu `degerlendirme.metrik.harman` isabetini gösteriyor; sabah tahmininin kendi isabeti (yalnız model) daha düşüktür.")
     a("")
     a("## Sonraki deneyler")
