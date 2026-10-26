@@ -1,4 +1,4 @@
-# BULUTOXX at yarışı laboratuvarı — v5 deney masası (elle çalıştırılır; gece akışının parçası değil).
+# OXXai at yarışı laboratuvarı — v5 deney masası (elle çalıştırılır; gece akışının parçası değil).
 # Kalıp: lab/at/deney_jokey.py. Kapı: lab/at/deney4.py iki katlı kapı (Masa, gecer) aynen:
 #   katların ORTALAMA yalnız-model log-loss'u düşmeli (> 0,0001), ortalama ilk-seçim isabeti düşmemeli, en güncel kat (B)
 #   kötüleşmemeli, harman 0,001'den fazla bozulmamalı. Her adımda önceki kabule göre koşu başına eşleştirilmiş ΔLL ve

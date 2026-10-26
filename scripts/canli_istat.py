@@ -1,4 +1,4 @@
-"""BULUTOXX v107 · Canlı maç istatistik ayarı (sunucu tarafı ortak matematik + ESPN anlık görüntüsü).
+"""OXXai v107 · Canlı maç istatistik ayarı (sunucu tarafı ortak matematik + ESPN anlık görüntüsü).
 
 Uygulamadaki <script id="canli-gt-v107"> ile BİREBİR aynı formül: skor/zaman modelinin kalan süre gol beklentileri
 (LH, LA) canlı istatistiklerle ölçülü biçimde eğilir.

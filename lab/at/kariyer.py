@@ -1,4 +1,4 @@
-# BULUTOXX at yarışı laboratuvarı — AT KARİYERİ (arayüzün At profili kartı).
+# OXXai at yarışı laboratuvarı — AT KARİYERİ (arayüzün At profili kartı).
 # Yalnız o günün (ve yarının) programındaki koşucular için, aynanın sonuç arşivinden (data/results) türetilmiş
 # KOMPAKT bir özet yazar: data/at/kariyer.json. Ham ayna verisi (memory/horses.json dahil) depoya kopyalanmaz.
 # Sızıntı yok: bir atın özeti yalnız koştuğu günden ÖNCEKİ sonuçlardan kurulur. tjk.org / atyarisi.com'a istek YOK.

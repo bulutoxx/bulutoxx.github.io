@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""🎟️ OXX kupon robotu (oxx1, 2026-10-26) — OXX'un kendi kuponlarını maçtan ÖNCE kurar, KİLİTLER, sonuçla puanlar.
+"""🎟️ OXXai kupon robotu (oxx1, 2026-10-26) — OXXai'nin kendi kuponlarını maçtan ÖNCE kurar, KİLİTLER, sonuçla puanlar.
 
 Hobi amaçlı ölçüm: para tutarı, bahis bağlantısı yok. Kupon = aynı gün farklı maçlardan seçilen tahminler;
 "tutma olasılığı" = bacak olasılıklarının çarpımı (farklı maçlar bağımsız varsayılır).
@@ -45,7 +45,7 @@ UYARI = "Hobi amaçlı olasılık ölçümü; garanti değildir, para tutarı yo
 # ------------------------------------------------------------------ stratejiler (kimlikler KARARLIDIR; arayüz bunlarla eşler)
 STRATEJI = {
     "fb_altin": ("futbol", "Altın kupon",
-                 "Uygulamadaki öneri (MS 1/X/2, 2,5 A/Ü; oranı olan seçenekler içinde OXX'un en yüksek olasılığı). Olasılık ≥ p_min, "
+                 "Uygulamadaki öneri (MS 1/X/2, 2,5 A/Ü; oranı olan seçenekler içinde OXXai'nin en yüksek olasılığı). Olasılık ≥ p_min, "
                  "oran omin–omax, günde en fazla 'gunde' maç; hepsi tek kuponda."),
     "fb_70": ("futbol", "%70+ kupon",
               "Olasılığı ≥ p_bacak ve oranı ≥ omin öneriler (en olası 'aday' tanesi) içinden, birlikte tutma olasılığı ≥ p_kupon kalan "
@@ -53,7 +53,7 @@ STRATEJI = {
     "fb_3lu": ("futbol", "3 maçlık en olası",
                "Günün en yüksek olasılıklı 3 önerisi (olasılık ≥ p_min, oran ≥ omin; farklı maçlar)."),
     "fb_deger": ("futbol", "Değerli kupon",
-                 "Her maçta oranı olan seçenekler (MS 1/X/2, 2,5 A/Ü) içinde OXX olasılığı × oran en yüksek seçenek (olasılık ≥ p_min); "
+                 "Her maçta oranı olan seçenekler (MS 1/X/2, 2,5 A/Ü) içinde OXXai olasılığı × oran en yüksek seçenek (olasılık ≥ p_min); "
                  "değer katsayısı en yüksek 'bacak' maç."),
     "fb_guvenli": ("futbol", "Güvenli kupon (yeni pazarlar)",
                    "Pazar karnesinde oneriye_uygun=true olan yeni pazarlar (Çifte şans, 1,5/3,5 A/Ü, KG, İY/2Y, birleşik…) içinde her maçın "
@@ -64,11 +64,11 @@ STRATEJI = {
     "at_altin": ("at", "Altın atlar",
                  "Gece robotunun Altın kuralı (data/at/model.json altin_kural): kazanma olasılığı ≥ p_min ve ikinciden fark ≥ fark_min; "
                  "günde en fazla gunluk_max at; her at ayrı ganyan kuponu."),
-    "at_sirali_ikili": ("at", "OXX sıralı ikili",
+    "at_sirali_ikili": ("at", "OXXai sıralı ikili",
                         "Her koşuda (en az 4 at) indirimli Harville ile en olası sıralı ilk iki (1. ve 2. at, sırasıyla)."),
-    "at_ikili": ("at", "OXX ikili",
+    "at_ikili": ("at", "OXXai ikili",
                  "Her koşuda (en az 7 at) en olası sırasız ilk iki."),
-    "at_cifte": ("at", "OXX çifte",
+    "at_cifte": ("at", "OXXai çifte",
                  "Her hipodromda ardışık iki koşunun favorilerinin birlikte kazanma olasılığı en yüksek çifti (tek kombinasyon)."),
     "at_altili_dar": ("at", "6'lı Dar (64)", "lab/at/altili.py dar seviye kuponu (ilk ayaktan önce kilitli)."),
     "at_altili_orta": ("at", "6'lı Orta (192)", "lab/at/altili.py orta seviye kuponu (ilk ayaktan önce kilitli)."),
@@ -84,8 +84,8 @@ VARSAYILAN = {
     "at_sirali_ikili": {"en_az_at": 4, "tau": 1.0},
     "at_ikili": {"en_az_at": 7, "tau": 1.0},
     "at_cifte": {"tau": 1.0},
-    "duzeltme": {"pazar": {}},     # öğrenme döngüsü: kod -> {"a","b"} (OXX kuponlarında bacak olasılığı σ(a + b·logit p))
-    "lig_dis": [],                 # öğrenme döngüsü: OXX kuponlarına alınmayan ligler
+    "duzeltme": {"pazar": {}},     # öğrenme döngüsü: kod -> {"a","b"} (OXXai kuponlarında bacak olasılığı σ(a + b·logit p))
+    "lig_dis": [],                 # öğrenme döngüsü: OXXai kuponlarına alınmayan ligler
 }
 ESKI = ["1", "X", "2", "U25", "A25"]
 MIN_FB_MAC, MIN_BK_MAC = 10, 2
@@ -155,7 +155,7 @@ def _logit(p): p = min(max(p, 1e-6), 1 - 1e-6); return math.log(p / (1 - p))
 
 
 def duzelt(pz, A):
-    """Öğrenme döngüsünün kabul ettiği pazar düzeltmeleri (yalnız OXX kuponlarında; uygulamanın gösterdiği olasılığa dokunmaz)."""
+    """Öğrenme döngüsünün kabul ettiği pazar düzeltmeleri (yalnız OXXai kuponlarında; uygulamanın gösterdiği olasılığa dokunmaz)."""
     D = (A.get("duzeltme") or {}).get("pazar") or {}
     if not D:
         return pz
@@ -752,16 +752,16 @@ def fb_bk_kilitle(gun, simdi, A, log=print):
             if GA and any(s.startswith("fb_") for s in gs):
                 KG = fb_kuponlar(fb_canli_maclar(gun, simdi, GA), GA, uygun_pazarlar(PK), yalniz=[s for s in gs if s.startswith("fb_")])
                 D.setdefault("golge", {})["futbol"] = {"ayar_surum": "onceki", "kuponlar": _numarala(gun, [x for s in KG for x in KG[s]])}
-            log(f"OXX futbol {gun}: {len(M)} aday maç, {len(D['futbol']['kuponlar'])} kupon kilitlendi")
+            log(f"OXXai futbol {gun}: {len(M)} aday maç, {len(D['futbol']['kuponlar'])} kupon kilitlendi")
         else:
-            log(f"OXX futbol {gun}: aday maç {len(M)} < {MIN_FB_MAC}, kilit sonraki çalıştırmaya")
+            log(f"OXXai futbol {gun}: aday maç {len(M)} < {MIN_FB_MAC}, kilit sonraki çalıştırmaya")
     if "basket" not in D:
         M = bk_canli_maclar(gun, simdi, A)
         if len(M) >= MIN_BK_MAC:
             K = bk_kuponlar(M, A)
             D["basket"] = {"kilit_utc": iso(simdi), "kilit_tsi": tsi(simdi), "motor": motor_surumu(), "ayar_surum": A["_surum"],
                            "aday_mac": len(M), "kuponlar": _numarala(gun, K["bk_en_olasi"])}
-            log(f"OXX basket {gun}: {len(M)} aday maç, {len(D['basket']['kuponlar'])} kupon kilitlendi")
+            log(f"OXXai basket {gun}: {len(M)} aday maç, {len(D['basket']['kuponlar'])} kupon kilitlendi")
     return D, yol
 
 
@@ -776,8 +776,8 @@ def at_kilitle(gun, simdi, A, log=print):
             D.update({"kilit_utc": iso(simdi), "kilit_tsi": tsi(simdi), "motor": motor_surumu(), "ayar_surum": A["_surum"],
                       "tahmin_kilit_tsi": T.get("kilit_zamani_tsi"), "aday_kosu": len(ks)})
             D["kuponlar"] = _numarala(gun, [x for s in STRATEJI if s in K for x in K[s]])
-            log(f"OXX at {gun}: {len(ks)} koşu, {len(D['kuponlar'])} kupon kilitlendi")
-    # 6'lı: altili.py kuponu ilk ayaktan önce kurup ilk ayakta kilitler; OXX onu kilitlendiği haliyle benimser (bir kez)
+            log(f"OXXai at {gun}: {len(ks)} koşu, {len(D['kuponlar'])} kupon kilitlendi")
+    # 6'lı: altili.py kuponu ilk ayaktan önce kurup ilk ayakta kilitler; OXXai onu kilitlendiği haliyle benimser (bir kez)
     var = {K.get("altili_id") for K in D["kuponlar"] if K.get("altili_id")}
     yeni = [K for K in at_altili_kuponlar(jl(os.path.join(DATA, "at", "altili", gun + ".json"))) if K["altili_id"] not in var]
     if yeni:
@@ -862,7 +862,7 @@ def karne_kur(bugun, log=print):
     gd = sorted({g for g, _, _, geri in T if geri}); cd = sorted({g for g, _, _, geri in T if not geri})
     J = jl(AYAR, {}) or {}
     out = {"v": 1, "oxx_v": OXX_V, "guncelleme_utc": iso(datetime.now(timezone.utc)), "uyari": UYARI,
-           "aciklama": "Strateji başına kilitli OXX kuponları: n = puanlanmış kupon, tutan, beklenen = kupon tutma olasılıkları toplamı "
+           "aciklama": "Strateji başına kilitli OXXai kuponları: n = puanlanmış kupon, tutan, beklenen = kupon tutma olasılıkları toplamı "
                        "(iyi kalibre robotta tutan ≈ beklenen; z = (tutan − beklenen)/√Σp(1−p)). bacak = kupondaki tek tek tahminler. "
                        "geriye_donuk = kilit sistemi kurulmadan önceki günler için yalnız o günden önce bilinenle sonradan kurulan kuponlar; "
                        "canli = gerçekten maçtan önce kilitlenenler. Para tutarı yoktur.",
@@ -930,7 +930,7 @@ def geriye(n_gun, bugun, log=print):
                 jw_degisince(ya, {"tarih": g, "oxx_v": OXX_V, "geriye_donuk": True, "uyari": UYARI, "kilit_utc": iso(simdi),
                                   "not": "GERİYE DÖNÜK: data/at/replay_kosular.json (sızıntısız yeniden oynatma, p_sabah = yalnız model) ile sonradan kuruldu.",
                                   "kaynak": "replay_kosular.json", "motor": motor_surumu(), "kuponlar": _numarala(g, atg[g])})
-    log(f"OXX geriye dönük: {len(gunler)} gün ({gunler[0]}…{gunler[-1]}), {yaz} gün dosyası yazıldı, {time.time() - t0:.1f} sn")
+    log(f"OXXai geriye dönük: {len(gunler)} gün ({gunler[0]}…{gunler[-1]}), {yaz} gün dosyası yazıldı, {time.time() - t0:.1f} sn")
 
 
 # ------------------------------------------------------------------ ana akış
@@ -957,7 +957,7 @@ def ana(simdi, log=print):
         jw_degisince(f, X)
     K = karne_kur(bugun, log)
     oz = {s: (v["n"], v["tutan"]) for s, v in K["stratejiler"].items() if v["n"]}
-    log(f"OXX karne: {oz} ({time.time() - t0:.1f} sn)")
+    log(f"OXXai karne: {oz} ({time.time() - t0:.1f} sn)")
 
 
 def ana_at(simdi, log=print):
@@ -979,7 +979,7 @@ def ana_at(simdi, log=print):
         if D.get("geriye_donuk"): continue
         if any(K.get("durum") == "bekliyor" for K in D.get("kuponlar", [])):
             at_puanla(D, g, simdi); D["guncelleme_utc"] = iso(simdi); jw_degisince(f, D)
-    log(f"OXX at tamam ({time.time() - t0:.1f} sn)")
+    log(f"OXXai at tamam ({time.time() - t0:.1f} sn)")
 
 
 def main():
@@ -1001,4 +1001,4 @@ if __name__ == "__main__":
     try:
         main()
     except Exception:
-        import traceback; traceback.print_exc(); print("OXX kupon robotu hata verdi; diğer adımlar etkilenmez")
+        import traceback; traceback.print_exc(); print("OXXai kupon robotu hata verdi; diğer adımlar etkilenmez")

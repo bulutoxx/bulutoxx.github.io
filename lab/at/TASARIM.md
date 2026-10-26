@@ -1,4 +1,4 @@
-# BULUTOXX · At Yarışı bölümü: yeniden tasarım
+# OXXai · At Yarışı bölümü: yeniden tasarım
 
 _Araştırma, bilgi mimarisi ve uygulama yol haritası · 2026-10-26 · dal `r_tasarim`_
 _Prototip: `lab/at/prototip.html` (tek dosya, dış kaynak yok, gerçek `data/at/` verisiyle çalışır)._
@@ -34,7 +34,7 @@ _Bu aşamada `index.html` ve `sw.js` değiştirilmedi._
 | Equibase (ABD) | Bugün/yarın programı, sabah oranı, **koşmayan at ve değişiklik uyarısı**, idman raporları, Virtual Stable (at takibi), bahis hesaplayıcı | 3,3/5. Küçük ve soluk yazı; tarih seçmek için kaydırmak gerekiyor; hesaplayıcıda numara girmek zor; Virtual Stable uygulama dışına atıyor; sonuç geçmişi yalnız ~1 hafta | [App Store](https://apps.apple.com/us/app/id453573402) |
 | Punters (AU) | Form rehberi, **speed map**, seksiyonel süreler, koşmayan at güncellemesi, Blackbook (at/jokey/antrenör takibi), yapay zekâ tahmincisi | **Koşular arasında geçerken ana sayfaya atıyor**; geçmiş bahisleri izleme aracı isteniyor; "3. koşusu" istatistiği isteniyor; tüm hipodromlarda değişkenle arama isteniyor | [App Store AU](https://apps.apple.com/au/app/punters-horse-racing-form/id916114449) |
 | Racenet (AU) | Form rehberi, seksiyonel, Blackbook | Uygulamada **at arama yok**; Blackbook senkronu bozuk | [App Store AU](https://apps.apple.com/au/app/racenet-horse-racing-form/id708806967) |
-| TwinSpires (ABD) | Bahis, canlı video, handikap bilgisi, tekrar izleme | Bahis odaklı (BULUTOXX için uygun değil) | [Brisnet](https://www.brisnet.com/racing/news/twinspires-com-unveils-new-iphone-app) |
+| TwinSpires (ABD) | Bahis, canlı video, handikap bilgisi, tekrar izleme | Bahis odaklı (OXXai için uygun değil) | [Brisnet](https://www.brisnet.com/racing/news/twinspires-com-unveils-new-iphone-app) |
 | Form rehberi okuma | Start/barrier, kilo, pedigri, kariyer, pist/mesafe/zemin uygunluğu, ara verme süresi, son 3 koşu, speed map, seksiyonel | — | [GoBet](https://www.gobet.com.au/betting-sites/faq/how-do-i-read-the-horse-racing-form-guide/) |
 
 Not: Mağaza yorum örneklemleri küçük ve çoğu 2019–2023 tarihli. Bu bulgular eğilim gösterir, kesin sonuç değildir. Ekşi Sözlük'teki "hipodrom" başlığı çoğunlukla 2000'lerin başından ve deneyim/nostalji odaklı; uygulama isteği çıkmadı ([eksisozluk.com/hipodrom--48072](https://eksisozluk.com/hipodrom--48072)).
@@ -52,7 +52,7 @@ Not: Mağaza yorum örneklemleri küçük ve çoğu 2019–2023 tarihli. Bu bulg
 9. **Sonuç geçmişi kısa tutulunca şikâyet geliyor** (Equibase: ~1 hafta). Bizde gün seçici var ama yalnız dosyası olan günleri gösteriyor.
 10. **Arama eksikliği** (Racenet). At ya da jokey adıyla arama meraklının sık yaptığı iş. Bugünkü veride yapılabilir; geçmiş için laboratuvarın küçük bir dizin dosyası üretmesi gerekir (Aşama 3).
 
-### 1.3 Mevcut BULUTOXX at bölümü: denetim
+### 1.3 Mevcut OXXai at bölümü: denetim
 
 | Öğe | Durum | Sorun |
 |---|---|---|
@@ -80,7 +80,7 @@ Not: Mağaza yorum örneklemleri küçük ve çoğu 2019–2023 tarihli. Bu bulg
 
 Açıklama: ✅ var · 🟡 kısmen · ❌ yok. "Veri" sütunu: **Var** (mevcut dosyamızda) · **Türetilebilir** (açık aynadan ya da kendi zaman serimizden laboratuvarda üretilebilir) · **Yok** (açık kaynakta yok; uydurulmaz).
 
-| # | İhtiyaç | BULUTOXX bugün | Veri karşılığı |
+| # | İhtiyaç | OXXai bugün | Veri karşılığı |
 |---|---|---|---|
 | 1 | Günün programı, hipodromlar, saatler | ✅ | **Var**: `tahmin/<gün>.json` (hipodrom, koşu, saat, mesafe, pist, sınıf) |
 | 2 | Yarın ve dün | 🟡 (dosyası olan günler) | **Var**: gün dosyaları; yarının programı aynanın `data/daily`'sine düşünce |
@@ -112,7 +112,7 @@ Açıklama: ✅ var · 🟡 kısmen · ❌ yok. "Veri" sütunu: **Var** (mevcut 
 | 28 | Takip listesi (at, jokey, antrenör) | 🟡 (yalnız at) | **Var**: yerel depolama |
 | 29 | "Atım koşuyor" bildirimi | ❌ | **Türetilebilir**: istemcide, uygulama açıkken yerel bildirim yapılabilir; kapalıyken push için sunucu ya da GitHub Actions + Web Push anahtarı gerekir |
 | 30 | Kupon kurma | ✅ (KUPO) | **Var** |
-| 31 | Geçmiş karne (OXX ve kupon) | ✅ (dağınık) | **Var**: `karne.json`, `kupon_karne.json`, `altili_karne.json`, `replay.json` |
+| 31 | Geçmiş karne (OXXai ve kupon) | ✅ (dağınık) | **Var**: `karne.json`, `kupon_karne.json`, `altili_karne.json`, `replay.json` |
 | 32 | Canlı yayın ve tekrar | ❌ | **Yok** (ve TJK yayınına bağlantı verilmez) |
 | 33 | At ya da jokey arama | ❌ | Bugün için **Var**; geçmiş için **Türetilebilir** (küçük bir dizin dosyası) |
 | 34 | Haber ve uzman yorumu | ❌ | **Yok** (kapsam dışı; Padok Notu kendi yorumumuzdur) |
@@ -147,8 +147,8 @@ At (spor seçicideki 🐎)
 └─ Kupon   (= KUPO "At Kuponu", aynı veri)
     ├─ Eşleşme bilgisi ("Bu liste KUPO'daki At Kuponu ile aynıdır")
     ├─ Satırlar (tür · koşu · seçim · kombinasyon · olasılık · durum · sil) · KUPO'da aç
-    ├─ OXX'un at kuponları (altın ganyan, ikili önerileri, 6'lı Orta) → kopyala
-    └─ OXX karnesi (geri test: gerçekleşen ve beklenen)
+    ├─ OXXai'nin at kuponları (altın ganyan, ikili önerileri, 6'lı Orta) → kopyala
+    └─ OXXai karnesi (geri test: gerçekleşen ve beklenen)
 
 Detaylar (yığın; başlıkta "‹ Geri"; donanım/tarayıcı geri tuşu çalışır):
   Koşu kartı  #/kosu/<id>     → At profili  #/at/<id>/<no> → Jokey #/jokey/<ad> · Antrenör #/antrenor/<ad>
@@ -222,8 +222,8 @@ Görsel dil, `apple-v94` ve `kuponum-v95` ile aynıdır: koyu lacivert yüzey ka
 ### 5.9 Kupon = KUPO "At Kuponu" (`12_kupon_cubugu`, `13_kuponum`, `18_kupon_bos`)
 - **Eşleşme bilgisi** (camgöbeği şerit): "Bu liste KUPO'daki At Kuponu ile aynıdır."
 - Satırlar: tür etiketi, koşu, seçim, kombinasyon, tutma olasılığı, durum (bekliyor / ✓ tuttu / ✗ tutmadı), sil. Birden çok satır varsa birlikte tutma olasılığı ve toplam kombinasyon. "KUPO'da aç" ve "Temizle".
-- **OXX'un at kuponları:** altın ganyanlar, kalan koşuların ikili önerileri, 6'lı Orta. ＋ ile kopyalanır (aynı koşu ve türde eski satırın yerini alır; v98 kuralı).
-- **OXX karnesi:** her tür için geri test isabeti ile beklenti.
+- **OXXai'nin at kuponları:** altın ganyanlar, kalan koşuların ikili önerileri, 6'lı Orta. ＋ ile kopyalanır (aynı koşu ve türde eski satırın yerini alır; v98 kuralı).
+- **OXXai karnesi:** her tür için geri test isabeti ile beklenti.
 - **Yüzen "At kuponum" çubuğu:** alt menünün 10 px üstünde, altın kenarlı cam kart: "At kuponum · N satır · K kombinasyon · M bekliyor · KUPO ile eşli" + "Aç". Kupon sekmesindeyken gizlenir. Boşken hiç görünmez.
 
 ### 5.10 Takip ve İstatistik (`14_takip`, `15_istatistik`)
@@ -271,7 +271,7 @@ Her aşama ayrı bir `<style id>` ve `<script id>` bloğu olarak eklenir. Bu, me
 |---|---|---|---|
 | **1. İskelet ve gezinme** | Hero ve "Model ne kadar başarılı" İstatistik'e; yapışkan sekme çubuğu (Bugün/Program/Bahis/Sonuç/Kupon); hash yolları `#at/...`; Bugün ekranı (sıradaki koşu, altın kartları, kısaltılmış Padok, hipodromlar); Program satırları | `index.html`: yeni `<style id="at2-v103">`, `<script id="at2-v103">`. `at-v73` IIFE'sindeki `render()` sarmalanır; `BX_AT` çekirdeği (`AT`, `merged`, `cRace`, `load`, `goldOfDay`) olduğu gibi kullanılır | `showSport("at")` ve `goView` ile çakışma: hash yalnız `#at/` önekiyle dinlenir. Eski `AT.tab` değerleri yeni sekmelere eşlenir (`tah→program`, `altin→bugun`, `altili→bahis`, `jokey→istatistik`). `sw.js` önbellek sürümü artırılır |
 | **2. Koşu kartı ve profiller** | Koşu çipleri, Sade/Meraklı, sıralama, form çipleri, piyasa farkı, pist uyumu; `horseSheet` modalı yerine At profili ekranı; Jokey/Antrenör profili; Takip ekranı (at+jokey+antrenör, `bx-at-fav` korunur ve `bx-at-takip`'e taşınır) | `at2-v103` (devamı). `atkupon-v98` içindeki `#atSheet .atk-hs` girişleri profil ekranına taşınır | v98'in `horseSheet` sarmalayıcısı kırılabilir: `BX_AT.horseSheet` profil ekranına yönlenen bir uyum işlevi olarak kalır |
-| **3. Kupon at bölümünde** | "Kupon" sekmesi = `KX.L` içindeki `spor:"at"` kupon(lar)ın görünümü; yüzen "At kuponum" çubuğu; OXX at kuponları; karne çubukları | `atkupon-v98`'e dokunmadan yeni `<script id="atkupon-at-v104">`. Okuma/yazma yalnız `window.KX` ve `atkOpen`/`atkGrade` üzerinden | **Tek veri kaynağı `bx-kuponlar`**. Satır şeması v98 ile aynı (`{tur,kid,sec,komb,p,…}`). Çubuk, KUPO'daki değişikliği `storage` olayı ve `KX` yeniden çizimiyle izler. Futbol kuponuna asla yazılmaz (v98'in tek spor kuralı) |
+| **3. Kupon at bölümünde** | "Kupon" sekmesi = `KX.L` içindeki `spor:"at"` kupon(lar)ın görünümü; yüzen "At kuponum" çubuğu; OXXai at kuponları; karne çubukları | `atkupon-v98`'e dokunmadan yeni `<script id="atkupon-at-v104">`. Okuma/yazma yalnız `window.KX` ve `atkOpen`/`atkGrade` üzerinden | **Tek veri kaynağı `bx-kuponlar`**. Satır şeması v98 ile aynı (`{tur,kid,sec,komb,p,…}`). Çubuk, KUPO'daki değişikliği `storage` olayı ve `KX` yeniden çizimiyle izler. Futbol kuponuna asla yazılmaz (v98'in tek spor kuralı) |
 | **4. Veri zenginleştirme (lab)** | `oran_izi` (canli.py); `profil/<gün>.json` (gece.py + aynanın `memory/horses.json`'ı); pist durumu/hava; `nonRunner`; `finishTime`; 5'li/4'lü/3'lü | `lab/at/canli.py`, `gece.py`, `altili.py`; yeni `data/at/profil/`; arayüzde Meraklı ve At profili "henüz veri yok" kutularının yerini alır | Depo boyutu: profil dosyası yalnız günün koşucuları için. Zaman aşımı: aynayı sığ klonla. `test_sizinti.py` kapsamına profil alanları eklenir |
 | **5. Bildirim ve arama** | Ayarlar'da "Atım koşuyor" anahtarı (önce uygulama açıkken yerel bildirim); arama (bugün → geçmiş dizin) | Yeni blok `at-bildirim-v105`; `sw.js` `notificationclick` (ayrı iş) | İzin istemi yalnız kullanıcı düğmeye basınca. Push sunucusu kararı ayrıca verilir |
 

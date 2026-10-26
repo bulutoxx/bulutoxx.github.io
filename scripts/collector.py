@@ -1,6 +1,6 @@
-"""BULUTOXX veri toplayıcı (kendini geliştirme modülü) — her saat çalışır.
+"""OXXai veri toplayıcı (kendini geliştirme modülü) — her saat çalışır.
 
-1) Resmi iddaa bülteninden maç başlamadan önceki son oranları ve BULUTOXX önerisini kaydeder (maç başlayınca kilitlenir).
+1) Resmi iddaa bülteninden maç başlamadan önceki son oranları ve OXXai önerisini kaydeder (maç başlayınca kilitlenir).
 2) Biten maçların sonucunu iddaa sonuç servisinden alıp kayda ekler ve öneriyi puanlar (tuttu / tutmadı).
 3) Günlük özet (data/daily.json): "Dün önerilerin %X'i tuttu", güven dilimine ve lige göre isabet.
 4) Arşiv (data/archive/GGGG-AA-GG.json): tüm liglerden oran + sonuç verisi; motorun öneri kalibrasyonu ve

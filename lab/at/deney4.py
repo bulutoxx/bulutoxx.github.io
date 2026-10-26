@@ -1,4 +1,4 @@
-# BULUTOXX at yarışı laboratuvarı — v4 deney masası ("üst seviye" sabah modeli; elle çalıştırılır, gece akışının parçası değil).
+# OXXai at yarışı laboratuvarı — v4 deney masası ("üst seviye" sabah modeli; elle çalıştırılır, gece akışının parçası değil).
 #
 # 0) SAĞLAM ÖLÇÜM: iki zaman katı (walk-forward, genişleyen eğitim, her ay yeniden eğitim):
 #      A katı: 2025-11-01 → son %30'un başı (≈4,5 ay)      B katı: son %30 (≈7 ay, v3 sınamasıyla aynı koşular)

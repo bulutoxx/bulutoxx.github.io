@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""BULUTOXX veri güncelleme ve otonom öğrenme motoru.
+"""OXXai veri güncelleme ve otonom öğrenme motoru.
 
 GitHub Actions bu betiği her gün çalıştırır:
   1. football-data.co.uk'tan 6 ligin bu ve geçen sezon sonuçlarını (MS, İY, oranlar) indirir.

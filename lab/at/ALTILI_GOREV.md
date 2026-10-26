@@ -1,7 +1,7 @@
 # 🎯 6'lı Ganyan Modülü — Görev Tanımı (üst düzey prompt)
 
 ## Amaç
-Her hipodromun 6'lı ganyan(lar)ı için, BULUTOXX olasılıklarıyla ayak ayak seçim yapan, "altı ayağın hepsini tutturma"
+Her hipodromun 6'lı ganyan(lar)ı için, OXXai olasılıklarıyla ayak ayak seçim yapan, "altı ayağın hepsini tutturma"
 olasılığını dürüstçe hesaplayan ve geçmişte nasıl sonuç verdiğini gösteren modül. Hobi amaçlı; para tutarı, bahis
 bağlantısı ve "kesin" ifadesi yok; yalnız olasılık ve kombinasyon sayısı.
 
@@ -29,4 +29,4 @@ bağlantısı ve "kesin" ifadesi yok; yalnız olasılık ve kombinasyon sayısı
 
 ## Çıktılar
 - `data/at/altili/<gün>.json` (günlük, canlı robot oranla günceller), `data/at/altili_karne.json` (geriye dönük + canlı).
-- Arayüz: At bölümünde "🎯 6'lı" sekmesi, Bulut cevapları, paylaşım.
+- Arayüz: At bölümünde "🎯 6'lı" sekmesi, OXXai cevapları, paylaşım.

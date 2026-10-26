@@ -1,4 +1,4 @@
-# 🎟️ OXX kupon robotu ve sürekli öğrenme — veri sözleşmesi (v1, 2026-10-26)
+# 🎟️ OXXai kupon robotu ve sürekli öğrenme — veri sözleşmesi (v1, 2026-10-26)
 
 Bu belge arayüzü yapacak uzman içindir: **hangi dosya, kim yazar, hangi alan ne demek**. Arayüz yalnız okur; hiçbir dosyayı
 yazmaz. Alan eklemek geriye uyumludur (yeni alanı tanımayan okuyucu görmezden gelir); alan silmek / anlam değiştirmek `v` artırır.
@@ -14,7 +14,7 @@ Hobi amaçlı ölçümdür: **para tutarı, bahis bağlantısı yoktur**; `oran`
 | `data/oxx_ayar.json` | `lab/oxx_ogren.py` (otonom-ekip.yml) | 03:07 / 15:07 UTC | Öğrenilmiş strateji ayarları (yalnız varsayılandan farklılar) |
 | `data/deney_kuyrugu.json` | `lab/oxx_ogren.py` | aynı | Deney adayları |
 | `data/ogrenme_gunlugu.json` | `lab/oxx_ogren.py` | aynı | Her kararın kaydı (ne denendi, rakamlar, kabul/ret) |
-| `data/oxx_rollback.json` | `lab/oxx_ogren.py` | aynı | OXX geri alma durumu (rollback.json kalıbı) |
+| `data/oxx_rollback.json` | `lab/oxx_ogren.py` | aynı | OXXai geri alma durumu (rollback.json kalıbı) |
 
 Gün = **İstanbul takvim günü** (maçın/koşunun TSİ başlama günü). Zamanlar: `*_utc` = `GGGG-AA-GGTSS:DDZ`, `*_tsi` = `GGGG-AA-GG SS:DD` (İstanbul).
 
@@ -22,16 +22,16 @@ Gün = **İstanbul takvim günü** (maçın/koşunun TSİ başlama günü). Zama
 
 | id | spor | ad | kural (varsayılan ayar) |
 |---|---|---|---|
-| `fb_altin` | futbol | Altın kupon | Uygulamadaki öneri (recOf: MS 1/X/2, 2,5 A/Ü; oranı olan seçenekler içinde en yüksek OXX olasılığı) ≥ `p_min` 0,78, oran 1,15–2,00, günde en fazla 3 maç, hepsi tek kupon |
+| `fb_altin` | futbol | Altın kupon | Uygulamadaki öneri (recOf: MS 1/X/2, 2,5 A/Ü; oranı olan seçenekler içinde en yüksek OXXai olasılığı) ≥ `p_min` 0,78, oran 1,15–2,00, günde en fazla 3 maç, hepsi tek kupon |
 | `fb_70` | futbol | %70+ kupon | Olasılığı ≥ 0,70 ve oranı ≥ 1,05 öneriler (en olası 12) içinden birlikte tutma ≥ 0,70 kalan 2–4 maçlık kombinasyonların toplam oranı en yüksek olanı |
 | `fb_3lu` | futbol | 3 maçlık en olası | En olası 3 öneri (≥ 0,58, oran ≥ 1,15) |
-| `fb_deger` | futbol | Değerli kupon | Her maçta OXX olasılığı × oran en yüksek seçenek (olasılık ≥ 0,40); değer katsayısı en yüksek 2 maç. Bacakta `deger` = p × oran |
+| `fb_deger` | futbol | Değerli kupon | Her maçta OXXai olasılığı × oran en yüksek seçenek (olasılık ≥ 0,40); değer katsayısı en yüksek 2 maç. Bacakta `deger` = p × oran |
 | `fb_guvenli` | futbol | Güvenli kupon (yeni pazarlar) | `pazar_karne.json` → `oneriye_uygun` yeni pazarlar; her maçın en olası seçeneği ≥ 0,80, iddaa oranı (yoksa adil oran 1/p) ≥ 1,15; en olası 3 maç |
 | `bk_en_olasi` | basket | Günün en olası seçimleri | Kazanma olasılığı Φ(fark/σ·ölçek) ≥ 0,60 en olası 3 maç (3.'sü < 0,70 ise 2 maç) |
 | `at_altin` | at | Altın atlar | `data/at/model.json → altin_kural` (p ≥ p_min, ikinciden fark ≥ fark_min, günde ≤ gunluk_max); her at ayrı ganyan kuponu |
-| `at_sirali_ikili` | at | OXX sıralı ikili | Her koşuda (≥ 4 at) indirimli Harville ile en olası sıralı 1.–2. |
-| `at_ikili` | at | OXX ikili | Her koşuda (≥ 7 at) en olası sırasız ilk iki |
-| `at_cifte` | at | OXX çifte | Her hipodromda ardışık iki koşu favorisinin birlikte kazanma olasılığı en yüksek çift |
+| `at_sirali_ikili` | at | OXXai sıralı ikili | Her koşuda (≥ 4 at) indirimli Harville ile en olası sıralı 1.–2. |
+| `at_ikili` | at | OXXai ikili | Her koşuda (≥ 7 at) en olası sırasız ilk iki |
+| `at_cifte` | at | OXXai çifte | Her hipodromda ardışık iki koşu favorisinin birlikte kazanma olasılığı en yüksek çift |
 | `at_altili_dar` / `_orta` / `_genis` | at | 6'lı 64 / 192 / 576 | `lab/at/altili.py` kuponu, ilk ayaktan önce kilitlendiği haliyle |
 
 Olasılık kaynağı: futbol = pazar motorunun sunduğu yol (`fixtures.json → pz`, uygulamanın gösterdiğiyle aynı);
@@ -68,7 +68,7 @@ Kupon olasılığı `p` = bacak olasılıklarının çarpımı (farklı maçlar 
 {
   "id": "2026-10-26/fb_altin/1",    // kararlı kimlik
   "strateji": "fb_altin",
-  "p": 0.5263,                      // OXX'a göre birlikte tutma olasılığı (0–1)
+  "p": 0.5263,                      // OXXai'ye göre birlikte tutma olasılığı (0–1)
   "oran": 1.8,                      // bacak oranlarının çarpımı (bilgi; herhangi bir bacakta oran yoksa null)
   "durum": "bekliyor" | "tuttu" | "tutmadi" | "gecersiz",   // gecersiz: sonuç 3–4 gün içinde bulunamadı (ertelendi); karneye girmez
   "tuttu": true | false | null,
@@ -135,7 +135,7 @@ Kilit: o gün at-canli'nin, gece robotunun tahmin dosyası hazır olduktan sonra
 
 ## Öğrenme döngüsünün kuralları (özet)
 
-1. **Sinyal:** kilitli OXX kuponları/bacakları, `pazar_karne.json → canli`, `predlog.json` (lig), `bk_predlog.json`, `data/at/karne.json`;
+1. **Sinyal:** kilitli OXXai kuponları/bacakları, `pazar_karne.json → canli`, `predlog.json` (lig), `bk_predlog.json`, `data/at/karne.json`;
    |z| ≥ 1,5 olan sistematik fark aday olur (öncelik |z|). Sinyal yoksa sıradaki keşif adayı (eşik ±0,02).
 2. **Sanal oynatma:** bu yılın maçları, her gün yalnız o günden önce bilinenle (maç öncesi oran, önceki aylarla öğrenilmiş kalibratör,
    o günden önceki maçlarla basket modeli, sızıntısız at yeniden oynatması). Günler 2/3 seçim, 1/3 sınama.

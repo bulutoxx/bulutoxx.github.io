@@ -1,4 +1,4 @@
-# BULUTOXX mimarisi
+# OXXai mimarisi
 
 Tamamen GitHub üzerinde, ücretsiz ve insan müdahalesi olmadan çalışan, kendini ölçüp geliştiren bir tahmin sistemi.
 Hiçbir yapay zekâ servisine (Claude vb.) bağlı değildir; tüm botlar GitHub Actions'ta çalışan Python/Node betikleridir.
@@ -79,19 +79,19 @@ Futbolda tek maçın sonucu doğası gereği belirsizdir; hiçbir model her maç
 | auto_lab.json | Laboratuvar | Motor, uygulama | Açık kaynak modellerle yarış sonucu |
 | arena.json | Robot arenası | Motor (konsey), uygulama | 5 robot + konsey: sezon sezon isabet, ağırlıklar, kabul edilen pazarlar (uygula) |
 | gelisim.json | Koruyucu, sohbet koçu | Uygulama | Gelişim günlüğü: otomatik uygulanan gelişmeler, geri almalar, ölçümler, karneler |
-| bot_kb.json | Sohbet koçu | Uygulama (Bulut, `bot-v70`) | Bulut'un bilgi bankası: takım takma adları/okunuşları (`takim`), lig adları (`lig`), eş anlamlılar (`esanlam`), yazım hataları (`yazim`), kalıp cümleler (`para`), terimler (`sozluk`), öne çıkan maçlar (`onemli`), `sayim` |
+| bot_kb.json | Sohbet koçu | Uygulama (OXXai, `bot-v70`) | OXXai'nin bilgi bankası: takım takma adları/okunuşları (`takim`), lig adları (`lig`), eş anlamlılar (`esanlam`), yazım hataları (`yazim`), kalıp cümleler (`para`), terimler (`sozluk`), öne çıkan maçlar (`onemli`), `sayim` |
 | bot_coach.json | Sohbet koçu | Uygulama (sohbet başlığı, Otonom ekip paneli) | Son gece: soru sayısı, niyet/faydalı %, önceki bankayla karşılaştırma, eklenenler, yayın kararı ve nedeni; `yayin` = yayındaki bankanın skoru; `gecmis` |
 | bot_tests.json | Sohbet koçu | Sohbet koçu | Her gece büyüyen test soruları (veriye bağlı olanlar 21 gün sonra emekli olur); sabit 224 soru `lab/bot/suite.cjs`'te |
-| oxx_kupon/GGGG-AA-GG.json, oxx_kupon/at/GGGG-AA-GG.json | OXX kupon robotu (`scripts/oxx_kupon.py`; update.yml / at-canli.yml) | Uygulama, öğrenme döngüsü | OXX'un maçtan önce KİLİTLEDİĞİ kendi kuponları (Altın, %70+, 3'lü, değerli, güvenli; basket; at Altın/ikili/çifte/6'lı) + sonuçlar. Şema: `lab/OXX_KUPON.md` |
-| oxx_karne.json | OXX kupon robotu | Uygulama, öğrenme döngüsü | Strateji başına kupon/bacak isabeti, beklenen, kalibrasyon, son 7/30 gün, seri (canlı ve geriye dönük ayrı) |
-| oxx_ayar.json, deney_kuyrugu.json, ogrenme_gunlugu.json, oxx_rollback.json | OXX öğrenme döngüsü (`lab/oxx_ogren.py`, otonom-ekip) | OXX kupon robotu, uygulama | Sinyal → deney adayı → ileriye dönük sanal oynatma + Bonferroni kapısı → yalnız OXX strateji ayarı; 14 gün sonra yeniden sınama / geri alma |
+| oxx_kupon/GGGG-AA-GG.json, oxx_kupon/at/GGGG-AA-GG.json | OXXai kupon robotu (`scripts/oxx_kupon.py`; update.yml / at-canli.yml) | Uygulama, öğrenme döngüsü | OXXai'nin maçtan önce KİLİTLEDİĞİ kendi kuponları (Altın, %70+, 3'lü, değerli, güvenli; basket; at Altın/ikili/çifte/6'lı) + sonuçlar. Şema: `lab/OXX_KUPON.md` |
+| oxx_karne.json | OXXai kupon robotu | Uygulama, öğrenme döngüsü | Strateji başına kupon/bacak isabeti, beklenen, kalibrasyon, son 7/30 gün, seri (canlı ve geriye dönük ayrı) |
+| oxx_ayar.json, deney_kuyrugu.json, ogrenme_gunlugu.json, oxx_rollback.json | OXXai öğrenme döngüsü (`lab/oxx_ogren.py`, otonom-ekip) | OXXai kupon robotu, uygulama | Sinyal → deney adayı → ileriye dönük sanal oynatma + Bonferroni kapısı → yalnız OXXai strateji ayarı; 14 gün sonra yeniden sınama / geri alma |
 
-## 💬 Bulut'un kendini geliştirmesi (v70)
+## 💬 OXXai'nin kendini geliştirmesi (v70)
 
-Bulut (sohbet asistanı) tamamen telefonda çalışır; yapay zekâ servisi ve sunucu yoktur. **Kullanıcının yazdıkları hiçbir zaman telefondan çıkmaz.**
+OXXai (sohbet asistanı) tamamen telefonda çalışır; yapay zekâ servisi ve sunucu yoktur. **Kullanıcının yazdıkları hiçbir zaman telefondan çıkmaz.**
 
 1. **Gece koçu** (`lab/bot_coach.mjs`, otonom ekip iş akışında): yalnız uygulama verisinden (fikstür, lig adları, karne, uygulamanın kendi takım listesi)
-   aday bilgi üretir, uygulamayı başsız tarayıcıda açıp Bulut'a soru sorarak her adayı sınar (aday olmadan yanlış, adayla doğru → kabul).
+   aday bilgi üretir, uygulamayı başsız tarayıcıda açıp OXXai'ye soru sorarak her adayı sınar (aday olmadan yanlış, adayla doğru → kabul).
    Kabul edilen sorular test kümesine eklenir; küme her gün büyür (sabit 224 soru + üretilenler).
 2. **Kapı (tek yönlü iyileşme):** dünkü banka ve yeni banka aynı sorularla çalıştırılır. Yeni banka yalnız niyet doğruluğu ve faydalı cevap oranı
    düşmüyorsa, dünkü bankanın doğru bildiği hiçbir soru yanlışa dönmüyorsa (iki kez sorularak doğrulanır) ve sayfa hatası yoksa yayınlanır.

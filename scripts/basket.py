@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""BULUTOXX Basketbol motoru.
+"""OXXai Basketbol motoru.
 
 Her çalıştırmada:
   1. NBA, WNBA, NCAA, NBL (ESPN) ve EuroLeague, EuroCup (resmî EuroLeague akışı) maçlarını ve çeyrek skorlarını indirir.

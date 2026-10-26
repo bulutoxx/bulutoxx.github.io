@@ -71,7 +71,7 @@ async function run(vw, vh, tag) {
       { k: "i|" + r0.h + "|" + r0.a, lg: "i1", h: r0.h, a: r0.a, dt: dtOf(r0), mk: "U", odd: 1.8, p: .55, iid: +i0 },
       { k: "i|" + r1.h + "|" + r1.a, lg: "i1", h: r1.h, a: r1.a, dt: dtOf(r1), mk: "IYMS_1_1", odd: 4.1, p: .24, iid: +i1, fair: 1 }] },
     { id: "atk1", ad: "At Kuponu 1", spor: "at", items: [], at: [{ id: "r1", tur: "ganyan", d: "2026-10-26", kid: ["2026-10-26/Veliefendi/1"], hip: "Veliefendi", kosu: 1, saat: "18:30", t: Date.parse("2026-10-26T18:30:00+03:00"), sec: [[3]], ad: { 3: "Deneme At" }, komb: 1, p: .21, pk: "sabah", gd: [1, 1] }], olusturma: T0 + 1000, durum: "acik" }];
-  await ctx.addInitScript(([seed]) => { localStorage.setItem("bx-terms", JSON.stringify({ v: "2.0", at: Date.now(), kvkk: true, inst: Date.now() })); localStorage.setItem("bx-coach", "1");
+  await ctx.addInitScript(([seed]) => { localStorage.setItem("bx-terms", JSON.stringify({ v: "2.0", at: Date.now(), kvkk: true, inst: Date.now() })); localStorage.setItem("bx-oxxai-hos", "1"); localStorage.setItem("bx-oxxai-ikon", "1"); localStorage.setItem("bx-coach", "1");
     if (!sessionStorage.getItem("seeded")) { localStorage.setItem("bx-kuponlar", JSON.stringify(seed)); localStorage.setItem("bx-kupon-aktif", "kpA"); sessionStorage.setItem("seeded", "1"); } }, [seed]);
   const p = await ctx.newPage(); const errs = [];
   p.on("pageerror", e => errs.push(e.message)); p.on("console", m => { if (/v103|v104/.test(m.text())) console.log("   [konsol]", m.text()); }); p.on("framenavigated", f => { if (f === p.mainFrame()) console.log("   [nav]", f.url()); });
@@ -253,7 +253,7 @@ async function baseSnap(vw, vh) {
       { k: "i|" + r0.h + "|" + r0.a, lg: "i1", h: r0.h, a: r0.a, dt: dtOf(r0), mk: "U", odd: 1.8, p: .55, iid: +i0 },
       { k: "i|" + r1.h + "|" + r1.a, lg: "i1", h: r1.h, a: r1.a, dt: dtOf(r1), mk: "IYMS_1_1", odd: 4.1, p: .24, iid: +i1, fair: 1 }] },
     { id: "atk1", ad: "At Kuponu 1", spor: "at", items: [], at: [{ id: "r1", tur: "ganyan", d: "2026-10-26", kid: ["2026-10-26/Veliefendi/1"], hip: "Veliefendi", kosu: 1, saat: "18:30", t: Date.parse("2026-10-26T18:30:00+03:00"), sec: [[3]], ad: { 3: "Deneme At" }, komb: 1, p: .21, pk: "sabah", gd: [1, 1] }], olusturma: T0 + 1000, durum: "acik" }];
-  await ctx.addInitScript(([seed]) => { localStorage.setItem("bx-terms", JSON.stringify({ v: "2.0", at: Date.now(), kvkk: true, inst: Date.now() })); localStorage.setItem("bx-coach", "1"); localStorage.setItem("bx-kuponlar", JSON.stringify(seed)); localStorage.setItem("bx-kupon-aktif", "atk1"); }, [seed]);
+  await ctx.addInitScript(([seed]) => { localStorage.setItem("bx-terms", JSON.stringify({ v: "2.0", at: Date.now(), kvkk: true, inst: Date.now() })); localStorage.setItem("bx-oxxai-hos", "1"); localStorage.setItem("bx-oxxai-ikon", "1"); localStorage.setItem("bx-coach", "1"); localStorage.setItem("bx-kuponlar", JSON.stringify(seed)); localStorage.setItem("bx-kupon-aktif", "atk1"); }, [seed]);
   const p = await ctx.newPage(); await p.clock.setFixedTime(NOW); const { LR } = buildLR();
   await p.route(/iddaa\.com|espn|jsdelivr|googleapis|gstatic|web3forms|api\./, r => r.fulfill({ status: 404, body: "" }));
   await p.route(/statisticsv2\.iddaa\.com\/live-results\?sportId=1&date=/, r => { const d = new URL(r.request().url()).searchParams.get("date"); r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(d === DAY ? LR : { data: { events: [], competitions: {}, sc: {} } }) }); });

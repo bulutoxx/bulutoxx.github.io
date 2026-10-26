@@ -1,4 +1,4 @@
-// 💬 Sohbet koçu (her gece, GitHub Actions): Bulut sohbet asistanını her gün biraz daha iyi anlayan hale getirir.
+// 💬 Sohbet koçu (her gece, GitHub Actions): OXXai sohbet asistanını her gün biraz daha iyi anlayan hale getirir.
 //
 // 1) Günün verisinden (fikstür, lig adları, karne; KULLANICI MESAJI YOK) aday bilgi üretir: takım takma adları ve Türkçe okunuşları,
 //    lig adları, eş anlamlı kelimeler, yazım hataları, kalıp cümleler, terimler, öne çıkan maçlar.
@@ -85,7 +85,7 @@ let chromium;
 try { ({ chromium } = require("playwright")); } catch (e) { ({ chromium } = await import("playwright")); }
 async function openPage(browser, port, kb, coach) {
   const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, serviceWorkers: "block" });
-  await ctx.addInitScript(() => { localStorage.setItem("bx-terms", JSON.stringify({ v: "2.0", at: Date.now(), kvkk: true, inst: Date.now() })); });
+  await ctx.addInitScript(() => { localStorage.setItem("bx-terms", JSON.stringify({ v: "2.0", at: Date.now(), kvkk: true, inst: Date.now() })); localStorage.setItem("bx-oxxai-hos", "1"); localStorage.setItem("bx-oxxai-ikon", "1"); });
   const p = await ctx.newPage(); const errs = [];
   p.on("pageerror", e => errs.push(String(e && e.message || e).slice(0, 300)));
   p.on("dialog", d => d.dismiss().catch(() => { }));
@@ -442,7 +442,7 @@ try {
     if (publish && yeni > 0) {
       const G = jl("gelisim.json", { olaylar: [] }) || { olaylar: [] }; const ev = G.olaylar || (G.olaylar = []); const key = `${TODAY}-botkb`;
       const parts = [["takim", "takım adı"], ["lig", "lig adı"], ["esanlam", "eş anlamlı kelime"], ["yazim", "yazım hatası"], ["para", "kalıp cümle"], ["sozluk", "terim"]].filter(([k]) => report.eklenen[k]).map(([k, n]) => `${report.eklenen[k]} ${n}`);
-      const e = { tarih: TODAY, tur: "ogrenme", baslik: `💬 Sohbet koçu: OXX ${yeni} yeni şey öğrendi`, detay: `${parts.join(", ")}. ${report.n} soruluk testte faydalı cevap %${report.faydali} (önceki banka %${report.onceki.faydali}); başarıyı düşüren bilgi yayınlanmaz.`, anahtar: key };
+      const e = { tarih: TODAY, tur: "ogrenme", baslik: `💬 Sohbet koçu: OXXai ${yeni} yeni şey öğrendi`, detay: `${parts.join(", ")}. ${report.n} soruluk testte faydalı cevap %${report.faydali} (önceki banka %${report.onceki.faydali}); başarıyı düşüren bilgi yayınlanmaz.`, anahtar: key };
       const i = ev.findIndex(x => x.anahtar === key); if (i >= 0) ev[i] = e; else ev.push(e);
       G.olaylar = ev.slice(-150); jw("gelisim.json", G);
     }

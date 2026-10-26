@@ -1,4 +1,4 @@
-# BULUTOXX at yarışı laboratuvarı — 🎟️ AT KUPONU modülü (Türkiye müşterek bahis türleri için olasılık + geri test).
+# OXXai at yarışı laboratuvarı — 🎟️ AT KUPONU modülü (Türkiye müşterek bahis türleri için olasılık + geri test).
 # Hobi amaçlı: yalnız olasılık ve KOMBİNASYON SAYISI; para tutarı, bahis bağlantısı yok · 18+.
 #
 # Kurallar (açık kaynak araştırması, 2026-10-26; tjk.org'a istek atılmadı):

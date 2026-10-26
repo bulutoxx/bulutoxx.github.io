@@ -1,4 +1,4 @@
-# BULUTOXX at yarışı laboratuvarı — v3 deney masası (elle çalıştırılır; gece akışının parçası değildir).
+# OXXai at yarışı laboratuvarı — v3 deney masası (elle çalıştırılır; gece akışının parçası değildir).
 # Taban: yayındaki v2 tarifi (aylık walk-forward, zaman ağırlığı, doğrusal + LightGBM, üst uç kalibrasyonu).
 # Her adım AYNI sınama dilimiyle (son %30, tam oranlı koşular) ölçülür. Kapı:
 #   yalnız-model sınama log-loss'u düşmeli VE yalnız-model ilk-seçim isabeti düşmemeli (harman adımlarında: harman).

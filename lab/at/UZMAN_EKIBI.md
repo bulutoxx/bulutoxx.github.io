@@ -1,4 +1,4 @@
-# 🐎 BULUTOXX At Yarışı Uzman Ekibi — Görev Dağılımı (üst düzey prompt)
+# 🐎 OXXai At Yarışı Uzman Ekibi — Görev Dağılımı (üst düzey prompt)
 
 Bu dosya, at yarışı laboratuvarındaki robot ve ajanların rollerini, veri sınırlarını ve "bitti" ölçütlerini tanımlar.
 Ana kurallar `GOREV.md`'dedir (tjk.org'a istek yok, ham veri yayınlanmaz, sıfır maliyet, her değişiklik sınamadan geçer).

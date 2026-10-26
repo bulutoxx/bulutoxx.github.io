@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""🔁 OXX sürekli öğrenme döngüsü (gece, otonom-ekip iş akışında; koruyucudan SONRA).
+"""🔁 OXXai sürekli öğrenme döngüsü (gece, otonom-ekip iş akışında; koruyucudan SONRA).
 
-1) Sinyal → deney kuyruğu (data/deney_kuyrugu.json): OXX'un kilitli kupon karnesi (data/oxx_karne.json + gün dosyaları),
-   kilitli tahmin günlükleri (predlog, pazar karnesinin canlı bölümü, bk_predlog, at karnesi) içinde OXX'un beklentisi ile
+1) Sinyal → deney kuyruğu (data/deney_kuyrugu.json): OXXai'nin kilitli kupon karnesi (data/oxx_karne.json + gün dosyaları),
+   kilitli tahmin günlükleri (predlog, pazar karnesinin canlı bölümü, bk_predlog, at karnesi) içinde OXXai'nin beklentisi ile
    gerçek arasındaki SİSTEMATİK farklar (|z| ≥ 1,5; öncelik |z|) otomatik deney adayı olur: strateji eşiği, pazar düzeltmesi (Platt),
    lig dışlama, basket σ ölçeği, at olasılık üssü (τ). Sinyal yoksa sıradaki keşif adayı (eşik ±0,02) eklenir.
 2) Gece sınaması: kuyruktan en fazla N (OXX_N, varsayılan 3) aday; bu yılın geçmiş maçlarında İLERİYE DÖNÜK sanal oynatma
@@ -13,7 +13,7 @@
    b) sınama diliminde eşleştirilmiş gün bootstrap'ının (B=2000) tek yanlı alt sınırı > 0, güven düzeyi deneme sayısıyla
       katılaşır: α = 0,05 / m (Bonferroni; m = bu yılın verisiyle o alanda bugüne kadar yapılan TÜM sınamalar, bu dahil);
    c) koruma: Altın bacak isabeti ve güçlü (≥%70) bacak isabeti sınamada düşmez; kupon sayısı tabanın %70'inden aşağı inmez;
-   d) koruyucu (lab/guardian.py) geri alma aktifse ya da bu anahtar OXX geri alma süresindeyse kabul DONDURULUR.
+   d) koruyucu (lab/guardian.py) geri alma aktifse ya da bu anahtar OXXai geri alma süresindeyse kabul DONDURULUR.
 4) Geçen değişiklik yalnız data/oxx_ayar.json'a küçük, geri alınabilir bir parametre olarak yazılır (motorun model.json ayarlarına
    dokunulmaz: onları saatlik motor yeniden öğrenir ve koruyucu izler — çakışma olmasın). Kupon robotu izlenen değişiklik için
    önceki ayarla "gölge" kupon da kilitler.
@@ -98,7 +98,7 @@ def sinyaller(bugun, A):
         if len(L) < 15: continue
         n, h, e, v = ozet(L); z = _z(h, e, v)
         if abs(z) < Z_SINYAL: continue
-        sig = {"n": n, "tutan": int(h), "beklenen": round(e, 2), "z": round(z, 2), "kaynak": "oxx_karne (kilitli OXX kuponları)"}
+        sig = {"n": n, "tutan": int(h), "beklenen": round(e, 2), "z": round(z, 2), "kaynak": "oxx_karne (kilitli OXXai kuponları)"}
         if s in ESIK:
             par, lo, hi = ESIK[s]; cur = A[s][par]; yeni = round(min(hi, cur + .02) if z < 0 else max(lo, cur - .02), 2)
             if yeni != cur:
@@ -109,12 +109,12 @@ def sinyaller(bugun, A):
             cur = A[s].get("tau", 1.0); yeni = round(cur * (0.9 if z < 0 else 1.1), 3)
             C.append({"anahtar": f"at_tau:{s}:{yeni}", "tur": "at_tau", "alan": "at", "yol": [s, "tau"], "deger": yeni, "stratejiler": [s],
                       "sinyal": sig, "aciklama": f"{s} olasılıkları {'fazla' if z < 0 else 'az'} güvenli → τ {cur} → {yeni}"})
-    # b) futbol pazar düzeyi (OXX bacakları + pazar karnesinin kilitli predlog bölümü) → pazar düzeltmesi
+    # b) futbol pazar düzeyi (OXXai bacakları + pazar karnesinin kilitli predlog bölümü) → pazar düzeltmesi
     PK = K.jl(os.path.join(DATA, "pazar_karne.json"), {}) or {}
     cz = {}
     for c, L in leg.items():
         if len(L) >= 30:
-            n, h, e, v = ozet(L); cz[c] = (n, h, e, v, "OXX bacakları")
+            n, h, e, v = ozet(L); cz[c] = (n, h, e, v, "OXXai bacakları")
     for c, v_ in ((PK.get("canli") or {}).get("pazarlar") or {}).items():
         n = v_.get("n", 0); pt, gt = v_.get("ort_tahmin"), v_.get("ort_gercek")
         if n >= 30 and pt is not None and gt is not None and (c not in cz or n > cz[c][0]):
@@ -125,7 +125,7 @@ def sinyaller(bugun, A):
             C.append({"anahtar": f"pazar:{c}", "tur": "pazar", "alan": "futbol", "yol": ["duzeltme", "pazar", c], "deger": None,
                       "stratejiler": [s for s in K.STRATEJI if s.startswith("fb_")],
                       "sinyal": {"n": n, "tutan": round(h, 1), "beklenen": round(e, 2), "z": round(z, 2), "kaynak": kay},
-                      "aciklama": f"{c}: OXX olasılığı sistemli {'yüksek' if z < 0 else 'düşük'} → Platt düzeltmesi (seçim diliminde öğrenilir)"})
+                      "aciklama": f"{c}: OXXai olasılığı sistemli {'yüksek' if z < 0 else 'düşük'} → Platt düzeltmesi (seçim diliminde öğrenilir)"})
     # c) lig: predlog (kilitli maç öncesi) en olası MS sonucu
     lgL = collections.defaultdict(list)
     for e in K.jl(os.path.join(DATA, "predlog.json"), []) or []:
@@ -139,7 +139,7 @@ def sinyaller(bugun, A):
         if z <= -2.5:
             C.append({"anahtar": f"lig:{lg}", "tur": "lig", "alan": "futbol", "yol": ["lig_dis"], "deger": sorted(set((A.get("lig_dis") or []) + [lg])),
                       "stratejiler": [s for s in K.STRATEJI if s.startswith("fb_")], "sinyal": {"n": n, "tutan": int(h), "beklenen": round(e, 2), "z": round(z, 2),
-                      "kaynak": "predlog (kilitli maç öncesi tahmin)"}, "aciklama": f"{lg}: en olası sonuç beklentinin belirgin altında → OXX kuponlarından çıkar"})
+                      "kaynak": "predlog (kilitli maç öncesi tahmin)"}, "aciklama": f"{lg}: en olası sonuç beklentinin belirgin altında → OXXai kuponlarından çıkar"})
     # d) basket σ
     BJ = K.jl(os.path.join(DATA, "basket.json"), {}) or {}
     L = []
@@ -496,7 +496,7 @@ def yeniden_sina(J, iz, V, bugun, rb):
         J.setdefault("gecmis", []).append({"tarih": bugun.isoformat(), "olay": "geri_alindi", "anahtar": iz["anahtar"], "yol": iz["anahtar_yol"],
                                           "onceki": iz["yeni"], "yeni": iz["onceki"], "neden": "; ".join(kotu)})
         rb["aktif"] = True; rb["baslangic"] = bugun.isoformat(); rb["bitis"] = (bugun + timedelta(days=BEKLEME)).isoformat()
-        rb["neden"] = f"{iz['kabul_tarihi']} tarihli OXX değişikliği ({iz['anahtar']}) sonrası kötüleşme: " + "; ".join(kotu)
+        rb["neden"] = f"{iz['kabul_tarihi']} tarihli OXXai değişikliği ({iz['anahtar']}) sonrası kötüleşme: " + "; ".join(kotu)
         rb["params"] = {"/".join(iz["anahtar_yol"]): iz["onceki"]}
         rb.setdefault("donmus", {})[iz["anahtar"]] = rb["bitis"]
         rb["gecmis"] = (rb.get("gecmis") or [])[-10:] + [iz["anahtar"]]
@@ -514,7 +514,7 @@ def main():
     ap = argparse.ArgumentParser(); ap.add_argument("--kuru", action="store_true"); ap.add_argument("--bugun", default=None)
     ar = ap.parse_args()
     bugun = date.fromisoformat(ar.bugun) if ar.bugun else datetime.now(K.TR).date()
-    J = K.jl(K.AYAR, None) or {"v": 1, "surum": "varsayilan", "aciklama": "OXX kupon stratejilerinin öğrenilmiş ayarları (yalnız varsayılandan farklı olanlar). "
+    J = K.jl(K.AYAR, None) or {"v": 1, "surum": "varsayilan", "aciklama": "OXXai kupon stratejilerinin öğrenilmiş ayarları (yalnız varsayılandan farklı olanlar). "
                                 "Yazar: lab/oxx_ogren.py. Okur: scripts/oxx_kupon.py. Motorun model.json ayarlarına dokunulmaz.",
                                 "params": {}, "izlenen": [], "gecmis": []}
     A = K.ayar_yukle(J)
@@ -573,16 +573,16 @@ def main():
         if rap.get("karar") in ("kabul", "ret"): GL["sayac"][alan_k] = m
         if rap.get("karar") == "kabul":
             if donuk: rap["karar"], rap["neden"] = "dondurulmus", "koruyucu geri alma aktif (data/rollback.json); kabul edilmedi"
-            elif c["anahtar"] in (rb.get("donmus") or {}): rap["karar"], rap["neden"] = "dondurulmus", "bu anahtar OXX geri alma süresinde"
+            elif c["anahtar"] in (rb.get("donmus") or {}): rap["karar"], rap["neden"] = "dondurulmus", "bu anahtar OXXai geri alma süresinde"
         uyg = rap.get("karar") == "kabul"
         if uyg: uygula(J, c, bugun); A = K.ayar_yukle(J)
         kayitlar.append(dict({"tarih": bugun.isoformat(), "anahtar": c["anahtar"], "tur": c["tur"], "alan": c["alan"], "aciklama": c.get("aciklama"),
                               "sinyal": c.get("sinyal"), "deger": c.get("deger"), "uygulandi": uyg, "sure_sn": round(time.time() - t1, 1)}, **rap))
         c["durum"] = "denendi"; c["son_deneme"] = bugun.isoformat(); c["sonuc"] = rap.get("karar"); denenen += 1
-        print(f"OXX öğrenme: {c['anahtar']} → {rap.get('karar')} ({rap.get('neden')})", flush=True)
+        print(f"OXXai öğrenme: {c['anahtar']} → {rap.get('karar')} ({rap.get('neden')})", flush=True)
     Q["adaylar"] = sorted(var.values(), key=lambda a: (a["durum"] != "bekliyor", -a.get("oncelik", 0)))[-200:]
     Q["guncelleme"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%MZ")
-    Q["aciklama"] = ("OXX öğrenme döngüsünün deney adayları: kilitli kupon/tahmin günlüklerinde beklenti ile gerçek arasındaki sistematik "
+    Q["aciklama"] = ("OXXai öğrenme döngüsünün deney adayları: kilitli kupon/tahmin günlüklerinde beklenti ile gerçek arasındaki sistematik "
                      "farklardan (|z| ≥ 1,5; öncelik |z|) otomatik üretilir; her gece en fazla " + str(N_GECE) + " aday sınanır.")
     GL["kayitlar"] = (GL.get("kayitlar", []) + kayitlar)[-300:]
     GL["guncelleme"] = Q["guncelleme"]
@@ -593,12 +593,12 @@ def main():
                       "dondurma": "koruyucu (data/rollback.json) aktifken kabul yok"}
     GL["ozet"] = {"bu_gece": collections.Counter(k.get("karar") for k in kayitlar), "kuyruk_bekleyen": sum(1 for a in Q["adaylar"] if a["durum"] == "bekliyor"),
                   "ayar_surum": J.get("surum"), "izlenen": [i["anahtar"] for i in J.get("izlenen", [])], "sure_sn": round(time.time() - T0, 1)}
-    print(f"OXX öğrenme: {yeni} yeni aday, {denenen} sınandı, {round(time.time() - T0, 1)} sn; ayar {J.get('surum')}", flush=True)
+    print(f"OXXai öğrenme: {yeni} yeni aday, {denenen} sınandı, {round(time.time() - T0, 1)} sn; ayar {J.get('surum')}", flush=True)
     if ar.kuru:
         print(json.dumps(kayitlar, ensure_ascii=False, indent=1)[:4000]); return
-    J.setdefault("aciklama", "OXX kupon stratejilerinin öğrenilmiş ayarları"); K.jw_degisince(K.AYAR, J, haric=(), indent=1)
+    J.setdefault("aciklama", "OXXai kupon stratejilerinin öğrenilmiş ayarları"); K.jw_degisince(K.AYAR, J, haric=(), indent=1)
     K.jw(KUYRUK, Q); K.jw(GUNLUK, GL)
-    rb.setdefault("aciklama", "OXX öğrenme döngüsünün geri alma kaydı (rollback.json kalıbı); aktifken 'donmus' anahtarlar yeniden kabul edilmez.")
+    rb.setdefault("aciklama", "OXXai öğrenme döngüsünün geri alma kaydı (rollback.json kalıbı); aktifken 'donmus' anahtarlar yeniden kabul edilmez.")
     K.jw(OXX_RB, rb)
 
 
@@ -606,4 +606,4 @@ if __name__ == "__main__":
     try:
         main()
     except Exception:
-        import traceback; traceback.print_exc(); print("OXX öğrenme döngüsü bu gece atlandı")
+        import traceback; traceback.print_exc(); print("OXXai öğrenme döngüsü bu gece atlandı")
