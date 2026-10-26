@@ -1763,7 +1763,7 @@ details.sx>.sx-in>.panel,details.sx>.sx-in>.pw-card{margin-top:0}
         </div>
         </details>
         <details id="oddsBox">
-          <summary>Bahis oranlarını ekle (isteğe bağlı, isabeti artırır)</summary>
+          <summary>Piyasa oranlarını ekle (isteğe bağlı, isabeti artırır)</summary>
           <div class="row3">
             <label>MS 1 <input id="o1" type="number" step="0.01" min="1.01" inputmode="decimal"></label>
             <label>MS X <input id="ox" type="number" step="0.01" min="1.01" inputmode="decimal"></label>
@@ -1773,7 +1773,7 @@ details.sx>.sx-in>.panel,details.sx>.sx-in>.pw-card{margin-top:0}
             <label>2.5 Üst <input id="oo" type="number" step="0.01" min="1.01" inputmode="decimal"></label>
             <label>2.5 Alt <input id="ou" type="number" step="0.01" min="1.01" inputmode="decimal"></label>
           </div>
-          <p class="note" style="margin-top:8px">Oran girersen OXXai piyasanın görüşünü modele katar ve değerli (value) bahisleri işaretler.</p>
+          <p class="note" style="margin-top:8px">Oran girersen OXXai piyasanın görüşünü modele katar ve değerli (value) seçimleri işaretler.</p>
         </details>
         <button class="btn" type="submit">Tahmin et</button>
         <p class="note" id="sampleNote">Formdaki takımlar ve skorlar örnek veridir. Kendi maçını yazıp tahmin et.</p>
@@ -1795,7 +1795,7 @@ details.sx>.sx-in>.panel,details.sx>.sx-in>.pw-card{margin-top:0}
       </div>
     </div>
     <div id="btList"></div>
-    <p class="disc">Hobi amaçlı istatistiksel tahmindir, bahis tavsiyesi değildir. Oranlar yalnız piyasa beklentisi bilgisidir. 18+ · Yasa dışı bahis suçtur · Destek: 115</p>
+    <p class="disc">Hobi amaçlı istatistiksel tahmindir, tavsiye değildir. Oranlar yalnız piyasa beklentisi bilgisidir. 18+ · Yasa dışı şans oyunları suçtur · Destek: 115</p>
   </section>
 
   <!-- BASKETBOL -->
@@ -1812,7 +1812,7 @@ details.sx>.sx-in>.panel,details.sx>.sx-in>.pw-card{margin-top:0}
       </div>
     </div>
     <div id="bkList"></div>
-    <p class="disc">🏀 Tahminler her lig için hücum ve savunma gücünden hesaplanır ve günde 3 kez yeniden eğitilir. Yüzdeler OXXai modelinin olasılığıdır; kesin sonuç veya bahis tavsiyesi değildir · 18+</p>
+    <p class="disc">🏀 Tahminler her lig için hücum ve savunma gücünden hesaplanır ve günde 3 kez yeniden eğitilir. Yüzdeler OXXai modelinin olasılığıdır; kesin sonuç veya tavsiye değildir · 18+</p>
   </section>
 
   <!-- KUPON -->
@@ -1913,7 +1913,7 @@ details.sx>.sx-in>.panel,details.sx>.sx-in>.pw-card{margin-top:0}
           <li>Ev avantajı, lig gol ortalaması, eksik oyuncular, kaleci, motivasyon ve yorgunluk beklenen gole çevrilir.</li>
           <li>Oran girildiyse piyasanın beklentisi modelle birleştirilir.</li>
           <li>İlk yarı ve ikinci yarı ayrı ayrı Poisson (Dixon-Coles) modeliyle hesaplanır. Maç sonu ve İY/MS bu iki yarının birleşiminden çıkar, böylece hepsi birbiriyle tutarlıdır.</li>
-          <li>Günde 3 kez yeni sonuçlar, yaklaşan maçlar ve bahis oranları otomatik indirilir; model iki sezonluk veriyle kendini yeniden eğitir ve her seferinde ayarlarını baştan seçer. Yaklaşan maçların oranları tahmine otomatik eklenir.</li>
+          <li>Günde 3 kez yeni sonuçlar, yaklaşan maçlar ve piyasa oranları otomatik indirilir; model iki sezonluk veriyle kendini yeniden eğitir ve her seferinde ayarlarını baştan seçer. Yaklaşan maçların oranları tahmine otomatik eklenir.</li>
           <li>Her güncellemede model kendi kendini test eder: sezonun her maçını o maçtan önceki verilerle tahmin edip gerçekle karşılaştırır. Kaydettiğin tahminler de sonuç gelince otomatik değerlendirilir.</li>
         </ol>
       </div>
@@ -1923,7 +1923,7 @@ details.sx>.sx-in>.panel,details.sx>.sx-in>.pw-card{margin-top:0}
       </div>
       <div class="panel">
         <h2>Dürüst olalım</h2>
-        <p>Hiçbir model net skoru kesin bilemez. Futbolda en olası net skorun gerçekleşme ihtimali çoğu maçta %10 ile %18 arasındadır; bahis şirketlerinin modelleri de bu sınırdadır. OXXai'nin gücü olasılıkları doğru tartmasındadır, en anlamlı kullanım "Güçlü" işaretli pazarlardır.</p>
+        <p>Hiçbir model net skoru kesin bilemez. Futbolda en olası net skorun gerçekleşme ihtimali çoğu maçta %10 ile %18 arasındadır; piyasa modelleri de bu sınırdadır. OXXai'nin gücü olasılıkları doğru tartmasındadır, en anlamlı kullanım "Güçlü" işaretli pazarlardır.</p>
         <p>"Kesin maç", "şike bilgisi" veya "hile" satan Telegram, Reddit ve site hesapları neredeyse her zaman dolandırıcılıktır. Motor sekmesi modelin bu sezondaki gerçek isabetini gösterir; ona güven.</p>
         <p class="note">18 yaş altına uygun değildir. Kaybetmeyi göze alamayacağın parayla oynama. Destek: Yeşilay Danışmanlık Merkezi (YEDAM) 115.</p>
       </div>
@@ -2289,7 +2289,7 @@ function renderPrediction(inp, r){
       ${SC.risk?`<div class="sc sc-risk"><div class="lb">🔥 Yüksek oran</div><div class="v">${esc(SC.risk.k)}</div><div class="p">oran ${SC.risk.o.toFixed(2)} · %${Math.round(SC.risk.p*100)}</div></div>`
         :`<div class="sc sc-hf"><div class="lb">İY / MS</div><div class="v">${SC.hf}</div><div class="p">olasılık ${pct(SC.hfp)}</div></div>`}
     </div>
-    ${SC.risk?`<div class="riskn">🔥 <b>${esc(SC.risk.name)}</b>: ${esc(SC.risk.label)}${SC.risk.fair?" (adil oran, bahis oranı girilmedi)":""}.${SC.risk.st?` Geçmiş ${SC.risk.st.n.toLocaleString("tr-TR")} maçta %${Math.round(SC.risk.st.tutma*100)} tuttu, ort. oran ${SC.risk.st.ort_oran}; uzun vadede getiri %${Math.round(SC.risk.st.getiri*100)}.`:""} Yüksek risk, eğlence amaçlı.</div>`:""}
+    ${SC.risk?`<div class="riskn">🔥 <b>${esc(SC.risk.name)}</b>: ${esc(SC.risk.label)}${SC.risk.fair?" (adil oran, piyasa oranı girilmedi)":""}.${SC.risk.st?` Geçmiş ${SC.risk.st.n.toLocaleString("tr-TR")} maçta %${Math.round(SC.risk.st.tutma*100)} tuttu, ort. oran ${SC.risk.st.ort_oran}; uzun vadede getiri %${Math.round(SC.risk.st.getiri*100)}.`:""} Yüksek risk, eğlence amaçlı.</div>`:""}
     <div class="scn">
       <div class="scn-i"><span class="scn-k">2. yarı</span><b>${f2.s}</b><small>${SC.more2>=SC.more1?`2Y daha gollü %${Math.round(SC.more2*100)}`:`İY daha gollü %${Math.round(SC.more1*100)}`}</small></div>
       <div class="scn-i"><span class="scn-k">İlk golü</span><b class="tm">${esc(SC.first)}</b><small>%${Math.round(SC.firstP*100)} · gol yok %${Math.round(SC.p00*100)}</small></div>
@@ -2325,7 +2325,7 @@ function renderPrediction(inp, r){
     ${strong.map(x=>{ const st=strength(x.p); return `<tr><td>${x.n}</td><td class="r">${pct(x.p)}</td><td class="r">${(1/x.p).toFixed(2)}</td><td class="r">${st?`<span class="pill ${st[1]}">${st[0]}</span>`:""}</td></tr>`; }).join("")}
     </tbody></table></div>
     ${values.length?`<h3>Değerli oranlar</h3><div class="list">${values.map(x=>`<div><span>${x.n} @ ${x.o.toFixed(2)}</span><span class="pill v">+${pct(x.edge,1)} avantaj</span></div>`).join("")}</div>`:
-      (inp.odds.o1?`<p class="note">Girdiğin oranlarda modelin gördüğü belirgin bir değer yok.</p>`:`<p class="note">"Adil oran"dan yüksek bir oran bulursan o bahis matematiksel olarak değerlidir.</p>`)}
+      (inp.odds.o1?`<p class="note">Girdiğin oranlarda modelin gördüğü belirgin bir değer yok.</p>`:`<p class="note">"Adil oran"dan yüksek bir oran bulursan o seçim matematiksel olarak değerlidir.</p>`)}
   </div>
   <div class="panel">
     <h3>Veri kalitesi: ${qLbl}</h3>
@@ -3375,7 +3375,7 @@ function predictionText(inp,r){
     `1 %${Math.round(r.H*100)} · X %${Math.round(r.D*100)} · 2 %${Math.round(r.A*100)}\n`+
     best.map(b=>`✅ ${b.n} %${Math.round(b.p*100)}`).join("\n")+`\nSen de tahmin et 👇`;
 }
-const APP_TEXT="⚽ OXXai: hobi amaçlı maç tahmini ve takip aracı. İlk yarı, ikinci yarı ve maç sonu skor tahmini, canlı skor ve gol bildirimi. Bahis amaçlı değildir · 18+ 👇";
+const APP_TEXT="⚽ OXXai: hobi amaçlı maç tahmini ve takip aracı. İlk yarı, ikinci yarı ve maç sonu skor tahmini, canlı skor ve gol bildirimi. Şans oyunu değildir · 18+ 👇";
 function shareAppSheet(){ openShare({title:"Link gönder", text:APP_TEXT, url:appLink()}); }
 
 // Üst bara paylaş düğmesi, rehberdeki düğmeyi yeni sayfaya bağla
@@ -3479,7 +3479,7 @@ renderKarne=function(){
     <p class="note">Her güncellemede OXXai yaklaşan maçların tahminini maç başlamadan önce kilitler. Maç bitince gerçek sonuçla karşılaştırılır; bu, geçmişe dönük testten bağımsız, en dürüst ölçümdür.</p>
     ${st?`<div class="stats">
       <div class="stat"><div class="k">1X2 doğru · ${st.n} maç</div><div class="n">${pct(st.r1x2)}</div></div>
-      <div class="stat"><div class="k">Bahis şirketleri</div><div class="n">${st.market_r1x2!=null?pct(st.market_r1x2):"–"}</div></div>
+      <div class="stat"><div class="k">Piyasa oranları</div><div class="n">${st.market_r1x2!=null?pct(st.market_r1x2):"–"}</div></div>
       <div class="stat"><div class="k">2.5 Alt/Üst doğru</div><div class="n">${pct(st.ou25)}</div></div>
       <div class="stat"><div class="k">Maç sonu net skor</div><div class="n">${pct(st.ft_exact)}</div></div>
     </div><p class="note">${L.d30?"Son 30 gün.":"Tüm kayıtlar."} Sonucu beklenen ${L.pending||0} tahmin var.</p>`
@@ -3500,16 +3500,16 @@ const LEGAL_DEV="OXXai geliştiricisi", LEGAL_MAIL="";   // adres bilinçli olar
 const LEGAL_CONTACT=(t)=>`uygulamadaki <a href="#" data-fb="${t||""}">Menü › Öneri ve görüşler</a> bölümü`;
 const TERMS_HTML=`
 <p><b>Son güncelleme:</b> ${TERMS_DATE} · <b>Sürüm:</b> ${TERMS_VER}</p>
-<h3>1. Nitelik</h3><p>OXXai yalnızca <b>hobi amaçlı bir maç tahmini ve takip aracıdır. Bahis amaçlı değildir.</b> Bahis oynamayı önermez, teşvik etmez, tanıtmaz.</p>
+<h3>1. Nitelik</h3><p>OXXai yalnızca <b>hobi amaçlı bir maç tahmini ve takip aracıdır. Şans oyunu değildir.</b> Şans oyunu oynamayı önermez, teşvik etmez, tanıtmaz.</p>
 <h3>2. Sunan ve kabul</h3><p>OXXai'yi ${LEGAL_DEV} ücretsiz, reklamsız ve ticari amaç gütmeden sunar. Uygulamayı kullanarak bu koşulları kabul etmiş olursunuz. Kabul etmiyorsanız uygulamayı kullanmayın.</p>
 <h3>3. Yaş sınırı</h3><p><b>18 yaşını doldurmamış kişiler uygulamayı kullanamaz.</b></p>
 <h3>4. Uygulamanın yaptıkları</h3><p>Maçlar için istatistiksel olasılık hesaplar. Maç sonuçlarını ve canlı skorları gösterir. "Tahmin listem" ile "Sonuç takibim" listelerini yalnızca sizin cihazınızda tutar.</p>
-<h3>5. Uygulamanın yapmadıkları</h3><p>Bahis veya kupon almaz, iletmez, düzenlemez. Para, bakiye veya ödeme tutmaz. Hiçbir bahis sitesine, bayiye ya da uygulamaya bağlantı vermez ve yönlendirmez. Ödül, promosyon veya kazanç vaat etmez.</p>
+<h3>5. Uygulamanın yapmadıkları</h3><p>Oyun veya kupon almaz, iletmez, düzenlemez. Para, bakiye veya ödeme tutmaz. Hiçbir şans oyunu sitesine, bayiye ya da uygulamaya bağlantı vermez ve yönlendirmez. Ödül, promosyon veya kazanç vaat etmez.</p>
 <h3>6. Tahminlerin niteliği</h3><p>Tahminler, geçmiş verilere dayanan istatistiksel olasılıklardır. <b>Kesin sonuç değildir ve yanılabilir.</b> "Güçlü tahmin", "Günün Altın Tahminleri" ve benzeri etiketler, modelin hesapladığı olasılığa dayanan istatistiksel işaretlerdir. Öneri veya tavsiye değildir.</p>
 <h3>7. Piyasa beklentisi bilgisi</h3><p>Gösterilen oranlar, modelin girdisi olarak ve piyasanın maç hakkındaki beklentisini anlatan bilgi olarak sunulur. Oynama çağrısı değildir. Oranlar gecikmeli, eksik ya da hatalı olabilir. Güncel ve bağlayıcı bilgi yalnızca resmî kaynaktadır.</p>
 <h3>8. Bağımsızlık</h3><p>OXXai; Spor Toto Teşkilatı, iddaa, herhangi bir yetkili bayi, kulüp, lig, federasyon veya ESPN ile bağlantılı değildir. Bu kuruluşlar tarafından onaylanmamış ve desteklenmemiştir. Anılan ad ve markalar sahiplerine aittir ve yalnızca verinin kaynağını belirtmek için anılır.</p>
-<h3>9. Yasa dışı bahis</h3><p>Türkiye'de yasa dışı bahis oynatmak, buna aracılık etmek ve bunu teşvik etmek suçtur (7258 sayılı Kanun). Kumar da yasaktır. Uygulamayı ve içeriğini bu amaçlarla kullanmayın ve paylaşmayın. Destek için <b>115'i (YEDAM)</b> arayabilirsiniz.</p>
-<h3>10. Yasak kullanımlar</h3><p>Uygulamayı ve içeriğini şu amaçlarla kullanamazsınız: ticari amaç gütmek; tahmin veya kupon satmak, ücretli tahmin grupları kurmak; para veya ödül karşılığı yarışma düzenlemek; herhangi bir bahis hizmetinin reklamını yapmak; otomatik araçlarla toplu veri çekmek; uygulamanın işleyişini bozmak.</p>
+<h3>9. Yasa dışı şans oyunları</h3><p>Türkiye'de yasa dışı şans oyunu oynatmak, buna aracılık etmek ve bunu teşvik etmek suçtur (7258 sayılı Kanun). Kumar da yasaktır. Uygulamayı ve içeriğini bu amaçlarla kullanmayın ve paylaşmayın. Destek için <b>115'i (YEDAM)</b> arayabilirsiniz.</p>
+<h3>10. Yasak kullanımlar</h3><p>Uygulamayı ve içeriğini şu amaçlarla kullanamazsınız: ticari amaç gütmek; tahmin veya kupon satmak, ücretli tahmin grupları kurmak; para veya ödül karşılığı yarışma düzenlemek; herhangi bir şans oyunu hizmetinin reklamını yapmak; otomatik araçlarla toplu veri çekmek; uygulamanın işleyişini bozmak.</p>
 <h3>11. Veriler</h3><p>Hesap ve üyelik yoktur. ${LEGAL_DEV}nin sunucusu ve veri tabanı yoktur. Listeleriniz ve tercihleriniz yalnızca cihazınızın tarayıcı depolamasında tutulur. Tarayıcı verilerini silerseniz veya uygulamayı kaldırırsanız bu bilgiler kaybolabilir; yedekleri yoktur. Ayrıntılar için KVKK Aydınlatma Metni'ne bakın.</p>
 <h3>12. Üçüncü taraf hizmetler</h3><p>Veriler ve bazı bileşenler üçüncü taraf hizmetlerden gelir. Bu hizmetlerin çalışması, doğruluğu ve kendi veri işlemeleri ${LEGAL_DEV}nin denetiminde değildir.</p>
 <h3>13. Hizmetin durumu</h3><p>Uygulama "olduğu gibi" sunulur. Kesintisiz, hatasız veya güncel olacağı garanti edilmez. Uygulama önceden bildirim yapılmadan değiştirilebilir, durdurulabilir veya kaldırılabilir.</p>
@@ -3549,21 +3549,21 @@ function showTerms(gate){
     <h2 id="gT">${gate?"OXXai'ye hoş geldin":"Kullanım koşulları ve KVKK"}</h2>
     ${gate?`<p class="note" style="text-align:center;margin-top:-4px">Devam etmeden önce lütfen oku.</p>`:""}
     <div class="gsum">
-      <div><span>🧪</span><p>OXXai yalnızca <b>hobi amaçlı bir maç tahmini ve takip aracıdır. Bahis amaçlı değildir.</b></p></div>
-      <div><span>🚫</span><p>Bahis almaz, para tutmaz. Hiçbir bahis sitesine veya bayiye yönlendirmez.</p></div>
+      <div><span>🧪</span><p>OXXai yalnızca <b>hobi amaçlı bir maç tahmini ve takip aracıdır. Şans oyunu değildir.</b></p></div>
+      <div><span>🚫</span><p>Oyun almaz, para tutmaz. Hiçbir şans oyunu sitesine veya bayiye yönlendirmez.</p></div>
       <div><span>📊</span><p>Tahminler istatistiksel olasılıktır. <b>Yanılabilir ve tavsiye değildir.</b></p></div>
       <div><span>📈</span><p>Oranlar yalnızca piyasa beklentisi bilgisidir. Oynama çağrısı değildir.</p></div>
       <div><span>🔒</span><p>Hesap yok. Listelerin yalnızca bu cihazda kalır.</p></div>
-      <div><span>⚖️</span><p><b>Yasa dışı bahis suçtur.</b> Destek: <b>115 (YEDAM)</b>.</p></div>
+      <div><span>⚖️</span><p><b>Yasa dışı şans oyunları suçtur.</b> Destek: <b>115 (YEDAM)</b>.</p></div>
     </div>
     <details class="gfull" id="gTerms"><summary>Kullanım Koşulları ve Sorumluluk Reddi (tam metin)</summary><div class="terms">${TERMS_HTML}</div></details>
     <details class="gfull" id="gKvkk"><summary>KVKK Aydınlatma Metni (tam metin)</summary><div class="terms">${KVKK_HTML}</div></details>
     ${gate?`<label class="gchk"><input type="checkbox" id="g18"><span>18 yaşını doldurdum.</span></label>
-    <label class="gchk"><input type="checkbox" id="gNb"><span>OXXai'nin bahis amaçlı olmadığını ve tahminlerin kesin olmadığını anladım. Kararlarımın sorumluluğu bana aittir.</span></label>
+    <label class="gchk"><input type="checkbox" id="gNb"><span>OXXai'nin şans oyunu olmadığını ve tahminlerin kesin olmadığını anladım. Kararlarımın sorumluluğu bana aittir.</span></label>
     <label class="gchk"><input type="checkbox" id="gOk" disabled><span>Kullanım Koşulları'nı okudum ve kabul ediyorum. <small class="gneed" id="gOkN">(önce yukarıdaki tam metni aç)</small></span></label>
     <label class="gchk"><input type="checkbox" id="gKv" disabled><span>KVKK Aydınlatma Metni'ni okudum ve anladım. <small class="gneed" id="gKvN">(önce yukarıdaki tam metni aç)</small></span></label>
     <button class="btn" id="gGo" type="button" disabled>Devam et</button>
-    <p class="note" style="text-align:center">Ücretsiz · Reklamsız · Ticari değildir. Resmî kurumlar, kulüpler ve bahis şirketleriyle bağlantısı yoktur. Kabul etmezsen uygulama kullanılamaz.</p>`
+    <p class="note" style="text-align:center">Ücretsiz · Reklamsız · Ticari değildir. Resmî kurumlar, kulüpler ve şans oyunu şirketleriyle bağlantısı yoktur. Kabul etmezsen uygulama kullanılamaz.</p>`
     :`<p class="note">Kabul ettiğin sürüm ve tarih: ${(()=>{ try{ const t=JSON.parse(localStorage.getItem("bx-terms")); return "v"+t.v+" · "+new Date(t.at).toLocaleString("tr-TR")+(t.inst?" · yükleme onayı "+new Date(t.inst).toLocaleString("tr-TR"):""); }catch(e){ return "–"; } })()}</p>
     ${legalWipeBtn()}
     <button class="btn" id="gGo" type="button">Kapat</button>`}
@@ -3606,7 +3606,7 @@ const _rp4=renderPrediction;
 renderPrediction=function(inp,r){
   _rp4(inp,r);
   const d=document.createElement("p"); d.className="disc";
-  d.innerHTML=`Bu bir istatistiksel tahmindir; kesin sonuç veya bahis tavsiyesi değildir. Kararlar ve olası kayıplar kullanıcıya aittir · 18+ · <a href="#rehber" id="discLink">Koşullar</a>`;
+  d.innerHTML=`Bu bir istatistiksel tahmindir; kesin sonuç veya tavsiye değildir. Kararlar ve olası kayıplar kullanıcıya aittir · 18+ · <a href="#rehber" id="discLink">Koşullar</a>`;
   $("out").appendChild(d);
   $("discLink").onclick=e=>{ e.preventDefault(); showTerms(false); };
 };
@@ -4096,7 +4096,7 @@ function renderKupon(){
       <p class="note">Olasılık, her seçimin OXXai olasılıklarının çarpımıdır; maçlar birbirinden bağımsız kabul edilir. Listedeki maç sayısı arttıkça tutma ihtimali hızla düşer.</p>
       <div class="actions"><button class="btn" type="button" id="cpShare">Listeyi paylaş</button><button class="btn ghost" type="button" id="cpClear">Temizle</button></div>
     </div>
-    <p class="disc">OXXai yalnızca hobi amaçlı maç tahmini ve takip aracıdır; bahis amaçlı değildir, bahis almaz ve hiçbir siteye yönlendirmez · 18+</p>`;
+    <p class="disc">OXXai yalnızca hobi amaçlı maç tahmini ve takip aracıdır; şans oyunu değildir, oyun almaz ve hiçbir siteye yönlendirmez · 18+</p>`;
   box.querySelectorAll(".rm").forEach(b=>b.onclick=()=>{ CP.items.splice(+b.dataset.i,1); cpSave(); renderKupon(); });
   $("cpClear").onclick=()=>{ CP.items=[]; cpSave(); renderKupon(); };
   $("cpShare").onclick=()=>{ const t=`📋 OXXai tahmin listem\n`+CP.items.map(x=>`⚽ ${x.h} – ${x.a}: ${mkName(x.mk)} (OXXai %${Math.round((x.p||0)*100)})`).join("\n")+
@@ -4471,7 +4471,7 @@ function bkOpen(f){
     <div class="actions"><button class="btn" type="button" id="bkShare">Arkadaşına gönder</button></div>`;
   }
   box.innerHTML=`<div class="wrap"><div class="bkd-top"><button type="button" id="bkBack" aria-label="Geri"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><b>${BK_FLAG[f.lg]||"🏀"} ${esc(f._comp||bkLg(f.lg))}${f.round?` · ${esc(f.round)}`:""}</b></div>${body}
-    <p class="disc">Hobi amaçlı istatistiksel tahmindir, bahis tavsiyesi değildir. Oranlar yalnız piyasa beklentisi bilgisidir. 18+ · Yasa dışı bahis suçtur · Destek: 115</p></div>`;
+    <p class="disc">Hobi amaçlı istatistiksel tahmindir, tavsiye değildir. Oranlar yalnız piyasa beklentisi bilgisidir. 18+ · Yasa dışı şans oyunları suçtur · Destek: 115</p></div>`;
   document.body.appendChild(box); document.body.style.overflow="hidden";
   const close=()=>{ box.remove(); document.body.style.overflow=""; };
   $("bkBack").onclick=()=>{ Sound.tap(); close(); };
@@ -4569,7 +4569,7 @@ renderKarne=function(){ _rk4(); const k=$("karne"); if(!k) return;
     ${F.map(x=>`<tr><td>${x.sezon}-${String(+x.sezon+1).slice(2)}</td><td>${pc(x.eski.kapsam)} → <b>${pc(x.yeni_tum.kapsam)}</b></td><td>${pc(x.eski["1x2"])}</td><td class="hi">${pc(x.yeni["1x2"])}</td><td>${x.eski.logloss} → <b>${x.yeni.logloss}</b></td></tr>`).join("")}
     </tbody></table></div>
     <div class="list">${LAB.denenen.map(x=>`<div><span>${x.sonuc==="kabul"?"✅":x.sonuc==="beklemede"?"⏸️":"✖️"} <b>${esc(x.ad)}</b><br><small class="note">${esc(x.not)}</small></span><span>${x.sonuc==="kabul"?"Motora eklendi":x.sonuc==="beklemede"?"Beklemede":"Elendi"}</span></div>`).join("")}</div>
-    <p class="note">Dürüst kıyas: aynı maçlarda bahis piyasasının kapanış oranları log-kayıp ${F.length?F[F.length-1].yeni.piyasa_ll:"–"} ile hâlâ daha iyi; oran girdiğinde OXXai ikisini birleştirir.</p>`;
+    <p class="note">Dürüst kıyas: aynı maçlarda piyasanın kapanış oranları log-kayıp ${F.length?F[F.length-1].yeni.piyasa_ll:"–"} ile hâlâ daha iyi; oran girdiğinde OXXai ikisini birleştirir.</p>`;
   }
   if(bt.risk&&bt.risk.kurallar){ h+=`<h3 style="margin-top:8px">🔥 Yüksek oran kutusu: kural yarışması</h3>
     <p class="note">Her güncellemede dört kural gerçek kapanış oranlarıyla yarışır: ilk %70'te seçilir, son %30'da doğrulanır. Hiçbiri piyasayı yenmez; seçilen, en az kaybettiren ve tutarlı olandır.</p>
@@ -4827,7 +4827,7 @@ function whyLines(inp, r){
   const pts=f=>f.reduce((a,[x,y])=>a+(x>y?3:x===y?1:0),0);
   if(inp.hForm&&inp.hForm.length&&inp.aForm&&inp.aForm.length){ const ph=pts(inp.hForm), pa=pts(inp.aForm);
     o.push(`Son 5 maç formu: ${esc(inp.home)} <b>${ph}</b> puan, ${esc(inp.away)} <b>${pa}</b> puan${Math.abs(ph-pa)>=5?" — form farkı belirgin":""}.`); }
-  o.push(r.market?`Bahis piyasasının oranları modele katıldı (piyasa, kadro ve sakatlık bilgisini de içerir).`:`Bu maç için oran yok; tahmin yalnızca OXXai modelinden (ev sahibi avantajı ve son maçlar ağırlıklı).`);
+  o.push(r.market?`Piyasa oranları modele katıldı (piyasa, kadro ve sakatlık bilgisini de içerir).`:`Bu maç için oran yok; tahmin yalnızca OXXai modelinden (ev sahibi avantajı ve son maçlar ağırlıklı).`);
   if(r.o25>=.6||r.o25<=.4) o.push(`Toplam beklenen gol ${(r.lh+r.la).toFixed(1)}: 2,5 ${r.o25>=.5?"Üst":"Alt"} olasılığı %${pc(Math.max(r.o25,1-r.o25))}.`);
   return o.slice(0,4);
 }
@@ -5187,7 +5187,7 @@ function ibRow(x){
   const ob=(lab,v,pr,key)=>{ if(!v) return `<span class="na"><u>${lab}</u>–</span>`;
     const isR=R&&R.k===key&&R.tier!=="w"; const inCp=CP.items.some(c=>c.k===cpKey(m)&&c.mk===key);
     return `<span role="button" tabindex="0" data-mk="${key}" data-o="${v}" data-p="${pr==null?"":pr}" class="${isR?"rk rk-"+R.tier:""} ${inCp?"sel":""}"><u>${isR?"✓ ":""}${lab}</u>${v.toFixed(2)}</span>`; };
-  const mbs=f&&f.mbs?`<span class="ib-mbs" title="Minimum bahis sayısı (MBS)">${f.mbs}</span>`:"";
+  const mbs=f&&f.mbs?`<span class="ib-mbs" title="Minimum seçim sayısı (MBS)">${f.mbs}</span>`:"";
   const t=m.started?"Başladı":((BT.q||BT.f==="fav")&&istDay(m.dt)!==istDay(new Date())?ist(m.dt,{day:"numeric",month:"short"})+" ":"")+ist(m.dt,{hour:"2-digit",minute:"2-digit"});
   return `<div class="ib-r" data-i="${x.idx}"><div class="ib-top">${starBtn(k)}<span class="ib-t">${esc(t)}</span>${mbs}<span class="ib-tm">${esc(m.h)} - ${esc(m.a)}</span></div>
     <div class="ib-od">${ob("MS 1",o&&o[0],p&&p.p[0],"1")}${ob("MS X",o&&o[1],p&&p.p[1],"X")}${ob("MS 2",o&&o[2],p&&p.p[2],"2")}${ob("2,5 Alt",ou&&ou[1],p&&1-p.o25,"A")}${ob("2,5 Üst",ou&&ou[0],p&&p.o25,"U")}</div>
@@ -5426,7 +5426,7 @@ function msRender(){
     </div>
     <div class="ms-tabs" role="tablist">${tabs.map(([t,n])=>`<button type="button" role="tab" data-t="${t}" aria-selected="${MS.tab===t}">${n}</button>`).join("")}</div>
     <div class="ms-body">${MS.tab==="tahmin"?msTahmin(m,f,r,lv):MS.tab==="oran"?msOran(m,f,r,lv):`<div id="msForm">${msFormHtml(FP)}</div>`}</div>
-    <p class="disc">Hobi amaçlı istatistiksel tahmindir, bahis tavsiyesi değildir. Oranlar yalnız piyasa beklentisi bilgisidir. 18+ · Yasa dışı bahis suçtur · Destek: 115</p>`;
+    <p class="disc">Hobi amaçlı istatistiksel tahmindir, tavsiye değildir. Oranlar yalnız piyasa beklentisi bilgisidir. 18+ · Yasa dışı şans oyunları suçtur · Destek: 115</p>`;
   el.querySelector(".ms-x").onclick=()=>{ try{ history.back(); }catch(e){ closeMatch(); } setTimeout(()=>{ if(MS.m) closeMatch(); },120); };
   el.querySelectorAll(".ms-tabs button").forEach(b=>b.onclick=()=>{ MS.tab=b.dataset.t; Sound.tap(); msRender(); if(MS.tab==="form"&&f&&f.iid) msForm(f.iid); });
   el.querySelectorAll(".mo").forEach(b=>b.onclick=()=>{ const mm=m.sp?{lg:"i"+m.ci,h:m.h,a:m.a,dt}:m; cpToggle(mm,b.dataset.mk,+b.dataset.o,+b.dataset.p); if(typeof paintCoupon==="function") paintCoupon(); msRender(); });
@@ -5493,7 +5493,7 @@ function msOran(m,f,r,lv){
   if(lv){ const P=idlPred(lv), od=lv.odds||{}; if(!P) return `<p class="note">Canlı oran yok.</p>`; const G=[];
     if(od.ms&&!od.ms.lock) G.push(mGroup("Maç sonucu (canlı)",[mOpt("1","1",P.H,od.ms.v[0],mm),mOpt("X","X",P.D,od.ms.v[1],mm),mOpt("2","2",P.A,od.ms.v[2],mm)]));
     if(od.ou&&!od.ou.lock){ const kA="A"+od.ou.l, kU="U"+od.ou.l; MKT_N[kA]=`${lnF(od.ou.l)} Alt`; MKT_N[kU]=`${lnF(od.ou.l)} Üst`; G.push(mGroup(`${lnF(od.ou.l)} Alt/Üst (canlı)`,[mOpt(kA,"Alt",1-P.pOver,od.ou.alt,mm),mOpt(kU,"Üst",P.pOver,od.ou.ust,mm)])); }
-    return G.join("")||`<p class="note">Şu an açık canlı oran yok (iddaa bu dakikada bahisleri kapatmış olabilir).</p>`; }
+    return G.join("")||`<p class="note">Şu an açık canlı oran yok (piyasa bu dakikada oranları kapatmış olabilir).</p>`; }
   if(!r) return `<p class="note">Oran hesaplanamadı.</p>`;
   const o=f&&f.odds||[], ou=f&&f.ou||[], kg=f&&f.ikg||[];
   const ht={}; (r.htft||[]).forEach(([k,p])=>{ const a=k.split("/")[0]; ht[a]=(ht[a]||0)+p; });
@@ -5661,7 +5661,7 @@ if((location.hash||"")==="#sonuclar") setTimeout(()=>$("navRes").click(),200);
 // =====================================================================
 // OXXai v35: Otomatik sürüm güncelleme — yeni sürüm yayınlanınca uygulama kendini yeniler
 // =====================================================================
-const APP_V="2026-10-27.113";
+const APP_V="2026-10-27.114";
 (function autoUpdate(){
   let shown=false;
   async function check(auto){
@@ -6073,7 +6073,7 @@ function botWindow(day){ const now=Date.now(), d0=new Date(new Date().toLocaleSt
 const BOT_J={
   selam:["Selam{ad}! Ben OXXai. Bülteni senin için tarıyorum; \"sıradaki maçı öner\" demen yeter.","Hoş geldin{ad}! Kahveni al, ben de en yüksek olasılıklı maçları getireyim ☕","Merhaba{ad}! Bugün hangi ligde gol avına çıkıyoruz? ⚽"],
   tesekkur:["Rica ederim{ad}! Tutarsa paylaşırız, tutmazsa bir sonrakine bakarız 😉","Ne demek{ad}, ben buradayım. Bir daha sorarsan yine hesaplarım 🤓","Eyvallah! Benim işim olasılık, seninki sabır 😄"],
-  kayip:["Geçmiş olsun{ad} 😔 Futbolda %80 bile her 5 maçtan 1'inde yatar, bu işin doğası. Bugünlük bütçeni aşma, yarın taze bülten var.","Top yuvarlak{ad}, en sağlam tahmin bile bazen yatar 🌧️ Kaybı kovalamak en pahalı bahistir; mola verip yarın bakalım mı?","Üzülme{ad}. Kalecinin günü olur, VAR'ın günü olur... Yarın daha seçici oynayalım: sadece 🔥 olanlar."],
+  kayip:["Geçmiş olsun{ad} 😔 Futbolda %80 bile her 5 maçtan 1'inde yatar, bu işin doğası. Bugünlük bütçeni aşma, yarın taze bülten var.","Top yuvarlak{ad}, en sağlam tahmin bile bazen yatar 🌧️ Kaybı kovalamak en pahalı hatadır; mola verip yarın bakalım mı?","Üzülme{ad}. Kalecinin günü olur, VAR'ın günü olur... Yarın daha seçici oynayalım: sadece 🔥 olanlar."],
   kazanc:["Helal olsun{ad}! 🎉 Taç bugün sende 👑 Kazancın bir kısmını kenara koy, sonra tekrar bakarız 😉","Vuruşu yaptın{ad}! 🥳 Ama hatırla: olasılık tutunca dahi, tutmayınca şanssızız — bu işte dengeyi koru.","İşte bu! ⚡ Bunu Power Now kutlaması sayıyorum{ad}."],
   bilinmez:["Bunu tam anlayamadım{ad} 🤔 \"bugün hangi maçlar öne çıkıyor\", \"3 maçlık liste\", \"canlı\" ya da bir takım adı yazabilirsin.","OXXai'nin kafası biraz karıştı 🤔 Takım adı yaz ya da aşağıdaki düğmelerden birini seç."],
   espri:["Hakem neden yapay zekâyı kıskanır? Çünkü OXXai maçı bin kez oynatır ama hiç düdük çalmaz 😄","Benim favori takımım? Olasılık FC. Hiç küme düşmez, ama bazen yağmur yağdırır 🌧️","Bana \"kesin maç\" diyenlere bir cevabım var: kesin olan tek şey uzatmada 3 dakika eklenmesi ⏱️"],
@@ -6160,7 +6160,7 @@ function brainUI(){ const box=$("botBrain"); const btn=$("botBrainBtn");
 function botWhyHtml(x){ const {m,f,R,p}=x; if(!R) return "";
   const io={"1":f&&f.odds&&f.odds[0],"X":f&&f.odds&&f.odds[1],"2":f&&f.odds&&f.odds[2],"U":f&&f.ou&&f.ou[0],"A":f&&f.ou&&f.ou[1],"KGV":f&&f.ikg&&f.ikg[0],"KGY":f&&f.ikg&&f.ikg[1]}[R.k];
   const L=[]; L.push(`<b>${esc(m.h)} - ${esc(m.a)} · ${esc(R.n)}</b>`);
-  if(io){ const all=R.k==="U"||R.k==="A"?f.ou:R.k==="KGV"||R.k==="KGY"?f.ikg:f.odds; const ov=all.reduce((a,o)=>a+1/o,0); L.push(`💹 İddaa oranı ${(+io).toFixed(2)}: bahis şirketi marjı çıkarılınca piyasa bu sonuca <b>%${pc9(1/io/ov)}</b> veriyor.`); }
+  if(io){ const all=R.k==="U"||R.k==="A"?f.ou:R.k==="KGV"||R.k==="KGY"?f.ikg:f.odds; const ov=all.reduce((a,o)=>a+1/o,0); L.push(`💹 İddaa oranı ${(+io).toFixed(2)}: piyasa marjı çıkarılınca piyasa bu sonuca <b>%${pc9(1/io/ov)}</b> veriyor.`); }
   if(p&&p.lh!=null) L.push(`⚽ Gol beklentisi: ${esc(m.h)} <b>${p.lh.toFixed(2)}</b>, ${esc(m.a)} <b>${p.la.toFixed(2)}</b> (lig ortalaması, iç/dış saha gücü, son form ve piyasa birlikte).`);
   if(p&&p.ft) L.push(`🎯 En olası skor ${esc(p.ft)}${p.ht?`, ilk yarı ${esc(p.ht)}`:""}.`);
   if(R.cn) L.push(`📒 Geçmişte bu güven seviyesindeki <b>${R.cn}</b> öneriden %${Math.round((R.ch||0)*100)}'i tuttu; gösterdiğim %${pc9(R.cp)} bu gerçek sonuçlara göre düzeltilmiş olasılık.`);
@@ -6180,12 +6180,12 @@ async function botAnswer(raw){
     case "ad": BOT.st.ad=I.v.charAt(0).toLocaleUpperCase("tr")+I.v.slice(1); R.html=`Tanıştığıma memnun oldum <b>${esc(BOT.st.ad)}</b>! 🤝 Artık seni adınla çağıracağım. Sevdiğin ligi söylersen (ör. "Süper Lig severim") önerilerimi ona göre sıralarım.`; break;
     case "selam": { R.html=bj("selam"); const k=BOT.st.karne; if(k.n>=5) R.html+=`<br><small>Bu arada sana önerdiğim ${k.n} maçın %${Math.round(k.hit*100)}'i tuttu 📒</small>`; break; }
     case "tesekkur": R.html=bj("tesekkur"); break;
-    case "kayip": R.html=bj("kayip")+`<div class="bt-note">18+ · Bahis eğlence içindir. Kaybı telafi etmek için daha yüksek tutar yatırma.</div>`; R.chips=["Sadece 🔥 olanlar","Dünkü karne"]; break;
+    case "kayip": R.html=bj("kayip")+`<div class="bt-note">18+ · Tahmin eğlence içindir. Kaybı telafi etmek için daha yüksek tutar yatırma.</div>`; R.chips=["Sadece 🔥 olanlar","Dünkü karne"]; break;
     case "kazanc": R.html=bj("kazanc"); break;
     case "espri": R.html=bj("espri"); break;
     case "sohbet": R.html=I.cevap?esc(I.cevap)+`<br><small>🧠 Akıllı mod</small>`:bj("bilinmez"); R.chips=["Sıradaki maçı öner","3 maçlık liste yap","Canlı"]; break;
     case "kim": R.html=`Ben <b>OXXai</b> — OXXai uygulamasının sohbet asistanıyım. Hiçbir sunucuya bağlanmam, tamamen telefonunda çalışırım; bu yüzden bedava ve hızlıyım. Rakamlarım OXXai modelinden, iddaa oranlarından ve maçtan önce kilitlenen arşivden gelir.${BRAIN.ready()?" Şu an 🧠 Akıllı mod açık: mesajlarını telefonundaki açık kaynak yapay zekâ ile anlıyorum.":" Üstteki 🧠 düğmesiyle telefonda çalışan açık kaynak yapay zekâyı (Akıllı mod) açabilirsin."}`; break;
-    case "yardim": R.html=`Bana şunları yazabilirsin (yazım hatası olsa da anlarım):<ul class="bt-ul"><li><b>sıradaki maçı öner</b> · <b>bu akşam hangi maçlar</b> · <b>yarın</b></li><li><b>3 maçlık liste yap</b> · <b>Süper Lig'den 2 maçlık liste</b> · <b>yarın için 3 maç</b></li><li><b>KG var olacak maçlar</b> · <b>gol olacak maç</b> · <b>az gollü maçlar</b> · <b>%80 üstü</b></li><li><b>canlı</b> → şu an oynanan maçlarda %72+ seçimler</li><li><b>banko</b> · <b>yüksek oran</b></li><li>takım adı: <b>Galatasaray maçında gol olur mu</b></li><li><b>neden?</b> → son önerinin gerekçesi · <b>başka</b> · <b>hepsini ekle</b> · <b>peki yarın?</b></li><li><b>dünkü karne</b> · <b>listem</b> · <b>adım Deniz</b></li></ul>`; break;
+    case "yardim": R.html=`Bana şunları yazabilirsin (yazım hatası olsa da anlarım):<ul class="bt-ul"><li><b>sıradaki maçı öner</b> · <b>bu akşam hangi maçlar</b> · <b>yarın</b></li><li><b>3 maçlık liste yap</b> · <b>Süper Lig'den 2 maçlık liste</b> · <b>yarın için 3 maç</b></li><li><b>KG var olacak maçlar</b> · <b>gol olacak maç</b> · <b>az gollü maçlar</b> · <b>%80 üstü</b></li><li><b>canlı</b> → şu an oynanan maçlarda %72+ seçimler</li><li><b>en güvenli</b> · <b>yüksek oran</b></li><li>takım adı: <b>Galatasaray maçında gol olur mu</b></li><li><b>neden?</b> → son önerinin gerekçesi · <b>başka</b> · <b>hepsini ekle</b> · <b>peki yarın?</b></li><li><b>dünkü karne</b> · <b>listem</b> · <b>adım Deniz</b></li></ul>`; break;
     case "ekle": { const L=C.pre||[]; if(!L.length){ R.html="Ekleyecek bir öneri yok; önce \"maç öner\" ya da \"3 maçlık liste\" de 📋"; break; }
       const A=I.all?L:L.slice(0,1); let n=0; for(const x of A){ if(!CP.items.some(c=>c.k===cpKey(x.m)&&c.mk===x.R.k)){ cpToggle(x.m,x.R.k,+(x.R.o||(1/x.R.cp).toFixed(2)),x.R.cp); n++; botLearnPick(x.m); } }
       try{ paintCoupon(); }catch(e){} const st=cpStats(); R.html=n?`${n} seçim listeye eklendi 📋 Listende artık ${st.n} maç var.`:"Bunlar zaten listende 😉"; R.chips=["Listeyi aç","Listem"]; break; }
@@ -6205,7 +6205,7 @@ async function botAnswer(raw){
     case "canli": { if(!IDL.ok[1]) { try{ await IDL.load(1,true); }catch(e){} }
       const L=botLive(I.minP||.72).slice(0,5);
       R.html=L.length?`Şu an ${IDL.live[1].length} canlı maçı taradım${botName()} 🔴 Olasılığı en yüksek canlı seçimler:<div class="bt-cards">${L.map(botLiveCard).join("")}</div><div class="bt-note">Canlı oranlar saniyeler içinde değişir; iddaa bahsi kapatabilir.</div>`
-        :`${IDL.live[1].length} canlı maçı taradım ama şu an %${Math.round((I.minP||.72)*100)}'yi geçen açık oranlı seçim yok. Zorlamayalım${botName()} — bazen en iyi bahis oynamamaktır 😌`;
+        :`${IDL.live[1].length} canlı maçı taradım ama şu an %${Math.round((I.minP||.72)*100)}'yi geçen açık oranlı seçim yok. Zorlamayalım${botName()} — bazen en iyi tahmin beklemektir 😌`;
       R.ctx={live:L}; R.chips=["Power Now","Bugünün öne çıkanları"]; break; }
     case "kupon": { const L=botPre(opt()).slice(I.more||0); let sel=[];
       if(I.target&&I.target>1.2){ const A=botPre(Object.assign(opt(),{minO:1.1})).filter(x=>x.R.o); let bestS=null,bp=0;
@@ -6747,12 +6747,12 @@ karneOzetHtml=function(){ let h=_karneOzetG(); const K=GOLD.karne;
   const line=`<p>${GOLD_SEAL} Altın kuralı: olasılık %${Math.round(GOLD.thr*100)}+, oran ${GOLD.omin.toFixed(2).replace(".",",")}–${GOLD.omax.toFixed(2).replace(".",",")}, günde en fazla ${GOLD.perDay}. ${K&&K.n?`Kurala uyan geçmiş tahminler: <b>${K.h}/${K.n}</b> (%${Math.round(K.h/K.n*100)}).`:"Kilitli arşivde henüz yeterli örnek yok; geçmiş sınamada bu güvendeki öneriler %82 tuttu."}</p>`;
   return h.includes('<div class="kz-r">')?h.replace('<div class="kz-r">','<div class="kz-r">'+line):h.replace(/<\/div>$/,`<div class="kz-r">${line}</div></div>`); };
 
-// ---------- v64: yalnızca hobi amaçlı tahmin ve takip aracı — bahis çağrışımlı işlevler kapalı ----------
-const LEGAL_SHARE="OXXai: hobi amaçlı maç tahmini ve takip aracı. Bahis amaçlı değildir. 18+";
+// ---------- v64: yalnızca hobi amaçlı tahmin ve takip aracı — şans oyunu çağrışımlı işlevler kapalı ----------
+const LEGAL_SHARE="OXXai: hobi amaçlı maç tahmini ve takip aracı. Şans oyunu değildir. 18+";
 // OXXai: hedef orana göre kupon hazırlamaz
 const _botAnswerL=botAnswer;
 botAnswer=async function(raw){ let I=null; try{ I=botIntent(raw,BOT.ctx); }catch(e){}
-  if(I&&I.target) return {html:`OXXai bir bahis aracı değil${botName()}; hedef orana göre liste hazırlamıyorum. İstersen tutma olasılığı en yüksek tahminleri getireyim.`, chips:["Sıradaki maçı öner","3 maçlık liste yap"]};
+  if(I&&I.target) return {html:`OXXai bir şans oyunu aracı değil${botName()}; hedef orana göre liste hazırlamıyorum. İstersen tutma olasılığı en yüksek tahminleri getireyim.`, chips:["Sıradaki maçı öner","3 maçlık liste yap"]};
   return _botAnswerL(raw); };
 
 // ---------- v65: ana ekrana ekleme (yükleme) her seferinde ayrı onay ----------
@@ -6762,7 +6762,7 @@ doInstall=function(){ if(!termsAccepted()){ window._pendInst=true; showTerms(tru
   const el=document.createElement("div"); el.className="gate"; el.id="instGate";
   el.innerHTML=`<div class="gbox" role="dialog" aria-modal="true" aria-labelledby="iT"><img class="glogo" src="icons/oxxai-logo.webp" alt="OXXai">
     <h2 id="iT">OXXai'yi ana ekrana ekle</h2>
-    <p>OXXai ana ekranına bir uygulama simgesi olarak eklenir. Çalışması için gereken dosyalar cihazında saklanır ve listelerin yalnızca bu cihazda kalır. Simgeyi kaldırmak veya tarayıcı verilerini silmek listelerini de silebilir. <b>OXXai hobi amaçlı bir maç tahmini ve takip aracıdır; bahis amaçlı değildir.</b></p>
+    <p>OXXai ana ekranına bir uygulama simgesi olarak eklenir. Çalışması için gereken dosyalar cihazında saklanır ve listelerin yalnızca bu cihazda kalır. Simgeyi kaldırmak veya tarayıcı verilerini silmek listelerini de silebilir. <b>OXXai hobi amaçlı bir maç tahmini ve takip aracıdır; şans oyunu değildir.</b></p>
     <label class="gchk"><input type="checkbox" id="iOk"><span>Anladım. OXXai'yi yalnızca maç tahmini ve takip amacıyla kullanacağım.</span></label>
     <button class="btn" id="iGo" type="button" disabled>Ana ekrana ekle</button><button class="btn ghost" id="iNo" type="button">Şimdi değil</button></div>`;
   document.body.appendChild(el);
@@ -7004,9 +7004,9 @@ setTimeout(()=>{ try{ renderTP(); }catch(e){} },1500);
     ["ms",/\bms ?(1|x|2)\b|\bms\b|mac sonucu|\b1x2\b/,()=>`<b>MS 1</b>: ev sahibi kazanır · <b>MS X</b>: beraberlik · <b>MS 2</b>: deplasman takımı kazanır. "MS" maç sonucu demektir (normal süre sonu).`],
     ["cifte",/cifte sans|\b1x\b|\bx2\b/,()=>`<b>Çifte şans</b>: iki sonucu birden kapsar (1X: ev sahibi kaybetmez, X2: deplasman kaybetmez, 12: beraberlik olmaz). OXXai bu pazar için ayrı öneri vermiyor; MS olasılıklarını toplayarak kendin bakabilirsin (ör. 1X = MS 1 + MS X).`],
     ["handikap",/handikap/,()=>`<b>Handikap</b>: bir takıma sanal gol avantajı/dezavantajı verilerek sonuç hesaplanır. OXXai handikap pazarı için tahmin üretmiyor; uydurmamak için bu pazarı önermem.`],
-    ["adil",/adil oran/,()=>`<b>Adil oran</b> = 1 ÷ olasılık. Ör. %80 tahminin adil oranı 1,25'tir. Kartlarda oran yoksa "adil" oranı gösteririm; bu bir bahis teklifi değil, olasılığın başka bir yazılışıdır.`],
+    ["adil",/adil oran/,()=>`<b>Adil oran</b> = 1 ÷ olasılık. Ör. %80 tahminin adil oranı 1,25'tir. Kartlarda oran yoksa "adil" oranı gösteririm; bu bir oyun teklifi değil, olasılığın başka bir yazılışıdır.`],
     ["birlikte",/birlikte tutma|toplam olasilik|liste olasilig/,()=>`<b>Birlikte tutma olasılığı</b>: listedeki tüm tahminlerin aynı anda tutma olasılığı; tek tek olasılıkların çarpımıdır. Ör. %80 × %80 × %80 ≈ %51. Bu yüzden maç eklendikçe hızla düşer; 2-3 maçlık listeler çok daha sık tutar.`],
-    ["oran",/\boran\w*/,()=>`<b>Oran</b>, bahis şirketinin bir sonuca biçtiği ödeme katsayısıdır. <b>1 ÷ oran</b> kabaca piyasanın o sonuca verdiği olasılıktır: 1,50 → yaklaşık %67 (şirket marjı dahil, gerçeği biraz daha düşüktür). OXXai'de oranlar bilgi içindir; asıl ölçü <b>tutma olasılığı</b>dır.`],
+    ["oran",/\boran\w*/,()=>`<b>Oran</b>, piyasanın bir sonuca biçtiği ödeme katsayısıdır. <b>1 ÷ oran</b> kabaca piyasanın o sonuca verdiği olasılıktır: 1,50 → yaklaşık %67 (şirket marjı dahil, gerçeği biraz daha düşüktür). OXXai'de oranlar bilgi içindir; asıl ölçü <b>tutma olasılığı</b>dır.`],
     ["banko",/banko|kesin mac|garanti mac/,()=>`<b>Banko</b> halk arasında "kesin" diye oynanan maçtır. Dürüst olayım: futbolda kesin yok. OXXai'de en yakın karşılığı <b>Güçlü (%70+)</b> ve <b>🥇 Altın</b> tahminlerdir; onlar bile güven seviyesine göre her 4-5 maçtan birinde tutmayabilir.${karneStr()}`],
     ["altin",/altin/,()=>`<b>🥇 Altın tahmin</b>: OXXai'nin en güvendiği seçim. Kural: olasılık <b>%${Math.round(GOLD.thr*100)}+</b>, oran ${GOLD.omin.toFixed(2).replace(".",",")}–${GOLD.omax.toFixed(2).replace(".",",")} arası, günde en fazla ${GOLD.perDay}. Hak eden maç yoksa rozet verilmez.${GOLD.karne&&GOLD.karne.n?` Kurala uyan geçmiş tahminler: ${GOLD.karne.h}/${GOLD.karne.n} tuttu.`:""}`],
     ["guclu",/guclu/,()=>`<b>Güçlü tahmin</b>: OXXai'nin tutma olasılığını <b>%70 ve üstü</b> gördüğü seçim (🔥 işareti). %58–69 arası "Tahmin", %58 altı "Pas" sayılır.${karneStr()}`],
@@ -7028,7 +7028,7 @@ setTimeout(()=>{ try{ renderTP(); }catch(e){} },1500);
     ["feedback",s=>/oneri|gorus|hata|sikayet|geri bildirim/.test(s),()=>`Fikrini veya hata bildirimini <b>Menü › Uygulama › Öneri ve görüşler</b> bölümünden geliştiriciye iletebilirsin.`,["Öneri gönder"]],
     ["brain",s=>/akilli mod|yapay zeka/.test(s),()=>`<b>🧠 Akıllı mod</b>: sohbet penceresinin üstündeki 🧠 düğmesi. Telefonda çalışan açık kaynak bir dil modelini indirir; serbest cümleleri daha iyi anlar. İsteğe bağlıdır; rakamlar yine OXXai motorundan gelir.`,null],
     ["analiz",s=>/analiz|tahmin yap|mac tahmini|iki takim/.test(s),()=>`Ayrıntılı analiz için <b>Menü › Analiz › Maç tahmini yap</b>: iki takımı seç, İY · 2Y · MS olasılıklarını, skor dağılımını ve önerileri görürsün. Bana da yazabilirsin: "Galatasaray Fenerbahçe ne olur", "PSG Lyon KG var mı".`,["Maç tahmini aç"]],
-    ["app",s=>/uygulama|oxxai|bulutox|bu ne|ne ise yarar|ne yapar|amaci/.test(s),()=>`<b>OXXai</b> hobi amaçlı bir futbol (ve basketbol) <b>tahmin ve takip</b> uygulamasıdır: bülteni tarar, her maç için model + piyasa birleşik <b>olasılık</b> hesaplar, en güvenilirleri 🥇 Altın / Güçlü diye işaretler, tahmin listeni ve sonuçlarını takip eder, isabetini karnede dürüstçe gösterir. Bahis amaçlı değildir · 18+`,["Altın tahminler","Dünkü karne","Yardım"]],
+    ["app",s=>/uygulama|oxxai|bulutox|bu ne|ne ise yarar|ne yapar|amaci/.test(s),()=>`<b>OXXai</b> hobi amaçlı bir futbol (ve basketbol) <b>tahmin ve takip</b> uygulamasıdır: bülteni tarar, her maç için model + piyasa birleşik <b>olasılık</b> hesaplar, en güvenilirleri 🥇 Altın / Güçlü diye işaretler, tahmin listeni ve sonuçlarını takip eder, isabetini karnede dürüstçe gösterir. Şans oyunu değildir · 18+`,["Altın tahminler","Dünkü karne","Yardım"]],
   ];
   V.help=function(s){ for(const [k,t,f,ch] of HELP) if(t(s)) return {k,html:f(),chips:ch}; return null; };
   // ---------- dürüstlük notu: ilk seferde açık, sonra kısa ----------
@@ -7085,7 +7085,7 @@ setTimeout(()=>{ try{ renderTP(); }catch(e){} },1500);
     if(L.length<n&&E.day) L=L.concat(modelOnly(W,E));
     for(const x of L){ if(sel.length>=n) break; const k=cpKey(x.m); if(seen.has(k)) continue; seen.add(k); sel.push(x); }
     const odd=E.target||/\boran\w*/.test(N(raw))&&/kupon|liste|kombin/.test(N(raw));
-    const pre=odd?`OXXai bir bahis aracı değil${botName()}; hedef orana göre liste kurmuyorum. Bunun yerine <b>birlikte tutma olasılığı en yüksek</b> ${n} maçı seçtim:<br>`:"";
+    const pre=odd?`OXXai bir şans oyunu aracı değil${botName()}; hedef orana göre liste kurmuyorum. Bunun yerine <b>birlikte tutma olasılığı en yüksek</b> ${n} maçı seçtim:<br>`:"";
     if(sel.length<2) return {html:`${pre}${esc(whenLbl(E))}${lgTxt(E)?" ("+esc(lgTxt(E))+")":""}${E.market?" "+MKN[E.market]:""} için listeye koyacak kadar sağlam maç bulamadım${botName()}. Başka gün ya da lig deneyelim mi?`,chips:dayChips(E).concat(["Canlı"]),pre:[]};
     const p=sel.reduce((a,x)=>a*x.R.cp,1);
     return {html:`${pre}İşte ${sel.length} maçlık tahmin listen${botName()} 📋${sel.some(x=>x.mo)?MO_NOTE:""}${E.day||lgTxt(E)||E.market?` (${esc([E.day?E.day.label:"",lgTxt(E),E.market?MKN[E.market]:""].filter(Boolean).join(" · "))})`:""}${cards(sel)}
@@ -7155,7 +7155,7 @@ setTimeout(()=>{ try{ renderTP(); }catch(e){} },1500);
   function sNeden(E,ctx){ const L=(ctx&&ctx.pre)||[]; const i=E.ord==null?0:E.ord<0?L.length-1:E.ord; const x=L[i];
     if(!x) return null; let h=botWhyHtml(x); if(L.length>1&&E.ord==null) h+=`<br><small>Diğerleri için "2.si neden" yazabilirsin.</small>`; return {html:h,chips:L.length>1?["2.si neden","Bunu ekle","Başka"]:["Bunu ekle","Başka"]}; }
   function sYardim(){ return {html:`Bana böyle yazabilirsin (yazım hatası, kısaltma, Türkçe karaktersiz yazım olsa da anlarım):<ul class="bt-ul">
-      <li>📅 <b>bugün / yarın / cumartesi / 2 gün sonra / 31.10</b> maçları</li><li>🛡️ <b>en güvenli 3 maç</b> · <b>banko var mı</b> · <b>%80 üstü</b></li><li>🥇 <b>altın tahminler</b> · <b>hazır tahminler</b></li>
+      <li>📅 <b>bugün / yarın / cumartesi / 2 gün sonra / 31.10</b> maçları</li><li>🛡️ <b>en güvenli 3 maç</b> · <b>%80 üstü</b></li><li>🥇 <b>altın tahminler</b> · <b>hazır tahminler</b></li>
       <li>⚔️ <b>GS FB ne olur</b> · <b>barça maçı</b> · <b>PSG Lyon KG var mı</b> · sonra <b>ilk yarı?</b> <b>kim kazanır?</b></li><li>📋 <b>3 maçlık liste</b> · <b>bunu ekle</b> · <b>2.sini ekle</b> · <b>listem</b> · <b>ilkini çıkar</b> · <b>listeyi temizle</b></li>
       <li>📒 <b>dünkü karne</b> · <b>altın tahminler ne kadar tutuyor</b></li><li>📖 <b>KG var ne demek</b> · <b>oran nedir</b> · <b>2,5 üst</b> · <b>neden?</b></li><li>🔴 <b>canlı</b> · ❔ <b>ana ekrana nasıl eklerim</b></li></ul>`,
       chips:["Bugün hangi maçlar var","En güvenli 3 maç","Altın tahminler","Dünkü karne"]}; }
@@ -7527,7 +7527,7 @@ setTimeout(()=>{ try{ renderTP(); }catch(e){} },1500);
   renderKarne=function(){ const r=_rk70.apply(this,arguments);
     try{ const seen=new Set(); document.querySelectorAll("#kzBox .kz-g").forEach(p=>{ const k=((p.querySelector("b")||{}).textContent||"").trim(); if(seen.has(k)) p.classList.add("dup"); else seen.add(k); });
       document.querySelectorAll("#karne .panel > h2").forEach(h=>{ if(h.textContent.trim()==="Canlı karne"&&!h.closest("#kzBox")){ h.textContent="Maç öncesi kilitli tahminler";
-        const p=h.parentElement; p.querySelectorAll(".stat .k").forEach(k=>{ if(/Bahis şirketleri/.test(k.textContent)) k.textContent="Oran favorisi doğru"; }); } });
+        const p=h.parentElement; p.querySelectorAll(".stat .k").forEach(k=>{ if(/Bahis şirketleri|Piyasa oranları/.test(k.textContent)) k.textContent="Oran favorisi doğru"; }); } });
     }catch(e){}
     return r; };
 
@@ -7680,7 +7680,7 @@ setTimeout(()=>{ try{ renderTP(); }catch(e){} },1500);
   const SEV=[["dar","Dar"],["orta","Orta"],["genis","Geniş"]];
   function altiliHtml(){ const A=AT.alt&&AT.alt[AT.d], K=AT.altK;
     const kar=(sv)=>{ const g=K&&K.geriye_donuk&&K.geriye_donuk.seviyeler&&K.geriye_donuk.seviyeler[sv]; return g&&g.n?`Geriye dönük test (${esc((K.geriye_donuk.donem||[]).join(" – "))}): ${g.n} altılıdan tutan <b>${g.isabet}</b> · model beklentisi ${(+g.beklenen).toFixed(1).replace(".",",")} · 5 ayak tutan ${g.bes_ayak||0} · ort. ${Math.round(g.ort_kombinasyon||0)} kombinasyon · ayak isabeti %${Math.round((g.ayak_isabet||0)*100)}${g.altin_ayak&&g.altin_ayak.n?` · altın ayak (tek at) isabeti %${Math.round((g.altin_ayak.isabet||0)*100)} (${g.altin_ayak.n} ayak)`:""}${(()=>{ const t=K.geriye_donuk.sinama&&K.geriye_donuk.sinama.seviyeler&&K.geriye_donuk.sinama.seviyeler[sv]; return t&&t.n?`<br>Son 1/3 sınama dilimi: ${t.n} altılıdan tutan <b>${t.isabet}</b> · beklenti ${(+t.beklenen).toFixed(1).replace(".",",")}`:""; })()}${(()=>{ const c=K.canli&&K.canli.seviyeler&&K.canli.seviyeler[sv]; return c&&c.n?`<br>Canlı (koşudan önce kilitli): ${c.n} altılıdan tutan <b>${c.isabet}</b> · beklenti ${(+c.beklenen).toFixed(1).replace(".",",")}`:""; })()}`:""; };
-    if(!A||!(A.altililar||[]).length) return `<div class="panel"><p class="note" style="margin:0">Bu gün için 6'lı ganyan tahmini hazırlanıyor. Laboratuvar programdaki "ganyan başlangıcı" koşularından 6'lıları kurar ve her ayak için atları OXXai olasılıklarıyla seçer.</p></div>`;
+    if(!A||!(A.altililar||[]).length) return `<div class="panel"><p class="note" style="margin:0">Bu gün için 6'lı tahmin tahmini hazırlanıyor. Laboratuvar programdaki "oran başlangıcı" koşularından 6'lıları kurar ve her ayak için atları OXXai olasılıklarıyla seçer.</p></div>`;
     const sv=AT.sev||"orta";
     let h=`<div class="at-tabs al-sev" role="group" aria-label="Kapsam">${SEV.map(([k,l])=>`<button type="button" data-sev="${k}" aria-pressed="${sv===k}">${l}</button>`).join("")}</div>
       <p class="note" style="margin:0 0 10px">Dar ≤${(A.butce||{}).dar||64}, Orta ≤${(A.butce||{}).orta||192}, Geniş ≤${(A.butce||{}).genis||576} kombinasyonla seçim yapar. "6'yı birden tutma olasılığı" her ayağın seçilen atlarının toplam olasılığının çarpımıdır; kupon ilk ayak başlayınca kilitlenir. 🥇 = altın ayak (tek at). Para tutarı gösterilmez · 18+</p>`;
@@ -7688,12 +7688,12 @@ setTimeout(()=>{ try{ renderTP(); }catch(e){} },1500);
       h+=`<div class="at-race al-c"><div class="at-rh"><b>${esc(X.hipodrom)} ${X.no}. 6'lı</b><span>${X.baslangic_kosu}.–${X.baslangic_kosu+5}. koşular · ${X.kaynak==="oran"?"💹 oranla güncel":"sabah tahmini"}</span><span class="t">${esc(X.saat||"")}</span></div>
         <div class="al-top"><div><b>%${(L.p*100).toFixed(L.p<.1?1:0).replace(".",",")}</b><small>6'yı birden tutma olasılığı</small></div><div><b>${L.kombinasyon}</b><small>kombinasyon</small></div>${S&&S.tamam?`<div class="${S.tuttu&&S.tuttu[sv]?"al-ok":"al-no"}"><b>${S.tuttu&&S.tuttu[sv]?"✓ TUTTU":"✗"}</b><small>${(at||[]).filter(Boolean).length}/6 ayak</small></div>`:""}</div>
         ${L.ayaklar.map((g,i)=>{ const w=S&&S.kazananlar?S.kazananlar[i]:null, ok=at?at[i]:null;
-          return `<div class="al-a${ok===true?" ok":ok===false?" no":""}"><span class="al-i">${i+1}.<small>${esc(g.saat||"")}</small></span><span class="al-s">${g.secim.map(no=>{ const hh=(g.atlar||[]).find(x=>String(x[0])===String(no)); return `<span class="al-h${w!=null&&String(w)===String(no)?" w":""}" data-ah="${esc(X.hipodrom&&(AT.d+"/"+X.hipodrom+"/"+g.kosu))}|${esc(no)}">${esc(no)}${hh?` ${esc(String(hh[1]).slice(0,14))}`:""}</span>`; }).join("")}${g.banko?`<em class="al-b">🥇 banko</em>`:""}</span><span class="al-p">%${Math.round(g.p_ayak*100)}${w!=null?`<small>kazanan ${esc(w)}</small>`:""}</span></div>`; }).join("")}
+          return `<div class="al-a${ok===true?" ok":ok===false?" no":""}"><span class="al-i">${i+1}.<small>${esc(g.saat||"")}</small></span><span class="al-s">${g.secim.map(no=>{ const hh=(g.atlar||[]).find(x=>String(x[0])===String(no)); return `<span class="al-h${w!=null&&String(w)===String(no)?" w":""}" data-ah="${esc(X.hipodrom&&(AT.d+"/"+X.hipodrom+"/"+g.kosu))}|${esc(no)}">${esc(no)}${hh?` ${esc(String(hh[1]).slice(0,14))}`:""}</span>`; }).join("")}${g.banko?`<em class="al-b">🥇 tek at</em>`:""}</span><span class="al-p">%${Math.round(g.p_ayak*100)}${w!=null?`<small>kazanan ${esc(w)}</small>`:""}</span></div>`; }).join("")}
         <button type="button" class="at-share" data-als="${esc(X.id)}">📤 Bu 6'lı tahmini paylaş</button></div>`; }
     const kk=kar(sv); if(kk) h+=`<div class="at-gold"><div class="at-gh">📊 6'lı karnesi · ${SEV.find(x=>x[0]===sv)[1]}</div><p class="at-gn">${kk}</p></div>`;
     return h; }
   async function shareAlt(id){ const A=AT.alt&&AT.alt[AT.d]; const X=A&&A.altililar.find(x=>x.id===id); if(!X) return; const sv=AT.sev||"orta", L=X.seviyeler[sv];
-    const t=`🎯 ${X.hipodrom} ${X.no}. 6'lı (${X.baslangic_kosu}.–${X.baslangic_kosu+5}. koşular) · OXXai ${SEV.find(x=>x[0]===sv)[1]} tahmini\n`+L.ayaklar.map((g,i)=>`${i+1}. ayak: ${g.secim.join("-")}${g.banko?" (banko)":""}`).join("\n")+`\n6'yı birden tutma olasılığı %${(L.p*100).toFixed(1).replace(".",",")} · ${L.kombinasyon} kombinasyon\nHobi amaçlı olasılıktır, garanti değildir · 18+`;
+    const t=`🎯 ${X.hipodrom} ${X.no}. 6'lı (${X.baslangic_kosu}.–${X.baslangic_kosu+5}. koşular) · OXXai ${SEV.find(x=>x[0]===sv)[1]} tahmini\n`+L.ayaklar.map((g,i)=>`${i+1}. ayak: ${g.secim.join("-")}${g.banko?" (tek at)":""}`).join("\n")+`\n6'yı birden tutma olasılığı %${(L.p*100).toFixed(1).replace(".",",")} · ${L.kombinasyon} kombinasyon\nHobi amaçlı olasılıktır, garanti değildir · 18+`;
     try{ if(navigator.share){ await navigator.share({text:t}); return; } }catch(e){ return; }
     try{ await navigator.clipboard.writeText(t); toast("📋 6'lı tahmini kopyalandı"); }catch(e){ location.href="https://wa.me/?text="+encodeURIComponent(t); } }
   function jokeyHtml(){ const J=AT.jok; if(!J||!(J.jokeyler||[]).length) return `<div class="panel"><p class="note" style="margin:0">Jokey istatistikleri hazırlanıyor. Laboratuvar her gece geçmiş koşulardan jokeylerin atın gücünden arındırılmış katkısını hesaplar.</p></div>`;
@@ -7722,8 +7722,8 @@ setTimeout(()=>{ try{ renderTP(); }catch(e){} },1500);
     const K=(AT.karne&&AT.karne.kosular||[]).filter(x=>x.kosudan_once!==false); const kn=K.length, kh=K.filter(x=>x.ilk_secim_tuttu).length;
     return `<div class="at-hero"><div class="at-logo">${LOGO("h")}</div><div><h2>At Yarışı<span class="at-pill">DENEME</span></h2><p>OXXai at laboratuvarı: her gece geçmiş koşulardan yeniden öğrenir, yalnız isabeti artıran ayarı kabul eder.</p></div></div>
       <details class="sx" id="atOz"${(()=>{ try{ return localStorage.getItem("bx-at-oz")==="1"?" open":""; }catch(e){ return ""; } })()}><summary>Model ne kadar başarılı? <small>sınama ve karne</small></summary><div class="sx-in">
-      <div class="at-km at-km4"><div><b>${pct(mo.ilk_secim_isabet)}</b><small>sabah tahmini<br>ilk seçim kazandı</small></div><div><b>${pct(h.ilk_secim_isabet)}</b><small>oranla harman<br>ilk seçim kazandı</small></div><div><b>${pct(f.ilk_secim_isabet)}</b><small>ganyan favorisi<br>aynı koşularda</small></div><div><b>${kn?"%"+Math.round(kh/kn*100):"–"}</b><small>kilitli karne<br>${kn?kn+" koşu":"birikiyor"}</small></div></div>
-      <p class="at-note">🧪 Dürüst durum (son ${n.toLocaleString("tr-TR")} koşuda sınandı): burada gördüğün <b>sabah tahmini</b> oran açılmadan yapılır ve ganyan favorisinin gerisindedir. Koşu öncesi oranla harmanlanınca olasılık hatasında piyasayı az farkla geçiyor, ama ilk seçim isabetinde henüz favori seviyesinde. Model her gece yeniden öğrenir. Garanti değildir · 18+. Bahis sitesine yönlendirme yoktur.</p></div></details>`; }
+      <div class="at-km at-km4"><div><b>${pct(mo.ilk_secim_isabet)}</b><small>sabah tahmini<br>ilk seçim kazandı</small></div><div><b>${pct(h.ilk_secim_isabet)}</b><small>oranla harman<br>ilk seçim kazandı</small></div><div><b>${pct(f.ilk_secim_isabet)}</b><small>piyasa favorisi<br>aynı koşularda</small></div><div><b>${kn?"%"+Math.round(kh/kn*100):"–"}</b><small>kilitli karne<br>${kn?kn+" koşu":"birikiyor"}</small></div></div>
+      <p class="at-note">🧪 Dürüst durum (son ${n.toLocaleString("tr-TR")} koşuda sınandı): burada gördüğün <b>sabah tahmini</b> oran açılmadan yapılır ve piyasa favorisinin gerisindedir. Koşu öncesi oranla harmanlanınca olasılık hatasında piyasayı az farkla geçiyor, ama ilk seçim isabetinde henüz favori seviyesinde. Model her gece yeniden öğrenir. Garanti değildir · 18+. Şans oyunu sitesine yönlendirme yoktur.</p></div></details>`; }
   // ---- 📋 Padok Notu: günün yarış öncesi açıklaması; her veri akışında (sabah kilidi, oran, sonuç, 6'lı ayağı) yeniden yazılır ----
   function padok(){ const d=AT.d, D=d&&AT.data[d]; if(!D||!(D.kosular||[]).length) return null;
     const C=AT.canli&&AT.canli[d], A=AT.alt&&AT.alt[d], L=[], now=Date.now(), day=dLbl(d);
@@ -7745,17 +7745,17 @@ setTimeout(()=>{ try{ renderTP(); }catch(e){} },1500);
     else L.push(["🥇","Bugün altın kuralına uyan at yok: model hiçbir koşuda yeterince emin değil, bu yüzden altın vermiyor."]);
     // 3) piyasa sinyali (oran açıldıysa): sabah tahminine göre en çok yükselen at
     if(C){ let best=null; for(const r of kalan){ const c=cRace(r); if(!c) continue; for(const h of c.atlar||[]){ const t0=(r.atlar||[]).find(x=>String(x.no)===String(h.no)); if(!t0||h.p_piyasa==null||h.p_piyasa<.12) continue; const df=h.p_piyasa-(t0.p_kazanma||0); if(!best||df>best.df) best={r,h:t0,pq:h.p_piyasa,df}; } }
-      if(best&&best.df>=.06) L.push(["💹",`Oranlar açıldı. Piyasanın modelden çok daha fazla inandığı at: ${lnk(best.r,best.h)} (${yer(best.r)}). OXXai tahmini ${P(best.h.p_kazanma)}, ganyan oranına göre ${P(best.pq)}.${C.guncelleme_tsi?` <small>${esc(hm(C.guncelleme_tsi))} oranı</small>`:""}`]); }
+      if(best&&best.df>=.06) L.push(["💹",`Oranlar açıldı. Piyasanın modelden çok daha fazla inandığı at: ${lnk(best.r,best.h)} (${yer(best.r)}). OXXai tahmini ${P(best.h.p_kazanma)}, piyasa oranına göre ${P(best.pq)}.${C.guncelleme_tsi?` <small>${esc(hm(C.guncelleme_tsi))} oranı</small>`:""}`]); }
     // 4) en açık koşu (henüz koşulmamış)
     const op=kalan.map(r=>({r,m:Math.max(...(r.atlar||[]).map(h=>h.p_kazanma||0))})).filter(x=>x.m>0).sort((a,b)=>a.m-b.m)[0];
     if(op&&op.m<.2) L.push(["🎲",`Günün en açık koşusu ${yer(op.r)}. Favori bile ${P(op.m)}, sürprize çok açık.`]);
-    // 5) 6'lı ganyan
+    // 5) 6'lı tahmin
     if(A&&(A.altililar||[]).length){ const sv=AT.sev||"orta", SV=SEV.find(x=>x[0]===sv)[1];
       const t=A.altililar.map(X=>{ const S=X.seviyeler&&X.seviyeler[sv], R=X.sonuc, at=R&&R.ayak_tuttu&&R.ayak_tuttu[sv]; if(!S) return "";
         const b=(at||[]).filter(v=>v!=null).length, dus=(at||[]).some(v=>v===false), bk=(S.ayaklar||[]).map((a,i)=>a.banko?i+1:0).filter(Boolean);
         const st=R&&R.tamam?(R.tuttu&&R.tuttu[sv]?" <b class=\"pd-ok\">✓ tuttu</b>":` <b class="pd-no">✗ tutmadı</b> (${(at||[]).filter(Boolean).length}/6)`):b?(dus?` · ${b}/6 ayak bitti, <b class="pd-no">kupon düştü</b>`:` · ${b}/6 ayak bitti, <b class="pd-ok">kupon hâlâ ayakta</b>`):"";
-        return `${esc(X.hipodrom)} ${X.no}. 6'lı (${esc(X.saat||"")}) <b>%${(S.p*100).toFixed(S.p<.1?1:0).replace(".",",")}</b>${bk.length?` · banko ayak: ${bk.join(", ")}`:""}${st}`; }).filter(Boolean);
-      if(t.length) L.push(["🎯",`6'lı ganyanda 6 ayağı birden tutma şansı (${SV} kupon): ${t.join("; ")}.`]); }
+        return `${esc(X.hipodrom)} ${X.no}. 6'lı (${esc(X.saat||"")}) <b>%${(S.p*100).toFixed(S.p<.1?1:0).replace(".",",")}</b>${bk.length?` · tek at ayak: ${bk.join(", ")}`:""}${st}`; }).filter(Boolean);
+      if(t.length) L.push(["🎯",`6'lı tahminde 6 ayağı birden tutma şansı (${SV} kupon): ${t.join("; ")}.`]); }
     // 6) formdaki jokey (bugün binişi olanlar arasında en yüksek katkı)
     const J=AT.jok&&(AT.jok.jokeyler||[]).filter(x=>(x.bugun_binis||[]).length&&+x.katki>0).sort((a,b)=>b.katki-a.katki)[0];
     if(J){ const bb=J.bugun_binis.slice().sort((a,b)=>(b.p_kazanma||0)-(a.p_kazanma||0))[0]; const r=bb&&D.kosular.find(x=>x.kosu_id===bb.kosu_id), h=r&&(r.atlar||[]).find(x=>x.ad===bb.at);
@@ -7785,7 +7785,7 @@ setTimeout(()=>{ try{ renderTP(); }catch(e){} },1500);
     return ""; }
   function race(r){ const M=merged(r), A=M.A, mx=A.length?A[0].p_goster:1, id=r.kosu_id, op=AT.open.has(id), L=op?A:A.slice(0,4), win=M.c&&M.c.sonuc?String(M.c.sonuc.kazanan):null;
     const ik=r.ikili_onerisi; return `<div class="at-race" data-rid="${esc(id)}"><div class="at-rh"><b>${r.kosu}. Koşu</b><span>${esc(r.mesafe+" m · "+r.pist+" · "+r.sinif)}</span><span class="t">${esc(r.saat||"")}</span></div>
-      ${stChip(r,M)}${r.kosudan_once===false?`<span class="at-tag">koşudan sonra kilitlendi · karneye sayılmaz</span>`:""}${!M.oranli&&r.mod&&/yalnız model/.test(r.mod)?` <span class="at-tag">sabah tahmini · ganyan oranı henüz yok</span>`:""}
+      ${stChip(r,M)}${r.kosudan_once===false?`<span class="at-tag">koşudan sonra kilitlendi · karneye sayılmaz</span>`:""}${!M.oranli&&r.mod&&/yalnız model/.test(r.mod)?` <span class="at-tag">sabah tahmini · piyasa oranı henüz yok</span>`:""}
       <div style="margin-top:6px">${L.map((h,i)=>`<div class="at-h${i===0?" top":""}${win&&String(h.no)===win?" win":""}" data-ah="${esc(id)}|${esc(h.no)}" role="button" tabindex="0"><span class="at-no">${esc(h.no)}</span><span class="at-n"><b>${FAV.has(h.ad)?"⭐ ":""}${esc(h.ad)}${win&&String(h.no)===win?" 🏁":""}</b><small>${esc([h.jokey,h.kilo?h.kilo+" kg":null,h.form?"form "+h.form:null].filter(Boolean).join(" · ")||h.gerekce||"")}</small></span><span class="at-p"><b>${pct(h.p_goster)}</b><small>${h.p_oran!=null?`sabah ${pct(h.p_kazanma)}${h.oran?" · oran "+(+h.oran).toFixed(2).replace(".",","):""}`:`ilk 2: ${pct(h.p_ilk2)}`}</small></span><span class="at-bar"><i style="width:${Math.max(3,h.p_goster/mx*100)}%"></i></span></div>`).join("")}</div>
       ${A.length>4?`<button type="button" class="at-more" data-at="${esc(id)}">${op?"Daralt":"Tüm atlar ("+A.length+")"}</button>`:""}
       ${ik&&ik.sira?`<div class="at-ik">İkili önerisi (sabah): <b>${ik.sira.map(esc).join(" - ")}</b> · tam bu sırayla gelme olasılığı <b>${pct(ik.p)}</b></div>`:""}
@@ -7795,7 +7795,7 @@ setTimeout(()=>{ try{ renderTP(); }catch(e){} },1500);
     const s3=(h.son3||[]).map(k=>`<li>${esc(k.tarih.slice(8,10)+"."+k.tarih.slice(5,7))} · ${esc(k.hipodrom)} ${esc(k.mesafe+" m "+k.pist)} → <b>${k.sira!=null?k.sira+".":"–"}</b></li>`).join("");
     el.innerHTML=`<div class="gbox" role="dialog" aria-modal="true" style="text-align:left"><h2 style="margin:0 0 4px">${esc(h.no)} · ${esc(h.ad)}</h2>
       <p class="note" style="margin:0 0 10px">${esc(r.hipodrom)} ${r.kosu}. koşu · ${esc(r.saat||"")} · ${esc(r.mesafe+" m "+r.pist)}</p>
-      <div class="at-km at-km4" style="margin-bottom:10px"><div><b>${pct(h.p_kazanma)}</b><small>sabah<br>kazanma</small></div><div><b>${pct(h.p_oran)}</b><small>oranla<br>kazanma</small></div><div><b>${pct(h.p_ilk3_oran!=null?h.p_ilk3_oran:h.p_ilk3)}</b><small>ilk 3'e<br>girme</small></div><div><b>${h.oran?(+h.oran).toFixed(2).replace(".",","):"–"}</b><small>ganyan<br>oranı</small></div></div>
+      <div class="at-km at-km4" style="margin-bottom:10px"><div><b>${pct(h.p_kazanma)}</b><small>sabah<br>kazanma</small></div><div><b>${pct(h.p_oran)}</b><small>oranla<br>kazanma</small></div><div><b>${pct(h.p_ilk3_oran!=null?h.p_ilk3_oran:h.p_ilk3)}</b><small>ilk 3'e<br>girme</small></div><div><b>${h.oran?(+h.oran).toFixed(2).replace(".",","):"–"}</b><small>piyasa<br>oranı</small></div></div>
       <ul class="g2-l">${h.jokey?`<li><span>🏇</span><div>Jokey: <b>${esc(h.jokey)}</b></div></li>`:""}${h.antrenor?`<li><span>🧑‍🏫</span><div>Antrenör: <b>${esc(h.antrenor)}</b></div></li>`:""}${h.kilo||h.yas?`<li><span>⚖️</span><div>${h.kilo?esc(h.kilo)+" kg":""}${h.kilo&&h.yas?" · ":""}${h.yas?esc(h.yas)+" yaş":""}</div></li>`:""}${h.form?`<li><span>📈</span><div>Son koşu dizisi: <b>${esc(h.form)}</b></div></li>`:""}${h.gerekce?`<li><span>🧠</span><div>${esc(h.gerekce)}</div></li>`:""}</ul>
       ${s3?`<p class="note" style="margin:4px 0">Son 3 koşusu</p><ul style="margin:0 0 10px;padding-left:18px;font-size:13.5px;line-height:1.6">${s3}</ul>`:""}
       <button class="g2-go" type="button" id="atFav">${FAV.has(h.ad)?"⭐ Takipten çıkar":"☆ Bu atı takip et"}</button><button class="g2-no" type="button" id="atX">Kapat</button>
@@ -7881,20 +7881,20 @@ setTimeout(()=>{ try{ renderTP(); }catch(e){} },1500);
   const AKEY=/\b(at yarisi|at yarislari|atyarisi|kosu|kosular|kosusu|ganyan|hipodrom|jokey|altili ganyan|plase|veliefendi|atlar)\b|\bat (bolum|yaris)\w*/;
   async function ensure(){ if(!AT.days.length) await load(); return AT.d?AT.data[AT.d]:null; }
   function horseRow(h){ return `<b>${esc(h.no)} · ${esc(h.ad)}</b> — kazanma <b>${pct(h.p_kazanma)}</b>, ilk 3: ${pct(h.p_ilk3)}${h.gerekce?` <small>(${esc(h.gerekce)})</small>`:""}`; }
-  const DISCf=()=>`<br><small>Sabah tahmini; ganyan favorisi seviyesinin gerisindedir (sınamada ilk seçim ${pct(((AT.model&&AT.model.degerlendirme&&AT.model.degerlendirme.metrik)||{}).model?.ilk_secim_isabet)}). Garanti değildir · 18+</small>`;
-  // 6'lı ganyan: "bugün 6'lı", "altılı ganyan", "istanbul 6'lı" (futbol "altılı kupon" sorusu futbola kalır)
+  const DISCf=()=>`<br><small>Sabah tahmini; piyasa favorisi seviyesinin gerisindedir (sınamada ilk seçim ${pct(((AT.model&&AT.model.degerlendirme&&AT.model.degerlendirme.metrik)||{}).model?.ilk_secim_isabet)}). Garanti değildir · 18+</small>`;
+  // 6'lı tahmin: "bugün 6'lı", "altılı ganyan", "istanbul 6'lı" (futbol "altılı kupon" sorusu futbola kalır)
   const ALTK=/\b(6 ?li|altili)\b/, FUTK=/\b(kupon|kuponu|mac|maci|maclar|futbol|basket|iddaa|lig)\b/;
   function altiliAnswer(n,venue){ const A=AT.alt&&AT.alt[AT.d], K=AT.altK, day=dLbl(AT.d), sv=AT.sev||"orta", SV=SEV.find(x=>x[0]===sv)[1];
     const fx=(p,d)=>(p*100).toFixed(d).replace(".",",");
     const g=K&&K.geriye_donuk, gs=g&&g.seviyeler&&g.seviyeler[sv], si=g&&g.sinama&&g.sinama.seviyeler&&g.sinama.seviyeler[sv];
     const kar=gs&&gs.n?`<br>📊 Geriye dönük test (${esc((g.donem||[]).join(" – "))}, ${SV}): ${gs.n} altılıdan tutan <b>${gs.isabet}</b> (model beklentisi ${(+gs.beklenen).toFixed(1).replace(".",",")}); ayak isabeti %${Math.round((gs.ayak_isabet||0)*100)}${gs.altin_ayak&&gs.altin_ayak.n?`, altın ayak isabeti %${Math.round((gs.altin_ayak.isabet||0)*100)}`:""}${si&&si.n?`; son 1/3 sınama diliminde ${si.n} altılıdan tutan ${si.isabet} (beklenti ${(+si.beklenen).toFixed(1).replace(".",",")})`:""}.`:"";
     let L=(A&&A.altililar)||[]; if(venue) L=L.filter(X=>NZ(X.hipodrom).includes(venue));
-    if(!L.length) return {html:`🎯 ${esc(day)} ${venue?esc(venue)+" için ":""}6'lı ganyan tahmini henüz hazır değil.${kar}<br><small>Hobi amaçlı olasılıktır · 18+</small>`,chips:["At bölümünü aç","Altın atlar"]};
+    if(!L.length) return {html:`🎯 ${esc(day)} ${venue?esc(venue)+" için ":""}6'lı tahmin tahmini henüz hazır değil.${kar}<br><small>Hobi amaçlı olasılıktır · 18+</small>`,chips:["At bölümünü aç","Altın atlar"]};
     const h=L.slice(0,4).map(X=>{ const S=X.seviyeler[sv], R=X.sonuc;
       return `<b>${esc(X.hipodrom)} ${X.no}. 6'lı</b> (${X.baslangic_kosu}.–${X.baslangic_kosu+5}. koşular${X.saat?", "+esc(X.saat):""}) · ${S.kombinasyon} kombinasyon · 6'yı birden tutma olasılığı <b>%${fx(S.p,S.p<.1?1:0)}</b>`+
         (X.kosudan_once===false?" · <small>koşular başladıktan sonra kuruldu, karneye sayılmaz</small>":"")+(R&&R.tamam?` · sonuç: ${R.tuttu&&R.tuttu[sv]?"✓ tuttu":"✗ tutmadı"} (${(R.ayak_tuttu[sv]||[]).filter(Boolean).length}/6 ayak)`:"")+"<br>"+
         S.ayaklar.map((a,i)=>`${i+1}. ayak: ${a.secim.map(esc).join("-")}${a.banko?" 🥇":""} (%${Math.round(a.p_ayak*100)})`).join(" · "); }).join("<br><br>");
-    return {html:`🎯 ${esc(day)} 6'lı ganyan · ${SV} kapsam:<br>${h}${kar}<br><small>Olasılıklar ayaklar bağımsız varsayılarak çarpılır; garanti değildir. Para tutarı gösterilmez · 18+</small>`,chips:["At bölümünü aç","Altın atlar"]}; }
+    return {html:`🎯 ${esc(day)} 6'lı tahmin · ${SV} kapsam:<br>${h}${kar}<br><small>Olasılıklar ayaklar bağımsız varsayılarak çarpılır; garanti değildir. Para tutarı gösterilmez · 18+</small>`,chips:["At bölümünü aç","Altın atlar"]}; }
   async function atAnswer(raw){ const n=NZ(raw); const hasKey=AKEY.test(n), venue=VEN.find(v=>n.includes(v));
     if(/\bpadok\b|\bgunun (at )?notu\b|\bat(lar)? (yarisi )?(gunun )?ozeti\b/.test(n)){ await ensure(); const p=padok();
       if(!p) return {html:"📋 Padok Notu: bugün için kilitli at yarışı tahmini henüz yok. Laboratuvar her sabah 05:23'te yeni programı işler.",chips:["At bölümünü aç"]};
@@ -7983,13 +7983,13 @@ setTimeout(()=>{ try{ renderTP(); }catch(e){} },1500);
       <img class="glogo" src="icons/oxxai-logo.webp" alt="OXXai">
       <h2 id="gT">OXXai'ye hoş geldin 👋</h2>
       <ul class="g2-l">
-        <li><span>⚽</span><div>Hobi amaçlı maç tahmini ve takip aracı. <b>Bahis değildir</b>, para almaz.</div></li>
+        <li><span>⚽</span><div>Hobi amaçlı maç tahmini ve takip aracı. <b>Şans oyunu değildir</b>, para almaz.</div></li>
         <li><span>📊</span><div>Tahminler olasılıktır, <b>garanti değildir</b>.</div></li>
         <li><span>🔒</span><div>Hesap yok; listelerin yalnız bu telefonda kalır.</div></li>
       </ul>
-      <label class="g2-chk"><input type="checkbox" id="gAll"><span><b>18 yaşını doldurdum.</b> OXXai'nin bahis amaçlı olmadığını ve tahminlerin garanti olmadığını anladım. <button type="button" id="gT1">Kullanım Koşulları</button>'nı ve <button type="button" id="gT2">KVKK Aydınlatma Metni</button>'ni okudum, kabul ediyorum.</span></label>
+      <label class="g2-chk"><input type="checkbox" id="gAll"><span><b>18 yaşını doldurdum.</b> OXXai'nin şans oyunu olmadığını ve tahminlerin garanti olmadığını anladım. <button type="button" id="gT1">Kullanım Koşulları</button>'nı ve <button type="button" id="gT2">KVKK Aydınlatma Metni</button>'ni okudum, kabul ediyorum.</span></label>
       <button class="g2-go" id="gGo" type="button" disabled>Onaylıyorum, devam et</button>
-      <p class="g2-s">Yasa dışı bahis suçtur · Destek: 115 (YEDAM)</p>
+      <p class="g2-s">Yasa dışı şans oyunları suçtur · Destek: 115 (YEDAM)</p>
     </div>`;
     document.body.appendChild(el);
     $("gT1").onclick=e=>{ e.preventDefault(); e.stopPropagation(); doc("Kullanım Koşulları",TERMS_HTML); }; $("gT2").onclick=e=>{ e.preventDefault(); e.stopPropagation(); doc("KVKK Aydınlatma Metni",KVKK_HTML); };
@@ -9115,7 +9115,7 @@ small>.tvar.d:first-child{margin-left:0;margin-right:2px}
       const wi=I.length>1?I.reduce((b,x,i)=>(x.p||.5)<(I[b].p||.5)?i:b,0):-1;
       box.innerHTML=`<div class="panel kx-card">${head}${I.map((x,i)=>rowHtml(x,i,{O:O[i],weak:wi})).join("")}</div>${sumHtml(c)}${actsHtml(c)}
         <p class="kx-tip">Maçlar bitince her satırda ✓/✗ görünür; tüm maçlar bitince kupon sonucuyla <b>Eski kuponlarım</b>'a geçer. Kayıtlar yalnızca bu telefonda tutulur.</p>
-        <p class="disc">OXXai yalnızca hobi amaçlı maç tahmini ve takip aracıdır; bahis amaçlı değildir, bahis almaz ve hiçbir siteye yönlendirmez · 18+</p>`;
+        <p class="disc">OXXai yalnızca hobi amaçlı maç tahmini ve takip aracıdır; şans oyunu değildir, oyun almaz ve hiçbir siteye yönlendirmez · 18+</p>`;
       box._O=O; }
     const inp=$("kxIn"); if(inp){ inp.focus(); inp.select(); inp.onkeydown=e=>{ if(e.key==="Enter"){ e.preventDefault(); rename(inp.value); } else if(e.key==="Escape"){ UI.edit=false; kxRenderCp(); } }; inp.onblur=()=>setTimeout(()=>{ if(UI.edit) rename(inp.value); },120); }
     const cl=$("cpClear"); if(cl) cl.onclick=()=>{ UI.cf="clr"; kxRenderCp(); };
@@ -9358,7 +9358,7 @@ small>.tvar.d:first-child{margin-left:0;margin-right:2px}
 </script>
 <style id="atkupon-v98">
 /* =====================================================================
-   v98 · AT KUPONU — Kuponum'da tek sporlu at yarışı kuponları (Ganyan, Plase, İkili, Sıralı İkili, Çifte, Sıralı Üçlü, Tabela, 6'lı).
+   v98 · AT KUPONU — Kuponum'da tek sporlu at yarışı kuponları (Kazanan, Derece, İkili, Sıralı İkili, Çifte, Sıralı Üçlü, Tabela, 6'lı).
    apple-v94 + kuponum-v95 dilini kullanır: 44 px dokunma, altın yalnız seçim ve "Tuttu" vurgusunda, sistem fontu, AA kontrast.
    ===================================================================== */
 /* ---------- koşu kartı / 6'lı / at penceresi girişleri ---------- */
@@ -9504,16 +9504,16 @@ small>.tvar.d:first-child{margin-left:0;margin-right:2px}
   const fN=n=>(+n||0).toLocaleString("tr-TR");
   const f1=x=>(+x||0).toLocaleString("tr-TR",{maximumFractionDigits:1});
   const HORSE=`<span class="atk-ic" aria-hidden="true"><svg viewBox="0 0 64 64"><path d="M41 52 C43.5 45 45 38 43.5 31 C42 24 37.5 18.5 32 16.5 L30.5 10.5 L27.6 16 C22.8 17.2 18.6 21 16 26.5 L12.2 33.4 C11.2 35.6 12.4 38.2 14.8 38.2 L19.6 37 C22.2 38.6 23.8 41.5 23.8 45.2 L23.4 52 Z" fill="#E9C766"/><circle cx="25.6" cy="24.6" r="2" fill="#0B1222"/></svg></span>`;
-  // ---------- bahis türleri (kurallar kupon_karne.json'dan güncellenir) ----------
+  // ---------- tahmin türleri (kurallar kupon_karne.json'dan güncellenir) ----------
   const TUR={
-    ganyan:{ad:"Ganyan",kisa:"koşunun birincisi",kol:1,tek:1,ek:1,enaz:2,lbl:["Seç"],ip:"Kazanacak atı seç"},
-    plase:{ad:"Plase",kisa:"at ilk 2'ye girer",kol:1,tek:1,ek:1,enaz:7,lbl:["Seç"],ip:"İlk ikiye girecek atı seç"},
+    ganyan:{ad:"Kazanan",kisa:"koşunun birincisi",kol:1,tek:1,ek:1,enaz:2,lbl:["Seç"],ip:"Kazanacak atı seç"},
+    plase:{ad:"Derece",kisa:"at ilk 2'ye girer",kol:1,tek:1,ek:1,enaz:7,lbl:["Seç"],ip:"İlk ikiye girecek atı seç"},
     ikili:{ad:"İkili",kisa:"ilk iki, sırasız",kol:1,min:2,enaz:7,lbl:["Seç"],ip:"İlk ikiye girecek atları seç (en az 2); her ikili ayrı kombinasyon"},
     sirali_ikili:{ad:"Sıralı İkili",kisa:"ilk iki, sıralı",kol:2,enaz:4,lbl:["1.","2."],ip:"Her sıra için at seç; birden çok at seçersen kombinasyon çoğalır"},
     cifte:{ad:"Çifte",kisa:"bu koşu + sonraki koşu birincileri",kol:2,ek:1,iki:1,enaz:2,lbl:["Seç","Seç"],ip:"İki koşunun da kazananını seç"},
     uclu:{ad:"Sıralı Üçlü",kisa:"ilk üç, sıralı",kol:3,enaz:4,lbl:["1.","2.","3."],ip:"Birinci, ikinci ve üçüncüyü sırasıyla seç"},
     tabela:{ad:"Tabela",kisa:"ilk dört, sıralı",kol:4,enaz:5,lbl:["1.","2.","3.","4."],ip:"İlk dört dereceyi sırasıyla seç"},
-    altili:{ad:"6'lı Ganyan",kisa:"art arda 6 koşunun birincileri",kol:6}};
+    altili:{ad:"6'lı Tahmin",kisa:"art arda 6 koşunun birincileri",kol:6}};
   const ORDER=["ganyan","plase","ikili","sirali_ikili","cifte","uclu","tabela","altili"];
   // ---------- geri test karnesi (paralel laboratuvar dosyası; yoksa zarifçe gizlenir) ----------
   let KAR, karP=null;
@@ -9777,12 +9777,12 @@ small>.tvar.d:first-child{margin-left:0;margin-right:2px}
     const acts=UI.cf==="del"?`<div class="kx-cf" role="alertdialog" aria-label="Kuponu sil"><p><b>${esc(c.ad)}</b> silinsin mi? İçindeki ${I.length} satır da silinir; bu geri alınamaz.</p><div><button type="button" class="btn ghost" data-atk="cfno">Vazgeç</button><button type="button" class="btn dng" data-atk="cfdel">Sil</button></div></div>`
       :`<div class="kx-acts" style="grid-template-columns:repeat(3,minmax(0,1fr))"><button type="button" data-atk="share" ${I.length?"":"disabled"}><svg viewBox="0 0 24 24"><path d="M12 3v12M8 7l4-4 4 4"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg>Paylaş</button><button type="button" data-atk="arch" ${I.length?"":"disabled"}><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="5" rx="1.5"/><path d="M5 9v9a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V9M10 13h4"/></svg>Arşive kaldır</button><button type="button" class="dng" data-atk="del"><svg viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg>Sil</button></div>`;
     let h;
-    if(!I.length) h=`<div class="atk-root"><div class="panel kx-card">${head}<div class="kx-empty atk-empty" style="padding:8px 0">${lion()}<b>${esc(c.ad)} boş</b><p>At Yarışı'nda koşu kartındaki <b>＋ Kupon</b>'a dokun; Ganyan, Plase, İkili, Sıralı İkili, Çifte, Sıralı Üçlü, Tabela ya da 6'lı kur. OXXai her satırın tutma olasılığını canlı hesaplar.</p></div>
-        <button class="btn" type="button" data-atk="gold">Altın atlarla ganyan kuponu kur</button><button class="btn ghost" type="button" data-atk="goat">At Yarışı'na git</button></div>${acts}</div>`;
+    if(!I.length) h=`<div class="atk-root"><div class="panel kx-card">${head}<div class="kx-empty atk-empty" style="padding:8px 0">${lion()}<b>${esc(c.ad)} boş</b><p>At Yarışı'nda koşu kartındaki <b>＋ Kupon</b>'a dokun; Kazanan, Derece, İkili, Sıralı İkili, Çifte, Sıralı Üçlü, Tabela ya da 6'lı kur. OXXai her satırın tutma olasılığını canlı hesaplar.</p></div>
+        <button class="btn" type="button" data-atk="gold">Altın atlarla kazanan listesi kur</button><button class="btn ghost" type="button" data-atk="goat">At Yarışı'na git</button></div>${acts}</div>`;
     else { const wi=I.length>1?I.reduce((b,x,i)=>(x.p||0)<(I[b].p||0)?i:b,0):-1;
       h=`<div class="atk-root"><div class="panel kx-card">${head}${I.map((x,i)=>rowAt(x,i,wi===i,false,c.id)).join("")}<button class="btn ghost" type="button" data-atk="goat" style="margin-top:6px">＋ Koşu ekle</button></div>${sumAt(c)}${karPanel(c)}${acts}
         <p class="kx-tip">Koşu bitince her satırda ✓/✗ görünür; tüm satırlar bitince kupon sonucuyla <b>Eski kuponlarım</b>'a geçer. Kayıtlar yalnızca bu telefonda tutulur.</p>
-        <p class="disc">OXXai yalnızca hobi amaçlı tahmin ve takip aracıdır; bahis almaz, para tutarı göstermez ve hiçbir siteye yönlendirmez · 18+</p></div>`; }
+        <p class="disc">OXXai yalnızca hobi amaçlı tahmin ve takip aracıdır; oyun almaz, para tutarı göstermez ve hiçbir siteye yönlendirmez · 18+</p></div>`; }
     box.innerHTML=h;
     const inp=$("atkIn"); if(inp){ inp.focus(); inp.select(); inp.onkeydown=e=>{ if(e.key==="Enter"){ e.preventDefault(); rename(c,inp.value); } else if(e.key==="Escape"){ UI.edit=false; refresh(); } }; inp.onblur=()=>setTimeout(()=>{ if(UI.edit) rename(c,inp.value); },120); } }
   function rename(c,v){ v=String(v||"").replace(/\s+/g," ").trim().slice(0,32); UI.edit=false; if(v&&v!==c.ad){ c.ad=v; save(c); toast("Kupon adı: "+v); } refresh(); }
@@ -9924,7 +9924,7 @@ small>.tvar.d:first-child{margin-left:0;margin-right:2px}
     const sgT=sg?sg.sec.map((c,i)=>c.join(B.tur==="ikili"?" – ":", ")).join(B.tur==="cifte"?" / ":" → "):"";
     const one=T.tek&&B.sec[0].length?F.H.find(h=>h.no===B.sec[0][0]):null;
     return `<div class="atk-kpi"><div><small>Kombinasyon</small><b>${fN(R.komb)}</b></div><div class="gd"><small>Tutma olasılığı</small><b>${R.komb?fP(R.p):"–"}</b></div></div>
-      <p class="atk-src">${F.oranli?`💹 Oranla güncel olasılık (p_oran${F.up?", "+esc(F.up):""})`:"Sabah tahmini olasılığı (p_kazanma; oran henüz yok)"}${T.kol>1||B.tur==="plase"||B.tur==="ikili"?` · indirimli Harville γ ${R.gd[0].toLocaleString("tr-TR")}, δ ${R.gd[1].toLocaleString("tr-TR")}`:""}${one&&one.oran&&B.tur==="ganyan"?` · ganyan oranı ${(+one.oran).toFixed(2).replace(".",",")} (bilgi)`:""}</p>
+      <p class="atk-src">${F.oranli?`💹 Oranla güncel olasılık (p_oran${F.up?", "+esc(F.up):""})`:"Sabah tahmini olasılığı (p_kazanma; oran henüz yok)"}${T.kol>1||B.tur==="plase"||B.tur==="ikili"?` · indirimli Harville γ ${R.gd[0].toLocaleString("tr-TR")}, δ ${R.gd[1].toLocaleString("tr-TR")}`:""}${one&&one.oran&&B.tur==="ganyan"?` · piyasa oranı ${(+one.oran).toFixed(2).replace(".",",")} (bilgi)`:""}</p>
       ${sg?`<div class="atk-rec${same?" same":""}"><span>${same?"✓ Seçimin OXXai önerisiyle aynı":"OXXai önerisi"}: <b>${esc(sgT)}</b> · ${fP(sg.p)}</span>${same?"":`<button type="button" data-b="rec">Önerileni uygula</button>`}</div>`:""}
       ${KAR?(()=>{ const s=karLine(B.tur,R.komb||1); return s?`<p class="atk-kar">📊 ${s}</p>`:""; })():""}`; }
   function footHtml(){ const R=bCalc(), c=B.tgt?KX.L.find(x=>x.id===B.tgt):atAct(false);
@@ -9943,11 +9943,11 @@ small>.tvar.d:first-child{margin-left:0;margin-right:2px}
       if(B.tur==="altili"){ const L=altOf(r), R=bCalc(), X=R.X, S=R.S;
         body=`${L.length>1?`<div class="atk-sev">${L.map(z=>`<button type="button" data-b="alt" data-id="${esc(z.id)}" aria-pressed="${z.id===B.alt}">${z.no}. 6'lı</button>`).join("")}</div>`:""}
           <div class="atk-sev" role="group" aria-label="Kapsam">${[["dar","Dar"],["orta","Orta"],["genis","Geniş"]].map(([k,l])=>`<button type="button" data-b="sev" data-sev="${k}" aria-pressed="${k===B.sev}">${l}</button>`).join("")}</div>
-          ${S?`<div class="atk-al">${S.ayaklar.map((g,i)=>`<div class="al-a"><span class="al-i">${i+1}.<small>${esc(g.saat||"")}</small></span><span class="al-s">${g.secim.map(no=>{ const hh=(g.atlar||[]).find(x=>String(x[0])===String(no)); return `<span class="al-h">${esc(no)}${hh?` ${esc(String(hh[1]).slice(0,12))}`:""}</span>`; }).join("")}${g.banko?`<em class="al-b">🥇 banko</em>`:""}</span><span class="al-p">%${Math.round(g.p_ayak*100)}</span></div>`).join("")}</div>`:""}`; }
+          ${S?`<div class="atk-al">${S.ayaklar.map((g,i)=>`<div class="al-a"><span class="al-i">${i+1}.<small>${esc(g.saat||"")}</small></span><span class="al-s">${g.secim.map(no=>{ const hh=(g.atlar||[]).find(x=>String(x[0])===String(no)); return `<span class="al-h">${esc(no)}${hh?` ${esc(String(hh[1]).slice(0,12))}`:""}</span>`; }).join("")}${g.banko?`<em class="al-b">🥇 tek at</em>`:""}</span><span class="al-p">%${Math.round(g.p_ayak*100)}</span></div>`).join("")}</div>`:""}`; }
       else if(B.tur==="cifte"){ const R=bCalc(); body=gridHtml(F,[0],`${r.kosu}. koşu`,esc(r.saat||""))+(R.F2?gridHtml(R.F2,[1],`${R.r2.kosu}. koşu · sonraki`,esc(R.r2.saat||"")+(R.F2.oranli?" · 💹 oranla":"")):""); }
       else body=gridHtml(F,[...Array(T.kol).keys()]);
       box.innerHTML=`<div class="gr"></div><div class="atk-hd"><div><h3>${HORSE}${esc(r.hipodrom)} · ${r.kosu}. koşu</h3><p>${esc(A().dLbl(dayOf(r.kosu_id)))} ${esc(r.saat||"")} · ${esc([r.mesafe?r.mesafe+" m":"",r.pist].filter(Boolean).join(" "))}${F.oranli?` · <b>oranla güncel</b>`:" · sabah tahmini"}</p></div><button type="button" class="atk-x" data-b="x" aria-label="Kapat">✕</button></div>
-        <div class="atk-tur" role="group" aria-label="Bahis türü">${tabs}</div>
+        <div class="atk-tur" role="group" aria-label="Tahmin türü">${tabs}</div>
         <p class="atk-kural"><b>${esc(TUR[B.tur].kisa.charAt(0).toLocaleUpperCase("tr")+TUR[B.tur].kisa.slice(1))}.</b> ${esc(TUR[B.tur].ip||"Kapsamı seç; 6'lı tek dokunuşla kupona eklenir")}${TUR[B.tur].ek&&F.ek.length?" · Ekürili atlar (E) tek seçim sayılır.":""}</p>
         ${body}<div class="atk-live" aria-live="polite">${liveHtml()}</div><div class="atk-ft">${footHtml()}</div>`;
       const pr=box.querySelector(".atk-tur [aria-pressed=true]"); if(pr) try{ pr.scrollIntoView({inline:"nearest",block:"nearest"}); }catch(e){}
@@ -9975,7 +9975,7 @@ small>.tvar.d:first-child{margin-left:0;margin-right:2px}
   // ---------- OXXai: "at kuponu", "ikili öner", "üçlü öner", "bugün çifte" ----------
   const NZ=t=>A().NZ(t);
   const RX_ATK=/\bat kupon\w*/, FUT=/\b(kupon\w*|liste\w*|mac\w*|futbol|basket\w*|iddaa|lig\w*|sans\w*|skor\w*)\b/;
-  const RX_TUR=[["sirali_ikili",/\bsirali ikili\b/],["tabela",/\btabela\b/],["uclu",/\b(sirali )?uclu( ganyan)?\b/],["ikili",/\bikili\b/],["cifte",/\bcifte\b/],["plase",/\bplase\b/],["ganyan",/\bganyan\b/]];
+  const RX_TUR=[["sirali_ikili",/\bsirali ikili\b/],["tabela",/\btabela\b/],["uclu",/\b(sirali )?uclu( ganyan)?\b/],["ikili",/\bikili\b/],["cifte",/\bcifte\b/],["plase",/\b(plase|derece)\b/],["ganyan",/\b(ganyan|kazanan)\b/]];
   const RX_ON=/\b(oner\w*|tahmin\w*|kur\w*|yap\w*|ver\w*|getir\w*|hangi\w*|bugun\w*|yarin\w*|en iyi|en olasi|ne oynay\w*|ne yapay\w*|kombinasyon\w*)\b/;
   let PEND=[];
   async function ensureAt(){ for(let i=0;i<40&&A().AT.busy;i++) await new Promise(r=>setTimeout(r,150)); if(!A().AT.days.length) await A().load(); await karne(); return A().AT.d?A().AT.data[A().AT.d]:null; }
@@ -9996,19 +9996,19 @@ small>.tvar.d:first-child{margin-left:0;margin-right:2px}
       const C=(D.kosular||[]).filter(r=>!started(r)).map(r=>{ const F=field(r), sg=suggest("ganyan",F); return sg?{r,F,sg}:null; }).filter(Boolean).sort((a,b)=>b.sg.p-a.sg.p).slice(0,3);
       if(!C.length) return {html:`🐎 ${esc(day)} başlamamış koşu kalmadı; at kuponu için yarının programını bekleyelim.`,chips:["At bölümünü aç"]};
       PEND=C.map(x=>mkRow("ganyan",x.r,x.sg.sec,x.F)); const p=PEND.reduce((a,x)=>a*x.p,1);
-      return {html:`🐎 <b>At kuponu önerisi</b> · ${esc(day)}, modelin en emin olduğu ${PEND.length} koşu (Ganyan):<ul class="bt-ul">${PEND.map(x=>`<li>${esc(x.hip)} ${x.kosu}. koşu ${esc(x.saat)} · <b>${esc(rowTxt(x))}</b> · ${fP(x.p)}</li>`).join("")}</ul>Üçü birden tutma olasılığı <b>${fP(p)}</b>.${KAR?`<br><small>📊 ${karLine("ganyan",1)}</small>`:""}<br><small>Hobi amaçlı olasılıktır, garanti değildir · 18+</small>`,chips:["🐎 Kupona ekle","İkili öner","Bugün çifte"]}; }
+      return {html:`🐎 <b>At kuponu önerisi</b> · ${esc(day)}, modelin en emin olduğu ${PEND.length} koşu (Kazanan):<ul class="bt-ul">${PEND.map(x=>`<li>${esc(x.hip)} ${x.kosu}. koşu ${esc(x.saat)} · <b>${esc(rowTxt(x))}</b> · ${fP(x.p)}</li>`).join("")}</ul>Üçü birden tutma olasılığı <b>${fP(p)}</b>.${KAR?`<br><small>📊 ${karLine("ganyan",1)}</small>`:""}<br><small>Hobi amaçlı olasılıktır, garanti değildir · 18+</small>`,chips:["🐎 Kupona ekle","İkili öner","Bugün çifte"]}; }
     const t=hit[0], T=TUR[t]; const {R}=pickRaces(D,n);
     const C=R.map(r=>{ const F=field(r); if(elig(t,r,F)) return null; const r2=t==="cifte"?nextRace(r):null, F2=r2?field(r2):null; const sg=suggest(t,F,F2); return sg?{r,F,F2,sg}:null; }).filter(Boolean).sort((a,b)=>b.sg.p-a.sg.p);
-    if(!C.length) return {html:`🐎 ${esc(day)} ${esc(T.ad)} için uygun, başlamamış koşu bulamadım${T.enaz>2?` (${T.ad} en az ${T.enaz} atlı koşuda açılır)`:""}.`,chips:["At bölümünü aç","Ganyan öner"]};
+    if(!C.length) return {html:`🐎 ${esc(day)} ${esc(T.ad)} için uygun, başlamamış koşu bulamadım${T.enaz>2?` (${T.ad} en az ${T.enaz} atlı koşuda açılır)`:""}.`,chips:["At bölümünü aç","At kazanan öner"]};
     const x=C[0], row=mkRow(t,x.r,x.sg.sec,x.F,x.F2); PEND=[row];
     const alt=C.slice(1,3).map(y=>{ const z=mkRow(t,y.r,y.sg.sec,y.F,y.F2); return `${esc(z.hip)} ${z.kosu}. koşu: ${esc(z.sec.map(c=>c.join(t==="ikili"?"–":",")).join(t==="cifte"?" / ":"→"))} ${fP(z.p)}`; });
-    const nxt={ganyan:"Plase öner",plase:"İkili öner",ikili:"Sıralı ikili öner",sirali_ikili:"Üçlü öner",uclu:"Tabela öner",tabela:"Bugün çifte",cifte:"İkili öner"}[t];
+    const nxt={ganyan:"At derece öner",plase:"At ikili öner",ikili:"At sıralı ikili öner",sirali_ikili:"At üçlü öner",uclu:"At tabela öner",tabela:"Bugün çifte",cifte:"İkili öner"}[t];
     return {html:`🐎 <b>${esc(T.ad)} önerisi</b> · ${esc(day)} ${esc(row.hip)} ${t==="cifte"?`${row.kosu}. + ${row.kosu+1}. koşu`:`${row.kosu}. koşu`} (${esc(row.saat)})<br><b>${esc(rowTxt(row))}</b> · ${esc(T.kisa)} · tutma olasılığı <b>${fP(row.p)}</b>${alt.length?`<br><small>Diğer adaylar: ${alt.join(" · ")}</small>`:""}${KAR?`<br><small>📊 ${karLine(t,1)}</small>`:""}<br><small>${row.pk==="oran"?"Oranla güncel olasılık":"Sabah tahmini (oran henüz yok)"}; garanti değildir · 18+</small>`,chips:["🐎 Kupona ekle",nxt,"At kuponumu aç"]}; }
   if(typeof botAnswer==="function"){ const _ba=botAnswer; botAnswer=async function(raw){ try{ const r=await atBot(raw); if(r) return r; }catch(e){ console.error(e); }
       const R=await _ba.apply(this,arguments);
       try{ if(R&&typeof R==="object"&&typeof R.html==="string"){
           // 6'lı cevabı: tek dokunuşla kupona ekle
-          if(/^🎯 /.test(R.html)&&/6'lı ganyan/.test(R.html)){ const d=A().AT.d, Al=(A().AT.alt||{})[d], sv=A().AT.sev||"orta", v=A().VEN.find(x=>NZ(raw).includes(x));
+          if(/^🎯 /.test(R.html)&&/6'lı (ganyan|tahmin)/.test(R.html)){ const d=A().AT.d, Al=(A().AT.alt||{})[d], sv=A().AT.sev||"orta", v=A().VEN.find(x=>NZ(raw).includes(x));
             const X=((Al&&Al.altililar)||[]).filter(X=>!v||NZ(X.hipodrom).includes(v)).find(X=>{ const r=raceOf(`${d}/${X.hipodrom}/${X.baslangic_kosu}`); return r&&!started(r); });
             if(X){ PEND=[altRow(d,X,sv)]; R.chips=["🐎 6'lıyı kupona ekle",...(R.chips||[])]; } }
           // "kuponlarım": at kuponlarını doğru say
@@ -10596,7 +10596,7 @@ small>.tvar.d:first-child{margin-left:0;margin-right:2px}
 </script>
 <style id="at2-v106">
 /* =====================================================================
-   v106 · AT YARIŞI 2.0 (lab/at/TASARIM.md · Aşama 1 + 2) — iskelet, yapışkan sekmeler, Bugün/Program/Bahis/Sonuç/Kupon,
+   v106 · AT YARIŞI 2.0 (lab/at/TASARIM.md · Aşama 1 + 2) — iskelet, yapışkan sekmeler, Bugün/Program/Türler/Sonuç/Kupon,
    koşu kartı (Sade/Meraklı), at · jokey · antrenör profili, takip, istatistik. Tasarım dili apple-v94.
    Yalnız #v-at içinde geçerli; bu blok ve script#at2-v106 silinirse eski at ekranı geri gelir.
    ===================================================================== */
@@ -10816,11 +10816,11 @@ small>.tvar.d:first-child{margin-left:0;margin-right:2px}
 // • at-v73 çekirdeği (BX_AT: AT, merged, cRace, load, render, goldOfDay, padok) SARILIR; veri ve OXXai cevapları aynen kalır.
 // • Eski render() gizli #atBox'a yazmaya devam eder (atkupon-v98 deco'su ve geriye uyum için); her yeni veri çiziminde
 //   bu ekran yeniden boyanır. Yeni ekranlar #at2Box'ta, sekmeler uygulamanın yapışkan .at-head kabında (#at2Nav).
-// • Yollar: #at · #at/{bugun|program|bahis|sonuc|kupon} (sekme: replaceState) · #at/kosu/<id> · #at/at/<id>/<no>
+// • Yollar: #at · #at/{bugun|program|turler|sonuc|kupon} (sekme: replaceState) · #at/kosu/<id> · #at/at/<id>/<no>
 //   · #at/jokey/<ad> · #at/antrenor/<ad> · #at/takip · #at/istatistik (detay: pushState → tarayıcı geri tuşu çalışır).
 // • Kupon: atkupon-v98'in kurucusu (data-atkr / data-atkh / data-atka → openB) ve KX deposu kullanılır; ayrı kupon yok.
 // • Takip: "bx-at-fav" (at adları dizisi) aynen kalır; jokey ve antrenör "bx-at-takip" anahtarına eklenir.
-// Veri yalnız depodaki türetilmiş dosyalardan; tjk.org'a istek yok, bahis sitesine bağlantı yok, para tutarı yok · 18+.
+// Veri yalnız depodaki türetilmiş dosyalardan; tjk.org'a istek yok, şans oyunu sitesine bağlantı yok, para tutarı yok · 18+.
 // =====================================================================
 (function(){
   const X=window.BX_AT; if(!X||!X.AT) return;
@@ -10881,7 +10881,7 @@ small>.tvar.d:first-child{margin-left:0;margin-right:2px}
   function atCoupon(){ const KX=window.KX; if(!KX||!Array.isArray(KX.L)) return null; const L=KX.L.filter(c=>c&&c.spor==="at"&&c.durum==="acik"); if(!L.length) return null;
     const a=L.find(c=>c.id===KX.aktif); if(a) return a; const id=lsG("bx-kupon-at-son",""); return L.find(c=>c.id===id)||L.slice().sort((x,y)=>(y.upd||y.olusturma)-(x.upd||x.olusturma))[0]; }
   const inCp=kid=>{ const c=atCoupon(); return c&&(c.at||[]).find(x=>(x.kid||[]).includes(kid))||null; };
-  const TURAD={ganyan:"Ganyan",plase:"Plase",ikili:"İkili",sirali_ikili:"Sıralı İkili",cifte:"Çifte",uclu:"Sıralı Üçlü",tabela:"Tabela",altili:"6'lı Ganyan"};
+  const TURAD={ganyan:"Kazanan",plase:"Derece",ikili:"İkili",sirali_ikili:"Sıralı İkili",cifte:"Çifte",uclu:"Sıralı Üçlü",tabela:"Tabela",altili:"6'lı Tahmin"};
   // ---------- simgeler ----------
   const IC={star:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8L3.5 9.7l5.9-.9z"/></svg>`,
     starF:`<svg viewBox="0 0 24 24" fill="#E9C766" stroke="#E9C766" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8L3.5 9.7l5.9-.9z"/></svg>`,
@@ -10892,10 +10892,10 @@ small>.tvar.d:first-child{margin-left:0;margin-right:2px}
   // =====================================================================
   // Yönlendirme
   // =====================================================================
-  const TABS=[["bugun","Bugün"],["program","Program"],["bahis","Bahis"],["sonuc","Sonuç"],["kupon","Kupon"]];
+  const TABS=[["bugun","Bugün"],["program","Program"],["turler","Türler"],["sonuc","Sonuç"],["kupon","Kupon"]];
   const isTab=v=>TABS.some(t=>t[0]===v);
   function route(){ const m=/^#at(?:\/(.*))?$/.exec(location.hash||""); if(!m) return {v:"bugun",a:[]};
-    const p=(m[1]||"").split("/").filter(Boolean); const v=p[0]||"bugun"; return {v,a:p.slice(1).map((s,i)=>(v==="kosu"||v==="at")&&i===0?s:dec(s))}; }
+    const p=(m[1]||"").split("/").filter(Boolean); const v=(p[0]==="bahis"?"turler":p[0])||"bugun"; return {v,a:p.slice(1).map((s,i)=>(v==="kosu"||v==="at")&&i===0?s:dec(s))}; }
   function go(path,push){ const h="#at"+(path?"/"+path:""); if(location.hash===h){ paint(true); return; }
     try{ if(push) history.pushState({at2:(history.state&&history.state.at2||0)+1},"",h); else history.replaceState(history.state,"",h); }catch(e){}
     paint(true); }
@@ -10945,7 +10945,7 @@ small>.tvar.d:first-child{margin-left:0;margin-right:2px}
   function body(rt){
     if(!AT.d){ if(AT.busy||!AT.model&&!AT.days.length&&!S.loadedOnce) return skel();
       return `<div class="a2-card a2-empty"><div class="e" aria-hidden="true">🗓️</div><b>Yakın günlerde koşu programı yok</b><p>Laboratuvar her sabah 05:23 ve öğlen 12:23'te yeni programı işler. Hipodromlar genelde pazartesi dinlenir.</p><button class="a2-btn q" type="button" data-re>Yeniden dene</button></div>${istHtml(true)}`; }
-    const V={bugun:vBugun,program:vProgram,bahis:vBahis,sonuc:vSonuc,kupon:vKupon,kosu:vKosu,at:vAt,jokey:a=>person("jokey",a[0]),antrenor:a=>person("antrenor",a[0]),takip:vTakip,istatistik:()=>istHtml(false)}[rt.v]||vBugun;
+    const V={bugun:vBugun,program:vProgram,turler:vTurler,sonuc:vSonuc,kupon:vKupon,kosu:vKosu,at:vAt,jokey:a=>person("jokey",a[0]),antrenor:a=>person("antrenor",a[0]),takip:vTakip,istatistik:()=>istHtml(false)}[rt.v]||vBugun;
     return V(rt.a); }
   const skel=()=>`<div class="a2-sk" style="height:56px"></div><div class="a2-sk" style="height:150px"></div><div class="a2-sk" style="height:120px"></div><div class="a2-sk" style="height:64px"></div><p class="a2-sr">Yükleniyor</p>`;
   const notFound=t=>`<div class="a2-card a2-empty"><div class="e" aria-hidden="true">🔎</div><b>${E(t)}</b><p>Bu kayıt seçili günün verisinde yok (eski bir bağlantı olabilir).</p><a class="a2-btn q" href="#at/program" data-tab="program">Programa dön</a></div>`;
@@ -11008,7 +11008,7 @@ small>.tvar.d:first-child{margin-left:0;margin-right:2px}
       <div class="a2-rh"><span class="a2-pill">${E(dLbl(dayOf(r.kosu_id)))} ${E(r.saat)}</span><span class="a2-pill">${E(r.mesafe)} m</span><span class="a2-pill">${E(r.pist)}</span><span class="a2-pill">${E(r.sinif)}</span><span class="a2-pill">${m.A.length} at</span>${stPill(r,m)}</div>`;
     if(r.kosudan_once===false) h+=`<span class="a2-tag">Koşudan sonra kilitlendi · karneye sayılmaz</span>`;
     if(m.son){ const nm=no=>(m.A.find(y=>y.no===String(no))||{}).ad||"";
-      h+=`<div class="a2-card gold"><div class="a2-ch"><h2>🏁 Sonuç</h2><small>ganyan oranı ${fx(m.son.ganyan)}</small></div><div class="a2-res">${(m.son.sira||[]).map((no,i)=>`<div><span class="pl">${i+1}.</span><span class="a2-no${i===0?" w":""}">${E(no)}</span><span class="a2-hn"><b>${E(nm(no))}</b></span><span class="a2-hp"><small>model ${P((m.A.find(y=>y.no===String(no))||{}).ps)}</small></span></div>`).join("")}</div>
+      h+=`<div class="a2-card gold"><div class="a2-ch"><h2>🏁 Sonuç</h2><small>piyasa oranı ${fx(m.son.ganyan)}</small></div><div class="a2-res">${(m.son.sira||[]).map((no,i)=>`<div><span class="pl">${i+1}.</span><span class="a2-no${i===0?" w":""}">${E(no)}</span><span class="a2-hn"><b>${E(nm(no))}</b></span><span class="a2-hp"><small>model ${P((m.A.find(y=>y.no===String(no))||{}).ps)}</small></span></div>`).join("")}</div>
         <p class="a2-note" style="margin-top:10px">Modelin ilk seçimi ${E(m.son.model_ilk)} ${E(nm(m.son.model_ilk))}: ${m.son.tuttu?'<b class="up">kazandı ✓</b>':'<b class="dn">kazanamadı ✗</b>'}${m.son.kosan?` · ${m.son.kosan} at koştu`:""}${m.son.esit?" · eşit derece var":""}.</p></div>`; }
     h+=`<div class="a2-seg" role="group" aria-label="Görünüm" style="margin:0 0 12px"><button type="button" data-mode="sade" aria-pressed="${S.mode==="sade"}">Sade</button><button type="button" data-mode="merakli" aria-pressed="${S.mode==="merakli"}">Meraklı</button></div>`;
     const win=m.son?String(m.son.kazanan):null, href=x=>`#at/at/${K(r.kosu_id)}/${enc(x.no)}`, star=x=>isTk("at",x.ad)?'<span class="a2-star" aria-label="takipte">★</span> ':"";
@@ -11020,12 +11020,12 @@ small>.tvar.d:first-child{margin-left:0;margin-right:2px}
     } else {
       const so={p:(a,b)=>b.p-a.p,no:(a,b)=>(+a.no)-(+b.no),oran:(a,b)=>(a.oran||999)-(b.oran||999),kilo:(a,b)=>(b.kilo||0)-(a.kilo||0)}[S.sort]||((a,b)=>b.p-a.p);
       const A=m.A.slice().sort(so);
-      h+=`<div class="a2-card"><div class="a2-sortb" role="group" aria-label="Sırala"><span>Sırala:</span>${[["p","Olasılık"],["no","No"],["oran","Ganyan"],["kilo","Kilo"]].map(([k,l])=>`<button type="button" data-sort="${k}" aria-pressed="${S.sort===k}">${l}</button>`).join("")}</div>
+      h+=`<div class="a2-card"><div class="a2-sortb" role="group" aria-label="Sırala"><span>Sırala:</span>${[["p","Olasılık"],["no","No"],["oran","Oran"],["kilo","Kilo"]].map(([k,l])=>`<button type="button" data-sort="${k}" aria-pressed="${S.sort===k}">${l}</button>`).join("")}</div>
         ${A.map(x=>{ const df=x.pq!=null&&x.ps!=null?x.pq-x.ps:null, s3=x.son3||[], uy=s3.filter(k=>k.pist===r.pist).length, um=s3.filter(k=>Math.abs((+k.mesafe||0)-(+r.mesafe||0))<=200).length;
-          return `<div class="a2-mk"><a class="a2-mk-a" href="${href(x)}"><span class="a2-no${win===x.no?" w":x===m.A[0]?" top":""}">${E(x.no)}</span><span class="a2-hn"><b>${star(x)}${E(x.ad)}${win===x.no?" 🏁":""}</b><small>${E([x.yas?x.yas+" yaş":null,x.kilo?fx(x.kilo,1)+" kg":null,x.jokey].filter(Boolean).join(" · "))}</small></span><span class="a2-hp"><b>${P(x.p)}</b><small>${x.oran?"ganyan "+fx(x.oran):"oran yok"}</small></span></a>
+          return `<div class="a2-mk"><a class="a2-mk-a" href="${href(x)}"><span class="a2-no${win===x.no?" w":x===m.A[0]?" top":""}">${E(x.no)}</span><span class="a2-hn"><b>${star(x)}${E(x.ad)}${win===x.no?" 🏁":""}</b><small>${E([x.yas?x.yas+" yaş":null,x.kilo?fx(x.kilo,1)+" kg":null,x.jokey].filter(Boolean).join(" · "))}</small></span><span class="a2-hp"><b>${P(x.p)}</b><small>${x.oran?"oran "+fx(x.oran):"oran yok"}</small></span></a>
             <div class="a2-mk-b">${FORM(x.form)}${x.antrenor?`<span>· ${E(x.antrenor)}</span>`:""}</div>
             <div class="a2-mk-c"><div><b>${P(x.ps)}</b><small>model sabah</small></div><div><b>${P(x.pq)}</b><small>piyasa</small></div><div><b class="${df==null?"":df>0.02?"up":df<-0.02?"dn":""}">${df==null?"–":(df>0.005?"▲ ":df<-0.005?"▼ ":"")+Math.abs(Math.round(df*100))}</b><small>piyasa farkı</small></div><div><b>${s3.length?uy+"/"+s3.length:"–"}</b><small>${E(r.pist)} uyumu</small></div></div></div>`; }).join("")}
-        <div class="a2-legend"><span>Form: son 6 koşu derecesi (sağdaki en yeni; 0 = ilk 9 dışı)</span><span>Piyasa: ganyan oranından marjı ayrılmış olasılık (AGF değildir)</span><span>▲ piyasa modelden fazla inanıyor (puan)</span><span>Pist uyumu: son 3 koşudan kaçı aynı pistte (mesafe uyumu at profilinde)</span></div></div>
+        <div class="a2-legend"><span>Form: son 6 koşu derecesi (sağdaki en yeni; 0 = ilk 9 dışı)</span><span>Piyasa: piyasa oranından marjı ayrılmış olasılık (AGF değildir)</span><span>▲ piyasa modelden fazla inanıyor (puan)</span><span>Pist uyumu: son 3 koşudan kaçı aynı pistte (mesafe uyumu at profilinde)</span></div></div>
         <div class="a2-miss"><b>Henüz veri yok:</b> start/kulvar, handikap puanı, sahip, pedigri, idman/galop, AGF ve gün içi oran hareketi. Açık arşivde bulunmadıkları için uydurulmaz.</div>`;
     }
     const x0=inCp(r.kosu_id);
@@ -11038,7 +11038,7 @@ small>.tvar.d:first-child{margin-left:0;margin-right:2px}
     let h=`<div style="display:flex;align-items:center;gap:12px;margin:2px 0 6px"><span class="a2-no${win?" w":rank===1?" top":""}" style="width:48px;height:48px;font-size:20px;border-radius:14px">${E(x.no)}</span>
       <div style="flex:1;min-width:0"><h1 class="a2-h2" style="margin:0">${E(x.ad)}</h1><a class="a2-mut" style="font-size:13px;display:inline-flex;min-height:44px;align-items:center" href="#at/kosu/${K(r.kosu_id)}">${E(r.hipodrom)} ${r.kosu}. koşu · ${E(r.saat)} · ${E(r.mesafe)} m ${E(r.pist)} ›</a></div></div>
       <div class="a2-rh">${x.yas?`<span class="a2-pill">${E(x.yas)} yaş</span>`:""}${x.kilo?`<span class="a2-pill">${fx(x.kilo,1)} kg</span>`:""}<span class="a2-pill">${rank}. favori</span>${der?`<span class="a2-pill ${der===1?"ok":""}">${der}. geldi</span>`:""}${stPill(r,m)}</div>
-      <div class="a2-card"><div class="a2-kpis"><div><b style="color:var(--a2-gi)">${P(x.p)}</b><small>kazanma<br>${m.oranli&&x.p_oran!=null?"oranla":"sabah"}</small></div><div><b>${P(x.p3)}</b><small>ilk 3'e<br>girme</small></div><div><b>${P(x.pq)}</b><small>piyasa<br>olasılığı</small></div><div><b>${x.oran?fx(x.oran):"–"}</b><small>ganyan<br>oranı</small></div></div>
+      <div class="a2-card"><div class="a2-kpis"><div><b style="color:var(--a2-gi)">${P(x.p)}</b><small>kazanma<br>${m.oranli&&x.p_oran!=null?"oranla":"sabah"}</small></div><div><b>${P(x.p3)}</b><small>ilk 3'e<br>girme</small></div><div><b>${P(x.pq)}</b><small>piyasa<br>olasılığı</small></div><div><b>${x.oran?fx(x.oran):"–"}</b><small>piyasa<br>oranı</small></div></div>
         ${x.p_oran!=null?`<p class="a2-note" style="margin:8px 2px 0">Sabah tahmini ${P(x.ps)} · oranla güncel ${P(x.p_oran)}.</p>`:""}
         <p class="a2-why" style="margin:8px 2px 0">${E(whyOf(x,r))}.</p></div>
       <div class="a2-card"><div class="a2-ch"><h2>Form</h2><small>son 6 koşu</small></div>${FORM(x.form)}
@@ -11065,7 +11065,7 @@ small>.tvar.d:first-child{margin-left:0;margin-right:2px}
   function vSonuc(){ const d=AT.d, R=races(), B=R.filter(r=>st(r)==="bitti"), ok=B.filter(r=>{ const m=M(r); return m.son.tuttu!=null?m.son.tuttu:(m.A[0]&&String(m.son.kazanan)===m.A[0].no); }).length;
     const kg=AT.karne&&AT.karne.gunler, kd=kg&&(Array.isArray(kg)?kg.find(x=>x.tarih===d):kg[d]), me=((AT.model||{}).degerlendirme||{}).metrik||{};
     let h=titleRow()+dayChips()+`<div class="a2-card"><div class="a2-kpis k3"><div><b>${B.length}/${R.length}</b><small>koşu bitti</small></div><div><b style="color:var(--a2-gi)">${ok}</b><small>ilk seçim<br>kazandı</small></div><div><b>${B.length?P(ok/B.length):"–"}</b><small>günlük<br>isabet</small></div></div>
-      <p class="a2-note" style="margin-top:10px">${kd&&kd.kosu?`Kilitli karne: ${kd.kosu} koşu · ilk seçim ${P(kd.ilk_secim_isabet)}. `:""}Uzun dönem ilk seçim isabeti: sabah modeli ${P(me.model&&me.model.ilk_secim_isabet)}, oranla harman ${P(me.harman&&me.harman.ilk_secim_isabet)}, ganyan favorisi ${P(me.favori&&me.favori.ilk_secim_isabet)}.</p></div>`;
+      <p class="a2-note" style="margin-top:10px">${kd&&kd.kosu?`Kilitli karne: ${kd.kosu} koşu · ilk seçim ${P(kd.ilk_secim_isabet)}. `:""}Uzun dönem ilk seçim isabeti: sabah modeli ${P(me.model&&me.model.ilk_secim_isabet)}, oranla harman ${P(me.harman&&me.harman.ilk_secim_isabet)}, piyasa favorisi ${P(me.favori&&me.favori.ilk_secim_isabet)}.</p></div>`;
     // karnede olup canlı dosyada olmayan koşular (eski günler)
     const have=new Set(B.map(r=>r.kosu_id)), KO=((AT.karne&&AT.karne.kosular)||[]).filter(x=>String(x.kosu_id||"").split("/")[0]===d&&!have.has(x.kosu_id));
     if(!B.length&&!KO.length) h+=`<div class="a2-card a2-empty"><div class="e" aria-hidden="true">⏳</div><b>Henüz biten koşu yok</b><p>Sonuçlar açık arşive düştükçe yaklaşık 30 dakikada bir buraya gelir.</p></div>`;
@@ -11073,34 +11073,34 @@ small>.tvar.d:first-child{margin-left:0;margin-right:2px}
     for(const x of hips().slice().sort((a,b)=>lastT(b)-lastT(a))){ const BB=B.filter(r=>r.hipodrom===x).sort((a,b)=>b.kosu-a.kosu); if(!BB.length) continue;
       h+=`<h2 class="a2-sec">${E(x)}</h2>`+BB.map(r=>{ const m=M(r), nm=no=>(m.A.find(y=>y.no===String(no))||{}).ad||"", tt=m.son.tuttu!=null?m.son.tuttu:(m.A[0]&&String(m.son.kazanan)===m.A[0].no);
         return `<a class="a2-card" href="#at/kosu/${K(r.kosu_id)}"><div class="a2-ch"><h2>${r.kosu}. Koşu <span class="a2-mut" style="font-weight:500;font-size:13px">· ${E(r.saat)} · ${E(r.mesafe)} m ${E(r.pist)}</span></h2><span class="a2-pill ${tt?"ok":"no"}">${tt?"✓ model":"✗ model"}</span></div>
-          <div class="a2-res">${(m.son.sira||[]).slice(0,3).map((no,i)=>`<div><span class="pl">${i+1}.</span><span class="a2-no${i===0?" w":""}">${E(no)}</span><span class="a2-hn"><b>${E(nm(no))}</b></span>${i===0?`<span class="a2-hp"><small>ganyan ${fx(m.son.ganyan)}</small></span>`:""}</div>`).join("")}</div>
+          <div class="a2-res">${(m.son.sira||[]).slice(0,3).map((no,i)=>`<div><span class="pl">${i+1}.</span><span class="a2-no${i===0?" w":""}">${E(no)}</span><span class="a2-hn"><b>${E(nm(no))}</b></span>${i===0?`<span class="a2-hp"><small>oran ${fx(m.son.ganyan)}</small></span>`:""}</div>`).join("")}</div>
           <p class="a2-note" style="margin-bottom:0">Model ilk seçimi: ${E(m.son.model_ilk)} ${E(nm(m.son.model_ilk))} · kazananın sabah olasılığı ${P((m.A.find(y=>y.no===String(m.son.kazanan))||{}).ps)}${r.kosudan_once===false?" · karneye sayılmaz":""}</p></a>`; }).join(""); }
     if(KO.length) h+=`<h2 class="a2-sec">Karne kayıtları</h2><div class="a2-card">${KO.map(x=>{ const k=String(x.kosu_id).split("/"); return `<div class="a2-hrow"><span class="a2-no">${E(k[2])}</span><span class="a2-hn"><b>${E(k[1])} ${E(k[2])}. koşu · kazanan: ${E(x.kazanan||"–")}</b><small>Modelin ilk seçimi: ${E(x.ilk_secim||"–")} · kazananın olasılığı ${P(x.p_kazanan)}</small></span><span class="a2-pill ${x.ilk_secim_tuttu?"ok":"no"}">${x.ilk_secim_tuttu?"✓":"✗"}</span></div>`; }).join("")}</div>`;
     const A=ALT(), sv=AT.sev||"orta";
-    if(A&&(A.altililar||[]).length) h+=`<h2 class="a2-sec">6'lı ganyan durumu · ${E(SVN[sv])}</h2>`+A.altililar.map(Xa=>{ const s=Xa.sonuc, at=(s&&s.ayak_tuttu&&s.ayak_tuttu[sv])||[]; const n=at.filter(v=>v!=null).length, dus=at.some(v=>v===false);
-      return `<a class="a2-card" href="#at/bahis" data-tab="bahis" data-bt="altili"><div class="a2-ch"><h2>${E(Xa.hipodrom)} ${Xa.no}. 6'lı</h2><span class="a2-pill ${s&&s.tamam?(s.tuttu&&s.tuttu[sv]?"ok":"no"):dus?"no":n?"or":""}">${s&&s.tamam?(s.tuttu&&s.tuttu[sv]?"✓ Tuttu":"✗ Tutmadı"):dus?"Kupon düştü":n?n+"/6 ayakta":"Başlamadı"}</span></div><p class="a2-note" style="margin:0">${E(SVN[sv])} kupon · ${n}/6 ayak bitti · ${at.filter(Boolean).length} ayak tuttu</p></a>`; }).join("");
+    if(A&&(A.altililar||[]).length) h+=`<h2 class="a2-sec">6'lı tahmin durumu · ${E(SVN[sv])}</h2>`+A.altililar.map(Xa=>{ const s=Xa.sonuc, at=(s&&s.ayak_tuttu&&s.ayak_tuttu[sv])||[]; const n=at.filter(v=>v!=null).length, dus=at.some(v=>v===false);
+      return `<a class="a2-card" href="#at/turler" data-tab="turler" data-bt="altili"><div class="a2-ch"><h2>${E(Xa.hipodrom)} ${Xa.no}. 6'lı</h2><span class="a2-pill ${s&&s.tamam?(s.tuttu&&s.tuttu[sv]?"ok":"no"):dus?"no":n?"or":""}">${s&&s.tamam?(s.tuttu&&s.tuttu[sv]?"✓ Tuttu":"✗ Tutmadı"):dus?"Kupon düştü":n?n+"/6 ayakta":"Başlamadı"}</span></div><p class="a2-note" style="margin:0">${E(SVN[sv])} kupon · ${n}/6 ayak bitti · ${at.filter(Boolean).length} ayak tuttu</p></a>`; }).join("");
     return h+foot(); }
   // ---------- 7) BAHİS ----------
   const SVN={dar:"Dar",orta:"Orta",genis:"Geniş"};
   function karneK(){ if(S.kk) return S.kk; try{ const k=window.ATK_KARNE&&window.ATK_KARNE(); if(k) return S.kk=k; }catch(e){}
     if(!S.kkP) S.kkP=X.j("data/at/kupon_karne.json").then(k=>{ S.kk=k&&k.turler?k:null; if(S.kk&&$("v-at")&&!$("v-at").hidden) paint(); }).catch(()=>{});
     return null; }
-  function vBahis(){ let h=titleRow()+`<div class="a2-seg" role="group" aria-label="Bahis türü" style="margin:0 0 12px"><button type="button" data-bt="altili" aria-pressed="${S.bt==="altili"}">6'lı Ganyan</button><button type="button" data-bt="turler" aria-pressed="${S.bt==="turler"}">Tüm türler</button></div>`;
+  function vTurler(){ let h=titleRow()+`<div class="a2-seg" role="group" aria-label="Tahmin türü" style="margin:0 0 12px"><button type="button" data-bt="altili" aria-pressed="${S.bt==="altili"}">6'lı Tahmin</button><button type="button" data-bt="turler" aria-pressed="${S.bt==="turler"}">Tüm türler</button></div>`;
     if(S.bt==="altili"){ h+=dayChips(); const A=ALT(), sv=AT.sev||"orta", Kk=AT.altK;
-      if(!A||!(A.altililar||[]).length) return h+`<div class="a2-card a2-empty"><div class="e" aria-hidden="true">🎯</div><b>Bu gün için 6'lı tahmini hazırlanıyor</b><p>Laboratuvar programdaki "ganyan başlangıcı" koşularından 6'lıları kurar ve her ayağın atlarını OXXai olasılıklarıyla seçer.</p></div>`+foot();
+      if(!A||!(A.altililar||[]).length) return h+`<div class="a2-card a2-empty"><div class="e" aria-hidden="true">🎯</div><b>Bu gün için 6'lı tahmini hazırlanıyor</b><p>Laboratuvar programdaki "oran başlangıcı" koşularından 6'lıları kurar ve her ayağın atlarını OXXai olasılıklarıyla seçer.</p></div>`+foot();
       h+=`<div class="a2-chips" role="group" aria-label="Kapsam">${["dar","orta","genis"].map(k=>`<button class="a2-chip" type="button" data-sev="${k}" aria-pressed="${sv===k}">${SVN[k]} <small>≤${E((A.butce||{})[k]||{dar:64,orta:192,genis:576}[k])}</small></button>`).join("")}</div>
-        <p class="a2-note" style="margin:-4px 2px 12px">"6'yı birden tutma olasılığı" her ayağın seçilen atlarının toplam olasılığının çarpımıdır; kupon ilk ayak başlayınca kilitlenir. 🥇 = banko (tek at) ayak.</p>`;
+        <p class="a2-note" style="margin:-4px 2px 12px">"6'yı birden tutma olasılığı" her ayağın seçilen atlarının toplam olasılığının çarpımıdır; kupon ilk ayak başlayınca kilitlenir. 🥇 = tek at ayak.</p>`;
       for(const Xa of A.altililar){ const L=Xa.seviyeler&&Xa.seviyeler[sv]; if(!L) continue; const s=Xa.sonuc, at=(s&&s.ayak_tuttu&&s.ayak_tuttu[sv])||[];
         const first=raceById(`${AT.d}/${Xa.hipodrom}/${Xa.baslangic_kosu}`), started=first?!open(first):true, c=atCoupon(), has=c&&(c.at||[]).find(z=>z.tur==="altili"&&z.alt===Xa.id&&z.sev===sv);
         h+=`<div class="a2-card"><div class="a2-ch"><h2>${E(Xa.hipodrom)} ${Xa.no}. 6'lı</h2><small>${Xa.baslangic_kosu}.–${Xa.baslangic_kosu+5}. koşu · ${E(Xa.saat||"")}<br>${Xa.kaynak==="oran"?"oranla güncel":"sabah tahmini"}</small></div>
-          <div class="a2-kpis k3" style="margin-bottom:6px"><div><b style="color:var(--a2-gi)">${P(L.p,1)}</b><small>6'yı birden<br>tutma</small></div><div><b>${E(L.kombinasyon)}</b><small>kombinasyon</small></div><div>${s&&s.tamam?`<b class="${s.tuttu&&s.tuttu[sv]?"up":"dn"}">${s.tuttu&&s.tuttu[sv]?"✓ Tuttu":"✗"}</b><small>${at.filter(Boolean).length}/6 ayak</small>`:`<b>${L.ayaklar.filter(x=>x.banko).length}</b><small>banko ayak</small>`}</div></div>
+          <div class="a2-kpis k3" style="margin-bottom:6px"><div><b style="color:var(--a2-gi)">${P(L.p,1)}</b><small>6'yı birden<br>tutma</small></div><div><b>${E(L.kombinasyon)}</b><small>kombinasyon</small></div><div>${s&&s.tamam?`<b class="${s.tuttu&&s.tuttu[sv]?"up":"dn"}">${s.tuttu&&s.tuttu[sv]?"✓ Tuttu":"✗"}</b><small>${at.filter(Boolean).length}/6 ayak</small>`:`<b>${L.ayaklar.filter(x=>x.banko).length}</b><small>tek at ayak</small>`}</div></div>
           ${L.ayaklar.map((g,i)=>{ const w=s&&s.kazananlar?s.kazananlar[i]:null, ok=at[i], kid=`${AT.d}/${Xa.hipodrom}/${g.kosu}`;
-            return `<div class="a2-al${ok===true?" ok":ok===false?" no":""}"><a class="i" href="#at/kosu/${K(kid)}" aria-label="${i+1}. ayak, ${g.kosu}. koşu">${i+1}. ayak<small>${g.kosu}. koşu ${E(g.saat||"")}</small></a><span class="s">${g.secim.map(no=>{ const hh=(g.atlar||[]).find(q=>String(q[0])===String(no)); return `<span class="${w!=null&&String(w)===String(no)?"w":""}">${E(no)}${hh?" "+E(String(hh[1]).slice(0,14)):""}</span>`; }).join("")}${g.banko?`<em>🥇 banko</em>`:""}</span><span class="p">${P(g.p_ayak)}${w!=null?`<small>kazanan ${E(w)}</small>`:""}</span></div>`; }).join("")}
+            return `<div class="a2-al${ok===true?" ok":ok===false?" no":""}"><a class="i" href="#at/kosu/${K(kid)}" aria-label="${i+1}. ayak, ${g.kosu}. koşu">${i+1}. ayak<small>${g.kosu}. koşu ${E(g.saat||"")}</small></a><span class="s">${g.secim.map(no=>{ const hh=(g.atlar||[]).find(q=>String(q[0])===String(no)); return `<span class="${w!=null&&String(w)===String(no)?"w":""}">${E(no)}${hh?" "+E(String(hh[1]).slice(0,14)):""}</span>`; }).join("")}${g.banko?`<em>🥇 tek at</em>`:""}</span><span class="p">${P(g.p_ayak)}${w!=null?`<small>kazanan ${E(w)}</small>`:""}</span></div>`; }).join("")}
           ${Xa.kosudan_once===false?`<p class="a2-note">Koşular başladıktan sonra kuruldu; karneye sayılmaz.</p>`:""}
           <div class="a2-row2" style="margin-top:10px">${started?`<button class="a2-btn q" type="button" disabled>İlk ayak başladı</button>`:`<button class="a2-btn g${has?" on":""}" type="button" data-atka="${E(Xa.id)}">${has?`✓ Kuponda · ${SVN[sv]}`:`＋ Kupona ekle · ${SVN[sv]}`}</button>`}<button class="a2-btn q" type="button" data-als="${E(Xa.id)}">📤 Paylaş</button></div></div>`; }
       const g=Kk&&Kk.geriye_donuk, gs=g&&g.seviyeler&&g.seviyeler[sv];
       if(gs&&gs.n){ const si=g.sinama&&g.sinama.seviyeler&&g.sinama.seviyeler[sv], ca=Kk.canli&&Kk.canli.seviyeler&&Kk.canli.seviyeler[sv];
-        h+=`<div class="a2-card"><div class="a2-ch"><h2>📊 6'lı karnesi · ${SVN[sv]}</h2></div><p class="a2-note" style="margin:0">Geriye dönük test (${E((g.donem||[]).join(" – "))}): ${gs.n} altılıdan tutan <b style="color:var(--a2-ink)">${gs.isabet}</b> · model beklentisi ${fx(gs.beklenen,1)} · 5 ayak tutan ${gs.bes_ayak||0} · ort. ${Math.round(gs.ort_kombinasyon||0)} kombinasyon · ayak isabeti ${P(gs.ayak_isabet)}${gs.altin_ayak&&gs.altin_ayak.n?` · banko ayak isabeti ${P(gs.altin_ayak.isabet)} (${gs.altin_ayak.n} ayak)`:""}.${si&&si.n?`<br>Son 1/3 sınama dilimi: ${si.n} altılıdan tutan ${si.isabet} · beklenti ${fx(si.beklenen,1)}.`:""}${ca&&ca.n?`<br>Canlı (koşudan önce kilitli): ${ca.n} altılıdan tutan ${ca.isabet} · beklenti ${fx(ca.beklenen,1)}.`:""} 6'lı bir şans oyunudur.</p></div>`; }
+        h+=`<div class="a2-card"><div class="a2-ch"><h2>📊 6'lı karnesi · ${SVN[sv]}</h2></div><p class="a2-note" style="margin:0">Geriye dönük test (${E((g.donem||[]).join(" – "))}): ${gs.n} altılıdan tutan <b style="color:var(--a2-ink)">${gs.isabet}</b> · model beklentisi ${fx(gs.beklenen,1)} · 5 ayak tutan ${gs.bes_ayak||0} · ort. ${Math.round(gs.ort_kombinasyon||0)} kombinasyon · ayak isabeti ${P(gs.ayak_isabet)}${gs.altin_ayak&&gs.altin_ayak.n?` · tek at ayak isabeti ${P(gs.altin_ayak.isabet)} (${gs.altin_ayak.n} ayak)`:""}.${si&&si.n?`<br>Son 1/3 sınama dilimi: ${si.n} altılıdan tutan ${si.isabet} · beklenti ${fx(si.beklenen,1)}.`:""}${ca&&ca.n?`<br>Canlı (koşudan önce kilitli): ${ca.n} altılıdan tutan ${ca.isabet} · beklenti ${fx(ca.beklenen,1)}.`:""} 6'lı bir şans oyunudur.</p></div>`; }
     } else {
       const KK=karneK(), T=(KK&&KK.turler)||{};
       h+=`<p class="a2-note" style="margin:0 2px 10px">Her türün kuralı ve modelin geçmiş koşulardaki dürüst karnesi. Çubuk: gerçekleşen isabet; camgöbeği çizgi: modelin beklediği. Kupon kurmak için bir tür seç, sonra koşuyu seç.</p>`;
@@ -11145,8 +11145,8 @@ small>.tvar.d:first-child{margin-left:0;margin-right:2px}
     const Kk=((AT.karne&&AT.karne.kosular)||[]).filter(x=>x.kosudan_once!==false), kn=Kk.length, kh=Kk.filter(x=>x.ilk_secim_tuttu).length;
     let h=short?"":`<h1 class="a2-h2" style="margin-bottom:12px">İstatistik<span class="a2-dn">DENEME</span></h1>`;
     h+=`<div class="a2-card"><div class="a2-ch"><h2>Model ne kadar başarılı?</h2><small>${n?n.toLocaleString("tr-TR")+" koşu":""}</small></div>
-      <div class="a2-kpis"><div><b>${P(me.model&&me.model.ilk_secim_isabet)}</b><small>sabah tahmini<br>ilk seçim</small></div><div><b style="color:var(--a2-gi)">${P(me.harman&&me.harman.ilk_secim_isabet)}</b><small>oranla harman<br>ilk seçim</small></div><div><b>${P(me.favori&&me.favori.ilk_secim_isabet)}</b><small>ganyan favorisi<br>aynı koşular</small></div><div><b>${kn?P(kh/kn):"–"}</b><small>kilitli karne<br>${kn?kn+" koşu":"birikiyor"}</small></div></div>
-      <p class="a2-note" style="margin-top:10px">🧪 Dürüst durum: <b style="color:var(--a2-ink2)">sabah tahmini</b> oran açılmadan yapılır ve ganyan favorisinin gerisindedir. Koşu öncesi oranla harmanlanınca olasılık hatasında piyasayı az farkla geçiyor, ilk seçim isabetinde ise henüz favori seviyesinde. OXXai at laboratuvarı her gece geçmiş koşulardan yeniden öğrenir, yalnız isabeti artıran ayarı kabul eder. Garanti değildir · 18+. Bahis sitesine yönlendirme yoktur.</p></div>`;
+      <div class="a2-kpis"><div><b>${P(me.model&&me.model.ilk_secim_isabet)}</b><small>sabah tahmini<br>ilk seçim</small></div><div><b style="color:var(--a2-gi)">${P(me.harman&&me.harman.ilk_secim_isabet)}</b><small>oranla harman<br>ilk seçim</small></div><div><b>${P(me.favori&&me.favori.ilk_secim_isabet)}</b><small>piyasa favorisi<br>aynı koşular</small></div><div><b>${kn?P(kh/kn):"–"}</b><small>kilitli karne<br>${kn?kn+" koşu":"birikiyor"}</small></div></div>
+      <p class="a2-note" style="margin-top:10px">🧪 Dürüst durum: <b style="color:var(--a2-ink2)">sabah tahmini</b> oran açılmadan yapılır ve piyasa favorisinin gerisindedir. Koşu öncesi oranla harmanlanınca olasılık hatasında piyasayı az farkla geçiyor, ilk seçim isabetinde ise henüz favori seviyesinde. OXXai at laboratuvarı her gece geçmiş koşulardan yeniden öğrenir, yalnız isabeti artıran ayarı kabul eder. Garanti değildir · 18+. Şans oyunu sitesine yönlendirme yoktur.</p></div>`;
     if(short) return h;
     const J=JOK(); if(!J||!(J.jokeyler||[]).length) return h+`<div class="a2-card"><p class="a2-note" style="margin:0">Jokey istatistikleri hazırlanıyor. Laboratuvar her gece geçmiş koşulardan jokeylerin atın gücünden arındırılmış katkısını hesaplar.</p></div>`+foot();
     const tr=t=>t==="yukseliyor"?" 📈":t==="dusuyor"?" 📉":"";
@@ -11164,7 +11164,7 @@ small>.tvar.d:first-child{margin-left:0;margin-right:2px}
   function shareRace(rid){ const r=raceById(rid); if(!r) return; const m=M(r);
     shareText(`🐎 ${r.hipodrom} ${r.kosu}. koşu · ${r.saat||""} (${r.mesafe} m ${r.pist})\nOXXai tahmini${m.oranli?" (oranla güncel)":" (sabah)"}:\n`+m.A.slice(0,3).map((h,i)=>`${i+1}) ${h.no} ${h.ad} %${Math.round(h.p_goster*100)}`).join("\n")+`\nHobi amaçlı olasılıktır, garanti değildir · 18+\nbulutoxx.github.io/#at/kosu/${K(rid)}`,"📋 Koşu tahmini kopyalandı"); }
   function shareAlt(id){ const A=ALT(), Xa=A&&(A.altililar||[]).find(x=>x.id===id); if(!Xa) return; const sv=AT.sev||"orta", L=Xa.seviyeler[sv]; if(!L) return;
-    shareText(`🎯 ${Xa.hipodrom} ${Xa.no}. 6'lı (${Xa.baslangic_kosu}.–${Xa.baslangic_kosu+5}. koşular) · OXXai ${SVN[sv]} tahmini\n`+L.ayaklar.map((g,i)=>`${i+1}. ayak: ${g.secim.join("-")}${g.banko?" (banko)":""}`).join("\n")+`\n6'yı birden tutma olasılığı %${(L.p*100).toFixed(1).replace(".",",")} · ${L.kombinasyon} kombinasyon\nHobi amaçlı olasılıktır, garanti değildir · 18+`,"📋 6'lı tahmini kopyalandı"); }
+    shareText(`🎯 ${Xa.hipodrom} ${Xa.no}. 6'lı (${Xa.baslangic_kosu}.–${Xa.baslangic_kosu+5}. koşular) · OXXai ${SVN[sv]} tahmini\n`+L.ayaklar.map((g,i)=>`${i+1}. ayak: ${g.secim.join("-")}${g.banko?" (tek at)":""}`).join("\n")+`\n6'yı birden tutma olasılığı %${(L.p*100).toFixed(1).replace(".",",")} · ${L.kombinasyon} kombinasyon\nHobi amaçlı olasılıktır, garanti değildir · 18+`,"📋 6'lı tahmini kopyalandı"); }
   // =====================================================================
   // Etkileşim (tek dinleyici; kupon düğmeleri data-atkr/atkh/atka → atkupon-v98 yakalar)
   // =====================================================================
@@ -11187,7 +11187,7 @@ small>.tvar.d:first-child{margin-left:0;margin-right:2px}
     if(d.hp){ tap(); S.hip=d.hp; S.hipU=true; paint(); return; }
     if(d.mode){ tap(); S.mode=d.mode; lsS("bx-at2-mod",S.mode); paint(); return; }
     if(d.sort){ tap(); S.sort=d.sort; paint(); return; }
-    if(d.bt){ tap(); S.bt=d.bt; lsS("bx-at2-bt",S.bt); if(route().v!=="bahis") go("bahis",false); else paint(); return; }
+    if(d.bt){ tap(); S.bt=d.bt; lsS("bx-at2-bt",S.bt); if(route().v!=="turler") go("turler",false); else paint(); return; }
     if(d.sev){ tap(); AT.sev=d.sev; lsS("bx-at2-sev",d.sev); try{ X.render(); }catch(_){} paint(); return; }
     if(d.tk){ const i=d.tk.indexOf("|"); tkTog(d.tk.slice(0,i),d.tk.slice(i+1)); return; }
     if(d.share){ shareRace(d.share); return; }
@@ -11206,10 +11206,10 @@ small>.tvar.d:first-child{margin-left:0;margin-right:2px}
   // =====================================================================
   // showSport("at") sarmalayıcısı: eski AT.tab değerleri yeni sekmelere eşlenir, #at/... bağlantısı korunur
   // =====================================================================
-  const MAP={altin:"bugun",sonuc:"sonuc",altili:"bahis",jokey:"istatistik"};
+  const MAP={altin:"bugun",sonuc:"sonuc",altili:"turler",jokey:"istatistik"};
   try{ const _ss=showSport; showSport=function(s){ if(s!=="at") return _ss.apply(this,arguments);
       const h0=location.hash, st0=history.state; const r=_ss.apply(this,arguments);
-      let path=/^#at\//.test(h0)?h0:null; const lt=AT.tab; if(lt&&lt!=="tah"){ AT.tab="tah"; const v=MAP[lt]; if(v){ path="#at/"+v; if(v==="bahis"){ S.bt="altili"; } } }
+      let path=/^#at\//.test(h0)?h0:null; const lt=AT.tab; if(lt&&lt!=="tah"){ AT.tab="tah"; const v=MAP[lt]; if(v){ path="#at/"+v; if(v==="turler"){ S.bt="altili"; } } }
       if(path) try{ history.replaceState(/^#at\//.test(h0)?st0:null,"",path); }catch(e){}
       paint(true); return r; }; }catch(e){}
   // derin bağlantı: #at/... ile açılış
@@ -11223,7 +11223,7 @@ small>.tvar.d:first-child{margin-left:0;margin-right:2px}
 <style id="at3-v109">
 /* =====================================================================
    v109 · AT YARIŞI 2.0 — lab/at/TASARIM.md Aşama 3 (Kupon sekmesi tam işlevli + yüzen "At kuponum" çubuğu)
-   ve Aşama 4 (gün içi ganyan oranı izi, at kariyeri). at2-v106'nın üstüne biner; bu blok ve script#at3-v109
+   ve Aşama 4 (gün içi piyasa oranı izi, at kariyeri). at2-v106'nın üstüne biner; bu blok ve script#at3-v109
    silinirse at2'nin salt okunur Kupon sekmesi geri gelir. Yalnız #v-at içinde geçerli.
    ===================================================================== */
 #v-at.a3-hasbar #at2Box{padding-bottom:88px}
@@ -11334,7 +11334,7 @@ small>.tvar.d:first-child{margin-left:0;margin-right:2px}
 // • Oran izi: data/at/oran_izi/<gün>.json (lab/at/canli.py her 30 dk; yalnız oran değişince nokta) → koşu kartında ve
 //   at profilinde mini çizgi. Veri yoksa "henüz iz yok"; ara değer/uydurma yok.
 // • Kariyer: data/at/kariyer.json (lab/at/kariyer.py; yalnız günün koşucuları, sonuç arşivinden türetilmiş) → At profili.
-// Veri yalnız depodaki türetilmiş dosyalardan; tjk.org'a istek yok, bahis bağlantısı yok, para tutarı yok · 18+.
+// Veri yalnız depodaki türetilmiş dosyalardan; tjk.org'a istek yok, oyun bağlantısı yok, para tutarı yok · 18+.
 // =====================================================================
 (function(){
   const X=window.BX_AT, A2=window.BX_AT2; if(!X||!X.AT||!A2||!window.KX) return;
@@ -11349,8 +11349,8 @@ small>.tvar.d:first-child{margin-left:0;margin-right:2px}
   const tsOf=(d,s)=>Date.parse(d+"T"+(s||"23:59")+":00+03:00"), dayOf=kid=>String(kid||"").split("/")[0];
   const tap=()=>{ try{ buzz(6); }catch(e){} };
   const KX=()=>window.KX;
-  const TUR={ganyan:{ad:"Ganyan",kol:1,enaz:2},plase:{ad:"Plase",kol:1,enaz:7},ikili:{ad:"İkili",kol:1,enaz:7},sirali_ikili:{ad:"Sıralı İkili",kol:2,enaz:4},
-    cifte:{ad:"Çifte",kol:2,enaz:2},uclu:{ad:"Sıralı Üçlü",kol:3,enaz:4},tabela:{ad:"Tabela",kol:4,enaz:5},altili:{ad:"6'lı Ganyan",kol:6,enaz:1}};
+  const TUR={ganyan:{ad:"Kazanan",kol:1,enaz:2},plase:{ad:"Derece",kol:1,enaz:7},ikili:{ad:"İkili",kol:1,enaz:7},sirali_ikili:{ad:"Sıralı İkili",kol:2,enaz:4},
+    cifte:{ad:"Çifte",kol:2,enaz:2},uclu:{ad:"Sıralı Üçlü",kol:3,enaz:4},tabela:{ad:"Tabela",kol:4,enaz:5},altili:{ad:"6'lı Tahmin",kol:6,enaz:1}};
   const ORDER=["ganyan","plase","ikili","sirali_ikili","cifte","uclu","tabela","altili"];
   const KAR=()=>{ try{ const k=window.ATK_KARNE&&window.ATK_KARNE(); if(k&&k.turler) for(const t of ORDER){ const z=k.turler[t]; if(z&&TUR[t]){ if(z.ad) TUR[t].ad=z.ad; if(z.en_az_at) TUR[t].enaz=+z.en_az_at; } } return k||null; }catch(e){ return null; } };
   const SVN={dar:"Dar",orta:"Orta",genis:"Geniş"};
@@ -11391,7 +11391,7 @@ small>.tvar.d:first-child{margin-left:0;margin-right:2px}
   function rowHtml(x,i,ro){ const T=TUR[x.tur]||{ad:x.tur}, op=!ro&&rowOpen(x), d=x.d&&x.d!==AT.d?` · ${X.dLbl(x.d)}`:"";
     const st=x.ok===true?'<b class="up">✓ tuttu</b>':x.ok===false?`<b class="dn">✗ tutmadı${x.srz?" (sırasız tuttu)":""}</b>`:x.iade?"↺ iade · koşul dışı":x.need?"sonuç eksik":startedK(x.kid[0],x)?"koşu başladı · sonuç bekleniyor":"bekliyor";
     const res=x.ok===true?`<span class="a3-res ok" role="img" aria-label="Tuttu">✓</span>`:x.ok===false?`<span class="a3-res no" role="img" aria-label="Tutmadı">✗</span>`:"";
-    const href=x.tur==="altili"?"#at/bahis":`#at/kosu/${K(x.kid[0])}`;
+    const href=x.tur==="altili"?"#at/turler":`#at/kosu/${K(x.kid[0])}`;
     let h=`<div class="a2-kr a3-r" data-rid="${E(x.id)}"><a class="a3-rl" href="${href}"${x.tur==="altili"?' data-bt="altili"':""}><span class="tt">${E(x.tur==="altili"?"6'lı":T.ad)}</span><span class="tx"><b>${E(where(x))}${x.saat?" · "+E(x.saat):""}${E(d)}</b><small>${E(selTxt(x))}${x.tur==="altili"&&x.sev?" · "+E(SVN[x.sev]||""):""}</small><small>${fN(x.komb)} kombinasyon · OXXai <b style="color:var(--a2-gi)">${P(x.p)}</b> · ${st}${x.res?` · sonuç ${E(x.res)}`:""}${(x.kx||[]).length?` · koşmayan at çıkarıldı (${E(x.kx.join(", "))})`:""}</small></span>${res}</a>`;
     if(op){ h+=`<div class="a3-ra">${x.tur!=="altili"?`<button type="button" data-k3="tur" data-i="${i}" aria-expanded="${U.tur===x.id}">Tür: ${E(T.ad)} ▾</button><button type="button" data-k3="ed" data-i="${i}">Düzenle</button>`:`<button type="button" data-k3="six" data-i="${i}">6'lıyı gör</button>`}<button type="button" class="a3-rm" data-k3="rm" data-i="${i}" aria-label="${E(where(x))} satırını kupondan çıkar">✕</button></div>`;
       if(U.tur===x.id&&x.tur!=="altili") h+=turPick(x,i); }
@@ -11401,7 +11401,7 @@ small>.tvar.d:first-child{margin-left:0;margin-right:2px}
   function turPick(x,i){ const n=nOf(x.kid[0]), r=raceById(x.kid[0]), nx=r&&raceById(`${dayOf(r.kosu_id)}/${r.hipodrom}/${r.kosu+1}`);
     const L=ORDER.filter(t=>t!=="altili"&&t!==x.tur).map(t=>{ let er=""; if(n<TUR[t].enaz) er=`${n} atlı koşuda ${TUR[t].ad} yok`; else if(t==="cifte"&&(!nx||startedK(nx.kosu_id))) er="Sonraki koşu yok ya da başladı";
       return `<button type="button" data-k3="tset" data-i="${i}" data-t="${t}"${er?` aria-disabled="true" data-er="${E(er)}"`:""}>${E(TUR[t].ad)}</button>`; }).join("");
-    return `<div class="a3-tp" role="group" aria-label="Yeni bahis türü"><p>Tür seç: kurucu, seçtiğin atlar korunarak açılır; kombinasyon ve OXXai olasılığını görüp “Satırı güncelle” ile onaylarsın.</p><div>${L}</div></div>`; }
+    return `<div class="a3-tp" role="group" aria-label="Yeni tahmin türü"><p>Tür seç: kurucu, seçtiğin atlar korunarak açılır; kombinasyon ve OXXai olasılığını görüp “Satırı güncelle” ile onaylarsın.</p><div>${L}</div></div>`; }
   // satırın atlarını yeni türe taşı (kurucu son sözü söyler; hiçbir şey kendiliğinden kaydedilmez)
   function conv(x,t){ const S=(x.tur==="cifte"?[x.sec[0]||[]]:x.sec||[]).map(c=>(c||[]).map(String)), H=[...new Set(S.flat())], k=TUR[t].kol;
     if(t==="ganyan"||t==="plase") return [H.slice(0,1)];
@@ -11435,7 +11435,7 @@ small>.tvar.d:first-child{margin-left:0;margin-right:2px}
       h+=`<div class="a2-card gold a3-cp" data-c="${E(c.id)}"><div class="a3-ch">${U.edit?`<input class="a3-in" id="a3In" maxlength="32" value="${E(c.ad)}" aria-label="Kupon adı" enterkeyhint="done" autocomplete="off"><button class="a2-ib" type="button" data-k3="rok" aria-label="Adı kaydet">${IC.ok}</button>`
           :`<h2>${E(c.ad)}</h2><button class="a2-ib" type="button" data-k3="ren" aria-label="Kupon adını değiştir">${IC.pen}</button>${stPill(c)}`}</div>
         <p class="a3-meta">At yarışı kuponu · ${I.length} satır · ${E(ist(new Date(c.olusturma),{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}))} açıldı</p>
-        ${I.length?I.map((x,i)=>rowHtml(x,i,false)).join(""):`<p class="a2-note" style="margin:6px 2px 10px">Bu kupon boş. Program'dan bir koşu seç ve “＋ Kupona ekle”ye dokun; 6'lı için Bahis sekmesi.</p>`}
+        ${I.length?I.map((x,i)=>rowHtml(x,i,false)).join(""):`<p class="a2-note" style="margin:6px 2px 10px">Bu kupon boş. Program'dan bir koşu seç ve “＋ Kupona ekle”ye dokun; 6'lı için Türler sekmesi.</p>`}
         ${I.length?`<div class="a2-kpis k3" style="margin-top:10px"><div><b>${I.length}</b><small>satır<br>${ks} koşu</small></div><div><b>${fN(kAll(I))}</b><small>toplam<br>kombinasyon</small></div><div><b style="color:var(--a2-gi)">${P(pAll(I))}</b><small>OXXai birlikte<br>tutma</small></div></div>
           <p class="a2-note" style="margin:8px 2px 0">Beklenen tutan satır ${e.toLocaleString("tr-TR",{maximumFractionDigits:1})} / ${I.length}${w?` · en zayıf halka: ${E(w.hip)} ${w.kosu}. koşu (${E((TUR[w.tur]||{}).ad||"")}, ${P(w.p)})`:""}. Olasılık indirimli Harville yöntemiyle hesaplanır, koşu başlayana kadar oran geldikçe güncellenir. Para tutarı gösterilmez.</p>`:""}
         <div class="a3-acts"><a class="a2-btn g" href="#at/program" data-tab="program">＋ Koşu ekle</a><button class="a2-btn p" type="button" data-kupo="${E(c.id)}">KUPO'da aç</button></div>
@@ -11443,7 +11443,7 @@ small>.tvar.d:first-child{margin-left:0;margin-right:2px}
           :`<div class="a3-acts"><button class="a2-btn q" type="button" data-k3="arch"${I.length?"":" disabled"}>Eski kuponlara taşı</button><button class="a2-btn q" type="button" data-k3="del">Kuponu sil</button></div>`}</div>`;
       if(L.length>1) h+=`<p class="a2-note">${L.length} açık at kuponun var; yukarıdaki çiplerle geçiş yap. Seçtiğin kupon KUPO'da da aktif olur.</p>`; }
     h+=statsHtml()+oldHtml();
-    h+=`<p class="a2-foot">Kupon kayıtları yalnızca bu telefonda tutulur. OXXai bahis almaz, hiçbir siteye yönlendirmez ve para tutarı göstermez. Hobi amaçlı olasılıktır, garanti değildir · 18+</p>`;
+    h+=`<p class="a2-foot">Kupon kayıtları yalnızca bu telefonda tutulur. OXXai oyun almaz, hiçbir siteye yönlendirmez ve para tutarı göstermez. Hobi amaçlı olasılıktır, garanti değildir · 18+</p>`;
     return h; }
   // ---------- boyama kancası: at2 #at2Box'u yazdıkça ----------
   let self=false;
@@ -11478,7 +11478,7 @@ small>.tvar.d:first-child{margin-left:0;margin-right:2px}
     if(a==="tset"&&x){ if(b.dataset.er){ toast(b.dataset.er); return; } const t=b.dataset.t; if(typeof window.atkOpen!=="function"){ toast("Kurucu yüklenemedi"); return; }
       U.tur=null; setAct(c); window.atkOpen(x.kid[0],{row:Object.assign({},x,{tur:t,sec:conv(x,t)})}); return; }
     if(a==="ed"&&x){ if(typeof window.atkOpen==="function"){ setAct(c); window.atkOpen(x.kid[0],{row:x}); } return; }
-    if(a==="six"&&x){ try{ AT.d=x.d; AT.sev=x.sev||AT.sev; X.render(); }catch(_){} A2.go("bahis",false); return; }
+    if(a==="six"&&x){ try{ AT.d=x.d; AT.sev=x.sev||AT.sev; X.render(); }catch(_){} A2.go("turler",false); return; }
     if(a==="arch"){ c.durum="arsiv"; c.arsivAt=NOW(); save(c); try{ window.kxAct(); }catch(_){} U.cf=null; toast(`${c.ad} Eski at kuponlarına taşındı`); repaintK(); return; }
     if(a==="del"){ U.cf=c.id; repaintK(); return; }
     if(a==="cfno"){ U.cf=null; repaintK(); return; }
@@ -11520,22 +11520,22 @@ small>.tvar.d:first-child{margin-left:0;margin-right:2px}
     const XY=pts.map((p,i)=>[pad+(W-2*pad)*i/(pts.length-1), pad+(H-2*pad)*((Math.log(p[1])-lo)/span)*(hi===lo?0:1)+(hi===lo?(H-2*pad)/2:0)]);
     const f=pts[0][1], l=pts[pts.length-1][1], col=l<f-.005?"#3BEA7E":l>f+.005?"#FF6B78":"#B6C0D3";
     const d=XY.map((q,i)=>(i?"L":"M")+q[0].toFixed(1)+" "+q[1].toFixed(1)).join(" ");
-    return `<svg class="a3-sp${big?" big":""}" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Ganyan oranı ${pts.map(p=>p[0]+" "+fx(p[1])).join(", ")}"><path d="${d}" fill="none" stroke="${col}" stroke-width="${big?2.2:1.8}" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>${XY.map((q,i)=>i===XY.length-1||big?`<circle cx="${q[0].toFixed(1)}" cy="${q[1].toFixed(1)}" r="${big?(i===XY.length-1?3.2:2.2):2.4}" fill="${i===XY.length-1?col:"#8893AB"}"/>`:"").join("")}</svg>`; }
+    return `<svg class="a3-sp${big?" big":""}" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Piyasa oranı ${pts.map(p=>p[0]+" "+fx(p[1])).join(", ")}"><path d="${d}" fill="none" stroke="${col}" stroke-width="${big?2.2:1.8}" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>${XY.map((q,i)=>i===XY.length-1||big?`<circle cx="${q[0].toFixed(1)}" cy="${q[1].toFixed(1)}" r="${big?(i===XY.length-1?3.2:2.2):2.4}" fill="${i===XY.length-1?col:"#8893AB"}"/>`:"").join("")}</svg>`; }
   function chg(pts){ if(!pts.length) return `<span class="a3-ov">–</span>`; const f=pts[0][1], l=pts[pts.length-1][1];
     if(pts.length<2) return `<span class="a3-ov"><b>${fx(l)}</b>tek ölçüm</span>`;
     const dn=l<f-.005, up=l>f+.005; return `<span class="a3-ov"><b class="${dn?"up":up?"dn":""}">${fx(l)} ${dn?"▼":up?"▲":"="}</b>ilk ${fx(f)}</span>`; }
   const noIz=(r,z)=>`<p class="a2-note" style="margin:0">${z&&z.t.length===1?`Henüz iz yok: bu koşu için tek ölçüm var (${E(z.t[0])}). Oran değiştikçe yeni nokta eklenir ve çizgi oluşur.`:`Henüz iz yok. Laboratuvar gün içinde yaklaşık 30 dakikada bir koşu öncesi ganyan oranlarını kaydeder; yalnız oran değişince nokta eklenir.`}</p>`;
-  function cardOran(r){ const d=dayOf(r.kosu_id); if(!izLoaded(d)) return `<div class="a2-card" data-a3d><div class="a2-ch"><h2>📈 Gün içi ganyan oranı</h2></div><div class="a2-sk" style="height:56px;margin:0"></div></div>`;
-    const z=izOf(r); let h=`<div class="a2-card" data-a3d="oran"><div class="a2-ch"><h2>📈 Gün içi ganyan oranı</h2><small>${z?`${z.t.length} ölçüm · ${E(z.t[0])}${z.t.length>1?"–"+E(z.t[z.t.length-1]):""}`:""}</small></div>`;
+  function cardOran(r){ const d=dayOf(r.kosu_id); if(!izLoaded(d)) return `<div class="a2-card" data-a3d><div class="a2-ch"><h2>📈 Gün içi piyasa oranı</h2></div><div class="a2-sk" style="height:56px;margin:0"></div></div>`;
+    const z=izOf(r); let h=`<div class="a2-card" data-a3d="oran"><div class="a2-ch"><h2>📈 Gün içi piyasa oranı</h2><small>${z?`${z.t.length} ölçüm · ${E(z.t[0])}${z.t.length>1?"–"+E(z.t[z.t.length-1]):""}`:""}</small></div>`;
     if(!z||z.t.length<2) return h+noIz(r,z)+`</div>`;
     const A=(r.atlar||[]).map(a=>({no:String(a.no),ad:a.ad,pts:series(z,a.no)})).filter(a=>a.pts.length).sort((a,b)=>a.pts[a.pts.length-1][1]-b.pts[b.pts.length-1][1]);
     const row=a=>`<a class="a3-oir" href="#at/at/${K(r.kosu_id)}/${enc(a.no)}"><span class="a2-no">${E(a.no)}</span><span class="a2-hn"><b>${E(a.ad)}</b></span>${spark(a.pts)||'<span class="a3-sp"></span>'}${chg(a.pts)}</a>`;
     h+=`<div class="a3-oi">${A.slice(0,6).map(row).join("")}${A.length>6?`<details><summary>Diğer ${A.length-6} at</summary>${A.slice(6).map(row).join("")}</details>`:""}</div>
-      <p class="a2-note" style="margin:8px 2px 0">Sıra: en son ganyan oranı (düşük = favori). Çizgi yukarı = oran düştü, piyasa daha çok inanıyor (▼ yeşil); aşağı = oran yükseldi (▲ kırmızı). Yalnız koşu öncesi ölçümler; ara değer üretilmez.</p></div>`;
+      <p class="a2-note" style="margin:8px 2px 0">Sıra: en son piyasa oranı (düşük = favori). Çizgi yukarı = oran düştü, piyasa daha çok inanıyor (▼ yeşil); aşağı = oran yükseldi (▲ kırmızı). Yalnız koşu öncesi ölçümler; ara değer üretilmez.</p></div>`;
     return h; }
-  function cardOranAt(r,no){ const d=dayOf(r.kosu_id); if(!izLoaded(d)) return `<div class="a2-card" data-a3d><div class="a2-ch"><h2>📈 Ganyan oranı · gün içi</h2></div><div class="a2-sk" style="height:72px;margin:0"></div></div>`;
-    const z=izOf(r), pts=z?series(z,no):[]; let h=`<div class="a2-card" data-a3d="oran"><div class="a2-ch"><h2>📈 Ganyan oranı · gün içi</h2><small>${pts.length?pts.length+" ölçüm":""}</small></div>`;
-    if(pts.length<2) return h+(pts.length===1?`<p class="a2-note" style="margin:0">Henüz iz yok: tek ölçüm ${E(pts[0][0])} · ganyan ${fx(pts[0][1])}. Oran değiştikçe çizgi oluşur.</p>`:noIz(r,z))+`</div>`;
+  function cardOranAt(r,no){ const d=dayOf(r.kosu_id); if(!izLoaded(d)) return `<div class="a2-card" data-a3d><div class="a2-ch"><h2>📈 Piyasa oranı · gün içi</h2></div><div class="a2-sk" style="height:72px;margin:0"></div></div>`;
+    const z=izOf(r), pts=z?series(z,no):[]; let h=`<div class="a2-card" data-a3d="oran"><div class="a2-ch"><h2>📈 Piyasa oranı · gün içi</h2><small>${pts.length?pts.length+" ölçüm":""}</small></div>`;
+    if(pts.length<2) return h+(pts.length===1?`<p class="a2-note" style="margin:0">Henüz iz yok: tek ölçüm ${E(pts[0][0])} · oran ${fx(pts[0][1])}. Oran değiştikçe çizgi oluşur.</p>`:noIz(r,z))+`</div>`;
     const f=pts[0][1], l=pts[pts.length-1][1], dn=l<f-.005, up=l>f+.005;
     return h+`${spark(pts,true)}<div class="a3-pts">${pts.map(p=>`<span>${E(p[0])} <b>${fx(p[1])}</b></span>`).join("")}</div>
       <p class="a2-note" style="margin:8px 2px 0">${E(pts[0][0])}'den beri ${fx(f)} → <b class="${dn?"up":up?"dn":""}">${fx(l)} ${dn?"▼ oran düştü (piyasa güçleniyor)":up?"▲ oran yükseldi (piyasa soğuyor)":"değişmedi"}</b>. Koşu öncesi ölçümler; garanti değildir.</p></div>`; }
@@ -11840,7 +11840,7 @@ small>.tvar.d:first-child{margin-left:0;margin-right:2px}
 /* =====================================================================
    v110 · OXXai'nin kuponları — OXXai'nin kendi kilitlediği günlük kuponlar (salt okunur), karne ve öğrenme olayları.
    KUPO "Kuponlarım" sekmesinin üstünde, kullanıcı kuponlarından ayrık altın çerçeveli bölüm. At kuponları yalnız At › Kupon sekmesinde.
-   Dokunma hedefi ≥ 40 px, 360/390 px'te yatay taşma yok. Para tutarı / olası kazanç / bahis bağlantısı yok.
+   Dokunma hedefi ≥ 40 px, 360/390 px'te yatay taşma yok. Para tutarı / olası kazanç / oyun bağlantısı yok.
    ===================================================================== */
 :root{--ox-g:#E9C766;--ox-g2:#F3DC8A;--ox-bd:rgba(233,199,102,.30);--ox-sf:linear-gradient(170deg,rgba(233,199,102,.075),rgba(255,255,255,.02) 60%);--ox-ok:#3BEA7E;--ox-no:#FF6B78;--ox-lv:#5CC8FF}
 .oxk{margin:0 0 16px;border:1px solid var(--ox-bd);border-radius:20px;background:var(--ox-sf);padding:14px 14px 12px;min-width:0;overflow:hidden}
@@ -12121,7 +12121,7 @@ small>.tvar.d:first-child{margin-left:0;margin-right:2px}
         const ks=K&&K.stratejiler&&K.stratejiler[id];
         h+=`<div class="oxk-gr"><div class="oxk-gh">${E(ad(id))}<small>${L.length} kupon${w?` · ${w} tuttu`:""}</small></div>${ks?`<div class="oxk-note" style="margin:-2px 2px 8px">${atKarneSatir(ks)}</div>`:""}
           ${sh.map(atKupHtml).join("")}${L.length>3?`<button type="button" class="oxk-more" data-oxat="${E(id)}" aria-expanded="${!!all}">${all?"Daha az göster":`Tümünü göster (${L.length})`}</button>`:""}</div>`; } }
-    h+=`<p class="oxk-ft">Olasılıklar OXXai at modelinin koşudan önce kilitlediği tahminden. Hobi amaçlı ölçümdür; tutar ve bahis bağlantısı yoktur · 18+</p></div>`;
+    h+=`<p class="oxk-ft">Olasılıklar OXXai at modelinin koşudan önce kilitlediği tahminden. Hobi amaçlı ölçümdür; tutar ve oyun bağlantısı yoktur · 18+</p></div>`;
     return h; };
   // ince kanca: #at2Box "kupon" sekmesini çizince sona ekle (yoksa sessizce atla)
   function atKanca(){ const box=$$("at2Box"); if(!box) return false; if(box.__oxk) return true; box.__oxk=1;
