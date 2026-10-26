@@ -1,0 +1,65 @@
+{
+ "olusturma": "2026-10-26",
+ "not": "Harman/yığma katmanı ölçümleri (lab/at/oran_izi.py, lab/at/ucuncu_taraf.py). Taban: data/at/replay_kosular.json sızıntısız p_sabah / p_oran; aylık walk-forward yeniden uydurma; koşu-bootstrap %95 GA. ΔLL = yeni − taban (negatif iyi).",
+ "deneyler": [
+  {
+   "ad": "oran izi: log q_nihai − log q_erken (≥30 dk önce), p_oran'a ek",
+   "kosu": 1313,
+   "kaynak": "ayna git geçmişi (1.256) + odds-snapshots (259)",
+   "dll": 0.0003,
+   "ga95": [
+    -0.0023,
+    0.0029
+   ],
+   "gecti": false
+  },
+  {
+   "ad": "oran izi, 3 terim (hareket, × favori, yalnız kısalma)",
+   "kosu": 1313,
+   "dll": 0.0106,
+   "ga95": [
+    0.0038,
+    0.0177
+   ],
+   "gecti": false
+  },
+  {
+   "ad": "oran izi: eşik ≥60 dk",
+   "kosu": 1001,
+   "dll": 0.0014,
+   "ga95": [
+    -0.0016,
+    0.0047
+   ],
+   "gecti": false
+  },
+  {
+   "ad": "erken piyasa (q_erken) p_oran'a ek",
+   "kosu": 1313,
+   "dll": 0.0003,
+   "ga95": [
+    -0.0023,
+    0.0029
+   ],
+   "gecti": false
+  },
+  {
+   "ad": "üçüncü taraf tahmin günlüğü (memory/predictions, sabah sürümü) p_sabah'a yığma",
+   "kosu": 1265,
+   "dll": -0.0019,
+   "ga95": [
+    -0.0055,
+    0.0015
+   ],
+   "d_ilk": 0.0009,
+   "gecti": false
+  }
+ ],
+ "referans": {
+  "p_oran_ll": 1.832,
+  "q_nihai_ll": 1.8417,
+  "q_erken_ll": 2.1602,
+  "ucuncu_taraf_ll": 2.1443,
+  "sabah_ll_ayni_kosular": 1.9316
+ }
+}
