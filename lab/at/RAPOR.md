@@ -1,6 +1,6 @@
 # OXXai 🐎 At Yarışı Laboratuvarı — Rapor
 
-_Otomatik üretildi: 2026-10-26T19:05:29+00:00 · model sürümü `20261026T1431` · hobi amaçlıdır, garanti değildir · 18+_
+_Otomatik üretildi: 2026-10-26T21:20:10+00:00 · model sürümü `20261026T1431` · hobi amaçlıdır, garanti değildir · 18+_
 
 ## Yeniden oynatma (replay): 2026-03-16 → 2026-10-23
 
@@ -347,8 +347,8 @@ Yorum: sabah tahmininde en çok taşıyan bilgiler reytingler (at/jokey/antrenö
 ## Kapı (sürekli öğrenme)
 
 - Kural: tarif (özellikler/ayarlar) değişirse yeni model ancak **aynı sınama koşularında** yalnız-model log-loss'u düşürür, ilk seçim isabetini düşürmez ve harman log-loss'unu 0,001'den fazla bozmazsa kabul edilir. Tarif aynıysa özellikler her gece yeni sonuçlarla güncellenir, katsayılar haftada bir yeniden eğitilir (KORU = bu gece yenileme günü değil); ortak koşularda belirgin bozulma (veri sorunu) olursa dünkü model korunur. İz: `data/at/sinama_izi.json`.
-- Son karar (2026-10-26T19:05:29+00:00): **KORU** — aynı tarif; katsayılar 0 günlük (haftalık yenileme), özellikler bu gece yeni sonuçlarla güncellendi
-- Yeni: yalnız model log-loss 1.8685, ilk seçim %31.7; harman 1.7957. Kıyas: yalnız model 1.8685, ilk seçim %31.7; harman 1.7957.
+- Son karar (2026-10-26T21:20:10+00:00): **KORU** — aynı tarif; katsayılar 0 günlük (haftalık yenileme), özellikler bu gece yeni sonuçlarla güncellendi
+- Yeni: yalnız model log-loss 1.8686, ilk seçim %31.6; harman 1.7960. Kıyas: yalnız model 1.8686, ilk seçim %31.6; harman 1.7960.
 
 ## Canlı karne (kilitlenmiş tahminler, sonuç gelince)
 
@@ -356,7 +356,7 @@ Yorum: sabah tahmininde en çok taşıyan bilgiler reytingler (at/jokey/antrenö
   - 2026-10-25: 12 koşu, ilk seçim %25.0, log-loss 2.078
   - 2026-10-26: 16 koşu, ilk seçim %25.0, log-loss 3.1197
 
-## Gösteri: 2026-10-26 İstanbul tahminleri
+## Gösteri: 2026-10-27 İstanbul tahminleri
 
 - Bu gün için İstanbul programı/kilidi yok.
 
@@ -383,7 +383,7 @@ Yorum: sabah tahmininde en çok taşıyan bilgiler reytingler (at/jokey/antrenö
 - `lab/at/canli.py` (`.github/workflows/at-canli.yml`, 11:00–00:30 TSİ her 30 dk; gece akışıyla aynı eşzamanlılık grubu, üst üste binmez). Yeniden eğitim yok: kayıtlı yayın modeli yüklenir, durum yalnız koşu gününden ÖNCEKİ sonuçlarla kurulur (sızıntısız; özellikler gece akışıyla birebir aynı, ölçüldü). Süre ≈10 sn.
 - Ayna yarış günü gün içinde senkronlanıyor: programdaki atların güncel ganyan oranı (sabah 0) ve akşam sonuç dosyası. Alanın en az yarısında oran varsa `p_piyasa` (marjı ayrılmış) ve `p_oran` (gece ile aynı α/β harmanı) hesaplanır; oranı 0 olan at (genelde koşmayan) piyasa/harman dışında kalır.
 - Sonucu gelen koşular aynı akşam `data/at/canli/<tarih>.json` içinde puanlanır; sabah kilitli tahminler `data/at/karne.json`'a koşu kimliğiyle idempotent eklenir (çift sayım yok, gün özeti yeniden hesaplanır).
-- Son canlı dosya 2026-10-26 (güncelleme 2026-10-26 21:33 TSİ): 16 koşu, 1 oranlı bekleyen, 15 bitti; modelin (sabah) ilk seçimi 4/15 tuttu.
+- Son canlı dosya 2026-10-26 (güncelleme 2026-10-26 22:35 TSİ): 16 koşu, 0 oranlı bekleyen, 16 bitti; modelin (sabah) ilk seçimi 4/16 tuttu.
 
 ## Daha önce denenmiş ama kapıdan geçmemiş fikirler
 
