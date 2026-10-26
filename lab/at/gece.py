@@ -1118,6 +1118,11 @@ def main():
             altili.gun_guncelle(t)
     except Exception as e:
         print("6'lı güncellenemedi:", type(e).__name__, e)
+    try:   # at kuponu: tüm bahis türleri için geri test karnesi (kupon_karne.json) — hata yayını durdurmaz
+        import kupon
+        kupon.karne_guncelle()
+    except Exception as e:
+        print("kupon karnesi güncellenemedi:", type(e).__name__, e)
     try:   # jokey/antrenör özetleri (arayüz) — durum tüm sonuçlarla ilerletilmiş; bugünkü binişler sabah kilidinden
         jj = jokey.jokeyler_json(kosular, durum.jk, bugun, os.path.join(TAHMIN, bugun + ".json"),
                                  deney=(joku(JOKEY_DOSYA) or {}).get("deney"))

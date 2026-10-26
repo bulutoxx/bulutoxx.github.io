@@ -1,0 +1,2071 @@
+{
+ "v": 1,
+ "guncelleme": "2026-10-26T16:35:15+00:00",
+ "donem": [
+  "2026-03-16",
+  "2026-10-23"
+ ],
+ "bolum": {
+  "secim": [
+   "2026-03-16",
+   "2026-07-26"
+  ],
+  "sinama": [
+   "2026-07-27",
+   "2026-10-23"
+  ]
+ },
+ "kaynak": "Geri test: data/at/replay_kosular.json (gün gün sızıntısız yeniden oynatma, açık TJK sonuç arşivi github.com/cenkozgur/tjk-data). Her geçmiş koşu 'hiç oynanmamış gibi' yalnız p_sabah ile seçildi; sonuç yalnız puanlamada kullanıldı. γ, δ yalnız seçim diliminde (ilk 2/3 gün) öğrenildi; 'sinama' son 1/3 gün.",
+ "uyari": "Hobi amaçlı olasılık; garanti değildir · 18+",
+ "harville": {
+  "gamma": 0.82,
+  "delta": 0.68,
+  "p_kaynak": "p_kazanma (sabah) / p_oran",
+  "gamma_oran": 0.82,
+  "delta_oran": 0.66,
+  "dorduncu_sira_ussu_olculen": 0.6,
+  "formul": "P(i,j,k,l) = p_i · p_j^γ/Σ_{≠i}p^γ · p_k^δ/Σ_{≠i,j}p^δ · p_l^δ/Σ_{≠i,j,k}p^δ",
+  "kullanim": "p_sabah ile gamma/delta; p_oran (oranla harman) varsa gamma_oran/delta_oran",
+  "model_json": {
+   "gamma_model": 0.82,
+   "delta_model": 0.76,
+   "gamma_harman": 0.84,
+   "delta_harman": 0.76
+  },
+  "sinama_log_loss": {
+   "indirimli": {
+    "ikili": 3.8379,
+    "uclu": 5.6413,
+    "tabela": 7.3554
+   },
+   "duz": {
+    "ikili": 3.8449,
+    "uclu": 5.6623,
+    "tabela": 7.4202
+   },
+   "kosu": 1099
+  }
+ },
+ "kurallar_kaynak": [
+  {
+   "ad": "e-Bayi Yardım (müşterek bahis kuralları)",
+   "url": "https://ebayi.org/yardim/36"
+  },
+  {
+   "ad": "İstinye Ganyan — Sıkça Sorulan Sorular",
+   "url": "https://istinyeganyan.com/ganyan/sikcaa-sorulan-sorular/"
+  },
+  {
+   "ad": "İddaa Bülteni — TJK bahis türleri",
+   "url": "https://xn--iddaablteni-yhb.com/at-yarisi/at-yarisi-tjk-nasil-oynanir-bahis-turleri-ve-oyunlarin-resmi-aciklamalari-tanimlari/"
+  },
+  {
+   "ad": "UAT Racing — Yarışsever Sözlüğü",
+   "url": "https://uatracing.com/sozluk.html"
+  }
+ ],
+ "varsayimlar": [
+  "Plase: 7+ atlı koşuda ilk 2 (kalabalık alanda ilk 3 kuralı teyit edilemedi); 7'den az atlı koşuda plase yok.",
+  "Plase'de ekürili atlar tek birim (Ganyan/Çifte kuralına benzetildi).",
+  "İkili, Sıralı İkili, Sıralı Üçlü, Tabela'da ekürili atlar ayrı at.",
+  "Sıralı Üçlü en az 4, Tabela en az 5 atlı koşu (kaynakta alt sınır yok).",
+  "Çifte: aynı gün aynı hipodromda her ardışık koşu çifti (aynada çifte bayrağı yok).",
+  "Eşit derece (dead heat) olan koşular ilgili türün geri testinden çıkarıldı (atlanan_esit_derece).",
+  "Koşular bağımsız (Çifte, 6'lı): olasılık = koşu olasılıklarının çarpımı."
+ ],
+ "dogrulama_ornegi": {
+  "p": [
+   0.4,
+   0.25,
+   0.15,
+   0.1,
+   0.06,
+   0.04
+  ],
+  "gamma": 0.82,
+  "delta": 0.68,
+  "at_no": [
+   "1",
+   "2",
+   "3",
+   "4",
+   "5",
+   "6"
+  ],
+  "ganyan_1": 0.4,
+  "plase_1": 0.65908,
+  "sirali_ikili_1_2": 0.150244,
+  "ikili_1_2": 0.267578,
+  "uclu_1_2_3": 0.055597,
+  "tabela_1_2_3_4": 0.024789,
+  "tabela_sirasiz_1_2_3_4": 0.266332,
+  "sirali_ikili_kolon_1.[1,2]_2.[3,4]": 0.259846,
+  "plase_ekuri_1+2": 0.888159
+ },
+ "turler": {
+  "ganyan": {
+   "ad": "Ganyan",
+   "kisa": "tek at kazanır",
+   "kural": "Koşunun birincisini bil. Ekürili bir ata oynamak ekürinin o koşudaki tüm atlarına oynamaktır (tek birim).",
+   "koşu_sayisi": 1,
+   "kosu_sayisi": 1,
+   "sirali": true,
+   "ilk": 1,
+   "en_az_at": 2,
+   "n": 3284,
+   "isabet": 1005,
+   "beklenen": 1025.35,
+   "isabet_orani": 0.306,
+   "beklenen_oran": 0.3122,
+   "z": -0.79,
+   "secim": {
+    "n": 2182,
+    "isabet": 668,
+    "beklenen": 704.77,
+    "isabet_orani": 0.3061,
+    "beklenen_oran": 0.323,
+    "z": -1.73
+   },
+   "sinama": {
+    "n": 1102,
+    "isabet": 337,
+    "beklenen": 320.59,
+    "isabet_orani": 0.3058,
+    "beklenen_oran": 0.2909,
+    "z": 1.11
+   },
+   "atlanan_esit_derece": 0,
+   "kovalar": [
+    {
+     "aralik": "0.000-0.005",
+     "n": 746,
+     "tahmin": 0.0034,
+     "gercek": 0.0027
+    },
+    {
+     "aralik": "0.005-0.010",
+     "n": 1598,
+     "tahmin": 0.0075,
+     "gercek": 0.0081
+    },
+    {
+     "aralik": "0.010-0.020",
+     "n": 3193,
+     "tahmin": 0.0149,
+     "gercek": 0.0122
+    },
+    {
+     "aralik": "0.020-0.050",
+     "n": 7286,
+     "tahmin": 0.0339,
+     "gercek": 0.0368
+    },
+    {
+     "aralik": "0.050-0.100",
+     "n": 7448,
+     "tahmin": 0.0726,
+     "gercek": 0.0775
+    },
+    {
+     "aralik": "0.100-0.200",
+     "n": 7388,
+     "tahmin": 0.1418,
+     "gercek": 0.1439
+    },
+    {
+     "aralik": "0.200-0.300",
+     "n": 2892,
+     "tahmin": 0.2422,
+     "gercek": 0.231
+    },
+    {
+     "aralik": "0.300-0.500",
+     "n": 1589,
+     "tahmin": 0.3684,
+     "gercek": 0.3562
+    },
+    {
+     "aralik": "0.500-1.000",
+     "n": 174,
+     "tahmin": 0.5789,
+     "gercek": 0.5057
+    }
+   ],
+   "kovalar_sinama": [
+    {
+     "aralik": "0.000-0.005",
+     "n": 173,
+     "tahmin": 0.0035,
+     "gercek": 0.0
+    },
+    {
+     "aralik": "0.005-0.010",
+     "n": 461,
+     "tahmin": 0.0074,
+     "gercek": 0.0043
+    },
+    {
+     "aralik": "0.010-0.020",
+     "n": 996,
+     "tahmin": 0.0151,
+     "gercek": 0.012
+    },
+    {
+     "aralik": "0.020-0.050",
+     "n": 2426,
+     "tahmin": 0.0339,
+     "gercek": 0.0313
+    },
+    {
+     "aralik": "0.050-0.100",
+     "n": 2623,
+     "tahmin": 0.0725,
+     "gercek": 0.0766
+    },
+    {
+     "aralik": "0.100-0.200",
+     "n": 2651,
+     "tahmin": 0.142,
+     "gercek": 0.1426
+    },
+    {
+     "aralik": "0.200-0.300",
+     "n": 1026,
+     "tahmin": 0.2416,
+     "gercek": 0.2485
+    },
+    {
+     "aralik": "0.300-0.500",
+     "n": 487,
+     "tahmin": 0.362,
+     "gercek": 0.3552
+    },
+    {
+     "aralik": "0.500-1.000",
+     "n": 17,
+     "tahmin": 0.574,
+     "gercek": 0.2941
+    }
+   ],
+   "seviyeler": [
+    {
+     "kombinasyon": 1,
+     "kural": "en olası 1 kombinasyon (p_sabah)",
+     "n": 3284,
+     "isabet": 1005,
+     "beklenen": 1025.35,
+     "isabet_orani": 0.306,
+     "beklenen_oran": 0.3122,
+     "z": -0.79,
+     "sinama": {
+      "n": 1102,
+      "isabet": 337,
+      "beklenen": 320.59
+     }
+    },
+    {
+     "kombinasyon": 2,
+     "kural": "en olası 2 kombinasyon (p_sabah)",
+     "n": 3284,
+     "isabet": 1627,
+     "beklenen": 1686.97,
+     "isabet_orani": 0.4954,
+     "beklenen_oran": 0.5137,
+     "z": -2.17,
+     "sinama": {
+      "n": 1102,
+      "isabet": 539,
+      "beklenen": 541.31
+     }
+    },
+    {
+     "kombinasyon": 3,
+     "kural": "en olası 3 kombinasyon (p_sabah)",
+     "n": 3284,
+     "isabet": 2120,
+     "beklenen": 2155.04,
+     "isabet_orani": 0.6456,
+     "beklenen_oran": 0.6562,
+     "z": -1.34,
+     "sinama": {
+      "n": 1102,
+      "isabet": 710,
+      "beklenen": 700.93
+     }
+    }
+   ],
+   "oranli_bilgi": {
+    "n": 3282,
+    "isabet": 1134,
+    "beklenen": 1191.41,
+    "not": "en olası tek kombinasyon, kapanış oranıyla harman p_oran (sabah bilinmez; yalnız bilgi)"
+   }
+  },
+  "plase": {
+   "ad": "Plase",
+   "kisa": "at ilk 2'ye girer",
+   "kural": "Seçilen at ilk iki dereceye girerse kazanır; en az 7 atlı koşularda açılır. Varsayım: ekürili atlar tek birim; 7+ atlı her koşuda ilk 2 (kalabalık alanda ilk 3 kuralı teyit edilemedi).",
+   "koşu_sayisi": 1,
+   "kosu_sayisi": 1,
+   "sirali": false,
+   "ilk": 2,
+   "en_az_at": 7,
+   "n": 2821,
+   "isabet": 1378,
+   "beklenen": 1401.31,
+   "isabet_orani": 0.4885,
+   "beklenen_oran": 0.4967,
+   "z": -0.91,
+   "secim": {
+    "n": 1854,
+    "isabet": 918,
+    "beklenen": 941.8,
+    "isabet_orani": 0.4951,
+    "beklenen_oran": 0.508,
+    "z": -1.14
+   },
+   "sinama": {
+    "n": 967,
+    "isabet": 460,
+    "beklenen": 459.51,
+    "isabet_orani": 0.4757,
+    "beklenen_oran": 0.4752,
+    "z": 0.03
+   },
+   "atlanan_esit_derece": 6,
+   "kovalar": [
+    {
+     "aralik": "0.000-0.005",
+     "n": 33,
+     "tahmin": 0.0037,
+     "gercek": 0.0
+    },
+    {
+     "aralik": "0.005-0.010",
+     "n": 205,
+     "tahmin": 0.008,
+     "gercek": 0.0049
+    },
+    {
+     "aralik": "0.010-0.020",
+     "n": 954,
+     "tahmin": 0.0156,
+     "gercek": 0.0126
+    },
+    {
+     "aralik": "0.020-0.050",
+     "n": 3770,
+     "tahmin": 0.0352,
+     "gercek": 0.0297
+    },
+    {
+     "aralik": "0.050-0.100",
+     "n": 5724,
+     "tahmin": 0.0738,
+     "gercek": 0.0776
+    },
+    {
+     "aralik": "0.100-0.200",
+     "n": 7952,
+     "tahmin": 0.1459,
+     "gercek": 0.1518
+    },
+    {
+     "aralik": "0.200-0.300",
+     "n": 4975,
+     "tahmin": 0.2459,
+     "gercek": 0.2472
+    },
+    {
+     "aralik": "0.300-0.500",
+     "n": 4664,
+     "tahmin": 0.382,
+     "gercek": 0.3789
+    },
+    {
+     "aralik": "0.500-1.000",
+     "n": 1507,
+     "tahmin": 0.5968,
+     "gercek": 0.5733
+    }
+   ],
+   "kovalar_sinama": [
+    {
+     "aralik": "0.000-0.005",
+     "n": 4,
+     "tahmin": 0.0047,
+     "gercek": 0.0
+    },
+    {
+     "aralik": "0.005-0.010",
+     "n": 52,
+     "tahmin": 0.0083,
+     "gercek": 0.0
+    },
+    {
+     "aralik": "0.010-0.020",
+     "n": 269,
+     "tahmin": 0.0157,
+     "gercek": 0.0037
+    },
+    {
+     "aralik": "0.020-0.050",
+     "n": 1159,
+     "tahmin": 0.0357,
+     "gercek": 0.025
+    },
+    {
+     "aralik": "0.050-0.100",
+     "n": 1942,
+     "tahmin": 0.0743,
+     "gercek": 0.0747
+    },
+    {
+     "aralik": "0.100-0.200",
+     "n": 2783,
+     "tahmin": 0.1463,
+     "gercek": 0.1534
+    },
+    {
+     "aralik": "0.200-0.300",
+     "n": 1792,
+     "tahmin": 0.2463,
+     "gercek": 0.255
+    },
+    {
+     "aralik": "0.300-0.500",
+     "n": 1693,
+     "tahmin": 0.3813,
+     "gercek": 0.3804
+    },
+    {
+     "aralik": "0.500-1.000",
+     "n": 420,
+     "tahmin": 0.5832,
+     "gercek": 0.5405
+    }
+   ],
+   "seviyeler": [
+    {
+     "kombinasyon": 1,
+     "kural": "en olası 1 kombinasyon (p_sabah)",
+     "n": 2821,
+     "isabet": 1378,
+     "beklenen": 1401.31,
+     "isabet_orani": 0.4885,
+     "beklenen_oran": 0.4967,
+     "z": -0.91,
+     "sinama": {
+      "n": 967,
+      "isabet": 460,
+      "beklenen": 459.51
+     }
+    },
+    {
+     "kombinasyon": 2,
+     "kural": "en olası 2 kombinasyon (p_sabah)",
+     "n": 2821,
+     "isabet": 2027,
+     "beklenen": 2049.12,
+     "isabet_orani": 0.7185,
+     "beklenen_oran": 0.7264,
+     "z": -0.96,
+     "sinama": {
+      "n": 967,
+      "isabet": 684,
+      "beklenen": 686.56
+     }
+    }
+   ],
+   "oranli_bilgi": {
+    "n": 2819,
+    "isabet": 1520,
+    "beklenen": 1577.66,
+    "not": "en olası tek kombinasyon, kapanış oranıyla harman p_oran (sabah bilinmez; yalnız bilgi)"
+   }
+  },
+  "ikili": {
+   "ad": "İkili",
+   "kisa": "ilk iki, sırasız",
+   "kural": "Birinci ve ikinciyi sıra gözetmeksizin bil; en az 7 atlı koşu. Varsayım: ekürili atlar ayrı at.",
+   "koşu_sayisi": 1,
+   "kosu_sayisi": 1,
+   "sirali": false,
+   "ilk": 2,
+   "en_az_at": 7,
+   "n": 2821,
+   "isabet": 398,
+   "beklenen": 392.04,
+   "isabet_orani": 0.1411,
+   "beklenen_oran": 0.139,
+   "z": 0.33,
+   "secim": {
+    "n": 1854,
+    "isabet": 269,
+    "beklenen": 270.37,
+    "isabet_orani": 0.1451,
+    "beklenen_oran": 0.1458,
+    "z": -0.09
+   },
+   "sinama": {
+    "n": 967,
+    "isabet": 129,
+    "beklenen": 121.67,
+    "isabet_orani": 0.1334,
+    "beklenen_oran": 0.1258,
+    "z": 0.72
+   },
+   "atlanan_esit_derece": 6,
+   "kovalar": [
+    {
+     "aralik": "0.000-0.005",
+     "n": 61695,
+     "tahmin": 0.0021,
+     "gercek": 0.0019
+    },
+    {
+     "aralik": "0.005-0.010",
+     "n": 27103,
+     "tahmin": 0.0073,
+     "gercek": 0.0083
+    },
+    {
+     "aralik": "0.010-0.020",
+     "n": 27268,
+     "tahmin": 0.0143,
+     "gercek": 0.0142
+    },
+    {
+     "aralik": "0.020-0.050",
+     "n": 27222,
+     "tahmin": 0.0314,
+     "gercek": 0.0312
+    },
+    {
+     "aralik": "0.050-0.100",
+     "n": 10072,
+     "tahmin": 0.0685,
+     "gercek": 0.0672
+    },
+    {
+     "aralik": "0.100-0.200",
+     "n": 3214,
+     "tahmin": 0.1327,
+     "gercek": 0.136
+    },
+    {
+     "aralik": "0.200-0.300",
+     "n": 402,
+     "tahmin": 0.2361,
+     "gercek": 0.2463
+    },
+    {
+     "aralik": "0.300-0.500",
+     "n": 106,
+     "tahmin": 0.3492,
+     "gercek": 0.2264
+    },
+    {
+     "aralik": "0.500-1.000",
+     "n": 3,
+     "tahmin": 0.5222,
+     "gercek": 0.6667
+    }
+   ],
+   "kovalar_sinama": [
+    {
+     "aralik": "0.000-0.005",
+     "n": 19845,
+     "tahmin": 0.0022,
+     "gercek": 0.0018
+    },
+    {
+     "aralik": "0.005-0.010",
+     "n": 9608,
+     "tahmin": 0.0073,
+     "gercek": 0.0078
+    },
+    {
+     "aralik": "0.010-0.020",
+     "n": 9873,
+     "tahmin": 0.0144,
+     "gercek": 0.0137
+    },
+    {
+     "aralik": "0.020-0.050",
+     "n": 9956,
+     "tahmin": 0.0314,
+     "gercek": 0.033
+    },
+    {
+     "aralik": "0.050-0.100",
+     "n": 3579,
+     "tahmin": 0.0683,
+     "gercek": 0.0671
+    },
+    {
+     "aralik": "0.100-0.200",
+     "n": 949,
+     "tahmin": 0.13,
+     "gercek": 0.1254
+    },
+    {
+     "aralik": "0.200-0.300",
+     "n": 106,
+     "tahmin": 0.2326,
+     "gercek": 0.283
+    },
+    {
+     "aralik": "0.300-0.500",
+     "n": 18,
+     "tahmin": 0.3528,
+     "gercek": 0.1667
+    }
+   ],
+   "seviyeler": [
+    {
+     "kombinasyon": 1,
+     "kural": "en olası 1 kombinasyon (p_sabah)",
+     "n": 2821,
+     "isabet": 398,
+     "beklenen": 392.04,
+     "isabet_orani": 0.1411,
+     "beklenen_oran": 0.139,
+     "z": 0.33,
+     "sinama": {
+      "n": 967,
+      "isabet": 129,
+      "beklenen": 121.67
+     }
+    },
+    {
+     "kombinasyon": 3,
+     "kural": "en olası 3 kombinasyon (p_sabah)",
+     "n": 2821,
+     "isabet": 876,
+     "beklenen": 891.37,
+     "isabet_orani": 0.3105,
+     "beklenen_oran": 0.316,
+     "z": -0.65,
+     "sinama": {
+      "n": 967,
+      "isabet": 291,
+      "beklenen": 282.45
+     }
+    },
+    {
+     "kombinasyon": 6,
+     "kural": "en olası 6 kombinasyon (p_sabah)",
+     "n": 2821,
+     "isabet": 1348,
+     "beklenen": 1362.76,
+     "isabet_orani": 0.4778,
+     "beklenen_oran": 0.4831,
+     "z": -0.58,
+     "sinama": {
+      "n": 967,
+      "isabet": 439,
+      "beklenen": 440.44
+     }
+    },
+    {
+     "kombinasyon": 10,
+     "kural": "en olası 10 kombinasyon (p_sabah)",
+     "n": 2821,
+     "isabet": 1762,
+     "beklenen": 1771.77,
+     "isabet_orani": 0.6246,
+     "beklenen_oran": 0.6281,
+     "z": -0.4,
+     "sinama": {
+      "n": 967,
+      "isabet": 587,
+      "beklenen": 583.5
+     }
+    }
+   ],
+   "kutu": [
+    {
+     "at": 3,
+     "kombinasyon": 3,
+     "kural": "en olası 3 atın tüm dizilişleri (virgüllü/kutu)",
+     "n": 2821,
+     "isabet": 835,
+     "beklenen": 845.5,
+     "isabet_orani": 0.296,
+     "beklenen_oran": 0.2997,
+     "z": -0.45,
+     "sinama": {
+      "n": 967,
+      "isabet": 278,
+      "beklenen": 269.42
+     }
+    },
+    {
+     "at": 4,
+     "kombinasyon": 6,
+     "kural": "en olası 4 atın tüm dizilişleri (virgüllü/kutu)",
+     "n": 2821,
+     "isabet": 1276,
+     "beklenen": 1277.62,
+     "isabet_orani": 0.4523,
+     "beklenen_oran": 0.4529,
+     "z": -0.06,
+     "sinama": {
+      "n": 967,
+      "isabet": 420,
+      "beklenen": 416.19
+     }
+    },
+    {
+     "at": 5,
+     "kombinasyon": 10,
+     "kural": "en olası 5 atın tüm dizilişleri (virgüllü/kutu)",
+     "n": 2821,
+     "isabet": 1682,
+     "beklenen": 1662.9,
+     "isabet_orani": 0.5962,
+     "beklenen_oran": 0.5895,
+     "z": 0.77,
+     "sinama": {
+      "n": 967,
+      "isabet": 567,
+      "beklenen": 550.57
+     }
+    }
+   ],
+   "oranli_bilgi": {
+    "n": 2819,
+    "isabet": 462,
+    "beklenen": 471.0,
+    "not": "en olası tek kombinasyon, kapanış oranıyla harman p_oran (sabah bilinmez; yalnız bilgi)"
+   }
+  },
+  "sirali_ikili": {
+   "ad": "Sıralı İkili",
+   "kisa": "ilk iki, sıralı",
+   "kural": "Birinci ve ikinciyi bitiş sırasıyla bil; en az 4 atlı koşu. Varsayım: ekürili atlar ayrı at.",
+   "koşu_sayisi": 1,
+   "kosu_sayisi": 1,
+   "sirali": true,
+   "ilk": 2,
+   "en_az_at": 4,
+   "n": 3271,
+   "isabet": 309,
+   "beklenen": 292.79,
+   "isabet_orani": 0.0945,
+   "beklenen_oran": 0.0895,
+   "z": 1.01,
+   "secim": {
+    "n": 2172,
+    "isabet": 205,
+    "beklenen": 206.84,
+    "isabet_orani": 0.0944,
+    "beklenen_oran": 0.0952,
+    "z": -0.14
+   },
+   "sinama": {
+    "n": 1099,
+    "isabet": 104,
+    "beklenen": 85.96,
+    "isabet_orani": 0.0946,
+    "beklenen_oran": 0.0782,
+    "z": 2.06
+   },
+   "atlanan_esit_derece": 6,
+   "kovalar": [
+    {
+     "aralik": "0.000-0.005",
+     "n": 180720,
+     "tahmin": 0.0018,
+     "gercek": 0.0019
+    },
+    {
+     "aralik": "0.005-0.010",
+     "n": 54908,
+     "tahmin": 0.0072,
+     "gercek": 0.0071
+    },
+    {
+     "aralik": "0.010-0.020",
+     "n": 45429,
+     "tahmin": 0.0141,
+     "gercek": 0.0142
+    },
+    {
+     "aralik": "0.020-0.050",
+     "n": 33530,
+     "tahmin": 0.0305,
+     "gercek": 0.0305
+    },
+    {
+     "aralik": "0.050-0.100",
+     "n": 8457,
+     "tahmin": 0.0673,
+     "gercek": 0.0663
+    },
+    {
+     "aralik": "0.100-0.200",
+     "n": 1952,
+     "tahmin": 0.1312,
+     "gercek": 0.1296
+    },
+    {
+     "aralik": "0.200-0.300",
+     "n": 184,
+     "tahmin": 0.2362,
+     "gercek": 0.2337
+    },
+    {
+     "aralik": "0.300-0.500",
+     "n": 42,
+     "tahmin": 0.3503,
+     "gercek": 0.2619
+    },
+    {
+     "aralik": "0.500-1.000",
+     "n": 2,
+     "tahmin": 0.5577,
+     "gercek": 0.5
+    }
+   ],
+   "kovalar_sinama": [
+    {
+     "aralik": "0.000-0.005",
+     "n": 59766,
+     "tahmin": 0.0019,
+     "gercek": 0.0019
+    },
+    {
+     "aralik": "0.005-0.010",
+     "n": 19834,
+     "tahmin": 0.0072,
+     "gercek": 0.0065
+    },
+    {
+     "aralik": "0.010-0.020",
+     "n": 16410,
+     "tahmin": 0.0141,
+     "gercek": 0.0154
+    },
+    {
+     "aralik": "0.020-0.050",
+     "n": 11910,
+     "tahmin": 0.0303,
+     "gercek": 0.0291
+    },
+    {
+     "aralik": "0.050-0.100",
+     "n": 2621,
+     "tahmin": 0.0663,
+     "gercek": 0.0679
+    },
+    {
+     "aralik": "0.100-0.200",
+     "n": 515,
+     "tahmin": 0.1309,
+     "gercek": 0.1359
+    },
+    {
+     "aralik": "0.200-0.300",
+     "n": 30,
+     "tahmin": 0.2256,
+     "gercek": 0.3
+    },
+    {
+     "aralik": "0.300-0.500",
+     "n": 6,
+     "tahmin": 0.3403,
+     "gercek": 0.1667
+    }
+   ],
+   "seviyeler": [
+    {
+     "kombinasyon": 1,
+     "kural": "en olası 1 kombinasyon (p_sabah)",
+     "n": 3271,
+     "isabet": 309,
+     "beklenen": 292.79,
+     "isabet_orani": 0.0945,
+     "beklenen_oran": 0.0895,
+     "z": 1.01,
+     "sinama": {
+      "n": 1099,
+      "isabet": 104,
+      "beklenen": 85.96
+     }
+    },
+    {
+     "kombinasyon": 3,
+     "kural": "en olası 3 kombinasyon (p_sabah)",
+     "n": 3271,
+     "isabet": 729,
+     "beklenen": 740.4,
+     "isabet_orani": 0.2229,
+     "beklenen_oran": 0.2264,
+     "z": -0.5,
+     "sinama": {
+      "n": 1099,
+      "isabet": 227,
+      "beklenen": 222.6
+     }
+    },
+    {
+     "kombinasyon": 6,
+     "kural": "en olası 6 kombinasyon (p_sabah)",
+     "n": 3271,
+     "isabet": 1164,
+     "beklenen": 1194.18,
+     "isabet_orani": 0.3559,
+     "beklenen_oran": 0.3651,
+     "z": -1.17,
+     "sinama": {
+      "n": 1099,
+      "isabet": 383,
+      "beklenen": 367.17
+     }
+    },
+    {
+     "kombinasyon": 10,
+     "kural": "en olası 10 kombinasyon (p_sabah)",
+     "n": 3271,
+     "isabet": 1576,
+     "beklenen": 1604.36,
+     "isabet_orani": 0.4818,
+     "beklenen_oran": 0.4905,
+     "z": -1.07,
+     "sinama": {
+      "n": 1099,
+      "isabet": 516,
+      "beklenen": 503.09
+     }
+    }
+   ],
+   "kutu": [
+    {
+     "at": 3,
+     "kombinasyon": 6,
+     "kural": "en olası 3 atın tüm dizilişleri (virgüllü/kutu)",
+     "n": 3271,
+     "isabet": 1102,
+     "beklenen": 1109.86,
+     "isabet_orani": 0.3369,
+     "beklenen_oran": 0.3393,
+     "z": -0.31,
+     "sinama": {
+      "n": 1099,
+      "isabet": 357,
+      "beklenen": 345.08
+     }
+    },
+    {
+     "at": 4,
+     "kombinasyon": 12,
+     "kural": "en olası 4 atın tüm dizilişleri (virgüllü/kutu)",
+     "n": 3271,
+     "isabet": 1642,
+     "beklenen": 1641.4,
+     "isabet_orani": 0.502,
+     "beklenen_oran": 0.5018,
+     "z": 0.02,
+     "sinama": {
+      "n": 1099,
+      "isabet": 523,
+      "beklenen": 522.52
+     }
+    }
+   ],
+   "oranli_bilgi": {
+    "n": 3269,
+    "isabet": 348,
+    "beklenen": 356.82,
+    "not": "en olası tek kombinasyon, kapanış oranıyla harman p_oran (sabah bilinmez; yalnız bilgi)"
+   }
+  },
+  "cifte": {
+   "ad": "Çifte",
+   "kisa": "art arda iki koşunun kazananları",
+   "kural": "Ardışık iki koşunun birincilerini ayrı ayrı bil; ekürili kuralı geçerli (tek birim). Varsayım: aynı gün aynı hipodromdaki her ardışık koşu çifti (aynada çifte bayrağı yok).",
+   "koşu_sayisi": 2,
+   "kosu_sayisi": 2,
+   "sirali": true,
+   "ilk": 1,
+   "en_az_at": 2,
+   "n": 2879,
+   "isabet": 275,
+   "beklenen": 289.29,
+   "isabet_orani": 0.0955,
+   "beklenen_oran": 0.1005,
+   "z": -0.9,
+   "secim": {
+    "n": 1913,
+    "isabet": 185,
+    "beklenen": 205.75,
+    "isabet_orani": 0.0967,
+    "beklenen_oran": 0.1076,
+    "z": -1.56
+   },
+   "sinama": {
+    "n": 966,
+    "isabet": 90,
+    "beklenen": 83.54,
+    "isabet_orani": 0.0932,
+    "beklenen_oran": 0.0865,
+    "z": 0.75
+   },
+   "atlanan_esit_derece": 0,
+   "kovalar": [
+    {
+     "aralik": "0.000-0.005",
+     "n": 148938,
+     "tahmin": 0.0018,
+     "gercek": 0.0019
+    },
+    {
+     "aralik": "0.005-0.010",
+     "n": 45304,
+     "tahmin": 0.0072,
+     "gercek": 0.0077
+    },
+    {
+     "aralik": "0.010-0.020",
+     "n": 38016,
+     "tahmin": 0.0142,
+     "gercek": 0.014
+    },
+    {
+     "aralik": "0.020-0.050",
+     "n": 30811,
+     "tahmin": 0.0306,
+     "gercek": 0.0301
+    },
+    {
+     "aralik": "0.050-0.100",
+     "n": 8077,
+     "tahmin": 0.0672,
+     "gercek": 0.0687
+    },
+    {
+     "aralik": "0.100-0.200",
+     "n": 1738,
+     "tahmin": 0.1287,
+     "gercek": 0.1122
+    },
+    {
+     "aralik": "0.200-0.300",
+     "n": 123,
+     "tahmin": 0.2378,
+     "gercek": 0.2033
+    },
+    {
+     "aralik": "0.300-0.500",
+     "n": 24,
+     "tahmin": 0.3753,
+     "gercek": 0.3333
+    }
+   ],
+   "kovalar_sinama": [
+    {
+     "aralik": "0.000-0.005",
+     "n": 48198,
+     "tahmin": 0.0019,
+     "gercek": 0.002
+    },
+    {
+     "aralik": "0.005-0.010",
+     "n": 16283,
+     "tahmin": 0.0072,
+     "gercek": 0.0072
+    },
+    {
+     "aralik": "0.010-0.020",
+     "n": 13682,
+     "tahmin": 0.0142,
+     "gercek": 0.0132
+    },
+    {
+     "aralik": "0.020-0.050",
+     "n": 10998,
+     "tahmin": 0.0305,
+     "gercek": 0.0307
+    },
+    {
+     "aralik": "0.050-0.100",
+     "n": 2603,
+     "tahmin": 0.0666,
+     "gercek": 0.073
+    },
+    {
+     "aralik": "0.100-0.200",
+     "n": 404,
+     "tahmin": 0.1272,
+     "gercek": 0.099
+    },
+    {
+     "aralik": "0.200-0.300",
+     "n": 12,
+     "tahmin": 0.2215,
+     "gercek": 0.25
+    },
+    {
+     "aralik": "0.300-0.500",
+     "n": 1,
+     "tahmin": 0.3373,
+     "gercek": 1.0
+    }
+   ],
+   "seviyeler": [
+    {
+     "kombinasyon": 1,
+     "kural": "en olası 1 kombinasyon (p_sabah)",
+     "n": 2879,
+     "isabet": 275,
+     "beklenen": 289.29,
+     "isabet_orani": 0.0955,
+     "beklenen_oran": 0.1005,
+     "z": -0.9,
+     "sinama": {
+      "n": 966,
+      "isabet": 90,
+      "beklenen": 83.54
+     }
+    },
+    {
+     "kombinasyon": 3,
+     "kural": "en olası 3 kombinasyon (p_sabah)",
+     "n": 2879,
+     "isabet": 687,
+     "beklenen": 685.28,
+     "isabet_orani": 0.2386,
+     "beklenen_oran": 0.238,
+     "z": 0.08,
+     "sinama": {
+      "n": 966,
+      "isabet": 219,
+      "beklenen": 205.63
+     }
+    },
+    {
+     "kombinasyon": 6,
+     "kural": "en olası 6 kombinasyon (p_sabah)",
+     "n": 2879,
+     "isabet": 1032,
+     "beklenen": 1083.79,
+     "isabet_orani": 0.3585,
+     "beklenen_oran": 0.3764,
+     "z": -2.07,
+     "sinama": {
+      "n": 966,
+      "isabet": 343,
+      "beklenen": 333.69
+     }
+    },
+    {
+     "kombinasyon": 10,
+     "kural": "en olası 10 kombinasyon (p_sabah)",
+     "n": 2879,
+     "isabet": 1416,
+     "beklenen": 1451.86,
+     "isabet_orani": 0.4918,
+     "beklenen_oran": 0.5043,
+     "z": -1.39,
+     "sinama": {
+      "n": 966,
+      "isabet": 476,
+      "beklenen": 455.82
+     }
+    }
+   ],
+   "kutu": [
+    {
+     "at": 2,
+     "kombinasyon": 4,
+     "kural": "her iki koşuda en olası 2 at (2×2)",
+     "n": 2879,
+     "isabet": 735,
+     "beklenen": 777.72,
+     "isabet_orani": 0.2553,
+     "beklenen_oran": 0.2701,
+     "z": -1.84,
+     "sinama": {
+      "n": 966,
+      "isabet": 245,
+      "beklenen": 238.04
+     }
+    },
+    {
+     "at": 3,
+     "kombinasyon": 9,
+     "kural": "her iki koşuda en olası 3 at (3×3)",
+     "n": 2879,
+     "isabet": 1238,
+     "beklenen": 1263.51,
+     "isabet_orani": 0.43,
+     "beklenen_oran": 0.4389,
+     "z": -0.99,
+     "sinama": {
+      "n": 966,
+      "isabet": 422,
+      "beklenen": 397.3
+     }
+    }
+   ]
+  },
+  "uclu": {
+   "ad": "Sıralı Üçlü",
+   "kisa": "ilk üç, sıralı",
+   "kural": "Birinci, ikinci ve üçüncüyü bitiş sırasıyla bil. (TJK'nın '3'lü Ganyan'ı farklıdır: üç koşunun birincileri.) Varsayım: en az 4 atlı koşu; ekürili atlar ayrı at.",
+   "koşu_sayisi": 1,
+   "kosu_sayisi": 1,
+   "sirali": true,
+   "ilk": 3,
+   "en_az_at": 4,
+   "n": 3261,
+   "isabet": 87,
+   "beklenen": 91.7,
+   "isabet_orani": 0.0267,
+   "beklenen_oran": 0.0281,
+   "z": -0.51,
+   "secim": {
+    "n": 2165,
+    "isabet": 53,
+    "beklenen": 66.19,
+    "isabet_orani": 0.0245,
+    "beklenen_oran": 0.0306,
+    "z": -1.68
+   },
+   "sinama": {
+    "n": 1096,
+    "isabet": 34,
+    "beklenen": 25.51,
+    "isabet_orani": 0.031,
+    "beklenen_oran": 0.0233,
+    "z": 1.73
+   },
+   "atlanan_esit_derece": 16,
+   "kovalar": [
+    {
+     "aralik": "0.000-0.005",
+     "n": 3145944,
+     "tahmin": 0.0006,
+     "gercek": 0.0006
+    },
+    {
+     "aralik": "0.005-0.010",
+     "n": 82603,
+     "tahmin": 0.0069,
+     "gercek": 0.0068
+    },
+    {
+     "aralik": "0.010-0.020",
+     "n": 31978,
+     "tahmin": 0.0136,
+     "gercek": 0.0143
+    },
+    {
+     "aralik": "0.020-0.050",
+     "n": 10864,
+     "tahmin": 0.0287,
+     "gercek": 0.0266
+    },
+    {
+     "aralik": "0.050-0.100",
+     "n": 1444,
+     "tahmin": 0.0661,
+     "gercek": 0.0644
+    },
+    {
+     "aralik": "0.100-0.200",
+     "n": 266,
+     "tahmin": 0.1291,
+     "gercek": 0.1241
+    },
+    {
+     "aralik": "0.200-0.300",
+     "n": 29,
+     "tahmin": 0.2345,
+     "gercek": 0.3103
+    },
+    {
+     "aralik": "0.300-0.500",
+     "n": 4,
+     "tahmin": 0.3294,
+     "gercek": 0.0
+    }
+   ],
+   "kovalar_sinama": [
+    {
+     "aralik": "0.000-0.005",
+     "n": 1074086,
+     "tahmin": 0.0006,
+     "gercek": 0.0006
+    },
+    {
+     "aralik": "0.005-0.010",
+     "n": 28030,
+     "tahmin": 0.0068,
+     "gercek": 0.0067
+    },
+    {
+     "aralik": "0.010-0.020",
+     "n": 9676,
+     "tahmin": 0.0134,
+     "gercek": 0.0135
+    },
+    {
+     "aralik": "0.020-0.050",
+     "n": 3109,
+     "tahmin": 0.0286,
+     "gercek": 0.0286
+    },
+    {
+     "aralik": "0.050-0.100",
+     "n": 374,
+     "tahmin": 0.0655,
+     "gercek": 0.0802
+    },
+    {
+     "aralik": "0.100-0.200",
+     "n": 55,
+     "tahmin": 0.1287,
+     "gercek": 0.1455
+    },
+    {
+     "aralik": "0.200-0.300",
+     "n": 4,
+     "tahmin": 0.233,
+     "gercek": 0.0
+    }
+   ],
+   "seviyeler": [
+    {
+     "kombinasyon": 1,
+     "kural": "en olası 1 kombinasyon (p_sabah)",
+     "n": 3261,
+     "isabet": 87,
+     "beklenen": 91.7,
+     "isabet_orani": 0.0267,
+     "beklenen_oran": 0.0281,
+     "z": -0.51,
+     "sinama": {
+      "n": 1096,
+      "isabet": 34,
+      "beklenen": 25.51
+     }
+    },
+    {
+     "kombinasyon": 3,
+     "kural": "en olası 3 kombinasyon (p_sabah)",
+     "n": 3261,
+     "isabet": 259,
+     "beklenen": 248.09,
+     "isabet_orani": 0.0794,
+     "beklenen_oran": 0.0761,
+     "z": 0.76,
+     "sinama": {
+      "n": 1096,
+      "isabet": 88,
+      "beklenen": 70.35
+     }
+    },
+    {
+     "kombinasyon": 6,
+     "kural": "en olası 6 kombinasyon (p_sabah)",
+     "n": 3261,
+     "isabet": 434,
+     "beklenen": 433.79,
+     "isabet_orani": 0.1331,
+     "beklenen_oran": 0.133,
+     "z": 0.01,
+     "sinama": {
+      "n": 1096,
+      "isabet": 145,
+      "beklenen": 125.63
+     }
+    },
+    {
+     "kombinasyon": 10,
+     "kural": "en olası 10 kombinasyon (p_sabah)",
+     "n": 3261,
+     "isabet": 618,
+     "beklenen": 622.46,
+     "isabet_orani": 0.1895,
+     "beklenen_oran": 0.1909,
+     "z": -0.22,
+     "sinama": {
+      "n": 1096,
+      "isabet": 199,
+      "beklenen": 183.44
+     }
+    },
+    {
+     "kombinasyon": 24,
+     "kural": "en olası 24 kombinasyon (p_sabah)",
+     "n": 3261,
+     "isabet": 1082,
+     "beklenen": 1069.4,
+     "isabet_orani": 0.3318,
+     "beklenen_oran": 0.3279,
+     "z": 0.53,
+     "sinama": {
+      "n": 1096,
+      "isabet": 342,
+      "beklenen": 324.5
+     }
+    },
+    {
+     "kombinasyon": 60,
+     "kural": "en olası 60 kombinasyon (p_sabah)",
+     "n": 3261,
+     "isabet": 1672,
+     "beklenen": 1678.58,
+     "isabet_orani": 0.5127,
+     "beklenen_oran": 0.5147,
+     "z": -0.27,
+     "sinama": {
+      "n": 1096,
+      "isabet": 534,
+      "beklenen": 525.46
+     }
+    }
+   ],
+   "kutu": [
+    {
+     "at": 3,
+     "kombinasyon": 6,
+     "kural": "en olası 3 atın tüm dizilişleri (virgüllü/kutu)",
+     "n": 3261,
+     "isabet": 379,
+     "beklenen": 381.38,
+     "isabet_orani": 0.1162,
+     "beklenen_oran": 0.117,
+     "z": -0.14,
+     "sinama": {
+      "n": 1096,
+      "isabet": 125,
+      "beklenen": 113.22
+     }
+    },
+    {
+     "at": 4,
+     "kombinasyon": 24,
+     "kural": "en olası 4 atın tüm dizilişleri (virgüllü/kutu)",
+     "n": 3261,
+     "isabet": 914,
+     "beklenen": 912.97,
+     "isabet_orani": 0.2803,
+     "beklenen_oran": 0.28,
+     "z": 0.04,
+     "sinama": {
+      "n": 1096,
+      "isabet": 287,
+      "beklenen": 282.06
+     }
+    },
+    {
+     "at": 5,
+     "kombinasyon": 60,
+     "kural": "en olası 5 atın tüm dizilişleri (virgüllü/kutu)",
+     "n": 3214,
+     "isabet": 1456,
+     "beklenen": 1412.65,
+     "isabet_orani": 0.453,
+     "beklenen_oran": 0.4395,
+     "z": 1.75,
+     "sinama": {
+      "n": 1084,
+      "isabet": 479,
+      "beklenen": 450.05
+     }
+    }
+   ],
+   "oranli_bilgi": {
+    "n": 3259,
+    "isabet": 122,
+    "beklenen": 112.19,
+    "not": "en olası tek kombinasyon, kapanış oranıyla harman p_oran (sabah bilinmez; yalnız bilgi)"
+   }
+  },
+  "tabela": {
+   "ad": "Tabela",
+   "kisa": "ilk dört, sıralı",
+   "kural": "İlk dört dereceyi bil: tam sıra 'sıralı', başka sıra 'sırasız' ikramiyesi alır (sırasız ayrıca ölçüldü). Varsayım: en az 5 atlı koşu; ekürili atlar ayrı at.",
+   "koşu_sayisi": 1,
+   "kosu_sayisi": 1,
+   "sirali": true,
+   "ilk": 4,
+   "en_az_at": 5,
+   "n": 3209,
+   "isabet": 22,
+   "beklenen": 32.34,
+   "isabet_orani": 0.0069,
+   "beklenen_oran": 0.0101,
+   "z": -1.86,
+   "secim": {
+    "n": 2125,
+    "isabet": 10,
+    "beklenen": 23.42,
+    "isabet_orani": 0.0047,
+    "beklenen_oran": 0.011,
+    "z": -2.84
+   },
+   "sinama": {
+    "n": 1084,
+    "isabet": 12,
+    "beklenen": 8.91,
+    "isabet_orani": 0.0111,
+    "beklenen_oran": 0.0082,
+    "z": 1.05
+   },
+   "atlanan_esit_derece": 21,
+   "kovalar": [
+    {
+     "aralik": "0.000-0.005",
+     "n": 33276744,
+     "tahmin": 0.0001,
+     "gercek": 0.0001
+    },
+    {
+     "aralik": "0.005-0.010",
+     "n": 33431,
+     "tahmin": 0.0068,
+     "gercek": 0.0068
+    },
+    {
+     "aralik": "0.010-0.020",
+     "n": 10541,
+     "tahmin": 0.0134,
+     "gercek": 0.0117
+    },
+    {
+     "aralik": "0.020-0.050",
+     "n": 3145,
+     "tahmin": 0.0285,
+     "gercek": 0.0267
+    },
+    {
+     "aralik": "0.050-0.100",
+     "n": 359,
+     "tahmin": 0.0657,
+     "gercek": 0.0669
+    },
+    {
+     "aralik": "0.100-0.200",
+     "n": 42,
+     "tahmin": 0.124,
+     "gercek": 0.0952
+    },
+    {
+     "aralik": "0.200-0.300",
+     "n": 2,
+     "tahmin": 0.2292,
+     "gercek": 0.0
+    }
+   ],
+   "kovalar_sinama": [
+    {
+     "aralik": "0.000-0.005",
+     "n": 11263559,
+     "tahmin": 0.0001,
+     "gercek": 0.0001
+    },
+    {
+     "aralik": "0.005-0.010",
+     "n": 9648,
+     "tahmin": 0.0068,
+     "gercek": 0.0067
+    },
+    {
+     "aralik": "0.010-0.020",
+     "n": 2984,
+     "tahmin": 0.0135,
+     "gercek": 0.0117
+    },
+    {
+     "aralik": "0.020-0.050",
+     "n": 880,
+     "tahmin": 0.0283,
+     "gercek": 0.0284
+    },
+    {
+     "aralik": "0.050-0.100",
+     "n": 90,
+     "tahmin": 0.0655,
+     "gercek": 0.1
+    },
+    {
+     "aralik": "0.100-0.200",
+     "n": 7,
+     "tahmin": 0.1081,
+     "gercek": 0.0
+    }
+   ],
+   "seviyeler": [
+    {
+     "kombinasyon": 1,
+     "kural": "en olası 1 kombinasyon (p_sabah)",
+     "n": 3209,
+     "isabet": 22,
+     "beklenen": 32.34,
+     "isabet_orani": 0.0069,
+     "beklenen_oran": 0.0101,
+     "z": -1.86,
+     "sinama": {
+      "n": 1084,
+      "isabet": 12,
+      "beklenen": 8.91
+     }
+    },
+    {
+     "kombinasyon": 3,
+     "kural": "en olası 3 kombinasyon (p_sabah)",
+     "n": 3209,
+     "isabet": 83,
+     "beklenen": 90.1,
+     "isabet_orani": 0.0259,
+     "beklenen_oran": 0.0281,
+     "z": -0.79,
+     "sinama": {
+      "n": 1084,
+      "isabet": 31,
+      "beklenen": 25.15
+     }
+    },
+    {
+     "kombinasyon": 6,
+     "kural": "en olası 6 kombinasyon (p_sabah)",
+     "n": 3209,
+     "isabet": 142,
+     "beklenen": 163.39,
+     "isabet_orani": 0.0443,
+     "beklenen_oran": 0.0509,
+     "z": -1.83,
+     "sinama": {
+      "n": 1084,
+      "isabet": 46,
+      "beklenen": 46.33
+     }
+    },
+    {
+     "kombinasyon": 10,
+     "kural": "en olası 10 kombinasyon (p_sabah)",
+     "n": 3209,
+     "isabet": 218,
+     "beklenen": 244.75,
+     "isabet_orani": 0.0679,
+     "beklenen_oran": 0.0763,
+     "z": -1.94,
+     "sinama": {
+      "n": 1084,
+      "isabet": 67,
+      "beklenen": 70.4
+     }
+    },
+    {
+     "kombinasyon": 24,
+     "kural": "en olası 24 kombinasyon (p_sabah)",
+     "n": 3209,
+     "isabet": 426,
+     "beklenen": 456.74,
+     "isabet_orani": 0.1328,
+     "beklenen_oran": 0.1423,
+     "z": -1.76,
+     "sinama": {
+      "n": 1084,
+      "isabet": 137,
+      "beklenen": 134.41
+     }
+    },
+    {
+     "kombinasyon": 60,
+     "kural": "en olası 60 kombinasyon (p_sabah)",
+     "n": 3209,
+     "isabet": 775,
+     "beklenen": 792.8,
+     "isabet_orani": 0.2415,
+     "beklenen_oran": 0.2471,
+     "z": -0.86,
+     "sinama": {
+      "n": 1084,
+      "isabet": 239,
+      "beklenen": 238.68
+     }
+    },
+    {
+     "kombinasyon": 120,
+     "kural": "en olası 120 kombinasyon (p_sabah)",
+     "n": 3209,
+     "isabet": 1106,
+     "beklenen": 1126.46,
+     "isabet_orani": 0.3447,
+     "beklenen_oran": 0.351,
+     "z": -0.92,
+     "sinama": {
+      "n": 1084,
+      "isabet": 355,
+      "beklenen": 345.17
+     }
+    }
+   ],
+   "kutu": [
+    {
+     "at": 4,
+     "kombinasyon": 24,
+     "kural": "en olası 4 atın tüm dizilişleri (virgüllü/kutu)",
+     "n": 3209,
+     "isabet": 319,
+     "beklenen": 359.95,
+     "isabet_orani": 0.0994,
+     "beklenen_oran": 0.1122,
+     "z": -2.52,
+     "sinama": {
+      "n": 1084,
+      "isabet": 91,
+      "beklenen": 109.86
+     }
+    },
+    {
+     "at": 5,
+     "kombinasyon": 120,
+     "kural": "en olası 5 atın tüm dizilişleri (virgüllü/kutu)",
+     "n": 3209,
+     "isabet": 897,
+     "beklenen": 912.46,
+     "isabet_orani": 0.2795,
+     "beklenen_oran": 0.2843,
+     "z": -0.72,
+     "sinama": {
+      "n": 1084,
+      "isabet": 284,
+      "beklenen": 285.5
+     }
+    },
+    {
+     "at": 6,
+     "kombinasyon": 360,
+     "kural": "en olası 6 atın tüm dizilişleri (virgüllü/kutu)",
+     "n": 3049,
+     "isabet": 1294,
+     "beklenen": 1308.21,
+     "isabet_orani": 0.4244,
+     "beklenen_oran": 0.4291,
+     "z": -0.62,
+     "sinama": {
+      "n": 1032,
+      "isabet": 431,
+      "beklenen": 416.2
+     }
+    }
+   ],
+   "sirasiz": {
+    "kisa": "ilk dört, sırasız",
+    "n": 3209,
+    "isabet": 318,
+    "beklenen": 359.95,
+    "isabet_orani": 0.0991,
+    "beklenen_oran": 0.1122,
+    "z": -2.58,
+    "secim": {
+     "n": 2125,
+     "isabet": 228,
+     "beklenen": 250.09,
+     "isabet_orani": 0.1073,
+     "beklenen_oran": 0.1177,
+     "z": -1.64
+    },
+    "sinama": {
+     "n": 1084,
+     "isabet": 90,
+     "beklenen": 109.86,
+     "isabet_orani": 0.083,
+     "beklenen_oran": 0.1013,
+     "z": -2.2
+    },
+    "atlanan_esit_derece": 0,
+    "kovalar": [
+     {
+      "aralik": "0.000-0.005",
+      "n": 1264938,
+      "tahmin": 0.0007,
+      "gercek": 0.0007
+     },
+     {
+      "aralik": "0.005-0.010",
+      "n": 61698,
+      "tahmin": 0.007,
+      "gercek": 0.0072
+     },
+     {
+      "aralik": "0.010-0.020",
+      "n": 34378,
+      "tahmin": 0.0139,
+      "gercek": 0.0145
+     },
+     {
+      "aralik": "0.020-0.050",
+      "n": 19893,
+      "tahmin": 0.0301,
+      "gercek": 0.0289
+     },
+     {
+      "aralik": "0.050-0.100",
+      "n": 5101,
+      "tahmin": 0.0684,
+      "gercek": 0.0672
+     },
+     {
+      "aralik": "0.100-0.200",
+      "n": 1772,
+      "tahmin": 0.1355,
+      "gercek": 0.1349
+     },
+     {
+      "aralik": "0.200-0.300",
+      "n": 410,
+      "tahmin": 0.2411,
+      "gercek": 0.2244
+     },
+     {
+      "aralik": "0.300-0.500",
+      "n": 239,
+      "tahmin": 0.3687,
+      "gercek": 0.3347
+     },
+     {
+      "aralik": "0.500-1.000",
+      "n": 82,
+      "tahmin": 0.6658,
+      "gercek": 0.6341
+     }
+    ],
+    "kovalar_sinama": [
+     {
+      "aralik": "0.000-0.005",
+      "n": 426349,
+      "tahmin": 0.0007,
+      "gercek": 0.0007
+     },
+     {
+      "aralik": "0.005-0.010",
+      "n": 22486,
+      "tahmin": 0.007,
+      "gercek": 0.007
+     },
+     {
+      "aralik": "0.010-0.020",
+      "n": 12162,
+      "tahmin": 0.0139,
+      "gercek": 0.0147
+     },
+     {
+      "aralik": "0.020-0.050",
+      "n": 6594,
+      "tahmin": 0.0299,
+      "gercek": 0.0285
+     },
+     {
+      "aralik": "0.050-0.100",
+      "n": 1575,
+      "tahmin": 0.0683,
+      "gercek": 0.0743
+     },
+     {
+      "aralik": "0.100-0.200",
+      "n": 515,
+      "tahmin": 0.1359,
+      "gercek": 0.1359
+     },
+     {
+      "aralik": "0.200-0.300",
+      "n": 107,
+      "tahmin": 0.241,
+      "gercek": 0.2243
+     },
+     {
+      "aralik": "0.300-0.500",
+      "n": 70,
+      "tahmin": 0.3743,
+      "gercek": 0.3
+     },
+     {
+      "aralik": "0.500-1.000",
+      "n": 24,
+      "tahmin": 0.6617,
+      "gercek": 0.6667
+     }
+    ],
+    "seviyeler": [
+     {
+      "kombinasyon": 1,
+      "kural": "en olası 1 kombinasyon (p_sabah)",
+      "n": 3209,
+      "isabet": 318,
+      "beklenen": 359.95,
+      "isabet_orani": 0.0991,
+      "beklenen_oran": 0.1122,
+      "z": -2.58,
+      "sinama": {
+       "n": 1084,
+       "isabet": 90,
+       "beklenen": 109.86
+      }
+     },
+     {
+      "kombinasyon": 3,
+      "kural": "en olası 3 kombinasyon (p_sabah)",
+      "n": 3209,
+      "isabet": 727,
+      "beklenen": 771.64,
+      "isabet_orani": 0.2266,
+      "beklenen_oran": 0.2405,
+      "z": -2.16,
+      "sinama": {
+       "n": 1084,
+       "isabet": 215,
+       "beklenen": 237.03
+      }
+     },
+     {
+      "kombinasyon": 6,
+      "kural": "en olası 6 kombinasyon (p_sabah)",
+      "n": 3209,
+      "isabet": 1067,
+      "beklenen": 1122.08,
+      "isabet_orani": 0.3325,
+      "beklenen_oran": 0.3497,
+      "z": -2.46,
+      "sinama": {
+       "n": 1084,
+       "isabet": 342,
+       "beklenen": 348.64
+      }
+     },
+     {
+      "kombinasyon": 10,
+      "kural": "en olası 10 kombinasyon (p_sabah)",
+      "n": 3209,
+      "isabet": 1380,
+      "beklenen": 1414.33,
+      "isabet_orani": 0.43,
+      "beklenen_oran": 0.4407,
+      "z": -1.49,
+      "sinama": {
+       "n": 1084,
+       "isabet": 449,
+       "beklenen": 443.46
+      }
+     },
+     {
+      "kombinasyon": 24,
+      "kural": "en olası 24 kombinasyon (p_sabah)",
+      "n": 3209,
+      "isabet": 1925,
+      "beklenen": 1950.38,
+      "isabet_orani": 0.5999,
+      "beklenen_oran": 0.6078,
+      "z": -1.13,
+      "sinama": {
+       "n": 1084,
+       "isabet": 632,
+       "beklenen": 625.47
+      }
+     },
+     {
+      "kombinasyon": 60,
+      "kural": "en olası 60 kombinasyon (p_sabah)",
+      "n": 3209,
+      "isabet": 2465,
+      "beklenen": 2476.13,
+      "isabet_orani": 0.7682,
+      "beklenen_oran": 0.7716,
+      "z": -0.57,
+      "sinama": {
+       "n": 1084,
+       "isabet": 813,
+       "beklenen": 813.52
+      }
+     },
+     {
+      "kombinasyon": 120,
+      "kural": "en olası 120 kombinasyon (p_sabah)",
+      "n": 3209,
+      "isabet": 2797,
+      "beklenen": 2788.65,
+      "isabet_orani": 0.8716,
+      "beklenen_oran": 0.869,
+      "z": 0.52,
+      "sinama": {
+       "n": 1084,
+       "isabet": 927,
+       "beklenen": 928.51
+      }
+     }
+    ]
+   }
+  },
+  "altili": {
+   "ad": "6'lı Ganyan",
+   "kisa": "art arda 6 koşunun kazananları",
+   "kural": "Ganyan başlangıcı işaretli koşudan itibaren ardışık 6 koşunun birincileri; ekürili atlar bir ayakta tek seçim. Ayrıntı ve canlı karne: altili_karne.json.",
+   "koşu_sayisi": 6,
+   "kosu_sayisi": 6,
+   "sirali": true,
+   "ilk": 1,
+   "kaynak": "altili_karne.json",
+   "n": 655,
+   "isabet": 14,
+   "beklenen": 13.17,
+   "sinama": {
+    "n": 222,
+    "isabet": 4,
+    "beklenen": 3.16
+   },
+   "seviyeler": [
+    {
+     "kombinasyon": 64,
+     "seviye": "dar",
+     "kural": "ayak ayak tam DP dağıtım (altili.py)",
+     "n": 655,
+     "isabet": 14,
+     "beklenen": 13.17,
+     "sinama": {
+      "n": 222,
+      "isabet": 4,
+      "beklenen": 3.16
+     }
+    },
+    {
+     "kombinasyon": 192,
+     "seviye": "orta",
+     "kural": "ayak ayak tam DP dağıtım (altili.py)",
+     "n": 655,
+     "isabet": 20,
+     "beklenen": 27.0,
+     "sinama": {
+      "n": 222,
+      "isabet": 5,
+      "beklenen": 6.86
+     }
+    },
+    {
+     "kombinasyon": 576,
+     "seviye": "genis",
+     "kural": "ayak ayak tam DP dağıtım (altili.py)",
+     "n": 655,
+     "isabet": 46,
+     "beklenen": 51.2,
+     "sinama": {
+      "n": 222,
+      "isabet": 12,
+      "beklenen": 13.76
+     }
+    }
+   ],
+   "donem": [
+    "2026-03-16",
+    "2026-10-23"
+   ]
+  }
+ },
+ "sure_sn": 38.9
+}
