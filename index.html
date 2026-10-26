@@ -5660,7 +5660,7 @@ if((location.hash||"")==="#sonuclar") setTimeout(()=>$("navRes").click(),200);
 // =====================================================================
 // BULUTOXX v35: Otomatik sürüm güncelleme — yeni sürüm yayınlanınca uygulama kendini yeniler
 // =====================================================================
-const APP_V="2026-10-26.99";
+const APP_V="2026-10-26.100";
 (function autoUpdate(){
   let shown=false;
   async function check(auto){
@@ -5678,7 +5678,7 @@ const APP_V="2026-10-26.99";
   async function apply(){
     try{ if(window.caches){ const ks=await caches.keys(); await Promise.all(ks.map(k=>caches.delete(k))); } }catch(e){}
     try{ const reg=navigator.serviceWorker&&await navigator.serviceWorker.getRegistration(); if(reg) await reg.update(); }catch(e){}
-    location.reload();
+    if(window.bxRepair) window.bxRepair(); else location.reload();
   }
   let hiddenAt=0;
   document.addEventListener("visibilitychange",()=>{ if(document.hidden){ hiddenAt=Date.now(); return; } check(Date.now()-hiddenAt>60e3); });
@@ -7483,7 +7483,7 @@ setTimeout(()=>{ try{ renderTP(); }catch(e){} },1500);
       if(nv){ toast("✨ Yeni sürüm bulundu, uygulama yenileniyor…");
         try{ if(window.caches){ const ks=await caches.keys(); await Promise.all(ks.map(k=>caches.delete(k))); } }catch(e){}
         try{ const reg=navigator.serviceWorker&&await navigator.serviceWorker.getRegistration(); if(reg) await reg.update(); }catch(e){}
-        setTimeout(()=>location.reload(),700); return; }
+        setTimeout(()=>{ if(window.bxRepair) window.bxRepair(nv); else location.reload(); },500); return; }
       const jobs=[];
       try{ jobs.push(Promise.resolve(doRefresh())); }catch(e){}
       try{ if(typeof IDL!=="undefined"&&IDL.load) jobs.push(IDL.load(IDLV.sp,true).then(()=>{ try{ idlRenderAll(); idlBadge(); }catch(e){} }).catch(()=>{})); }catch(e){}
@@ -9232,6 +9232,38 @@ small>.tvar.d:first-child{margin-left:0;margin-right:2px}
 // v97: gollü skor yalnız Alt/Üst oranı olan maçlarda (oransız maçta gol beklentisi yalnız formdan gelir, şişkin çıkar)
 (function(){ try{ const _p=predict; predict=function(inp){ const prev=window.__BX_OU; window.__BX_OU=!!(inp&&inp.odds&&inp.odds.oo&&inp.odds.ou); try{ return _p.apply(this,arguments); } finally{ window.__BX_OU=prev; } }; }catch(e){}
   try{ if(typeof BT!=="undefined"&&BT.cache) BT.cache.clear(); }catch(e){} })();
+</script>
+<script id="onarim-v100">
+// v100 · Yenile = veriler + program güncellemesi + acil onarım
+// • Yeni sürüm varsa: tüm önbellekler silinir, servis çalışanı güncellenir, sayfa önbelleği atlayarak (?v=) yeniden açılır.
+// • Yeni servis çalışanı devreye girince sayfa bir kez kendiliğinden yenilenir (iki kez kapat-aç gerekmez).
+// • Yenile'ye basılı tut (≈1 sn) ya da Menü → "Uygulamayı onar": tam baştan kurulum (kuponlar ve ayarlar silinmez).
+(function(){
+  async function bxRepair(nv, hard){
+    try{ sessionStorage.setItem("bx-repair", String(Date.now())); }catch(e){}
+    try{ if(window.caches){ const ks=await caches.keys(); await Promise.all(ks.map(k=>caches.delete(k))); } }catch(e){}
+    try{ if(navigator.serviceWorker&&navigator.serviceWorker.getRegistrations){ const rs=await navigator.serviceWorker.getRegistrations(); await Promise.all(rs.map(r=>hard?r.unregister():r.update().catch(()=>{}))); } }catch(e){}
+    location.replace(location.pathname+"?v="+encodeURIComponent(nv||Date.now())+location.hash);
+  }
+  window.bxRepair=bxRepair;
+  try{ const q=new URLSearchParams(location.search); if(q.has("v")){ q.delete("v"); const qs=q.toString(); history.replaceState(null,"",location.pathname+(qs?"?"+qs:"")+location.hash);
+      const t=+sessionStorage.getItem("bx-repair")||0; if(t&&Date.now()-t<120000){ sessionStorage.removeItem("bx-repair"); setTimeout(()=>{ try{ toast("✅ Güncel sürüm yüklendi · v"+APP_V.split(".").pop()); }catch(e){} },1500); } } }catch(e){}
+  try{ if(navigator.serviceWorker){ let done=false; const had=!!navigator.serviceWorker.controller;
+      navigator.serviceWorker.addEventListener("controllerchange",()=>{ if(done||!had) return; done=true;
+        const ae=document.activeElement; if(ae&&/^(INPUT|TEXTAREA)$/.test(ae.tagName)) return;   // yazı yazarken yenileme yapma; güncelleme şeridi zaten görünür
+        try{ toast("✨ Yeni sürüm yüklendi, yenileniyor…"); }catch(e){} setTimeout(()=>bxRepair(),900); }); } }catch(e){}
+  function bind(){ const rf=document.getElementById("hdrRefresh"); if(!rf||rf.dataset.rp) return; rf.dataset.rp="1"; let t=0, fired=false;
+    const start=()=>{ fired=false; t=setTimeout(()=>{ t=0; fired=true; try{ buzz(30); toast("🛠️ Acil onarım: uygulama baştan yükleniyor…"); }catch(e){} bxRepair(null,true); },900); };
+    const end=()=>{ if(t){ clearTimeout(t); t=0; } };
+    rf.addEventListener("pointerdown",start); ["pointerup","pointerleave","pointercancel"].forEach(ev=>rf.addEventListener(ev,end));
+    rf.addEventListener("click",e=>{ if(fired){ e.stopImmediatePropagation(); e.preventDefault(); } },true);
+    rf.addEventListener("contextmenu",e=>e.preventDefault()); }
+  bind(); setTimeout(bind,1500); setTimeout(bind,5000);
+  function menu(){ const ml=document.querySelector("#v-more .mlist"); if(!ml||document.getElementById("moreFix")) return; const c=document.createElement("button"); c.className="cell"; c.id="moreFix"; c.type="button";
+    c.innerHTML=`<span class="ic" style="background:linear-gradient(135deg,#3A4A63,#24324A)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.4-.6-.6-2.4z"/></svg></span><span class="tx"><b>Uygulamayı onar</b><small>Sürüm ${APP_V.split(".").pop()} · takılırsa en yeni sürümü baştan yükler; kuponların ve ayarların silinmez</small></span><span class="ar">›</span>`;
+    c.onclick=()=>{ try{ toast("🛠️ Onarılıyor…"); }catch(e){} bxRepair(null,true); }; ml.appendChild(c); }
+  menu(); setTimeout(menu,1600); setTimeout(menu,5200);
+})();
 </script>
 </body>
 </html>
