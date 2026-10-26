@@ -134,3 +134,10 @@ Yerel deneme: `node lab/bot_coach.mjs --dry` (dosya yazmaz) · `node lab/bot_coa
   (ikinci yarıda LL 1,00572 → 1,00589), kademe bazında dk (1,00092 → 1,00095), lig bazında ev sahibi kayması (1,00105 → 1,00102, ihmal edilebilir).
 - **İzleme:** toplayıcı artık uygulamanın gösterdiği öneriyi (`sp`) de kilitler; koruyucu kalibrasyon değişikliklerini bununla ölçer.
 
+
+## 🐎 At Yarışı 2.0 (v106, lab/at/TASARIM.md Aşama 1–2)
+- Bloklar: `<style id="at2-v106">` + `<script id="at2-v106">` (</body> öncesi). Silinirse eski at ekranı (`at-v73`) geri gelir.
+- `at-v73` çekirdeği (`BX_AT`) sarılır: eski `render()` gizli `#atBox`'a yazmaya devam eder (atkupon-v98 `deco` ve geriye uyum); yeni ekranlar `#at2Box`'ta, sekmeler uygulamanın yapışkan `.at-head` kabında (`#at2Nav`).
+- Yollar: `#at` · `#at/{bugun|program|bahis|sonuc|kupon}` (sekme: replaceState) · `#at/kosu/<gün~hipodrom~no>` · `#at/at/<koşu>/<no>` · `#at/jokey/<ad>` · `#at/antrenor/<ad>` · `#at/takip` · `#at/istatistik` (detay: pushState; tarayıcı geri tuşu çalışır). Eski `AT.tab` (altili/sonuc/jokey/altin) yeni sekmeye eşlenir; `BX_AT.horseSheet` at profiline yönlenir.
+- Kupon: ayrı kupon yok; koşu kartı/at profili/6'lı düğmeleri `data-atkr` / `data-atkh` / `data-atka` ile atkupon-v98 kurucusunu açar. Kupon sekmesi KX'teki aktif at kuponunu okur (Aşama 3 genişletecek).
+- Takip: `bx-at-fav` (at adları dizisi, değişmedi) + `bx-at-takip` `{v:1,jokey:[],antrenor:[]}`.
