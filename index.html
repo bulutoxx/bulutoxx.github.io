@@ -1789,8 +1789,8 @@ details.sx>.sx-in>.panel,details.sx>.sx-in>.pw-card{margin-top:0}
       <div class="bt-q" id="btQBox" hidden><input id="btQ" type="search" placeholder="Takım veya lig ara" autocomplete="off" aria-label="Bültende ara"><button type="button" id="btQX" aria-label="Aramayı kapat">Vazgeç</button></div>
       <div class="bt-days" id="btDays"></div>
       <div class="bt-chips" id="btChips">
-        <button data-f="all" aria-pressed="true">Tümü</button><button data-f="live" aria-pressed="false">🔴 Canlı</button>
-        <button data-f="top" aria-pressed="false">Büyük ligler</button><button data-f="value" aria-pressed="false">💎 Piyasadan farklı</button><button data-f="sure" aria-pressed="false">✅ Güçlü</button>
+        <button data-f="all" aria-pressed="true">Tümü</button><button data-f="live" aria-pressed="false">Canlı</button>
+        <button data-f="top" aria-pressed="false">Büyük ligler</button><button data-f="value" aria-pressed="false">Piyasadan farklı</button><button data-f="sure" aria-pressed="false">Güçlü</button>
       </div>
     </div>
     <div id="btList"></div>
@@ -1806,8 +1806,8 @@ details.sx>.sx-in>.panel,details.sx>.sx-in>.pw-card{margin-top:0}
       <div class="bt-q" id="bkQBox" hidden><input id="bkQ" type="search" placeholder="Takım veya lig ara" autocomplete="off" aria-label="Basketbolda ara"><button type="button" id="bkQX" aria-label="Aramayı kapat">Vazgeç</button></div>
       <div class="bt-days" id="bkDays"></div>
       <div class="bt-chips" id="bkChips">
-        <button data-f="all" aria-pressed="true">Tümü</button><button data-f="live" aria-pressed="false">🔴 Canlı</button>
-        <button data-f="sure" aria-pressed="false">✅ Güçlü</button><button data-f="table" aria-pressed="false">📊 Sıralama</button><button data-f="results" aria-pressed="false">🏁 Sonuçlar</button>
+        <button data-f="all" aria-pressed="true">Tümü</button><button data-f="live" aria-pressed="false">Canlı</button>
+        <button data-f="sure" aria-pressed="false">Güçlü</button><button data-f="table" aria-pressed="false">Sıralama</button><button data-f="results" aria-pressed="false">Sonuçlar</button>
       </div>
     </div>
     <div id="bkList"></div>
@@ -4081,7 +4081,7 @@ function paintCoupon(){
 function renderKupon(){
   const box=$("cpBox"); if(!box) return; const st=cpStats();
   if(!st.n){ box.innerHTML=`<div class="panel empty"><b>Tahmin listen boş</b>Bültende bir maçın seçeneğine dokunarak listene ekle. BULUTOXX her tahminin ve listenin birlikte tutma olasılığını hesaplar.</div>
-    <button class="btn" type="button" id="cpSuggest">🤖 Günün en olası tahminlerini getir</button><button class="btn ghost" type="button" id="cpGo">Bültene git</button>`;
+    <button class="btn" type="button" id="cpSuggest">Günün en olası tahminlerini getir</button><button class="btn ghost" type="button" id="cpGo">Bültene git</button>`;
     $("cpGo").onclick=goHome; $("cpSuggest").onclick=suggestCoupon; return; }
   const rating = st.ev>=1.05?["Değerli görünüyor","g"]: st.ev>=.92?["Adil","m"]:["Oran olasılığa göre düşük","x"];
   box.innerHTML=`<div class="panel">${CP.items.map((x,i)=>`<div class="cprow" data-cpi="${i}"><div class="l"><small>${FLAG[x.lg]||""} ${esc(LEAGUES[x.lg]?LEAGUES[x.lg].n:"")} · ${esc(ist(new Date(x.dt),{weekday:"short",hour:"2-digit",minute:"2-digit"}))}</small>
@@ -4141,7 +4141,7 @@ renderBulten=function(){
   paintCoupon();
 };
 // Bülten filtrelerine Favoriler
-(function(){ const c=$("btChips"); const b=document.createElement("button"); b.dataset.f="fav"; b.setAttribute("aria-pressed","false"); b.textContent="⭐ Favoriler";
+(function(){ const c=$("btChips"); const b=document.createElement("button"); b.dataset.f="fav"; b.setAttribute("aria-pressed","false"); b.textContent="Favoriler";
   c.insertBefore(b,c.children[1]); b.onclick=()=>{ BT.f="fav"; c.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",x===b)); renderBulten(); }; })();
 
 // Tahmin sonucunda iki takımı gösteren puan durumu
@@ -4636,7 +4636,7 @@ async function doRefresh(btn){
 (function mountClock(){
   ["#v-bulten .bt-head","#v-basket .bt-head"].forEach(sel=>{ const h=document.querySelector(sel); if(!h||h.querySelector(".clockbar")) return;
     const c=document.createElement("div"); c.className="clockbar";
-    c.innerHTML=`<span class="clk">🕐 <span class="clkv"></span></span><div class="sortsw" role="group" aria-label="Sıralama"><button type="button" data-s="saat">🕒 Saate göre</button><button type="button" data-s="lig">🏆 Lige göre</button></div>`;
+    c.innerHTML=`<span class="clk">🕐 <span class="clkv"></span></span><div class="sortsw" role="group" aria-label="Sıralama"><button type="button" data-s="saat">Saate göre</button><button type="button" data-s="lig">Lige göre</button></div>`;
     h.insertBefore(c, h.querySelector(".bt-days"));
     c.querySelectorAll(".sortsw button").forEach(b=>b.onclick=()=>{ TL.set(b.dataset.s); paintSort(); Sound.tap(); buzz(6); if(!$("v-bulten").hidden) renderBulten(); if(!$("v-basket").hidden) renderBasket(); }); });
   const paintSort=()=>document.querySelectorAll(".sortsw button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.s===TL.get()));
@@ -5284,9 +5284,9 @@ renderPrediction=function(inp,r){ _rpV27(inp,r);
 // BULUTOXX v28: iddaa gibi lig seçimi (o günün ligleri, maç sayılarıyla) + oranlara dokununca kupona ekleme
 // =====================================================================
 (function(){ const c=$("btChips"); if(!c||$("btLgChip")) return;
-  const b=document.createElement("button"); b.type="button"; b.id="btLgChip"; b.setAttribute("aria-pressed","false"); b.textContent="🏆 Lig seç";
+  const b=document.createElement("button"); b.type="button"; b.id="btLgChip"; b.setAttribute("aria-pressed","false"); b.textContent="Lig seç";
   c.insertBefore(b, c.children[1]||null);
-  const paint=()=>{ b.textContent=BT.lg?`🏆 ${(LEAGUES[BT.lg]||{n:BT.lg}).n} ✕`:BT.f==="top"?"🏆 Büyük ligler ✕":"🏆 Lig"; b.setAttribute("aria-pressed",!!BT.lg||BT.f==="top"); };
+  const paint=()=>{ b.textContent=BT.lg?`${(LEAGUES[BT.lg]||{n:BT.lg}).n} ✕`:BT.f==="top"?"Büyük ligler ✕":"Lig"; b.setAttribute("aria-pressed",!!BT.lg||BT.f==="top"); };
   window.lgChipPaint=paint;
   b.onclick=e=>{ e.stopPropagation(); Sound.tap();
     if(BT.lg||BT.f==="top"){ BT.lg=null; if(BT.f==="top"){ BT.f="all"; $("btChips").querySelectorAll("button[data-f]").forEach(z=>z.setAttribute("aria-pressed",z.dataset.f==="all")); } paint(); renderBulten(); return; }
@@ -5317,7 +5317,7 @@ renderPrediction=function(inp,r){ _rpV27(inp,r);
 (function compactHeads(){
   const IC_S='<svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>';
   const IC_R='<svg viewBox="0 0 24 24"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7"/></svg>';
-  const sortIc=()=>TL.get()==="saat"?"🕒":"🏆";
+  const sortIc=()=>TL.get()==="saat"?'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>':'<svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h10M4 18h6"/></svg>';
   const mk=(sec, subId, searchId)=>{
     const h=document.querySelector(sec+" .bt-head"); if(!h||h.classList.contains("cmp")) return;
     h.classList.add("cmp");
@@ -5325,9 +5325,9 @@ renderPrediction=function(inp,r){ _rpV27(inp,r);
     const sw=h.querySelector(".sport-sw"); if(sw) row.appendChild(sw);
     const bS=document.createElement("button"); bS.type="button"; bS.className="tb-ic"; bS.setAttribute("aria-label","Ara"); bS.innerHTML=IC_S;
     bS.onclick=()=>{ $(searchId).click(); };
-    const bO=document.createElement("button"); bO.type="button"; bO.className="tb-ic tb-sort"; bO.setAttribute("aria-label","Sıralama: saate / lige göre"); bO.textContent=sortIc();
+    const bO=document.createElement("button"); bO.type="button"; bO.className="tb-ic tb-sort"; bO.setAttribute("aria-label","Sıralama: saate / lige göre"); bO.innerHTML=sortIc();
     bO.onclick=()=>{ const nx=TL.get()==="saat"?"lig":"saat"; const t=h.querySelector(`.sortsw button[data-s="${nx}"]`); if(t) t.click(); else { TL.set(nx); renderBulten(); }
-      document.querySelectorAll(".tb-sort").forEach(x=>x.textContent=sortIc()); toast(nx==="saat"?"🕒 Maç saatine göre sıralandı":"🏆 Lige göre gruplandı"); };
+      document.querySelectorAll(".tb-sort").forEach(x=>x.innerHTML=sortIc()); toast(nx==="saat"?"🕒 Maç saatine göre sıralandı":"🏆 Lige göre gruplandı"); };
     const bR=document.createElement("button"); bR.type="button"; bR.className="tb-ic upd-go"; bR.setAttribute("aria-label","Verileri güncelle"); bR.innerHTML=IC_R;
     bR.onclick=()=>doRefresh();
     row.append(bS,bO,bR);
@@ -5469,7 +5469,7 @@ function msTahmin(m,f,r,lv){
       ${mGroup("Maçta başka gol",[mOpt("GG","Olur",1-P.none,null,mm),mOpt("G0","Olmaz",P.none,ng&&ng[1],mm)])}
       ${mGroup("Sıradaki golü kim atar",[mOpt("G1",shortTeam(lv.h),P.nextH,ng&&ng[0],mm),mOpt("G2",shortTeam(lv.a),P.nextA,ng&&ng[2],mm)])}
       <p class="note">Kalın sayı iddaa canlı oranı; "adil" yazanlar iddaa'da şu an açık olmayan seçeneklerde BULUTOXX olasılığından hesaplanan orandır. Yeşil: kazanma olasılığı yüksek (🔥 %70+, açık yeşil %55+). Dokun → listene ekle.</p></div>
-      <button type="button" class="btn ghost" id="msDetail">🔬 Ayrıntılı tahmin et (kadro, eksik, senaryo)</button>`; }
+      <button type="button" class="btn ghost" id="msDetail">Ayrıntılı tahmin et (kadro, eksik, senaryo)</button>`; }
   if(!r) return `<p class="note">Bu maç için tahmin hesaplanamadı.</p>`;
   const R=recOf(r,f), mm=m.sp?{lg:"i"+m.ci,h:m.h,a:m.a}:m, inCp=R&&CP.items.some(c=>c.k===cpKey(mm)&&c.mk===R.k);
   const big=R&&R.tier==="w"?`<div class="recbig rec-w"><small>BULUTOXX</small><b>⏸️ Pas</b><div class="rb-p">Bu maçta güvenilir bir öneri yok. En olası seçenek <em>${esc(R.n)}</em> ancak olasılığı %${pc9(R.cp)}.</div><p>Yanılma payını düşük tutmak için güven %58'in altındaysa öneri vermiyoruz.</p></div>`
@@ -5483,7 +5483,7 @@ function msTahmin(m,f,r,lv){
     <div class="ms-kv"><span>2,5 Üst <b>%${pc9(r.o25)}</b></span><span>KG Var <b>%${pc9(r.btts)}</b></span><span>1,5 Üst <b>%${pc9(r.o15)}</b></span><span>İlk golü <b>${esc(shortTeam(SC.first))}</b> %${pc9(SC.firstP)}</span></div>
     ${best?`<div class="ms-pick ${best.p>=.7?"g":""}">${best.p>=.7?"🎯 Güçlü seçim":"⚖️ En olası"}: <b>${esc(best.n)}</b> %${pc9(best.p)}</div>`:""}
     <p class="note">Beklenen gol ${r.lh.toFixed(2)} – ${r.la.toFixed(2)}${f&&f.odds?" · iddaa oranlarıyla birleştirildi":""}.</p></div></details>
-    <button type="button" class="btn ghost" id="msDetail">🔬 Ayrıntılı analiz (kadro, eksik, senaryo)</button>`;
+    <button type="button" class="btn ghost" id="msDetail">Ayrıntılı analiz (kadro, eksik, senaryo)</button>`;
 }
 function msOran(m,f,r,lv){
   const mm=m.sp?{lg:"i"+m.ci,h:m.h,a:m.a}:m;
@@ -5582,9 +5582,9 @@ renderKupon=function(){ _rkV32(); const box=$("cpBox"), st=cpStats(); if(!box||!
   paintCoupon();
   // Sonuçlar görünümü
   const main=document.querySelector("main"); if(main&&!$("v-sonuclar")){ const s=document.createElement("section"); s.className="view"; s.id="v-sonuclar"; s.hidden=true;
-    s.innerHTML=`<div class="bt-head cmp rs-head"><div class="tb-row"><div class="rs-title">🏁 Sonuçlar</div><button type="button" class="tb-ic" id="rsSearch" aria-label="Ara"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg></button><button type="button" class="tb-ic upd-go" id="rsRef" aria-label="Yenile"><svg viewBox="0 0 24 24"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7"/></svg></button></div>
+    s.innerHTML=`<div class="bt-head cmp rs-head"><div class="tb-row"><div class="rs-title">Sonuçlar</div><button type="button" class="tb-ic" id="rsSearch" aria-label="Ara"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg></button><button type="button" class="tb-ic upd-go" id="rsRef" aria-label="Yenile"><svg viewBox="0 0 24 24"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7"/></svg></button></div>
       <div class="bt-q" id="rsQBox" hidden><input id="rsQ" type="search" placeholder="Takım veya lig ara" autocomplete="off" enterkeyhint="search"><button type="button" id="rsQX">Vazgeç</button></div>
-      <div class="bt-days" id="rsDays"></div><div class="bt-chips" id="rsChips"><button data-f="all" aria-pressed="true">Tümü</button><button data-f="hit" aria-pressed="false">✅ Tuttu</button><button data-f="miss" aria-pressed="false">❌ Tutmadı</button><button data-f="sure" aria-pressed="false">🎯 Güçlü tahminler</button></div></div>
+      <div class="bt-days" id="rsDays"></div><div class="bt-chips" id="rsChips"><button data-f="all" aria-pressed="true">Tümü</button><button data-f="hit" aria-pressed="false">✅ Tuttu</button><button data-f="miss" aria-pressed="false">❌ Tutmadı</button><button data-f="sure" aria-pressed="false">Güçlü tahminler</button></div></div>
       <div id="rsSum"></div><div id="rsList"></div>
       <p class="disc">Sonuçlar resmi iddaa canlı sonuç servisinden. Tahmin, maç başlamadan önce kaydedilen iddaa oranlarından BULUTOXX'in hesapladığı beklentidir; maçtan sonra değiştirilmez. Kesinlik içermez · 18+</p>`;
     main.appendChild(s);
@@ -5640,7 +5640,7 @@ function renderRes(){
   // günlük özet
   const n=withP.length, r=k=>n?Math.round(withP.filter(x=>x[k]).length/n*100):0;
   const strong=withP.filter(x=>x.P.pp>=.6), sr=strong.length?Math.round(strong.filter(x=>x.ms).length/strong.length*100):0;
-  $("rsSum").innerHTML=n?`<div class="rs-sum"><div><small>Biten maç</small><b>${L.length}</b></div><div><small>MS tuttu</small><b>%${r("ms")}</b></div><div><small>2,5 A/Ü</small><b>%${r("ou")}</b></div><div><small>🎯 Güçlü</small><b>%${sr}</b><i>${strong.length} maç</i></div></div>`
+  $("rsSum").innerHTML=n?`<div class="rs-sum"><div><small>Biten maç</small><b>${L.length}</b></div><div><small>MS tuttu</small><b>%${r("ms")}</b></div><div><small>2,5 A/Ü</small><b>%${r("ou")}</b></div><div><small>Güçlü</small><b>%${sr}</b><i>${strong.length} maç</i></div></div>`
     :`<p class="note" style="margin:6px 2px">${L.length} maç bitti. Bu günün maç öncesi tahmin kaydı yok (kayıtlar son 8 günü kapsar).</p>`;
   if(RS.q) L=L.filter(m=>qMatch(RS.q,[m.h,m.a,m.comp]));
   if(RS.f==="hit") L=L.filter(x=>x.P&&x.ms); else if(RS.f==="miss") L=L.filter(x=>x.P&&!x.ms); else if(RS.f==="sure") L=L.filter(x=>x.P&&x.P.pp>=.6);
@@ -5658,7 +5658,7 @@ if((location.hash||"")==="#sonuclar") setTimeout(()=>$("navRes").click(),200);
 // =====================================================================
 // BULUTOXX v35: Otomatik sürüm güncelleme — yeni sürüm yayınlanınca uygulama kendini yeniler
 // =====================================================================
-const APP_V="2026-10-26.93";
+const APP_V="2026-10-26.94";
 (function autoUpdate(){
   let shown=false;
   async function check(auto){
@@ -5719,7 +5719,7 @@ function dailyBanner(){
   const g=L.guclu&&L.guclu.n?L.guclu:null, yest=L.d===istDay(new Date(Date.now()-864e5));
   if(!b){ b=document.createElement("button"); b.type="button"; b.id="dayBan"; b.className="dayban"; head.after(b);
     b.onclick=()=>{ RS.day=L.d; $("navRes").click(); }; }
-  b.innerHTML=`<span>📊 ${yest?"Dün":esc(ist(new Date(L.d+"T12:00:00+03:00"),{day:"numeric",month:"long"}))}</span><b>${g?`güçlü önerilerin %${Math.round(g.hit*100)}'i tuttu`:`önerilerin %${Math.round(L.hit*100)}'i tuttu`}</b><small>${g?`${Math.round(g.hit*g.n)}/${g.n}`:`${L.n} maç`} ›</small>`;
+  b.innerHTML=`<span>${yest?"Dün":esc(ist(new Date(L.d+"T12:00:00+03:00"),{day:"numeric",month:"long"}))}</span><b>${g?`güçlü önerilerin %${Math.round(g.hit*100)}'i tuttu`:`önerilerin %${Math.round(L.hit*100)}'i tuttu`}</b><small>${g?`${Math.round(g.hit*g.n)}/${g.n}`:`${L.n} maç`} ›</small>`;
 }
 async function shareDay(day){
   const st=dayStat(day); if(!st){ toast("Bu gün için puanlanmış öneri yok"); return; }
@@ -5743,8 +5743,8 @@ async function shareDay(day){
 const _rrV38=renderRes;
 renderRes=function(){ _rrV38(); const st=dayStat(RS.day), box=$("rsSum"); if(!box||!st) return;
   const g=st.guclu||{}, o=st.oneri||{}, r=st.riskli||{}, f=v=>v&&v.n?`%${Math.round(v.hit*100)}<i>${Math.round(v.hit*v.n)}/${v.n}</i>`:"–";
-  box.innerHTML=`<div class="rs-sum"><div><small>Puanlanan öneri</small><b>${st.n}</b></div><div><small>Tümü tuttu</small><b>%${Math.round(st.hit*100)}</b></div><div><small>✅ Güçlü</small><b>${f(g)}</b></div><div><small>👍 Öneri</small><b>${f(o)}</b></div></div>
-    <button type="button" class="rs-share" id="rsShare">📤 Paylaş: ${g.n?`güçlü önerilerin %${Math.round(g.hit*100)}'i tuttu`:`önerilerin %${Math.round(st.hit*100)}'i tuttu`}</button>`;
+  box.innerHTML=`<div class="rs-sum"><div><small>Puanlanan öneri</small><b>${st.n}</b></div><div><small>Tümü tuttu</small><b>%${Math.round(st.hit*100)}</b></div><div><small>Güçlü</small><b>${f(g)}</b></div><div><small>Öneri</small><b>${f(o)}</b></div></div>
+    <button type="button" class="rs-share" id="rsShare">Paylaş: ${g.n?`güçlü önerilerin %${Math.round(g.hit*100)}'i tuttu`:`önerilerin %${Math.round(st.hit*100)}'i tuttu`}</button>`;
   $("rsShare").onclick=()=>{ buzz(8); shareDay(RS.day); }; };
 setTimeout(dailyLoad,2500); setInterval(()=>{ if(!document.hidden) dailyLoad(); },15*60e3);
 
@@ -5795,16 +5795,16 @@ function renderPower(){
   const row=(m,txt,p,o,clock)=>`<div class="pw-r"${omA(m)}><div class="pw-m"><b>${esc(m.h)} - ${esc(m.a)}</b><small>${clock?`🔴 ${esc(clock)} · ${m.hs}-${m.as}`:esc(ist(m.dt,{hour:"2-digit",minute:"2-digit"}))+" · "+esc((LEAGUES[m.lg]||{n:""}).n)}</small></div><div class="pw-s"><span>${esc(txt)}</span><b>%${pc9(p)}</b>${o?`<i>${(+o).toFixed(2)}</i>`:""}</div></div>`;
   v.querySelector(".pw-body").innerHTML=`
     <button type="button" class="pw-cp" id="pwCp">📋 Tahmin listem · <b>${st.n} maç</b><span>Aç ›</span></button>
-    <div class="pw-card pw-star"><div class="pw-h"><span>⭐ Canlı yıldız tahminler</span><small>${IDL.ok[1]?`${IDL.live[1].length} canlı maç tarandı`:"canlı maçlar yükleniyor…"}</small></div>
+    <div class="pw-card pw-star"><div class="pw-h"><span>Canlı yıldız tahminler</span><small>${IDL.ok[1]?`${IDL.live[1].length} canlı maç tarandı`:"canlı maçlar yükleniyor…"}</small></div>
       ${C?`${C.sel.map(x=>row(x.m,x.n,x.p,x.o,x.clock)).join("")}
         <div class="pw-tot"><span>Birlikte tutma olasılığı</span><b>%${pc9(C.p)}</b></div>
         <button type="button" class="pw-add" id="pwAddC">+ Yıldız tahminleri listeye ekle</button>`
       :`<p class="note">${IDL.ok[1]?"Şu an %75 üzeri tutma olasılığına sahip, en az iki maçlık canlı tahmin grubu yok. Liste her 15 saniyede yenilenir.":"Canlı veriler alınıyor…"}</p>`}</div>
-    <div class="pw-card"><div class="pw-h"><span>🔥 Canlı tekli yıldızlar</span><small>%80+ olasılık · açık oranlı</small></div>
+    <div class="pw-card"><div class="pw-h"><span>Canlı tekli yıldızlar</span><small>%80+ olasılık · açık oranlı</small></div>
       ${L.length?L.slice(0,8).map(x=>`<div class="pw-line">${row(x.m,x.n,x.p,x.o,x.clock)}<button type="button" class="pw-one" data-i="${L.indexOf(x)}">+</button></div>`).join(""):`<p class="note">Şu an %80 üzeri canlı seçim yok.</p>`}</div>
-    <div class="pw-card"><div class="pw-h"><span>✅ Bugünün en güçlü önerileri</span><small>maç öncesi · %75+</small></div>
+    <div class="pw-card"><div class="pw-h"><span>Bugünün en güçlü önerileri</span><small>maç öncesi · %75+</small></div>
       ${pre.length?pre.map((x,i)=>`<div class="pw-line">${row(x.m,x.R.n,x.R.cp,x.R.o)}<button type="button" class="pw-pre" data-i="${i}">+</button></div>`).join(""):`<p class="note">Önümüzdeki 24 saatte %75 üzeri öneri yok.</p>`}</div>
-    ${DAILY&&DAILY.canli&&DAILY.canli.n?`<div class="pw-card"><div class="pw-h"><span>📒 Canlı karne</span><small>kilitli canlı seçimler</small></div><p class="note" style="margin:0">Şimdiye kadar ${DAILY.canli.n.toLocaleString("tr-TR")} canlı seçim kaydedildi ve sonuçlandı; %${Math.round(DAILY.canli.hit*100)}'i tuttu. ${DAILY.canli.bins.filter(b=>b[0]>=.75&&b[2]).map(b=>`%${Math.round(b[0]*100)}–${Math.min(100,Math.round(b[1]*100))}: ${b[2]} seçim, %${Math.round(b[3]*100)} tuttu`).join(" · ")}. Yüzdeler bu gerçek sonuçlarla düzeltilir.</p></div>`:`<div class="pw-card"><div class="pw-h"><span>📒 Canlı karne</span></div><p class="note" style="margin:0">Canlı seçimler 15 dakikada bir kilitlenip kaydediliyor; sonuçlandıkça burada gerçek isabet görünecek ve yüzdeler buna göre düzeltilecek.</p></div>`}
+    ${DAILY&&DAILY.canli&&DAILY.canli.n?`<div class="pw-card"><div class="pw-h"><span>Canlı karne</span><small>kilitli canlı seçimler</small></div><p class="note" style="margin:0">Şimdiye kadar ${DAILY.canli.n.toLocaleString("tr-TR")} canlı seçim kaydedildi ve sonuçlandı; %${Math.round(DAILY.canli.hit*100)}'i tuttu. ${DAILY.canli.bins.filter(b=>b[0]>=.75&&b[2]).map(b=>`%${Math.round(b[0]*100)}–${Math.min(100,Math.round(b[1]*100))}: ${b[2]} seçim, %${Math.round(b[3]*100)} tuttu`).join(" · ")}. Yüzdeler bu gerçek sonuçlarla düzeltilir.</p></div>`:`<div class="pw-card"><div class="pw-h"><span>Canlı karne</span></div><p class="note" style="margin:0">Canlı seçimler 15 dakikada bir kilitlenip kaydediliyor; sonuçlandıkça burada gerçek isabet görünecek ve yüzdeler buna göre düzeltilecek.</p></div>`}
     <p class="disc">Olasılıklar BULUTOXX modelinin tahminidir; %75 de kesinlik değildir (yaklaşık her 4 tahmin grubundan 1'i tutmaz). Canlı oranlar maç içinde hızla değişir, iddaa bahsi kapatabilir · 18+</p>`;
   $("pwCp").onclick=()=>{ document.querySelector('nav.tabs button[data-v="kupon"]').click(); };
   const ac=$("pwAddC"); if(ac) ac.onclick=()=>{ buzz([10,30,10]); pwAdd(C.sel); };
@@ -6381,10 +6381,10 @@ async function oynGrade(){ if(oynBusy) return; oynBusy=true; let ch=0;
 function oynSt(sl){ const I=sl.items; if(I.some(x=>x.ok===false)) return "x"; if(I.every(x=>x.ok===true)) return "g"; return "w"; }
 function oynBadge(){ const n=OYN.L.filter(sl=>oynSt(sl)==="w").length; const c=$("moreOyn"); if(c){ const b=c.querySelector(".tx small"); if(b) b.textContent=n?`${n} liste sonuç bekliyor`:"Takip ettiğin listeler ve sonuçları"; } }
 function renderOyn(){ const box=$("oynBox"); if(!box) return;
-  if(!OYN.L.length){ box.innerHTML=`<div class="panel oyn-e"><b>📋 Sonuç takibim</b><p class="note">Henüz kayıt yok. Tahmin listeni kurunca aşağıdaki <b>“📋 Sonucunu takip et”</b> düğmesine bas; ya da maç sayfasında seçtiğin kutunun altındaki <b>“📋 Takip et”</b> ile tek maçı kaydet. Sonuçlar maç bitince otomatik kontrol edilir.</p></div>`; return; }
+  if(!OYN.L.length){ box.innerHTML=`<div class="panel oyn-e"><b>Sonuç takibim</b><p class="note">Henüz kayıt yok. Tahmin listeni kurunca aşağıdaki <b>“Sonucunu takip et”</b> düğmesine bas; ya da maç sayfasında seçtiğin kutunun altındaki <b>“📋 Takip et”</b> ile tek maçı kaydet. Sonuçlar maç bitince otomatik kontrol edilir.</p></div>`; return; }
   const g=OYN.L.filter(sl=>oynSt(sl)==="g").length, x=OYN.L.filter(sl=>oynSt(sl)==="x").length, it=OYN.L.flatMap(sl=>sl.items).filter(i=>i.ok!=null), ih=it.filter(i=>i.ok).length;
   const pill=i=>i.ok===true?`<span class="pill g">✅ Tuttu</span>`:i.ok===false?`<span class="pill x">❌ Yattı</span>`:`<span class="pill">⏳ ${Date.now()<new Date(i.dt).getTime()?"Başlamadı":i.need?"Elle işaretle":"Bekliyor"}</span>`;
-  box.innerHTML=`<div class="panel oyn"><div class="oyn-h"><b>📋 Sonuç takibim</b><small>${OYN.L.length} liste · ${g} tamamı tuttu · ${x} tutmayan var${it.length?` · seçim isabeti %${Math.round(ih/it.length*100)}`:""}</small></div>
+  box.innerHTML=`<div class="panel oyn"><div class="oyn-h"><b>Sonuç takibim</b><small>${OYN.L.length} liste · ${g} tamamı tuttu · ${x} tutmayan var${it.length?` · seçim isabeti %${Math.round(ih/it.length*100)}`:""}</small></div>
     ${OYN.L.slice(0,30).map(sl=>{ const st=oynSt(sl), od=sl.items.reduce((a,i)=>a*(i.odd||1),1);
       return `<div class="oyn-s st-${st}" data-sl="${sl.id}"><div class="oyn-t"><span>${esc(ist(new Date(sl.at),{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}))} · ${sl.items.length} maç</span>${st==="g"?`<span class="pill g">HEPSİ TUTTU</span>`:st==="x"?`<span class="pill x">TUTMAYAN VAR</span>`:`<span class="pill">Devam ediyor</span>`}<button type="button" class="oyn-del" data-del="${sl.id}" aria-label="Sil">🗑</button></div>
         ${sl.items.map((i,k)=>`<div class="oyn-i" data-oi="${sl.id}:${k}"><div class="l"><b>${esc(i.h)} – ${esc(i.a)}</b><small>${esc(mkName(i.mk))}${i.odd?` · ${(+i.odd).toFixed(2)}`:""}${i.s?` · Skor ${esc(i.s)}${i.s1?` (İY ${esc(i.s1)})`:""}`:""}${i.s0?` · oynarken ${esc(i.s0)}`:""}</small></div>${pill(i)}${i.ok==null&&(i.need||Date.now()-new Date(i.dt).getTime()>100*60e3)?`<span class="oyn-m"><button type="button" data-mo="${sl.id}:${k}:1">✅</button><button type="button" data-mo="${sl.id}:${k}:0">❌</button></span>`:""}</div>`).join("")}</div>`; }).join("")}
@@ -6401,19 +6401,19 @@ document.addEventListener("click",e=>{
 const _rkOyn=renderKupon;
 renderKupon=function(){ _rkOyn();
   const v=$("v-kupon"); if(!v) return; let ob=$("oynBox"); if(!ob){ ob=document.createElement("div"); ob.id="oynBox"; ($("cpBox")||v).after(ob); }
-  const box=$("cpBox"); if(box&&CP.items.length&&!$("cpPlay")){ const b=document.createElement("button"); b.className="btn"; b.type="button"; b.id="cpPlay"; b.textContent="📋 Sonucunu takip et";
+  const box=$("cpBox"); if(box&&CP.items.length&&!$("cpPlay")){ const b=document.createElement("button"); b.className="btn"; b.type="button"; b.id="cpPlay"; b.textContent="Sonucunu takip et";
     const act=box.querySelector(".cpsum .actions"); (act||box).before(b);
     b.onclick=()=>{ oynAdd(CP.items.slice(),""); CP.items=[]; cpSave(); try{ paintCoupon(); }catch(e){} renderKupon(); setTimeout(()=>{ const o=$("oynBox"); if(o) o.scrollIntoView({behavior:"smooth",block:"start"}); },150); }; }
   renderOyn(); oynGrade(); };
 // Maç sayfası ve ayrıntılı analiz: seçili kutuyu tek tıkla “oynadım” olarak kaydet
 function playBar(mm){ const it=CP.items.filter(c=>c.k===cpKey(mm));
-  return `<div class="oyn-bar">${it.length?`<span>Seçimin: <b>${it.map(c=>esc(mkName(c.mk))).join(", ")}</b></span><button type="button" class="btn sm" data-play="1">📋 Sonucunu takip et</button>`:`<span>Tahminini seçmek için kutusuna dokun; sonucunu izlemek için <b>📋 Takip et</b>. İY 1/X/2, çifte şans, alt/üst, KG hepsi var.</span>`}</div>`; }
+  return `<div class="oyn-bar">${it.length?`<span>Seçimin: <b>${it.map(c=>esc(mkName(c.mk))).join(", ")}</b></span><button type="button" class="btn sm" data-play="1">Sonucunu takip et</button>`:`<span>Tahminini seçmek için kutusuna dokun; sonucunu izlemek için <b>📋 Takip et</b>. İY 1/X/2, çifte şans, alt/üst, KG hepsi var.</span>`}</div>`; }
 function playBind(root,mm,re){ const b=root.querySelector("[data-play]"); if(b) b.onclick=()=>{ const it=CP.items.filter(c=>c.k===cpKey(mm)); oynAdd(it,`${mm.h} – ${mm.a}`); re&&re(); }; }
 // Maç sayfası Oranlar sekmesine kaydet çubuğu
 const _msOranO=msOran;
 msOran=function(m,f,r,lv){ const h=_msOranO(m,f,r,lv); const mm=m.sp?{lg:"i"+m.ci,h:m.h,a:m.a,dt:new Date(m.ts)}:m; return playBar(mm)+h; };
 const _msTahO=msTahmin;
-msTahmin=function(m,f,r,lv){ const h=_msTahO(m,f,r,lv); const mm=m.sp?{lg:"i"+m.ci,h:m.h,a:m.a,dt:new Date(m.ts)}:m; return h+playBar(mm)+`<button type="button" class="btn ghost" data-allm="1">📋 Tüm seçenekler (İY, çifte şans, alt/üst, KG…)</button>`; };
+msTahmin=function(m,f,r,lv){ const h=_msTahO(m,f,r,lv); const mm=m.sp?{lg:"i"+m.ci,h:m.h,a:m.a,dt:new Date(m.ts)}:m; return h+playBar(mm)+`<button type="button" class="btn ghost" data-allm="1">Tüm seçenekler (İY, çifte şans, alt/üst, KG…)</button>`; };
 const _msRenO=msRender;
 msRender=function(){ _msRenO(); const el=$("msheet"), m=MS.m; if(!el||!m) return; const mm=m.sp?{lg:"i"+m.ci,h:m.h,a:m.a,dt:new Date(m.ts)}:m;
   playBind(el,mm,msRender); const al=el.querySelector("[data-allm]"); if(al) al.onclick=()=>msGo("oran"); };
@@ -6630,7 +6630,7 @@ menuOrganize(); oynBadge();
         if(TL.get()!==o){ const so=h.querySelector(".tb-sort"); if(so) so.click(); else { TL.set(o); renderBulten(); } } };
       setTimeout(()=>document.addEventListener("click",function cl(ev){ if(!ev.target.closest("#btMoreMenu")){ const mm=$("btMoreMenu"); if(mm) mm.remove(); document.removeEventListener("click",cl); } }),0); }; }
   try{ if(window.lgChipPaint) lgChipPaint(); }catch(e){}
-  const fav=[...h.querySelectorAll('#btChips button[data-f="fav"]')][0]; if(fav) fav.textContent="⭐ Favori";
+  const fav=[...h.querySelectorAll('#btChips button[data-f="fav"]')][0]; if(fav) fav.textContent="Favori";
 })();
 // ---------- v62 Adım 4: isabet bilgisi tek yerde — Tahmin karnesi ----------
 function karneOzetHtml(){ const T=DAILY&&DAILY.toplam, C=DAILY&&DAILY.canli, L=lastFull(), k=BOT.st.karne||{n:0};
@@ -7584,12 +7584,12 @@ setTimeout(()=>{ try{ renderTP(); }catch(e){} },1500);
       // ---- Tek maç kartı (en üstte) ----
       let c1=$("pwOne"); if(!c1){ c1=document.createElement("div"); c1.id="pwOne"; c1.className="pw-card pw-one1"; }
       if(body.firstElementChild!==c1) body.prepend(c1);
-      if(!S){ c1.innerHTML=`<div class="pw-h"><span>🎯 Şu anın tek maçı</span></div><p class="o1-why">${IDL.ok[1]?"Şu an %80 üzeri canlı seçim ya da önümüzdeki 24 saatte %70 üzeri maç öncesi tahmin yok. Durum değiştikçe burası kendiliğinden dolar.":"Canlı ve günün maçları yükleniyor…"}</p>`; lastKey=null; }
+      if(!S){ c1.innerHTML=`<div class="pw-h"><span>Şu anın tek maçı</span></div><p class="o1-why">${IDL.ok[1]?"Şu an %80 üzeri canlı seçim ya da önümüzdeki 24 saatte %70 üzeri maç öncesi tahmin yok. Durum değiştikçe burası kendiliğinden dolar.":"Canlı ve günün maçları yükleniyor…"}</p>`; lastKey=null; }
       else{ const x=S.x, m=x.m, live=S.kind==="live", p=live?x.p:x.R.cp, o=live?x.o:x.R.o, n=live?x.n:x.R.n, k=keyOf(x)+"|"+(live?x.k:x.R.k);
         const why=live?"Şu an oynanan maçlar arasında tutma olasılığı en yüksek canlı seçim. Maç durumu değişirse sıradakine geçer."
           :S.kind==="soon"?"Yakında başlayacak maçlar arasında BULUTOXX'un en güçlü maç öncesi tahmini. Maç başlayınca canlı duruma göre yenilenir."
           :"Günün kalan maçları arasında BULUTOXX'un en güçlü tahmini.";
-        c1.innerHTML=`<div class="pw-h"><span>🎯 Şu anın tek maçı</span><small>maç durumuna göre yenilenir</small></div>
+        c1.innerHTML=`<div class="pw-h"><span>Şu anın tek maçı</span><small>maç durumuna göre yenilenir</small></div>
           ${stHtml(S)}
           <div class="o1-m"${omA(m)}><b>${esc(m.h)} - ${esc(m.a)}</b><small>${esc(lgN(m))}${!live&&goldOf(m)?" · aynı zamanda günün 🥇 Altın tahmini":""}</small></div>
           <div class="o1-pick"><span class="k">${esc(n)}</span><span class="o">${of2(o)}</span><span class="p">%${pc9(p)}</span></div>
@@ -7602,8 +7602,8 @@ setTimeout(()=>{ try{ renderTP(); }catch(e){} },1500);
       // ---- %70+ kupon (tek maçın hemen altında) ----
       let c2=$("pwK70"); if(!c2){ c2=document.createElement("div"); c2.id="pwK70"; c2.className="pw-card pw-k70"; }
       if(c1.nextElementSibling!==c2) c1.after(c2);
-      if(!K){ c2.innerHTML=`<div class="pw-h"><span>💎 %70+ kupon önerisi</span></div><p class="o1-why">Şu an birlikte tutma olasılığı %70'in üstünde kalan en az 2 maçlık bir kombinasyon yok. Adaylar canlı maçlar ve 24 saat içindeki maçlardan her 15 saniyede yeniden taranır.</p>`; }
-      else{ c2.innerHTML=`<div class="pw-h"><span>💎 %70+ kupon önerisi</span><small>${K.sel.length} maç · en yüksek getirili</small></div>
+      if(!K){ c2.innerHTML=`<div class="pw-h"><span>%70+ kupon önerisi</span></div><p class="o1-why">Şu an birlikte tutma olasılığı %70'in üstünde kalan en az 2 maçlık bir kombinasyon yok. Adaylar canlı maçlar ve 24 saat içindeki maçlardan her 15 saniyede yeniden taranır.</p>`; }
+      else{ c2.innerHTML=`<div class="pw-h"><span>%70+ kupon önerisi</span><small>${K.sel.length} maç · en yüksek getirili</small></div>
           ${K.sel.map(s=>{ const x=s.x, m=x.m; return `<div class="pw-r"${omA(m)}><div class="pw-m"><b>${esc(m.h)} - ${esc(m.a)}</b><small>${!s.live&&goldOf(m)?"🥇 ":""}<i class="k70-tag ${s.live?"l":"p"}" style="margin:0 6px 0 0">${s.live?"CANLI "+esc(x.clock||"")+" · "+m.hs+"-"+m.as:esc((istDay(m.dt)===istDay(new Date())?"":"Yarın ")+ist(m.dt,{hour:"2-digit",minute:"2-digit"}))}</i>${esc(lgN(m))}</small></div><div class="pw-s"><span>${esc(s.live?x.n:x.R.n)}</span><b>%${pc9(s.p)}</b><i>${of2(s.o)}</i></div></div>`; }).join("")}
           <div class="k70-sum"><span>Birlikte tutma <b>%${pc9(K.p)}</b></span><span>Toplam oran <b>${of2(K.o)}</b></span></div>
           <button type="button" class="pw-add" id="pwK70Add">+ Kuponu listeye ekle</button>
@@ -7718,7 +7718,7 @@ setTimeout(()=>{ try{ renderTP(); }catch(e){} },1500);
   function hero(){ const M=AT.model&&AT.model.degerlendirme, me=M&&M.metrik||{}, h=me.harman||{}, f=me.favori||{}, mo=me.model||{}, n=(M&&M.kosu_sayisi&&M.kosu_sayisi.sinama)||0;
     const K=(AT.karne&&AT.karne.kosular||[]).filter(x=>x.kosudan_once!==false); const kn=K.length, kh=K.filter(x=>x.ilk_secim_tuttu).length;
     return `<div class="at-hero"><div class="at-logo">${LOGO("h")}</div><div><h2>At Yarışı<span class="at-pill">DENEME</span></h2><p>BULUTOXX at laboratuvarı: her gece geçmiş koşulardan yeniden öğrenir, yalnız isabeti artıran ayarı kabul eder.</p></div></div>
-      <details class="sx" id="atOz"${(()=>{ try{ return localStorage.getItem("bx-at-oz")==="1"?" open":""; }catch(e){ return ""; } })()}><summary>📈 Model ne kadar başarılı? <small>sınama ve karne</small></summary><div class="sx-in">
+      <details class="sx" id="atOz"${(()=>{ try{ return localStorage.getItem("bx-at-oz")==="1"?" open":""; }catch(e){ return ""; } })()}><summary>Model ne kadar başarılı? <small>sınama ve karne</small></summary><div class="sx-in">
       <div class="at-km at-km4"><div><b>${pct(mo.ilk_secim_isabet)}</b><small>sabah tahmini<br>ilk seçim kazandı</small></div><div><b>${pct(h.ilk_secim_isabet)}</b><small>oranla harman<br>ilk seçim kazandı</small></div><div><b>${pct(f.ilk_secim_isabet)}</b><small>ganyan favorisi<br>aynı koşularda</small></div><div><b>${kn?"%"+Math.round(kh/kn*100):"–"}</b><small>kilitli karne<br>${kn?kn+" koşu":"birikiyor"}</small></div></div>
       <p class="at-note">🧪 Dürüst durum (son ${n.toLocaleString("tr-TR")} koşuda sınandı): burada gördüğün <b>sabah tahmini</b> oran açılmadan yapılır ve ganyan favorisinin gerisindedir. Koşu öncesi oranla harmanlanınca olasılık hatasında piyasayı az farkla geçiyor, ama ilk seçim isabetinde henüz favori seviyesinde. Model her gece yeniden öğrenir. Garanti değildir · 18+. Bahis sitesine yönlendirme yoktur.</p></div></details>`; }
   // ---- 📋 Padok Notu: günün yarış öncesi açıklaması; her veri akışında (sabah kilidi, oran, sonuç, 6'lı ayağı) yeniden yazılır ----
@@ -7810,7 +7810,7 @@ setTimeout(()=>{ try{ renderTP(); }catch(e){} },1500);
     const D=AT.data[AT.d], hips=[...new Set(D.kosular.map(r=>r.hipodrom))]; if(!AT.hip||!hips.includes(AT.hip)) AT.hip=hips[0];
     const G=goldOfDay(D), S=resOfDay(AT.d);
     try{ h+=padokHtml(); }catch(e){}
-    h+=`<div class="at-tabs" role="tablist"><button type="button" data-t="tah" aria-pressed="${AT.tab==="tah"}">Tahmin</button><button type="button" data-t="altin" aria-pressed="${AT.tab==="altin"}">🥇 Altın${G.length?` <small>${G.length}</small>`:""}</button><button type="button" data-t="sonuc" aria-pressed="${AT.tab==="sonuc"}">Sonuç${S.length?` <small>${S.length}</small>`:""}</button><button type="button" data-t="altili" aria-pressed="${AT.tab==="altili"}">🎯 6\'lı</button><button type="button" data-t="jokey" aria-pressed="${AT.tab==="jokey"}">🏇 Jokey</button></div>`;
+    h+=`<div class="at-tabs" role="tablist"><button type="button" data-t="tah" aria-pressed="${AT.tab==="tah"}">Tahmin</button><button type="button" data-t="altin" aria-pressed="${AT.tab==="altin"}">🥇 Altın${G.length?` <small>${G.length}</small>`:""}</button><button type="button" data-t="sonuc" aria-pressed="${AT.tab==="sonuc"}">Sonuç${S.length?` <small>${S.length}</small>`:""}</button><button type="button" data-t="altili" aria-pressed="${AT.tab==="altili"}">6\'lı</button><button type="button" data-t="jokey" aria-pressed="${AT.tab==="jokey"}">Jokey</button></div>`;
     h+=`<div class="at-chips" role="group" aria-label="Gün">${AT.days.map(d=>`<button type="button" data-d="${d}" aria-pressed="${d===AT.d}">${dLbl(d)}</button>`).join("")}</div>`;
     const FT=[]; if(FAV.size) for(const r of D.kosular) for(const h of r.atlar||[]) if(FAV.has(h.ad)) FT.push({r,h});
     if(FT.length&&AT.tab==="tah") h+=`<div class="at-fav"><b>⭐ Takip ettiğin atlar bugün koşuyor</b>${FT.map(x=>`<div class="at-fr" data-ah="${esc(x.r.kosu_id)}|${esc(x.h.no)}" role="button">${esc(x.r.hipodrom)} ${x.r.kosu}. koşu ${esc(x.r.saat||"")} · <b>${esc(x.h.no)} ${esc(x.h.ad)}</b> · ${pct(merged(x.r).A.find(y=>y.no===x.h.no)?.p_goster)}</div>`).join("")}</div>`;
@@ -8073,19 +8073,19 @@ setTimeout(()=>{ try{ renderTP(); }catch(e){} },1500);
     d.addEventListener("toggle",()=>{ d.open?OPEN.add(key):OPEN.delete(key); saveO(); }); return d; }
   const txt=e=>((e&&e.textContent)||"").trim();
   function apply(){
-    try{ wrap($("legal"),"legal","📄 Kullanım koşulları ve KVKK (tam metin)"); }catch(e){}
-    try{ document.querySelectorAll("#v-rehber .wrap > .panel, #v-rehber > .panel").forEach(p=>{ const h=txt(p.querySelector("h2")); if(/nasıl çalış/i.test(h)) wrap(p,"reh-nasil","⚙️ Nasıl çalışır?"); else if(/veri/i.test(h)&&!/telefon/i.test(h)) wrap(p,"reh-veri","🗂️ Veri kaynakları"); }); }catch(e){}
+    try{ wrap($("legal"),"legal","Kullanım koşulları ve KVKK (tam metin)"); }catch(e){}
+    try{ document.querySelectorAll("#v-rehber .wrap > .panel, #v-rehber > .panel").forEach(p=>{ const h=txt(p.querySelector("h2")); if(/nasıl çalış/i.test(h)) wrap(p,"reh-nasil","Nasıl çalışır?"); else if(/veri/i.test(h)&&!/telefon/i.test(h)) wrap(p,"reh-veri","Veri kaynakları"); }); }catch(e){}
     try{ const T=$("kzTech"); if(T) T.querySelectorAll(":scope > .panel").forEach((p,i)=>{ const h=txt(p.querySelector("h2"))||("Bölüm "+(i+1)); wrap(p,"kz-"+h.slice(0,24),esc(h)); }); }catch(e){}
-    try{ document.querySelectorAll("#karne > .panel").forEach(p=>{ if(/Maç öncesi kilitli/.test(txt(p.querySelector("h2")))) wrap(p,"kz-mo","🔒 Maç öncesi ayrıntılar"); }); }catch(e){}
+    try{ document.querySelectorAll("#karne > .panel").forEach(p=>{ if(/Maç öncesi kilitli/.test(txt(p.querySelector("h2")))) wrap(p,"kz-mo","Maç öncesi ayrıntılar"); }); }catch(e){}
     try{ const tp=$("tpBox"); if(tp&&tp.innerHTML){ const n=tp.querySelectorAll(".tp-r").length; const d=wrap(tp,"tp","🥇 Hazır tahminler",n?n+" tahmin":""); if(d){ const s=d.querySelector("summary small"); if(s) s.textContent=n?n+" tahmin":""; } } }catch(e){}
     try{ document.querySelectorAll("#v-power .pw-body > .pw-card").forEach(c=>{ const h=txt(c.querySelector(".pw-h span"));
       if(/Canlı tekli yıldız/.test(h)&&!c.querySelector(".pw-line")) c.style.display="none";
-      else if(/en güçlü öneriler/.test(h)) wrap(c,"pw-guclu","✅ Bugünün en güçlü önerileri",c.querySelectorAll(".pw-line").length+" maç"); }); }catch(e){}
-    try{ const n=document.querySelector("#v-canli .wrap > p.note"); if(n) wrap(n,"canli-not","🔔 Gol uyarısı nasıl çalışır?"); }catch(e){}
-    try{ const p=document.querySelector("#v-sonuc .wrap > .panel"); if(p&&/sonuçlarını gir/i.test(txt(p.querySelector("h2")))) wrap(p,"snc-not","ℹ️ Sonuçlar nasıl işlenir?"); }catch(e){}
+      else if(/en güçlü öneriler/.test(h)) wrap(c,"pw-guclu","Bugünün en güçlü önerileri",c.querySelectorAll(".pw-line").length+" maç"); }); }catch(e){}
+    try{ const n=document.querySelector("#v-canli .wrap > p.note"); if(n) wrap(n,"canli-not","Gol uyarısı nasıl çalışır?"); }catch(e){}
+    try{ const p=document.querySelector("#v-sonuc .wrap > .panel"); if(p&&/sonuçlarını gir/i.test(txt(p.querySelector("h2")))) wrap(p,"snc-not","Sonuçlar nasıl işlenir?"); }catch(e){}
     try{ document.querySelectorAll(".lgchips").forEach((c,i)=>{ const n=c.querySelectorAll('button[aria-pressed="true"]').length; const d=wrap(c,"lg-"+i,"Ligleri göster / düzenle",n+" seçili"); if(d){ const s=d.querySelector("summary small"); if(s) s.textContent=n+" seçili"; } }); }catch(e){}
     try{ const g=$("gelList"); if(g&&!g.querySelector(":scope > details.sx")){ const hs=[...g.querySelectorAll(":scope > h3.gel-d")]; if(hs.length>1){ const d=document.createElement("details"); d.className="sx"; d.dataset.k="gel-eski"; if(OPEN.has("gel-eski")) d.open=true;
-        d.innerHTML=`<summary>🗂️ Önceki güncellemeler <small>${hs.length-1} gün</small></summary><div class="sx-in"></div>`; const inn=d.querySelector(".sx-in"); let n=hs[1]; g.insertBefore(d,n); while(d.nextSibling) inn.appendChild(d.nextSibling);
+        d.innerHTML=`<summary>Önceki güncellemeler <small>${hs.length-1} gün</small></summary><div class="sx-in"></div>`; const inn=d.querySelector(".sx-in"); let n=hs[1]; g.insertBefore(d,n); while(d.nextSibling) inn.appendChild(d.nextSibling);
         d.addEventListener("toggle",()=>{ d.open?OPEN.add("gel-eski"):OPEN.delete("gel-eski"); saveO(); }); } } }catch(e){}
   }
   let raf=0; const mo=new MutationObserver(()=>{ if(raf) return; raf=requestAnimationFrame(()=>{ raf=0; mo.disconnect(); try{ apply(); }finally{ mo.observe(document.body,{childList:true,subtree:true}); } }); });
@@ -8226,5 +8226,203 @@ setTimeout(()=>{ try{ renderTP(); }catch(e){} },1500);
   try{ const _k=kuponTab; kuponTab=function(){ const r=_k.apply(this,arguments); patch(); return r; }; }catch(e){}
 })();
 </script>
+<style id="apple-v94">
+/* =====================================================================
+   v94 · Apple HIG rafine katmanı — kimlik aynı (koyu lacivert, altın, logo, OXX, alt menü),
+   yalnız tipografi, ritim, kontrast, derinlik ve hareket disiplini. Bu blok silinirse eski görünüm döner.
+   ===================================================================== */
+:root{
+  /* sistem fontu yığını (dış font yok) */
+  --font:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display",system-ui,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --font-d:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text",system-ui,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --body:var(--font); --display:var(--font-d);
+  /* tip ölçeği: büyük başlık · başlık 2 · başlık 3 · manşet · gövde · alt başlık · dipnot · etiket · mikro */
+  --t-lt:30px; --t-2:22px; --t-3:19px; --t-hl:17px; --t-b:15px; --t-sub:14px; --t-fn:13px; --t-c1:12px; --t-c2:11px;
+  /* köşe yarıçapı: kart 20 · grup 16 · iç öğe 12 · küçük 10 · çip tam yuvarlak */
+  --r-xs:8px; --r-sm:10px; --r-md:12px; --r-lg:16px; --r-xl:20px; --r:20px; --r2:12px;
+  /* derinlik: ince üst ışık + yumuşak tek gölge; renkli parıltı yok denecek kadar az */
+  --hl:inset 0 1px 0 rgba(255,255,255,.045);
+  --sh-2:0 8px 24px -16px rgba(0,0,0,.75);
+  --glow-b:0 6px 16px -10px rgba(31,103,230,.55);
+  /* dolgu degradesi: açık uç koyulaştırıldı → beyaz yazı her noktada ≥4,5:1 (AA). Metin degradesi (logo, POWER NOW) parlak kalır */
+  --grad-fill:linear-gradient(135deg,#0A78C0 0%,#1F67E6 55%,#3D5BFF 100%);
+  --green-fill:linear-gradient(140deg,#15843F,#117A3A);
+  /* hareket */
+  --ease:cubic-bezier(.25,.8,.25,1); --d1:.12s; --d2:.18s; --d3:.26s;
+}
+body{font-family:var(--font);font-size:16px;line-height:1.45;letter-spacing:-.01em;font-variant-numeric:tabular-nums;
+  -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility}
+button,input,select,textarea{font-family:inherit}
+
+/* ---------- Dolgu degradesi kullanan yazılı yüzeyler: erişilebilir ton ---------- */
+.btn,.refresh,.ipill,.linkbox button,.gnum,.ch-n,.ch-b,.pk-ic,.bt-days button,.ob.sel,.ez-r .n,.ez-big,.sport-sw button,.upd-go,.bt-q .q-go,
+.ms-tabs button,.rs-share,.pw-one,.pw-pre,.bt-in button,.istep .n,.g2-go,.b1{--grad:var(--grad-fill)}
+.pw-k70 .pw-add{background:var(--grad-fill)!important}
+.bt-msg.me{background:#1F67E6}
+.sport-sw button[aria-pressed="true"],.bt-days button[aria-pressed="true"],.bt-days button[aria-pressed="true"] small,.pw-add,.rs-share,.bt-msg.me{text-shadow:none}
+.bt-days button[aria-pressed="true"] small{color:#fff!important;opacity:.9}
+/* yeşil dolu rozetler/oranlar: beyaz yazı için koyu yeşil */
+.ib-od span.t3,.lv-od span.t3{background:var(--green-fill)!important;border-color:rgba(59,234,126,.55)!important;box-shadow:none!important}
+
+/* ---------- Tipografi hiyerarşisi ---------- */
+.ltitle{margin:16px 2px 8px;align-items:flex-end}
+.ltitle h1,#v-canli .ltitle h1{font:700 var(--t-lt)/1.1 var(--font-d);letter-spacing:-.022em}
+.ltitle p,#v-canli .ltitle p{margin-top:4px;font-size:var(--t-fn);line-height:1.35;color:var(--ink3);letter-spacing:-.003em}
+h2{font-family:var(--font-d);font-weight:700;letter-spacing:-.018em}
+.panel h2{font-size:var(--t-3);line-height:1.25}
+h3{font-size:var(--t-sub);font-weight:600;letter-spacing:-.005em}
+.pw-top{margin:16px 2px 12px}
+.pw-top img{width:46px}
+.pw-top h1{font:800 28px/1.1 var(--font-d)!important;letter-spacing:-.022em}
+.pw-top p{font-size:var(--t-fn)}
+.rs-head .rs-title{font:700 20px/1.2 var(--font-d);letter-spacing:-.018em}
+.at-hero h2{font:800 22px/1.1 var(--font-d)!important;letter-spacing:-.018em}
+.pw-h span,.pw-one1 .pw-h span{font-size:16px;font-weight:700;letter-spacing:-.012em}
+.pw-h small{font-size:var(--t-c1)}
+.pd-hd b,.at-rh b,.at-gold .at-gh{font-weight:700!important;letter-spacing:-.012em}
+.lg-btn .lg-t b{font:750 16px/1.25 var(--font)!important;letter-spacing:-.01em}
+.lg-btn .lg-t small{font:600 12.5px/1.35 var(--font)!important}
+.lg-btn .lg-p{font:800 26px/1 var(--font-d)!important;letter-spacing:-.02em}
+.o1-pick .p{font:800 28px/1 var(--font-d)!important;letter-spacing:-.02em}
+.o1-pick .k{font-weight:700!important}
+.at-p b,.al-a .al-p,.jk-k b,.pw-kz b,.rec-p,.at-no,.bk-t b,.jk-i,.al-a .al-i,.at-gr .at-no,.at-h .at-no{font-weight:800!important}
+.pw-add,.pw-card .pw-add{font-weight:700!important;font-size:15px!important;letter-spacing:-.005em}
+.btn{font-size:var(--t-hl);font-weight:600;letter-spacing:-.012em}
+.btn.sm{font-size:var(--t-sub)}
+.cell .tx b{font-size:16px;font-weight:600;letter-spacing:-.012em;line-height:1.3}
+.cell .tx small{font-size:var(--t-fn);line-height:1.35;color:var(--ink3)}
+.note,p.note{font-size:var(--t-fn);line-height:1.45}
+.disc{font-size:var(--t-c1);line-height:1.45;color:var(--ink3)}
+/* mikro yazılar en az 11px */
+.ib-od span u,.lv-od span u{font:500 11px/1.2 var(--font)!important;letter-spacing:0}
+.ib-od span{font-weight:650;letter-spacing:-.01em}
+.rs-sum small,.k70-tag,.gold-seal,.at-pill,.ib-tm .tvar,.al-i small{font-size:11px!important}
+.dayban small{font-size:var(--t-c1)}
+.ib-h small,.idl-gh small{font-size:var(--t-c1)}
+
+/* ---------- Üst bar: daha hafif cam, eşit düğmeler ---------- */
+.topbar{background:rgba(4,8,17,.72);backdrop-filter:saturate(180%) blur(24px);-webkit-backdrop-filter:saturate(180%) blur(24px);border-bottom:.5px solid rgba(255,255,255,.09);box-shadow:none}
+.topbar .iconbtn#hdrBot,.topbar .iconbtn#modeBtn,.topbar .iconbtn#hdrRefresh{width:54px;height:48px;border-radius:14px;gap:4px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);box-shadow:none}
+.topbar .iconbtn#hdrBot{background:linear-gradient(160deg,rgba(233,199,102,.14),rgba(80,60,10,.10))!important;border-color:rgba(233,199,102,.38)!important}
+.topbar .iconbtn .tbl{font:600 11px/1 var(--font)!important;letter-spacing:0;color:var(--ink2)}
+.topbar .iconbtn#hdrRefresh svg{stroke:#3BEA7E}
+.topbar .iconbtn:active{transform:scale(.94);background:rgba(255,255,255,.09)}
+@media (max-width:380px){.topbar .iconbtn#hdrBot,.topbar .iconbtn#modeBtn,.topbar .iconbtn#hdrRefresh{width:50px}}
+
+/* ---------- Segment kontrolleri (iOS) ---------- */
+.seg,.sport-sw,.sortsw,.ms-tabs,.at-tabs{background:rgba(118,118,128,.18);border:0;border-radius:12px;padding:2px;gap:2px;box-shadow:none}
+.seg button,.sport-sw button,.ms-tabs button,.at-tabs button{min-height:44px;border-radius:10px;font-size:var(--t-sub);font-weight:600;letter-spacing:-.008em;color:var(--ink2);
+  transition:background var(--d2) var(--ease),color var(--d2),transform var(--d1) var(--ease)}
+.tb-row .sport-sw{padding:2px;border-radius:12px;gap:2px;min-height:48px}
+.tb-row .sport-sw button{min-height:44px;font-size:var(--t-sub);border-radius:10px;padding:0 6px}
+.seg button[aria-pressed="true"]{background:rgba(255,255,255,.16);color:var(--ink);box-shadow:0 3px 8px rgba(0,0,0,.28),0 0 0 .5px rgba(255,255,255,.06)}
+.sport-sw button[aria-pressed="true"],.ms-tabs button[aria-selected="true"]{color:#fff;box-shadow:0 3px 10px -4px rgba(31,103,230,.6)}
+.sport-sw button.sw-at[aria-pressed="true"]{box-shadow:0 3px 10px -4px rgba(212,175,55,.6)}
+.at-tabs{grid-template-columns:repeat(5,minmax(0,1fr));gap:2px}
+.at-tabs button{font-size:13px!important;padding:0 2px;font-weight:600}
+.at-tabs button[aria-pressed="true"]{box-shadow:0 3px 10px -5px rgba(212,175,55,.7)}
+.ms-tabs{margin:8px 16px 12px}
+.sortsw button{min-height:36px;font-size:var(--t-fn);font-weight:600}
+.seg button:active,.sport-sw button:active,.ms-tabs button:active,.at-tabs button:active{transform:scale(.97)}
+
+/* ---------- Günler ve çipler: sakin, tek vurgu ---------- */
+.bt-days,.bt-chips{gap:8px}
+.bt-head.cmp .bt-days button,.bt-days button{min-height:40px;border-radius:12px;padding:6px 12px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);box-shadow:none}
+.bt-days button::after{inset:-2px 0!important}
+.bt-days button b{font-size:var(--t-sub);font-weight:650}
+.bt-days button small{font-size:var(--t-c1);font-weight:500}
+.bt-head.cmp .bt-days button[aria-pressed="true"],.bt-days button[aria-pressed="true"]{background:var(--grad-fill);border-color:transparent;box-shadow:var(--glow-b)}
+.bt-chips button,.bt-head.cmp .bt-chips button{min-height:36px;padding:0 14px;border-radius:999px;font:600 var(--t-fn)/1 var(--font);letter-spacing:-.004em;
+  background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09);color:var(--ink2);box-shadow:none;display:inline-flex;align-items:center;gap:6px}
+.bt-chips button[aria-pressed="true"]{background:rgba(47,123,255,.2);border-color:rgba(120,170,255,.45);color:#fff;box-shadow:none}
+.bt-chips button[data-f="live"]::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--red);flex:none}
+.bt-chips button:active{transform:scale(.96)}
+#btGold:not([aria-pressed="true"]){color:#F3DC8A;border-color:rgba(233,199,102,.32);background:rgba(233,199,102,.07)}
+/* OXX öneri çipleri: aynı çip biçimi, öneri olduğu belli olsun diye hafif camgöbeği */
+.bt-sheet .bt-chips button{color:#A8E8FF;border-color:rgba(34,211,255,.3);background:rgba(34,211,255,.06)}
+
+/* ---------- Kartlar ve yüzeyler: tek dil ---------- */
+.wrap{gap:12px}
+.panel{border-radius:var(--r-xl);padding:16px;gap:12px;border-color:rgba(255,255,255,.07)}
+.group{border-radius:var(--r-lg);border-color:rgba(255,255,255,.07)}
+.pw-card{border-radius:var(--r-xl)!important;border-color:rgba(255,255,255,.08)!important;box-shadow:var(--hl),var(--sh-2)!important}
+.at-race{border-radius:var(--r-lg)}
+.pd-card{border-radius:var(--r-xl);padding:14px 16px}
+.lg-btn{border-radius:var(--r-xl);box-shadow:inset 0 1px 0 rgba(255,255,255,.6),inset 0 -2px 6px rgba(120,80,0,.28),0 8px 22px -14px rgba(212,175,55,.7)}
+.lg-btn::after{animation-duration:6s!important;opacity:.6}
+.dayban{border-radius:var(--r-md);background:rgba(43,212,107,.08);border:1px solid rgba(43,212,107,.22)}
+.dayban b{font-weight:700}
+.ib-h,.idl-gh{min-height:40px}
+.ib-r{padding-top:10px;padding-bottom:10px}
+.ib-od span{border-radius:10px}
+
+/* ---------- Menü (iOS Ayarlar tarzı gruplu liste) ---------- */
+#v-more .mlist{margin-bottom:8px}
+#v-more .mlist .cell{min-height:60px;padding:12px 14px;gap:14px;border-bottom:0;position:relative}
+#v-more .mlist .cell+.cell::before{content:"";position:absolute;top:0;left:58px;right:0;height:1px;background:rgba(255,255,255,.07);transform:scaleY(.5);transform-origin:top}
+#v-more .mlist .cell .ic{width:30px;height:30px;border-radius:8px;box-shadow:none}
+#v-more .mlist .cell .ar{color:var(--ink3);opacity:.7;font-size:20px;font-weight:400}
+#v-more .mlist .cell:active{background:rgba(255,255,255,.06)}
+#v-more .mg-h{font-size:var(--t-c1);font-weight:600;letter-spacing:.04em;color:var(--ink3);margin:24px 16px 8px}
+
+/* ---------- Alt menü ---------- */
+nav.tabs{background:rgba(6,10,20,.78);backdrop-filter:saturate(180%) blur(24px);-webkit-backdrop-filter:saturate(180%) blur(24px);border-top:.5px solid rgba(255,255,255,.1);box-shadow:none}
+nav.tabs button{min-height:50px;font:600 11px/1.1 var(--font);letter-spacing:0;gap:4px;color:var(--ink3)}
+nav.tabs svg{width:24px;height:24px;stroke-width:1.7}
+nav.tabs button[aria-current="page"]{color:#4FC3FF}
+nav.tabs button[aria-current="page"] svg{transform:none}
+nav.tabs button[aria-current="page"]::before{left:34%;right:34%;height:2.5px;box-shadow:none}
+nav.tabs button[data-v="canli"] svg{filter:none}
+nav.tabs button[data-v="canli"][aria-current="page"]::before{box-shadow:none}
+nav.tabs .pw-btn .pw-lb{font:800 11px/1 var(--font)!important;letter-spacing:.04em}
+nav.tabs button:active svg{transform:scale(.9)}
+
+/* ---------- OXX sohbet ---------- */
+.bt-msg{border-radius:18px;font-size:var(--t-b);line-height:1.45;padding:10px 14px}
+.bt-msg small{font-size:var(--t-c1)}
+
+/* ---------- Maç penceresi ---------- */
+.msheet .btn.ghost{font-size:var(--t-b);font-weight:600}
+
+/* ---------- Basılı durum geri bildirimi ---------- */
+.btn:active,.pw-add:active,.rs-share:active,.lg-btn:active,.tb-ic:active{transform:scale(.97);filter:brightness(1.06)}
+.ib-r:active,.pw-r:active{background:rgba(255,255,255,.04)}
+
+/* ---------- Altın: metin taşıyan altın yüzeylerde koyu uç hafif açıldı (koyu yazı ≥4,5:1) ---------- */
+:root{--gold:linear-gradient(135deg,#BF9535 0%,#C9A227 28%,#F5E08A 52%,#D4AF37 72%,#B8892B 100%)}
+.lg-btn{background:linear-gradient(135deg,#BF9535 0%,#D4AF37 18%,#FFF0B3 38%,#E6C35C 52%,#B8892B 72%,#F7DC7A 100%)}
+.lg-btn.off{filter:saturate(.55) brightness(.92)}
+.lg-btn .lg-t small{color:#2A1C00!important}
+.gold-seal,.ib-od span.rk.rk-g.gold-odd,.ib-od span.rk.rk-g.gold-odd u,.ib-od span.rk.rk-g.gold-odd b,.pw-add.gold-btn,#btGold[aria-pressed="true"]{color:#2A1C00!important;text-shadow:none!important}
+.at-gold small{color:var(--ink2)}
+.rec-w,.rec-w .rec-t{color:#FFC24D}
+#cpPlay{background:var(--green-fill)}
+.bt-card:not(.t-m) .bt-cp b{background:var(--green-fill)}
+.bt-sheet .bt-chips button{min-height:40px}
+.bt-sheet .bt-chips button::after{inset:-2px 0!important}
+@media (max-width:380px){
+  .lg-btn{gap:10px;padding:12px 14px}
+  .lg-btn .lg-ic{font-size:22px}
+  .lg-btn .lg-t b{font-size:15px!important}
+}
+
+.rec.rec-g{background:linear-gradient(135deg,#BF9535 0%,#D4AF37 22%,#F8E7A6 42%,#DDB94F 58%,#B8892B 78%,#EED27A 100%)!important}
+.ib-od span.rk.sel u,.ib-od span.rk.rk-g.gold-odd.sel u,.ib-od span.sel b,.ib-od span.rk.rk-g.gold-odd.sel b{color:#2A1C00!important}
+.bt-days button[aria-pressed="true"] b{color:#fff}
+.ms-bar .h{background:#1D63DE}
+
+@media (max-width:380px){
+  nav.tabs .pw-btn .pw-lb{letter-spacing:0}
+  .lg-btn .lg-p{font-size:24px!important}
+}
+
+/* ---------- Hareket: kısa, yumuşak; azaltılmış harekete saygı ---------- */
+section.view{animation:apViewIn var(--d3) var(--ease) both}
+@keyframes apViewIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;scroll-behavior:auto!important}
+  .lg-btn::after,.rec.rec-g.rec-gold::after{display:none!important}
+}
+</style>
 </body>
 </html>
