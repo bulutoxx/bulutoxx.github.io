@@ -4978,7 +4978,7 @@ function idlPred(m){
   const s=idlSecs(m), t=s==null?(m.h1!=null?46:30):Math.min(120,s/60);
   const P=fbLive(L[0],L[1],m.hs,m.as,t); if(!P) return null;
   // kırmızı kart: eksik takımın gol beklentisi düşer, rakibinki artar
-  const rem=fbRemShare(t), d=m.hs-m.as, st=t>=15?1:0, up=Math.exp(.1), dn=Math.exp(-.1);
+  const rem=fbRemShare(t,m), d=m.hs-m.as, st=t>=15?1:0, up=Math.exp(.1), dn=Math.exp(-.1);
   let LH=L[0]*rem*(st?(d<0?up:dn):1), LA=L[1]*rem*(st?(d>0?up:dn):1);
   LH*=Math.pow(.72,m.rc[0])*Math.pow(1.25,m.rc[1]); LA*=Math.pow(.72,m.rc[1])*Math.pow(1.25,m.rc[0]);
   const tot=m.hs+m.as, ou=m.odds&&m.odds.ou;
@@ -11630,7 +11630,7 @@ small>.tvar.d:first-child{margin-left:0;margin-right:2px}
   function core(m,mH,mA){
     const {L,src}=lamOf(m); if(L[0]==null||L[1]==null) return null;
     const t=tOf(m), hs=+m.hs||0, as=+m.as||0, rc=m.rc||[0,0];
-    const rem=fbRemShare(t), d=hs-as, st=t>=15?1:0, up=Math.exp(.1), dn=Math.exp(-.1);
+    const rem=fbRemShare(t,m), d=hs-as, st=t>=15?1:0, up=Math.exp(.1), dn=Math.exp(-.1);   // v117: devre bilgisi (m.st) iletilir
     const LH0=L[0]*rem*(st?(d<0?up:dn):1)*Math.pow(.72,rc[0]||0)*Math.pow(1.25,rc[1]||0);
     const LA0=L[1]*rem*(st?(d>0?up:dn):1)*Math.pow(.72,rc[1]||0)*Math.pow(1.25,rc[0]||0);
     const LH=LH0*mH, LA=LA0*mA, PH=poisV(LH,8), PA=poisV(LA,8);
@@ -11836,6 +11836,43 @@ small>.tvar.d:first-child{margin-left:0;margin-right:2px}
   try{ const _mr=msRender; msRender=function(){ const r=_mr.apply(this,arguments); try{ paint(); }catch(e){ console.warn("canli-gt-v107",e); } return r; }; }catch(e){}
   try{ const _om=openMatch; openMatch=function(m,tab){ const r=_om.apply(this,arguments); try{ if(MS.live&&MS.live.sp===1){ const id=String(MS.live.id); if(!RES[id]) BASE[id]=snap(MS.live); } }catch(e){} return r; }; }catch(e){}
   window.cgtRefresh=refresh;
+})();
+</script>
+<script id="canli-dr-v117">
+// =====================================================================
+// v117 · CANLI KALAN SÜRE MODELİ (uzatma dakikası + artan gol yoğunluğu) — sunucuyla tek kaynak
+// • Formül scripts/canli_istat.py → rem_share() ile BİREBİR aynı; toplayıcı (collector.live_pred) da onu kullanır.
+// • Parametreler tek kaynaktan: data/daily.json → canli.zaman. Toplayıcının zaman sıralı kapısı (maç-blok bootstrap %95 GA
+//   sıfırı dışlamalı) kabul etmedikçe eski doğrusal model kullanılır; kabulde sunucu ve uygulama aynı anda geçer.
+// • Her durumda geçerli düzeltmeler: 90+X dakikada formül artık uzatma devresine (120) düşmez; devre arası (iddaa s=49)
+//   ikinci yarının tamamı kalmış sayılır; ilk yarı uzatması (s=2, 45+X) ikinci yarı sanılmaz (v117 modelinde).
+// • v117 modeli: devre 45+e dk (e1, e2 beklenen uzatma; uzatma başladıysa kalan = max(e − geçen, rmin)); yarı içinde gol
+//   yoğunluğu λ(u) ∝ 1 + ξ(u − ½) (Dixon & Robinson 1998). Kalan pay 1 − F(u), F(u) = u + ξ(u² − u)/2; yarı payları h1 / 1 − h1.
+// =====================================================================
+(function(){
+  "use strict";
+  if(typeof fbRemShare!=="function") return;
+  const ZDEF={v:117,e1:3,e2:3,xi:1,rmin:1};          // canli_istat.ZDEF ile aynı
+  function zaman(){ try{ const z=DAILY&&DAILY.canli&&DAILY.canli.zaman; if(!z||!z.kabul) return null; const Z=Object.assign({},ZDEF);
+      for(const k of ["e1","e2","xi","rmin"]) if(typeof z[k]==="number"&&isFinite(z[k])) Z[k]=z[k]; return Z; }catch(e){ return null; } }
+  // devre: 1 ilk yarı, 2 ikinci yarı, 0 devre arası, null bilinmiyor (iddaa s: 2 / 3 / 49)
+  function pdOf(c){ if(c==null) return null; if(typeof c==="number") return c; if(typeof c!=="object") return null;
+    if(c.pd!=null) return c.pd; if(c.sp!==1) return null; return c.st===2?1:c.st===3?2:c.st===49?0:null; }
+  const F=(u,xi)=>u+xi*(u*u-u)/2;
+  function remShare(t,ctx,Zo){
+    const h1=(typeof MODEL!=="undefined"&&MODEL&&MODEL.params&&MODEL.params.h1)||.4428;
+    let pd=pdOf(ctx); const Z=Zo===undefined?zaman():Zo;
+    if(pd===0) return 1-h1;                                    // devre arası
+    if(!Z){ if(t<45) return (45-t)/45*h1+(1-h1); return Math.max(.012,(90-t)/45*(1-h1)); }   // eski model (90+ hatası düzeltildi)
+    if(pd==null) pd=t<45?1:2;
+    const e1=Z.e1, e2=Z.e2, xi=Z.xi, rmin=Z.rmin;
+    if(pd===1){ const a=Math.max(0,t), r=t<45?(45-t)+e1:Math.max(e1-(t-45),rmin); return (1-F(a/(a+r),xi))*h1+(1-h1); }
+    const a=Math.max(0,t-45), r=t<90?(90-t)+e2:Math.max(e2-(t-90),rmin); return Math.max(.004,(1-F(a/(a+r),xi))*(1-h1)); }
+  fbRemShare=remShare;                                         // eski fbLive / idlPred / canli-gt-v107 core aynı kaynağa bağlanır
+  // ESPN saati: "90'+3'" → 93 (eskiden 90'da kalıyordu); "45'+2'" belirsiz (devre arası olabilir) → 45 kalır
+  try{ const _fm=fbMinute; fbMinute=function(clock,detail){ const r=_fm.apply(this,arguments);
+      if(r===90){ const m=String(clock||"").match(/^\s*90'?\s*\+\s*(\d+)/); if(m) return 90+Math.min(15,+m[1]); } return r; }; }catch(e){}
+  window.CDR={ZDEF,zaman,pdOf,remShare};
 })();
 </script>
 <style id="oxx-kupon-v110s">
