@@ -5658,7 +5658,7 @@ if((location.hash||"")==="#sonuclar") setTimeout(()=>$("navRes").click(),200);
 // =====================================================================
 // BULUTOXX v35: Otomatik sürüm güncelleme — yeni sürüm yayınlanınca uygulama kendini yeniler
 // =====================================================================
-const APP_V="2026-10-26.91";
+const APP_V="2026-10-26.92";
 (function autoUpdate(){
   let shown=false;
   async function check(auto){
@@ -7832,7 +7832,7 @@ setTimeout(()=>{ try{ renderTP(); }catch(e){} },1500);
       h+=ac.map(race).join("")||`<div class="panel"><p class="note" style="margin:0">Bu hipodromda bugün başlamamış koşu kalmadı.</p></div>`;
       if(bt.length) h+=`<details class="sx"><summary>🏁 Biten koşular <small>${bt.length}</small></summary><div class="sx-in">${bt.map(race).join("")}</div></details>`;
     }
-    h+=`<p class="note">Kilit: ${esc(D.kilit_zamani_tsi||"")} · model ${esc(D.model_surumu||"")}. Veri: herkese açık TJK sonuç arşivi (github.com/cenkozgur/tjk-data); BULUTOXX TJK sitesine istek atmaz. ${esc(D.not||"")}</p>`;
+    h+=`<p class="note">Kilit: ${esc(D.kilit_zamani_tsi||"")} · model ${esc(D.model_surumu||"")}. Veri: herkese açık TJK sonuç arşivi (github.com/cenkozgur/tjk-data); BULUTOXX TJK sitesine istek atmaz. ${esc(String(D.not||"").replace(/kosudan_once=false olan koşular canlı karneye sayılmaz\.?/,"Koşular başladıktan sonra eklenen tahminler karneye sayılmaz."))}</p>`;
     box.innerHTML=h;
     box.querySelectorAll("[data-d]").forEach(b=>b.onclick=()=>{ AT.d=b.dataset.d; buzz(6); render(); });
     const oz=$("atOz"); if(oz) oz.addEventListener("toggle",()=>{ try{ localStorage.setItem("bx-at-oz",oz.open?"1":"0"); }catch(e){} });
