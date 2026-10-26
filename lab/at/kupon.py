@@ -1,8 +1,8 @@
-# BULUTOXX at yarışı laboratuvarı — 🎟️ AT KUPONU modülü (Türkiye müşterek bahis türleri için olasılık + geri test).
-# Hobi amaçlı: yalnız olasılık ve KOMBİNASYON SAYISI; para tutarı, bahis bağlantısı yok · 18+.
+# OXXai at yarışı laboratuvarı — 🎟️ AT KUPONU modülü (Türkiye müşterek bahis türleri için olasılık + geri test).
+# Hobi amaçlı: yalnız olasılık ve KOMBİNASYON SAYISI; para tutarı, oyun bağlantısı yok · 18+.
 #
 # Kurallar (açık kaynak araştırması, 2026-10-26; tjk.org'a istek atılmadı):
-#   Ganyan        koşunun birincisi. Ekürili bir ata oynamak ekürinin o koşudaki tüm atlarına oynamaktır (tek birim).
+#   Ganyan        koşunun birincisi. Ekürili bir atı seçmek ekürinin o koşudaki tüm atlarına oynamaktır (tek birim).
 #   Plase         at ilk İKİ dereceye girerse kazanır; en az 7 atlı koşularda açılır. (Ekürili: varsayım — tek birim.)
 #   İkili         ilk iki at, sıra gözetmeksizin; en az 7 atlı koşu.
 #   Sıralı İkili  ilk iki at, bitiş sırasıyla; en az 4 atlı koşu.
@@ -36,18 +36,15 @@ UYARI = "Hobi amaçlı olasılık; garanti değildir · 18+"
 KOVA = [0.0, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.3, 0.5, 1.0000001]
 
 KAYNAKLAR = [
-    {"ad": "e-Bayi Yardım (müşterek bahis kuralları)", "url": "https://ebayi.org/yardim/36"},
-    {"ad": "İstinye Ganyan — Sıkça Sorulan Sorular", "url": "https://istinyeganyan.com/ganyan/sikcaa-sorulan-sorular/"},
-    {"ad": "İddaa Bülteni — TJK bahis türleri", "url": "https://xn--iddaablteni-yhb.com/at-yarisi/at-yarisi-tjk-nasil-oynanir-bahis-turleri-ve-oyunlarin-resmi-aciklamalari-tanimlari/"},
     {"ad": "UAT Racing — Yarışsever Sözlüğü", "url": "https://uatracing.com/sozluk.html"},
 ]
 
 # kod: (ad, kisa, kural, koşu sayısı, sıralı, ilk, en az at, seviyeler (en olası K), kutu (at sayısı))
 TUR = {
-    "ganyan": ("Ganyan", "tek at kazanır",
-               "Koşunun birincisini bil. Ekürili bir ata oynamak ekürinin o koşudaki tüm atlarına oynamaktır (tek birim).",
+    "ganyan": ("Kazanan", "tek at kazanır",
+               "Koşunun birincisini bil. Ekürili bir atı seçmek ekürinin o koşudaki tüm atlarına oynamaktır (tek birim).",
                1, True, 1, 2, [1, 2, 3], []),
-    "plase": ("Plase", "at ilk 2'ye girer",
+    "plase": ("Derece", "at ilk 2'ye girer",
               "Seçilen at ilk iki dereceye girerse kazanır; en az 7 atlı koşularda açılır. Varsayım: ekürili atlar tek birim; "
               "7+ atlı her koşuda ilk 2 (kalabalık alanda ilk 3 kuralı teyit edilemedi).",
               1, False, 2, 7, [1, 2], []),
@@ -62,7 +59,7 @@ TUR = {
               "hipodromdaki her ardışık koşu çifti (aynada çifte bayrağı yok).",
               2, True, 1, 2, [1, 3, 6, 10], [2, 3]),
     "uclu": ("Sıralı Üçlü", "ilk üç, sıralı",
-             "Birinci, ikinci ve üçüncüyü bitiş sırasıyla bil. (TJK'nın '3'lü Ganyan'ı farklıdır: üç koşunun birincileri.) "
+             "Birinci, ikinci ve üçüncüyü bitiş sırasıyla bil. (TJK'nın '3'lü'sü farklıdır: üç koşunun birincileri.) "
              "Varsayım: en az 4 atlı koşu; ekürili atlar ayrı at.",
              1, True, 3, 4, [1, 3, 6, 10, 24, 60], [3, 4, 5]),
     "tabela": ("Tabela", "ilk dört, sıralı",
@@ -454,8 +451,8 @@ def altili_ozet():
                   "n": s.get("n"), "isabet": s.get("isabet"), "beklenen": s.get("beklenen"),
                   "sinama": {x: (sin.get(ad_) or {}).get(x) for x in ("n", "isabet", "beklenen")}})
     ilk = L[0] if L else {}
-    return {"ad": "6'lı Ganyan", "kisa": "art arda 6 koşunun kazananları",
-            "kural": "Ganyan başlangıcı işaretli koşudan itibaren ardışık 6 koşunun birincileri; ekürili atlar bir ayakta tek "
+    return {"ad": "6'lı Tahmin", "kisa": "art arda 6 koşunun kazananları",
+            "kural": "6'lı başlangıcı işaretli koşudan itibaren ardışık 6 koşunun birincileri; ekürili atlar bir ayakta tek "
                      "seçim. Ayrıntı ve canlı karne: altili_karne.json.",
             "koşu_sayisi": 6, "kosu_sayisi": 6, "sirali": True, "ilk": 1, "kaynak": "altili_karne.json",
             "n": ilk.get("n"), "isabet": ilk.get("isabet"), "beklenen": ilk.get("beklenen"), "sinama": ilk.get("sinama"),

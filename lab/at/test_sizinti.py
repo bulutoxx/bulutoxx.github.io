@@ -1,4 +1,4 @@
-# BULUTOXX at yarışı laboratuvarı — sızıntı testi (elle ya da CI'da çalıştırılır).
+# OXXai at yarışı laboratuvarı — sızıntı testi (elle ya da CI'da çalıştırılır).
 # 1) Gün içi sıra testi: seçilen günlerin koşuları ters sırada özelliklendirilse de satırlar birebir aynı olmalı
 #    (aynı gün içindeki başka koşunun sonucu özelliğe sızmıyor).
 # 2) Aynı (at, gün) testi: bir at aynı gün birden çok satırda görünürse (veri tekrarı), atın geçmişine dayalı

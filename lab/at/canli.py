@@ -1,4 +1,4 @@
-# BULUTOXX at yarışı laboratuvarı — GÜN İÇİ (canlı) robot.
+# OXXai at yarışı laboratuvarı — GÜN İÇİ (canlı) robot.
 # Yarış günü her 30 dakikada bir çalışır (at-canli.yml):
 #  1) Aynayı (yalnız github.com/cenkozgur/tjk-data) sığ günceller; tjk.org'a / atyarisi.com'a istek YOK.
 #  2) Kayıtlı yayın modelini yükler (yeniden eğitim YOK) ve bugünün (varsa yarının) koşuları için yalnız koşu
@@ -9,6 +9,8 @@
 #     tahminler (data/at/tahmin) gece.puanla ile karneye eklenir (kosu_id ile idempotent, çift sayım yok).
 #  5) 6'lı ganyan (lab/at/altili.py): o günün 6'lılarını güncel p'lerle data/at/altili/<tarih>.json'a yazar; ilk ayak
 #     başlayınca kupon kilitlenir, sonuçlar geldikçe ayak ayak puanlanır; altili_karne.json'un canlı bölümü tazelenir.
+#  6) Oran izi: koşu öncesi ganyan oranlarını zaman damgalı biriktirir (data/at/oran_izi/<tarih>.json; yalnız değişince
+#     yeni nokta, en çok son 2 gün). Arayüz koşu kartında ve at profilinde mini çizgi olarak gösterir.
 # Depoya yalnız türetilmiş çıktılar yazılır (olasılıklar + koşu/at bilgisi özetleri); ham ayna dosyası yazılmaz.
 import argparse, json, math, os, sys, time
 from collections import defaultdict, deque
@@ -98,7 +100,10 @@ def gun_sonuclari(tarih, kaynak):
             "kazanan_ad": veri.ad(kaz.get("name")), "ganyan": _sayi(kaz.get("odds")),
             # kupon puanlaması için: koşan at sayısı (plase/ikili alt sınırları) ve eşit derece (dead heat) bilgisi
             "kosan": sum(1 for h in r.get("horses") or [] if not h.get("nonRunner")) + len(r.get("unplaced") or []),
-            "derece": poz, "esit": len(set(poz)) < len(poz)}
+            "derece": poz, "esit": len(set(poz)) < len(poz),
+            # koşmayan (start almayan) atlar: kupon satırında seçimden düşülür, kombinasyon yeniden sayılır
+            "kosmayan": sorted({str(h.get("no")) for h in (r.get("nonRunners") or []) + [h for h in r.get("horses") or [] if h.get("nonRunner")]
+                                if h.get("no") not in (None, "")}, key=lambda x: (len(x), x))}
     return out
 
 
@@ -156,16 +161,19 @@ def kosu_canli(m, kosu, gecmis, yayin_modu, sonuc, ekuri=None):
         # derece = sira'daki atların resmî dereceleri (eşit derece = dead heat), ekuri = koşan ekürili at grupları
         kos_no = {str(a["no"]) for a in atlar}
         s["ekuri"] = [g for g in ([str(x) for x in grp if str(x) in kos_no] for grp in (ekuri or [])) if len(g) > 1]
-        for a_ in ("kosan", "derece", "esit"):
+        for a_ in ("kosan", "derece", "esit", "kosmayan"):
             if a_ in sonuc:
                 s[a_] = sonuc[a_]
         if oran_var:   # rapor için (dosyaya yazılmaz): harmanın ve piyasa favorisinin ilk seçimi
             ek["oran_tuttu"] = atlar[int(idx[int(np.argmax(p_o))])]["ad"] == sonuc["kazanan_ad"]
             ek["fav_tuttu"] = atlar[int(idx[int(np.argmax(q))])]["ad"] == sonuc["kazanan_ad"]
     durum = "bitti" if s else ("oran_var" if oran_var else "bekliyor")
+    # koşu düzeyinde (koşu öncesi, programdan) ekürili at grupları: arayüz kurucuda ekürili atları tek birim sayar
+    prog_no = {str(a["no"]) for a in atlar}
+    ekuri_k = [g for g in ([str(x) for x in grp if str(x) in prog_no] for grp in (ekuri or [])) if len(g) > 1]
     return {"kosu_id": f'{kosu["tarih"]}/{kosu["hipodrom"]}/{kosu["kosu"]}', "hipodrom": kosu["hipodrom"],
             "kosu": kosu["kosu"], "saat": kosu.get("saat"), "mesafe": kosu["mesafe"], "pist": kosu["pist"],
-            "sinif": kosu["sinif"], "durum": durum, "atlar": cikti, "sonuc": s}, ek
+            "sinif": kosu["sinif"], "durum": durum, "ekuri": ekuri_k, "atlar": cikti, "sonuc": s}, ek
 
 
 # ---------------------------------------------------------------- dosya
@@ -179,6 +187,84 @@ def yaz_degisince(yol, veri_):
         return False
     gece.jyaz(yol, veri_, sikisik=True)
     return True
+
+
+# ---------------------------------------------------------------- oran izi (gün içi ganyan oranı zaman serisi)
+ORAN_IZI = os.path.join(gece.CIKTI, "oran_izi")
+IZ_MAX = 24   # koşu başına en çok nokta (ilk nokta korunur, aradakiler en eskiden düşer)
+
+
+def _yakalama_saatleri(t, kaynak):
+    """data/daily/<t>.json -> {(hipodrom, koşu): 'HH:MM' TSİ}: aynanın oranı yakaladığı an (snapshotRef.capturedAt)."""
+    out = {}
+    try:
+        js = json.load(open(os.path.join(kaynak, "data", "daily", t + ".json"), encoding="utf-8"))
+    except Exception:
+        return out
+    for r in js:
+        ca = ((r.get("snapshotRef") or {}).get("capturedAt") or "")
+        try:
+            an = datetime.fromisoformat(ca.replace("Z", "+00:00")).astimezone(timezone(timedelta(hours=3)))
+        except ValueError:
+            continue
+        # başka günün yakalaması: oran o güne ait değil (koşu gününün izine yazılmaz) -> ""
+        out[(r.get("venue"), int(r.get("raceNo") or 0))] = an.strftime("%H:%M") if an.date().isoformat() == t else ""
+    return out
+
+
+def oran_izi_guncelle(t, ks, kaynak, simdi):
+    """Koşu öncesi ganyan oranlarını zaman damgalı biriktirir: data/at/oran_izi/<t>.json.
+    Biçim: kosular["<hipodrom>/<koşu>"] = {"t": ["HH:MM", …], "o": {"<at no>": [oran|null, …]}}.
+    Nokta yalnız oranlar bir öncekinden farklıysa eklenir (kompakt); koşu saatinden sonra yakalanan oran yazılmaz.
+    Zaman, aynanın yakalama anı (snapshotRef.capturedAt), yoksa bu çalışmanın saati. Uydurma/ara değer yok."""
+    yol = os.path.join(ORAN_IZI, t + ".json")
+    eski = gece.joku(yol) or {}
+    K = dict(eski.get("kosular") or {})
+    yakala = _yakalama_saatleri(t, kaynak)
+    an_simdi = simdi.strftime("%H:%M") if simdi.date().isoformat() == t else None
+    degisti = False
+    for k in ks:
+        if k.get("sonuc"):
+            continue
+        an = yakala.get((k["hipodrom"], k["kosu"]), an_simdi)
+        saat = k.get("saat") or "99:99"
+        if not an or an > saat:
+            continue
+        o = {str(a["no"]): round(float(a["oran"]), 2) for a in k["atlar"]
+             if a.get("oran") is not None and 1.0 < float(a["oran"]) < 999}
+        if len(o) < 2 or len(o) < math.ceil(len(k["atlar"]) / 2):   # canlı ile aynı kural: alanın en az yarısında oran
+            continue
+        anah = f'{k["hipodrom"]}/{k["kosu"]}'
+        z = K.get(anah) or {"t": [], "o": {}}
+        T, O = list(z.get("t") or []), {n: list(v) for n, v in (z.get("o") or {}).items()}
+        son = {n: v[-1] for n, v in O.items() if v and v[-1] is not None}
+        if T and (an <= T[-1] or son == o):   # aynı yakalama ya da oran değişmedi: dosyaya dokunulmaz (gereksiz commit yok)
+            continue
+        for n in set(O) | set(o):
+            O.setdefault(n, [None] * len(T)).append(o.get(n))
+        T.append(an)
+        if len(T) > IZ_MAX:   # ilk nokta (sabah) korunur
+            dus = len(T) - IZ_MAX
+            T = T[:1] + T[1 + dus:]
+            O = {n: v[:1] + v[1 + dus:] for n, v in O.items()}
+        K[anah] = {"t": T, "o": O}
+        degisti = True
+    if degisti:
+        gece.jyaz(yol, {"tarih": t, "guncelleme_tsi": simdi.strftime("%Y-%m-%d %H:%M"), "kaynak": KAYNAK_ATIF,
+                        "aciklama": "koşu öncesi ganyan oranı; nokta yalnız oran değişince eklenir; t = aynanın yakalama saati (TSİ)",
+                        "kosular": K}, sikisik=True)
+    return degisti
+
+
+def oran_izi_temizle(bugun):
+    """En çok son 2 günün izi tutulur (bugün ve dün; yarının programı varsa o da)."""
+    sinir = (date.fromisoformat(bugun) - timedelta(days=1)).isoformat()
+    try:
+        for f in os.listdir(ORAN_IZI):
+            if f.endswith(".json") and f[:10] < sinir:
+                os.remove(os.path.join(ORAN_IZI, f))
+    except FileNotFoundError:
+        pass
 
 
 def main():
@@ -226,17 +312,22 @@ def main():
         out = {"tarih": t, "guncelleme_tsi": simdi.strftime("%Y-%m-%d %H:%M"), "model_surumu": mj.get("surum", "?"),
                "kaynak": KAYNAK_ATIF, "kosular": ks}
         degisti = yaz_degisince(os.path.join(CANLI, t + ".json"), out)
+        try:   # gün içi oran izi (arayüzde mini çizgi); hata ana canlı akışı durdurmaz
+            iz = oran_izi_guncelle(t, ks, kaynak, simdi)
+        except Exception as e:
+            iz = f"hata ({type(e).__name__})"
         bitti = [k for k in ks if k["durum"] == "bitti"]
         ozet[t] = {"kosu": len(ks), "oran_var": sum(k["durum"] == "oran_var" for k in ks), "bitti": len(bitti),
                    "model_ilk_tuttu": sum(k["sonuc"]["tuttu"] for k in bitti),
                    "oran_ilk_tuttu": sum(1 for e in ekler if e.get("oran_tuttu")),
                    "favori_tuttu": sum(1 for e in ekler if e.get("fav_tuttu")),
-                   "oranli_bitti": sum(1 for e in ekler if "oran_tuttu" in e), "yazildi": degisti}
+                   "oranli_bitti": sum(1 for e in ekler if "oran_tuttu" in e), "yazildi": degisti, "oran_izi": iz}
         try:
             A = altili.gun_guncelle(t, kaynak, simdi=simdi.replace(tzinfo=None))
             ozet[t]["altili"] = len(A["altililar"]) if A else 0
         except Exception as e:   # 6'lı modülü ana canlı akışı asla durdurmaz
             print("6'lı güncellenemedi:", type(e).__name__, e)
+    oran_izi_temizle(bugun)
     print("canlı:", json.dumps(ozet, ensure_ascii=False))
     _, puanlanan = gece.puanla(kosular, yalniz_degisince=True)
     print("karneye eklenen gün(ler):", puanlanan)

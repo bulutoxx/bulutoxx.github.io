@@ -1,4 +1,4 @@
-// BULUTOXX "Bulut" sohbet robotu — sabit test kümesi (çekirdek 165 + ayrı tutulan 59 soru).
+// OXXai sohbet asistanı — sabit test kümesi (çekirdek 170 + ayrı tutulan 59 soru).
 // Tarihten bağımsız yazılmıştır: "+0" = testin çalıştığı gün, "+1" = ertesi gün… ; "Cmt" gibi gün adları mutlak gündür.
 // Sorudaki {D+2} → "27 ekim" biçiminde, {DOT+6} → "31.10" biçiminde tarihe çevrilir.
 // need: testin anlamlı olması için verinin sağlaması gereken koşul (ör. takımın önümüzdeki günlerde maçı olması).
@@ -145,12 +145,17 @@ const core = [
   // ---------- J. Selam / teşekkür / sohbet ----------
   [T("selam", "selam", {})],
   [T("merhaba bulut", "selam", {})],
+  [T("merhaba oxxai", "selam", {})],
+  [T("selam oxx", "selam", {})],
   [T("slm nbr", "selam", {})],
   [T("günaydın", "selam", {})],
   [T("teşekkürler", "tesekkur", {})],
   [T("sağol kanka", "tesekkur", {})],
   [T("eyw", "tesekkur", {})],
   [T("sen kimsin", "kim", {})],
+  [T("oxxai kimsin", "kim", {})],
+  [T("oxxai nedir", "kim", {})],
+  [T("teşekkürler oxxai", "tesekkur", {})],
   [T("adım Ali", "ad", {})],
   [T("kuponum yattı", "kayip", {})],
 

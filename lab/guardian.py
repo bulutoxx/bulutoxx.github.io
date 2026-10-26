@@ -87,7 +87,7 @@ def main():
     def add(tur, baslik, detay, anahtar):
         if any(e.get("anahtar") == anahtar for e in ev): return
         ev.append({"tarih": today, "tur": tur, "baslik": baslik, "detay": detay, "anahtar": anahtar})
-    NM = {"devig": "Bahis marjı ayırma yöntemi", "analist": "Lig güven katsayıları", "auto_lab": "Laboratuvar karışımı", "motor sürümü": "Motor sürümü", "canli_platt": "Canlı olasılık kalibrasyonu (Platt)",
+    NM = {"devig": "Piyasa marjı ayırma yöntemi", "analist": "Lig güven katsayıları", "auto_lab": "Laboratuvar karışımı", "motor sürümü": "Motor sürümü", "canli_platt": "Canlı olasılık kalibrasyonu (Platt)",
           "cal_yol": "Olasılık kalibrasyonunun öğrenildiği yol", "elo_kupa": "Kupa güçlerinde Club Elo (açık veri)"}
     for ch in log["degisiklikler"]:
         f = ch.get("fark") or {}

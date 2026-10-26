@@ -35,7 +35,7 @@ def main():
     if dup > 50: out["uyari"].append(f"{dup} tekrar eden maç kaydı")
     if bad: out["ciddi"].append(f"{bad} imkânsız skor")
     if same: out["ciddi"].append(f"{same} maçta aynı takım iki tarafta (isim eşleme hatası)")
-    if odd_bad > 100: out["uyari"].append(f"{odd_bad} maçta anormal bahis marjı")
+    if odd_bad > 100: out["uyari"].append(f"{odd_bad} maçta anormal piyasa marjı")
     if stale: out["uyari"].append("Uzun süredir yeni maç gelmeyen ligler (sezon arası olabilir): " + ", ".join(stale[:10]))
     try:
         fx = json.load(open(os.path.join(DATA, "fixtures.json"), encoding="utf-8"))

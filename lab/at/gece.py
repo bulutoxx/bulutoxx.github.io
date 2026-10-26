@@ -1,4 +1,4 @@
-# BULUTOXX at yarışı laboratuvarı — gece boru hattı.
+# OXXai at yarışı laboratuvarı — gece boru hattı.
 # 1) Aynayı sığ klonla/güncelle (yalnız github.com/cenkozgur/tjk-data; tjk.org'a istek YOK)
 # 2) Sızıntısız özellikler + tam yeniden eğitim + zaman sıralı sınama
 # 3) KAPI: yeni tarif ancak aynı sınama koşularında yalnız-model log-loss'unu düşürür, ilk-seçim isabetini bozmaz
@@ -717,7 +717,7 @@ def rapor_yaz(mj, karne, bugun, ayna_durumu):
     d = mj["degerlendirme"]; mt = d["metrik"]; kp = mj["kapi"]; kap = mj["kapsam"]
     L = []
     a = L.append
-    a("# BULUTOXX 🐎 At Yarışı Laboratuvarı — Rapor")
+    a("# OXXai 🐎 At Yarışı Laboratuvarı — Rapor")
     a("")
     a(f"_Otomatik üretildi: {mj['guncelleme']} · model sürümü `{mj['surum']}` · hobi amaçlıdır, garanti değildir · 18+_")
     a("")
@@ -956,7 +956,7 @@ def rapor_yaz(mj, karne, bugun, ayna_durumu):
     a("`.github/workflows/at-lab.yml` her gün 05:23 ve 12:23 TSİ'de, ayrıca `lab/at/**` değişince veya elle çalışır (main dalı). "
       "Çıktılar yalnız `data/at/` ve `lab/at/RAPOR.md`'ye yazılır. Gece akışı 2 çekirdekte ≈5–6 dakika sürer (ablasyon haftada bir; ölçüldü: ablasyonlu tam akış 347 sn).")
     a("")
-    a(f"_Kaynak atfı: TJK verilerinin herkese açık aynası {veri.AYNA_URL}. Model ve olasılıklar BULUTOXX laboratuvarınındır._")
+    a(f"_Kaynak atfı: TJK verilerinin herkese açık aynası {veri.AYNA_URL}. Model ve olasılıklar OXXai laboratuvarınındır._")
     open(RAPOR, "w", encoding="utf-8").write("\n".join(L) + "\n")
 
 
@@ -1130,6 +1130,11 @@ def main():
         print("jokeyler:", len(jj["jokeyler"]), "jokey,", len(jj["antrenorler"]), "antrenör,", len(jj["ikililer"]), "ikili")
     except Exception as e:   # arayüz özeti yayın modelini asla durdurmaz
         print("jokeyler.json üretilemedi:", type(e).__name__, e)
+    try:   # 🐎 at kariyeri (arayüz At profili): yalnız bugün/yarın koşucuları, sonuç arşivinden türetilmiş kompakt özet
+        import kariyer
+        print("kariyer:", kariyer.yaz(kosular, [bugun, yarin]), "at")
+    except Exception as e:   # arayüz özeti yayın modelini asla durdurmaz
+        print("kariyer.json üretilemedi:", type(e).__name__, e)
     jyaz(os.path.join(CIKTI, "model.json"), mj)
     rapor_yaz(mj, karne, bugun, ayna)
     print("tamam")

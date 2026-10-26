@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""BULUTOXX basketbol isabet laboratuvarı (ağsız, yalnız repodaki veri).
+"""OXXai basketbol isabet laboratuvarı (ağsız, yalnız repodaki veri).
 
 Ölçer:
   * kilitli tahmin günlüğü (data/bk_predlog.json) sonuçlananlar: isabet, log-loss, Brier
