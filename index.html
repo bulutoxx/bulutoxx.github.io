@@ -23,9 +23,9 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="OXXai">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" type="image/png" sizes="32x32" href="icons/oxxai-32.png">
-<link rel="icon" type="image/png" sizes="192x192" href="icons/oxxai-192.png">
-<link rel="apple-touch-icon" href="icons/oxxai-apple-180.png">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/oxxai2-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/oxxai2-192.png">
+<link rel="apple-touch-icon" href="icons/oxxai2-apple-180.png">
 <link rel="preload" as="image" href="icons/oxxai-splash.webp" type="image/webp" fetchpriority="high">
 <style>
 /* Layout: iOS tarzı tek sütun uygulama — cam üst bar, büyük başlık, gruplanmış kartlar, cam sekme çubuğu. Marka gereği bilinçli tek (koyu) tema. */
@@ -3005,7 +3005,7 @@ const Goal={
     el.hidden=false; Sound.goal(); buzz([60,40,60,40,180]);
     Voice.say(`Gol! ${team}. Skor ${e.h} ${e.hs}, ${e.a} ${e.as}.${g&&g.who?" Golü atan "+g.who+".":""}`);
     if(document.hidden && "Notification" in window && Notification.permission==="granted"){
-      const opt={body:`${e.h} ${e.hs} - ${e.as} ${e.a}${by?"\n"+by:""}`, icon:"icons/oxxai-192.png", badge:"icons/oxxai-192.png", tag:"goal-"+e.id, renotify:true};
+      const opt={body:`${e.h} ${e.hs} - ${e.as} ${e.a}${by?"\n"+by:""}`, icon:"icons/oxxai2-192.png", badge:"icons/oxxai2-192.png", tag:"goal-"+e.id, renotify:true};
       (navigator.serviceWorker && navigator.serviceWorker.ready ? navigator.serviceWorker.ready.then(r=>r.showNotification("GOL! "+team,opt)) : Promise.reject())
         .catch(()=>{ try{ new Notification("GOL! "+team,opt); }catch(_){} });
     }
@@ -3257,7 +3257,7 @@ async function doInstall(){
       <div class="istep"><span class="n">2</span><span><b>Uygulamayı yükle</b> veya <b>Ana ekrana ekle</b>'yi seç</span></div></div>`;
   }
   sh.innerHTML=`<div class="box" role="dialog" aria-modal="true" aria-label="Uygulamayı yükle"><div class="grab"></div>
-    <div class="ihead"><img src="icons/oxxai-192.png" alt=""><div><h2>OXXai'yi yükle</h2><p class="note">Ücretsiz · reklamsız · 1 MB'tan küçük</p></div></div>
+    <div class="ihead"><img src="icons/oxxai2-192.png" alt=""><div><h2>OXXai'yi yükle</h2><p class="note">Ücretsiz · reklamsız · 1 MB'tan küçük</p></div></div>
     ${body}<button class="btn ghost" id="instClose" type="button" style="margin-top:12px">Kapat</button></div>
     ${IS_IOS&&!IN_APP&&!/CriOS|FxiOS|EdgiOS/.test(UA)?'<div class="iarrow" aria-hidden="true"></div>':""}`;
   sh.hidden=false;
@@ -3276,7 +3276,7 @@ async function shareApp(){
 (function mountInstall(){
   const strip=$("todayStrip");
   const card=document.createElement("div"); card.id="installCard"; card.className="icard";
-  card.innerHTML=`<img src="icons/oxxai-192.png" alt="">
+  card.innerHTML=`<img src="icons/oxxai2-192.png" alt="">
     <div class="tx"><b>OXXai uygulamasını yükle</b><small data-count hidden></small><small class="sub">Ana ekrandan tek dokunuşla aç, gol bildirimlerini al</small></div>
     <button class="ibtn" type="button" id="installBtn">Yükle</button>`;
   strip.parentNode.insertBefore(card, strip);
@@ -3364,7 +3364,7 @@ function drawQR(canvas, text){
     ctx.fillStyle="#fff"; ctx.beginPath(); ctx.roundRect?ctx.roundRect(0,0,S,S,18):ctx.rect(0,0,S,S); ctx.fill();
     ctx.fillStyle="#0B1530";
     for(let r=0;r<n;r++) for(let c=0;c<n;c++) if(q.isDark(r,c)) ctx.fillRect(pad+c*cs,pad+r*cs,Math.ceil(cs),Math.ceil(cs));
-    const img=new Image(); img.onload=()=>{ const L=S*.22; ctx.fillStyle="#fff"; ctx.fillRect((S-L)/2-4,(S-L)/2-4,L+8,L+8); ctx.drawImage(img,(S-L)/2,(S-L)/2,L,L); }; img.src="icons/oxxai-192.png";
+    const img=new Image(); img.onload=()=>{ const L=S*.22; ctx.fillStyle="#fff"; ctx.fillRect((S-L)/2-4,(S-L)/2-4,L+8,L+8); ctx.drawImage(img,(S-L)/2,(S-L)/2,L,L); }; img.src="icons/oxxai2-192.png";
   }catch(e){ canvas.parentElement.hidden=true; } };
   if(window.qrcode) go(); else { const s=document.createElement("script"); s.src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"; s.onload=go; s.onerror=()=>{ canvas.parentElement.hidden=true; }; document.head.appendChild(s); }
 }
@@ -3640,12 +3640,12 @@ const mock={
     <div class="mk-row dim">${ICN.copy}<b>Kopyala</b></div><div class="mk-row dim">${ICN.book}<b>Okuma Listesine Ekle</b></div>
     <div class="mk-row hl">${ICN.plus}<b>Ana Ekrana Ekle</b>${tapRing}</div></div>`,
   addDlg:()=>`<div class="mk-dlg"><div class="mk-top"><span>Vazgeç</span><b>Ana Ekrana Ekle</b><span class="mk-add hl">Ekle${tapRing}</span></div>
-    <div class="mk-app"><img src="icons/oxxai-192.png" alt=""><div><b>OXXai</b><small>bulutoxx.github.io</small></div></div></div>`,
-  home:()=>`<div class="mk-home">${'<i></i>'.repeat(7)}<span class="mk-me"><img src="icons/oxxai-192.png" alt=""><small>OXXai</small></span>${'<i></i>'.repeat(4)}</div>`,
+    <div class="mk-app"><img src="icons/oxxai2-192.png" alt=""><div><b>OXXai</b><small>bulutoxx.github.io</small></div></div></div>`,
+  home:()=>`<div class="mk-home">${'<i></i>'.repeat(7)}<span class="mk-me"><img src="icons/oxxai2-192.png" alt=""><small>OXXai</small></span>${'<i></i>'.repeat(4)}</div>`,
   chromeTop:()=>`<div class="mk-bar top"><span class="mk-url">bulutoxx.github.io</span><span class="mk-c hl">${ICN.share}${tapRing}</span></div>`,
   androidTop:()=>`<div class="mk-bar top"><span class="mk-url">bulutoxx.github.io</span><span class="mk-c hl">${ICN.kebab}${tapRing}</span></div>`,
   androidMenu:()=>`<div class="mk-sheet"><div class="mk-row dim">${ICN.tab}<b>Yeni sekme</b></div><div class="mk-row hl">${ICN.plus}<b>Ana ekrana ekle</b>${tapRing}</div><div class="mk-row dim">${ICN.book}<b>Yer işaretleri</b></div></div>`,
-  androidDlg:()=>`<div class="mk-dlg"><div class="mk-app"><img src="icons/oxxai-192.png" alt=""><div><b>OXXai</b><small>bulutoxx.github.io</small></div></div><div class="mk-btns"><span>İptal</span><span class="mk-add hl">Ekle${tapRing}</span></div></div>`
+  androidDlg:()=>`<div class="mk-dlg"><div class="mk-app"><img src="icons/oxxai2-192.png" alt=""><div><b>OXXai</b><small>bulutoxx.github.io</small></div></div><div class="mk-btns"><span>İptal</span><span class="mk-add hl">Ekle${tapRing}</span></div></div>`
 };
 function installSlides(){
   const done={t:"Hazır! 🎉", s:"Ana ekrandaki <b>OXXai</b> simgesine dokun. Uygulama tam ekran açılır.", m:mock.home()};
@@ -4185,7 +4185,7 @@ function ezRow(n,t,ic,cls){ return `<div class="ez-r"><span class="n">${n}</span
 function ezCard(sub, body){
   document.querySelectorAll("#coach,#ez,.iarrow").forEach(x=>x.remove()); const sh=$("sheet"); if(sh&&!sh.hidden&&/Uygulamayı yükle/.test(sh.innerHTML)){ sh.hidden=true; sh.innerHTML=""; }
   const c=document.createElement("div"); c.id="ez"; c.className="ez"; c.setAttribute("role","dialog"); c.setAttribute("aria-label","OXXai'yi yükle");
-  c.innerHTML=`<div class="ez-h"><img src="icons/oxxai-192.png" alt=""><div><b>OXXai'yi ana ekrana ekle</b><small>${sub}</small></div><button class="ez-x" type="button" aria-label="Kapat">✕</button></div>${body}`;
+  c.innerHTML=`<div class="ez-h"><img src="icons/oxxai2-192.png" alt=""><div><b>OXXai'yi ana ekrana ekle</b><small>${sub}</small></div><button class="ez-x" type="button" aria-label="Kapat">✕</button></div>${body}`;
   document.body.appendChild(c);
   c.querySelector(".ez-x").onclick=()=>{ c.remove(); document.querySelectorAll(".iarrow").forEach(x=>x.remove()); document.body.classList.remove("ios-guide"); };
   c.querySelectorAll("[data-copy]").forEach(b=>b.onclick=async(e)=>{ e.preventDefault(); try{ await navigator.clipboard.writeText(SITE_URL); toast("Bağlantı kopyalandı"); }catch(e){ toast("bulutoxx.github.io"); } });
@@ -5661,7 +5661,7 @@ if((location.hash||"")==="#sonuclar") setTimeout(()=>$("navRes").click(),200);
 // =====================================================================
 // OXXai v35: Otomatik sürüm güncelleme — yeni sürüm yayınlanınca uygulama kendini yeniler
 // =====================================================================
-const APP_V="2026-10-27.112";
+const APP_V="2026-10-27.113";
 (function autoUpdate(){
   let shown=false;
   async function check(auto){
@@ -6458,7 +6458,7 @@ oynAdd=function(items,name){ _oynAdd0(items,name); try{ const sl=OYN.L[0]; if(sl
 function oynNotify(sl){ const st=oynSt(sl), od=sl.items.reduce((a,i)=>a*(i.odd||1),1);
   const t=st==="g"?`🎉 Takip ettiğin listenin tüm tahminleri tuttu (${sl.items.length} maç)`:`Takip ettiğin liste sonuçlandı · ${sl.items.filter(i=>i.ok).length}/${sl.items.length} tuttu`;
   toast(t); try{ Sound.toggle(st==="g"); }catch(e){}
-  try{ if(document.hidden&&"Notification" in window&&Notification.permission==="granted"&&navigator.serviceWorker) navigator.serviceWorker.ready.then(r=>r.showNotification("OXXai · Sonuç takibim",{body:t,icon:"icons/oxxai-192.png",tag:"oyn-"+sl.id})); }catch(e){} }
+  try{ if(document.hidden&&"Notification" in window&&Notification.permission==="granted"&&navigator.serviceWorker) navigator.serviceWorker.ready.then(r=>r.showNotification("OXXai · Sonuç takibim",{body:t,icon:"icons/oxxai2-192.png",tag:"oyn-"+sl.id})); }catch(e){} }
 // maç bitince sonucu tara: önce iddaa maç numarasıyla, yoksa takım adlarıyla; 30 saatte bulunamayan elle işaretlenir
 oynGrade=async function(){ if(oynBusy) return; oynBusy=true; let ch=0; const before=new Map(OYN.L.map(sl=>[sl.id,oynSt(sl)]));
   try{ const now=Date.now(), due=[];
@@ -6475,7 +6475,7 @@ oynGrade=async function(){ if(oynBusy) return; oynBusy=true; let ch=0; const bef
   if(ch){ const fin=[]; for(const sl of OYN.L){ const b=before.get(sl.id), a=oynSt(sl); if(b==="w"&&a!=="w"&&!sl.done){ sl.done=Date.now(); fin.push(sl); } }
     if(fin.length===1) oynNotify(fin[0]);
     else if(fin.length>1){ const w=fin.filter(sl=>oynSt(sl)==="g").length, t=`${fin.length} listen sonuçlandı: ${w} tanesinde tüm tahminler tuttu`; toast(t);
-      try{ if(document.hidden&&"Notification" in window&&Notification.permission==="granted"&&navigator.serviceWorker) navigator.serviceWorker.ready.then(r=>r.showNotification("OXXai · Sonuç takibim",{body:t,icon:"icons/oxxai-192.png",tag:"oyn-toplu"})); }catch(e){} }
+      try{ if(document.hidden&&"Notification" in window&&Notification.permission==="granted"&&navigator.serviceWorker) navigator.serviceWorker.ready.then(r=>r.showNotification("OXXai · Sonuç takibim",{body:t,icon:"icons/oxxai2-192.png",tag:"oyn-toplu"})); }catch(e){} }
     OYN.save(); oynBadge(); oynLearn(); if($("oynBox")) renderOyn(); } };
 // kişisel istatistik
 function oynStats(){ const I=OYN.L.flatMap(sl=>sl.items.map(i=>Object.assign({sl},i))).filter(i=>i.ok!=null);
@@ -7663,7 +7663,7 @@ setTimeout(()=>{ try{ renderTP(); }catch(e){} },1500);
 // data/at/karne.json (kilitli tahminlerin sonuçları). Kaynak: açık TJK arşivi; tjk.org'a istek yok. Hobi amaçlı, 18+.
 // =====================================================================
 (function(){
-  const LOGO=(k)=>`<svg viewBox="0 0 64 64" aria-hidden="true"><defs><linearGradient id="atG%s" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFF3C2"/><stop offset=".35" stop-color="#E6C35C"/><stop offset=".7" stop-color="#B8892B"/><stop offset="1" stop-color="#F3DC8A"/></linearGradient><radialGradient id="atB%s" cx=".35" cy=".3" r=".9"><stop offset="0" stop-color="#1B2A4A"/><stop offset="1" stop-color="#060B18"/></radialGradient></defs><circle cx="32" cy="32" r="30" fill="url(#atB%s)"/><circle cx="32" cy="32" r="29" fill="none" stroke="url(#atG%s)" stroke-width="2.2"/><circle cx="32" cy="32" r="25.5" fill="none" stroke="url(#atG%s)" stroke-width=".6" opacity=".55"/><path d="M41 52 C43.5 45 45 38 43.5 31 C42 24 37.5 18.5 32 16.5 L30.5 10.5 L27.6 16 C22.8 17.2 18.6 21 16 26.5 L12.2 33.4 C11.2 35.6 12.4 38.2 14.8 38.2 L19.6 37 C22.2 38.6 23.8 41.5 23.8 45.2 L23.4 52 Z" fill="url(#atG%s)"/><path d="M32 16.5 C38 18 43.6 23.5 45.6 30.5 C47 36 46.4 43 44.2 50" fill="none" stroke="#FFF3C2" stroke-width="1.3" stroke-linecap="round" opacity=".85"/><path d="M34.5 20 C39 22.5 42 27 43 32 M36 26 C38.5 28.5 40 32 40.2 36" fill="none" stroke="#7A5A14" stroke-width="1" stroke-linecap="round" opacity=".55"/><circle cx="25.6" cy="24.6" r="1.6" fill="#0B1222"/><ellipse cx="14.6" cy="35.2" rx="1" ry=".8" fill="#0B1222" opacity=".8"/><path d="M18 52 H46" stroke="url(#atG%s)" stroke-width="1.4" stroke-linecap="round" opacity=".7"/></svg>`.replace(/%s/g,k);
+  const LOGO=(k)=>`<img class="at-emb" src="icons/oxxai-at.webp" alt="" aria-hidden="true" decoding="async" onerror="this.onerror=null;this.src='icons/oxxai-at.png'">`;
   const AT={days:[], d:null, data:{}, model:null, karne:null, hip:null, open:new Set(), busy:false, tab:"tah"};
   const pct=x=>x==null?"–":"%"+Math.round(x*100);
   const dISO=o=>istDay(new Date(Date.now()+o*864e5));
@@ -7853,7 +7853,7 @@ setTimeout(()=>{ try{ renderTP(); }catch(e){} },1500);
     main.appendChild(s); }
   function openAt(){ showSport("at"); }
   // ⚽ / 🏀 / 🐎 seçici: her seçiciye At düğmesi; At'a basınca tüm At bölümü (tahmin, Altın, sonuçlar) açılır
-  const LOGO_S=`<svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="30" fill="#0B1428"/><circle cx="32" cy="32" r="28.6" fill="none" stroke="#E6C35C" stroke-width="3"/><path d="M41 52 C43.5 45 45 38 43.5 31 C42 24 37.5 18.5 32 16.5 L30.5 10.5 L27.6 16 C22.8 17.2 18.6 21 16 26.5 L12.2 33.4 C11.2 35.6 12.4 38.2 14.8 38.2 L19.6 37 C22.2 38.6 23.8 41.5 23.8 45.2 L23.4 52 Z" fill="#EBC963"/><path d="M32 16.5 C38 18 43.6 23.5 45.6 30.5 C47 36 46.4 43 44.2 50" fill="none" stroke="#FFF3C2" stroke-width="2" stroke-linecap="round"/><circle cx="25.6" cy="24.6" r="2" fill="#0B1222"/></svg>`;
+  const LOGO_S=`<img class="at-emb" src="icons/oxxai-at.webp" alt="" aria-hidden="true" decoding="async" onerror="this.onerror=null;this.src='icons/oxxai-at.png'">`;
   const ATB=`<button type="button" data-s="at" aria-pressed="false" class="sw-at"><span class="sw-logo">${LOGO_S}</span>At</button>`;
   function swMount(){ document.querySelectorAll(".sport-sw").forEach(sw=>{ if(!sw.querySelector('[data-s="at"]')) sw.insertAdjacentHTML("beforeend",ATB);
       sw.querySelectorAll("button").forEach(b=>{ if(b.dataset.s==="bk"&&!b.dataset.sh){ b.dataset.sh=1; b.innerHTML="🏀 Basket"; }
@@ -10951,7 +10951,7 @@ small>.tvar.d:first-child{margin-left:0;margin-right:2px}
   const notFound=t=>`<div class="a2-card a2-empty"><div class="e" aria-hidden="true">🔎</div><b>${E(t)}</b><p>Bu kayıt seçili günün verisinde yok (eski bir bağlantı olabilir).</p><a class="a2-btn q" href="#at/program" data-tab="program">Programa dön</a></div>`;
   const foot=()=>{ const Dd=D(); return `<p class="a2-foot">${Dd&&Dd.kilit_zamani_tsi?`Kilit: ${E(Dd.kilit_zamani_tsi)} · model ${E(Dd.model_surumu||"")}. `:""}Veri: herkese açık TJK sonuç arşivi (github.com/cenkozgur/tjk-data); OXXai TJK sitesine istek atmaz. Hobi amaçlı olasılıktır, garanti değildir. Para tutarı gösterilmez · 18+</p>`; };
   const dayChips=()=>AT.days.length>1?`<div class="a2-chips" role="group" aria-label="Gün seç">${AT.days.map(x=>`<button class="a2-chip" type="button" data-day="${x}" aria-pressed="${x===AT.d}">${E(dLbl(x))}</button>`).join("")}</div>`:"";
-  function titleRow(){ const R=races(); return `<div class="a2-hd"><h1>At Yarışı<span class="a2-dn">DENEME</span><small>${E(dLbl(AT.d))} · ${hips().length} hipodrom · ${R.length} koşu</small></h1>
+  function titleRow(){ const R=races(); return `<div class="a2-hd"><h1><img class="at-emb a2-emb" src="icons/oxxai-at.webp" alt="" aria-hidden="true" decoding="async" onerror="this.onerror=null;this.src='icons/oxxai-at.png'">At Yarışı<span class="a2-dn">DENEME</span><small>${E(dLbl(AT.d))} · ${hips().length} hipodrom · ${R.length} koşu</small></h1>
     <a class="a2-ib" href="#at/istatistik" aria-label="İstatistik: model karnesi ve jokey sıralaması">${IC.stat}</a><a class="a2-ib" href="#at/takip" aria-label="Takip listem${tkN()?" ("+tkN()+")":""}">${tkN()?IC.starF:IC.star}</a></div>`; }
   // ---------- 1) BUGÜN ----------
   function vBugun(){ const d=AT.d, R=races(); let h=titleRow()+dayChips();
@@ -12284,11 +12284,11 @@ nav.tabs .pw-btn .pw-lb{background:linear-gradient(180deg,#FFE9A3,#F7CD55 45%,#C
     let h=`<img class="oxw-lg" src="icons/oxxai-logo.webp" alt="" width="118" height="118">`;
     h+= hello?`<h2><s>BULUTOXX</s> artık <em>OXX<i>ai</i></em></h2><p>Aynı uygulama, yeni kimlik. Tahminlerin, kuponların ve ayarların yerinde duruyor.</p>`
              :`<h2>Yeni <em>OXX<i>ai</i></em> simgesi</h2>`;
-    if(icon&&isIOS) h+=`<div class="oxw-box"><h3><img src="icons/oxxai-apple-180.png" alt="">Yeni simgeyi ana ekranında gör</h3>
+    if(icon&&isIOS) h+=`<div class="oxw-box"><h3><img src="icons/oxxai2-apple-180.png" alt="">Yeni simgeyi ana ekranında gör</h3>
       <ol><li><b>Verilerimi kopyala</b>'ya dokun, Notlar'a yapıştır (bağlantı ve yedek kodu birlikte).</li><li>Ana ekranda simgeye basılı tut → <b>Uygulamayı Sil</b>.</li><li>Nottaki bağlantıya dokun, Safari'de <b>Paylaş → Ana Ekrana Ekle</b>.</li><li>Yeni simgeden aç: Menü › <b>Verilerimi taşı</b> › <b>Yedeği geri yükle</b>.</li></ol>
       <small>iPhone'da ana ekran uygulamasının verisi Safari'den ayrıdır; simgeyi silmek bu telefondaki kuponlarını ve ayarlarını da siler. Önce yedek al. İstemezsen hiçbir şey yapma: eski simge de OXXai'yi açar.</small>
       <div class="oxw-bk"><button type="button" id="oxBkC">📋 Verilerimi kopyala</button><button type="button" id="oxBkR">↩︎ Yedeği geri yükle</button></div></div>`;
-    else if(icon&&isAndroid) h+=`<div class="oxw-box"><h3><img src="icons/oxxai-192.png" alt="">Ana ekran simgesi</h3><p style="margin:0;font-size:13.5px;color:var(--ink2)">Telefonun OXXai simgesini ve adını birkaç gün içinde kendiliğinden günceller. Kuponların ve ayarların silinmez; bir şey yapmana gerek yok.</p></div>`;
+    else if(icon&&isAndroid) h+=`<div class="oxw-box"><h3><img src="icons/oxxai2-192.png" alt="">Ana ekran simgesi</h3><p style="margin:0;font-size:13.5px;color:var(--ink2)">Telefonun OXXai simgesini ve adını birkaç gün içinde kendiliğinden günceller. Kuponların ve ayarların silinmez; bir şey yapmana gerek yok.</p></div>`;
     h+=`<button class="oxw-go" type="button" data-x="1">Harika, devam et</button>`;
     sheet(h,()=>{ LS.set(K_HELLO,"1"); if(icon) LS.set(K_ICON,"1"); });
     const c=$("oxBkC"), r=$("oxBkR"); if(c) c.onclick=e=>{ e.stopPropagation(); copyBackup(); }; if(r) r.onclick=e=>{ e.stopPropagation(); restoreSheet(); };
@@ -12318,6 +12318,15 @@ nav.tabs .pw-btn .pw-lb{background:linear-gradient(180deg,#FFE9A3,#F7CD55 45%,#C
 .g2-chk input[type=checkbox]:active{transform:scale(.94)}
 .g2-chk:has(input:checked){border-color:rgba(247,205,85,.7);background:rgba(247,205,85,.08)}
 @media (prefers-reduced-motion:reduce){.g2-chk input[type=checkbox],.g2-chk input[type=checkbox]::after{transition:none}}
+</style>
+<style id="at-amblem-v113">
+.at-emb{width:100%;height:100%;object-fit:contain;display:block;filter:drop-shadow(0 4px 10px rgba(212,175,55,.35))}
+.sport-sw .sw-logo .at-emb{filter:none}
+.sport-sw .sw-logo{width:24px!important;height:24px!important}
+@media (max-width:380px){.sport-sw .sw-logo{width:21px!important;height:21px!important}}
+.at-hero .at-logo{width:76px!important;height:76px!important}
+.a2-hd h1 .a2-emb{display:inline-block;width:56px;height:56px;vertical-align:-14px;margin-right:10px;filter:drop-shadow(0 4px 12px rgba(212,175,55,.4))}
+@media (max-width:380px){.a2-hd h1 .a2-emb{width:46px;height:46px;margin-right:8px}}
 </style>
 </body>
 </html>
