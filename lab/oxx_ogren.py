@@ -10,8 +10,11 @@
    modeli / sızıntısız at yeniden oynatması). Günler ikiye bölünür: seçim dilimi (ilk 2/3) ve sınama dilimi (son 1/3).
 3) KAPI (hepsi gerekli):
    a) seçim diliminde aday tabandan iyi;
-   b) sınama diliminde eşleştirilmiş gün bootstrap'ının (B=2000) tek yanlı alt sınırı > 0, güven düzeyi deneme sayısıyla
-      katılaşır: α = 0,05 / m (Bonferroni; m = bu yılın verisiyle o alanda bugüne kadar yapılan TÜM sınamalar, bu dahil);
+   b) sınama diliminde eşleştirilmiş gün bootstrap'ının (B=2000) tek yanlı alt sınırı > 0; düzey α_t ALFA YATIRIMI ile
+      (Foster & Stine 2008; alan-yıl başına servet W, başlangıç 0,05·0,95): sinyalli aday W/3, kör keşif W/20 harcar
+      (en çok 0,05); istatistiksel olarak geçmeyen test servetten α_t/(1−α_t) düşer, geçen test 0,05 ödül kazandırır.
+      Bu, toplam yanlış keşif oranını (mFDR) 0,05'te tutar. Eski kural (α = 0,05/m, m her yıl büyür) toplamda bu
+      kontrolü sağlamıyordu (100 sahte testte ortalama 0,26 sahte kabul) ve gerçek keşiften sonra da katılaşmaya devam ediyordu;
    c) koruma: Altın bacak isabeti ve güçlü (≥%70) bacak isabeti sınamada düşmez; kupon sayısı tabanın %70'inden aşağı inmez;
    d) koruyucu (lab/guardian.py) geri alma aktifse ya da bu anahtar OXXai geri alma süresindeyse kabul DONDURULUR.
 4) Geçen değişiklik yalnız data/oxx_ayar.json'a küçük, geri alınabilir bir parametre olarak yazılır (motorun model.json ayarlarına
@@ -38,9 +41,12 @@ import oxx_kupon as K  # noqa: E402
 KUYRUK = os.path.join(DATA, "deney_kuyrugu.json")
 GUNLUK = os.path.join(DATA, "ogrenme_gunlugu.json")
 OXX_RB = os.path.join(DATA, "oxx_rollback.json")
+GOLGE = os.path.join(DATA, "deney", "golge.json")   # sürekli deney (lab/surekli_deney.py): gölge ölçümdeki adaylar burada sınanmaz
 N_GECE = int(os.environ.get("OXX_N", "3"))
 BUDGET = float(os.environ.get("OXX_BUDGET", "300"))
 ALFA, B_BOOT, Z_SINYAL, BEKLEME, IZLEME = 0.05, 2000, 1.5, 14, 14
+YATIRIM_W0, YATIRIM_ODUL = ALFA * (1 - ALFA), ALFA        # alfa yatırımı: başlangıç serveti ve keşif ödülü (ω ≤ α)
+YATIRIM_PAY = {"sinyal": 1 / 3, "kesif": 1 / 20}         # servetin bir testte harcanan payı (sinyalli aday / kör keşif)
 ESIK = {"fb_altin": ("p_min", .70, .90), "fb_70": ("p_bacak", .62, .85), "fb_3lu": ("p_min", .52, .80), "fb_deger": ("p_min", .30, .60),
         "fb_guvenli": ("p_min", .72, .92), "bk_en_olasi": ("p_min", .55, .80)}
 T0 = time.time()
@@ -71,6 +77,29 @@ def koy(params, yol, deger):
 
 def aday_ayar(J, yol, deger):
     G = copy.deepcopy(J); koy(G.setdefault("params", {}), yol, deger); return G
+
+
+# ------------------------------------------------------------------ alfa yatırımı (çevrimiçi yanlış keşif kontrolü)
+def _yatirim(GL, alan_k):
+    return GL.setdefault("alfa_yatirimi", {}).setdefault(alan_k, {"servet": YATIRIM_W0, "test": 0, "kesif_kabul": 0})
+
+
+def kesif_mi(c):
+    return str((c.get("sinyal") or {}).get("kaynak", "")).startswith("keşif")
+
+
+def yatirim_alfa(GL, alan_k, c):
+    """Bu test için α_t: servetin önceliğe göre payı (sinyalli aday daha çok, kör keşif az harcar)."""
+    W = max(0.0, _yatirim(GL, alan_k)["servet"])
+    return min(ALFA, W * YATIRIM_PAY["kesif" if kesif_mi(c) else "sinyal"])
+
+
+def yatirim_guncelle(GL, alan_k, alfa, gecti):
+    """Foster–Stine: geçmeyen test α/(1−α) öder, geçen test ω kazanır. Servet 0'ın altına inmez (kapı yıl sonuna kadar kapanır)."""
+    st = _yatirim(GL, alan_k)
+    st["servet"] = round(max(0.0, st["servet"] + (YATIRIM_ODUL if gecti else -alfa / (1 - alfa))), 8)
+    st["test"] += 1; st["kesif_kabul"] += int(bool(gecti))
+    return st
 
 
 # ------------------------------------------------------------------ 1) sinyaller
@@ -356,9 +385,10 @@ def _oz(T, gunler):
 
 
 # ------------------------------------------------------------------ 3) kapı
-def sina(c, V, J, A, m_deneme, gunler_filtre=None):
-    """Aday c'yi taban ayarla karşılaştır. Dönüş: kayıt sözlüğü (karar alanı dahil)."""
-    alfa = ALFA / max(1, m_deneme)
+def sina(c, V, J, A, m_deneme, gunler_filtre=None, alfa=None):
+    """Aday c'yi taban ayarla karşılaştır. Dönüş: kayıt sözlüğü (karar alanı dahil).
+    alfa: alfa yatırımından gelen düzey (verilmezse eski Bonferroni 0,05/m; yalnız geriye uyum)."""
+    alfa = ALFA / max(1, m_deneme) if alfa is None else alfa
     Ab = A
     # pazar düzeltmesi: Platt seçim diliminde öğrenilir (yalnız o koddaki tüm maçlarla)
     if c["tur"] == "pazar":
@@ -404,8 +434,10 @@ def sina(c, V, J, A, m_deneme, gunler_filtre=None):
     else:
         Ob, Oc, fn, ad = kb, kc, oran_farki, "kupon isabet oranı farkı"
     sec_n = fn(Ob, Oc, secim)(np.arange(len(secim))) if secim else None
-    nokta, alt, B = boot_alt(sinama, fn(Ob, Oc, sinama), alfa)
-    rap = {"olcut": ad, "alfa": r4(alfa), "deneme_no": m_deneme,
+    nokta, alt, B = boot_alt(sinama, fn(Ob, Oc, sinama), alfa) if alfa > 0 else (None, None, 0)
+    rap = {"olcut": ad, "alfa": r4(alfa), "alfa_ham": alfa, "deneme_no": m_deneme,
+           "test_yapildi": alt is not None and bool(np.isfinite(alt)) and alfa > 0,
+           "istatistik_gecti": alt is not None and bool(np.isfinite(alt)) and alt > 0 and alfa > 0,
            "secim": {"gun": [secim[0], secim[-1]] if secim else None, "fark": r4(sec_n) if sec_n is not None and np.isfinite(sec_n) else None,
                      "taban": _oz(kb, secim), "aday": _oz(kc, secim)},
            "sinama": {"gun": [sinama[0], sinama[-1]] if sinama else None, "fark": r4(nokta) if nokta is not None and np.isfinite(nokta) else None,
@@ -422,7 +454,8 @@ def sina(c, V, J, A, m_deneme, gunler_filtre=None):
     if gunler_filtre is None and (sec_n is None or not np.isfinite(sec_n) or sec_n <= 0): neden.append("seçim diliminde iyileşme yok")
     if nb_ < 20: neden.append(f"sınamada taban kupon sayısı az ({nb_})")
     if nc_ < 0.7 * nb_: neden.append(f"kupon sayısı %70'in altına indi ({nc_}/{nb_})")
-    if alt is None or not np.isfinite(alt) or alt <= 0: neden.append(f"sınama alt sınırı ≤ 0 (α={alfa:.4f})")
+    if alfa <= 0: neden.append("alfa yatırımı serveti bitti (bu yıl bu alanda yeni kabul yok)")
+    elif alt is None or not np.isfinite(alt) or alt <= 0: neden.append(f"sınama alt sınırı ≤ 0 (α={alfa:.4f})")
     for k_ in ("altin", "guclu"):
         tb, ta = kor.get(k_ + "_taban"), kor.get(k_ + "_aday")
         if tb and ta and tb["n"] >= 20 and ta["isabet"] is not None and tb["isabet"] is not None and ta["isabet"] < tb["isabet"] - 1e-9:
@@ -525,6 +558,7 @@ def main():
     rb["donmus"] = {k: v for k, v in (rb.get("donmus") or {}).items() if v >= bugun.isoformat()}
     grb = K.jl(os.path.join(DATA, "rollback.json"), {}) or {}
     donuk = bool(grb.get("aktif"))
+    golge = set(((K.jl(GOLGE, {}) or {}).get("adaylar") or {}).keys())
     V = Veri(bugun)
     kayitlar = []
     # 5) yeniden sınama (öncelikli)
@@ -546,17 +580,18 @@ def main():
     yeni = 0
     for c in sinyaller(bugun, A):
         r = son_ret.get(c["anahtar"]); o = var.get(c["anahtar"])
+        if c["anahtar"] in golge: continue
         if (o and o["durum"] == "bekliyor") or (r and (bugun - date.fromisoformat(r)).days < BEKLEME): continue
         if o and o.get("sonuc") == "kabul" and al((J.get("params") or {}), c["yol"]) == c.get("deger"): continue
         c.update({"eklenme": bugun.isoformat(), "durum": "bekliyor", "oncelik": round(abs(c["sinyal"].get("z") or 0), 2)})
         var[c["anahtar"]] = c; yeni += 1
     bek = [a for a in var.values() if a["durum"] == "bekliyor"]
     if len(bek) < N_GECE:
-        k_ = kesif(bugun, A, {k for k, a in var.items() if a["durum"] == "bekliyor"} | {k for k, t in son_ret.items() if (bugun - date.fromisoformat(t)).days < BEKLEME})
+        k_ = kesif(bugun, A, {k for k, a in var.items() if a["durum"] == "bekliyor"} | {k for k, t in son_ret.items() if (bugun - date.fromisoformat(t)).days < BEKLEME} | golge)
         if k_:
             k_.update({"eklenme": bugun.isoformat(), "durum": "bekliyor", "oncelik": 0.0}); var[k_["anahtar"]] = k_; yeni += 1
     # 2–3) gecelik sınama: en fazla N aday, öncelik sırasıyla
-    sira = sorted([a for a in var.values() if a["durum"] == "bekliyor"], key=lambda a: (-a["oncelik"], a["eklenme"]))
+    sira = sorted([a for a in var.values() if a["durum"] == "bekliyor" and a["anahtar"] not in golge], key=lambda a: (-a["oncelik"], a["eklenme"]))
     # gecelik sınır: iş akışı günde iki kez çalışsa da aynı gün en fazla N aday sınanır (aynı veriyle sınırsız deneme yok)
     hak = N_GECE - sum(1 for k in GL.get("kayitlar", []) if k.get("tarih") == bugun.isoformat() and k.get("tur") != "yeniden_sinama"
                        and k.get("karar") in ("kabul", "ret", "dondurulmus", "veri_yetersiz"))
@@ -566,11 +601,14 @@ def main():
         alan_k = f"{c['alan']}-{bugun.year}"
         m = GL["sayac"].get(alan_k, 0) + 1
         t1 = time.time()
+        a_t = yatirim_alfa(GL, alan_k, c)
         try:
-            rap = sina(c, V, J, A, m)
+            rap = sina(c, V, J, A, m, alfa=a_t)
         except Exception as e:
             rap = {"karar": "hata", "neden": repr(e)[:300]}
         if rap.get("karar") in ("kabul", "ret"): GL["sayac"][alan_k] = m
+        if rap.get("test_yapildi"):
+            rap["servet_sonra"] = yatirim_guncelle(GL, alan_k, rap["alfa_ham"], rap["istatistik_gecti"])["servet"]
         if rap.get("karar") == "kabul":
             if donuk: rap["karar"], rap["neden"] = "dondurulmus", "koruyucu geri alma aktif (data/rollback.json); kabul edilmedi"
             elif c["anahtar"] in (rb.get("donmus") or {}): rap["karar"], rap["neden"] = "dondurulmus", "bu anahtar OXXai geri alma süresinde"
@@ -587,7 +625,7 @@ def main():
     GL["kayitlar"] = (GL.get("kayitlar", []) + kayitlar)[-300:]
     GL["guncelleme"] = Q["guncelleme"]
     GL["kurallar"] = {"gecelik_aday": N_GECE, "secim_sinama": "günler 2/3 seçim, 1/3 sınama (ileriye dönük sanal oynatma, bu yılın maçları)",
-                      "bootstrap": f"eşleştirilmiş gün bootstrap B={B_BOOT}, tek yanlı alt sınır > 0", "alfa": "0,05 / m (m = o alanda bu yıl yapılan sınama sayısı; Bonferroni)",
+                      "bootstrap": f"eşleştirilmiş gün bootstrap B={B_BOOT}, tek yanlı alt sınır > 0", "alfa": "alfa yatırımı (Foster–Stine, alan-yıl başına servet; sinyalli aday W/3, keşif W/20; ret α/(1−α) öder, geçen 0,05 kazanır; mFDR ≤ 0,05)",
                       "koruma": "Altın ve güçlü (≥%70) bacak isabeti düşmez; kupon sayısı ≥ tabanın %70'i",
                       "yeniden_sinama": f"{IZLEME} gün sonra kabulden sonraki günlerle + canlı gölge kuponlarla; kötüleşirse geri alınır, anahtar {BEKLEME} gün dondurulur",
                       "dondurma": "koruyucu (data/rollback.json) aktifken kabul yok"}
@@ -607,3 +645,4 @@ if __name__ == "__main__":
         main()
     except Exception:
         import traceback; traceback.print_exc(); print("OXXai öğrenme döngüsü bu gece atlandı")
+        sys.exit(1)   # adım kaydı (lab/adim.py) hatayı görsün; iş akışı yine durmaz

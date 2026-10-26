@@ -1,0 +1,83 @@
+name: OXXai sürekli deney
+# 3 saatte bir: robotlar gece beklemeden kendini sınar (lab/surekli_deney.py).
+#  • deney (matris, paralel en çok 4 iş): futbol / basket / at → OXXai deney kuyruğu (lab/oxx_ogren.py: sinyal → aday → ileriye dönük
+#    sanal oynatma; kapı = zaman sıralı seçim/sınama + gün bootstrap'ı + alfa yatırımı α_t + Altın/güçlü koruması). at hafif modda
+#    (yalnız data/at/replay_kosular.json; ayna ve eğitim yok). autolab → lab/auto_lab.py dönen lig alt kümesiyle (yalnız ölçüm).
+#    Her iş sonucunu data/deney/<iş>/<zaman>.json'a yazar, commit atmaz; dosya yapıt olarak karar işine geçer.
+#  • karar: kapıyı geçen adayı önce GÖLGEYE alır (data/deney/golge.json), sonraki çalışmalar onu yeni veriyle paralel ölçer;
+#    en az 3 gün / 3 ölçüm kötüleşmezse data/oxx_ayar.json'a uygular (lab/oxx_ogren.uygula → 14 gün izleme, canlı gölge kupon,
+#    kötüleşirse oxx_rollback ile otomatik geri alma). Koruyucu geri alması (data/rollback.json) aktifken hiçbir şey uygulanmaz.
+#    Kısa Türkçe özet data/gelisim.json'a düşer.
+# Ücretsiz: herkese açık depoda Actions dakikası ücretsiz; anahtar, ücretli API ve dış veri isteği yok (autolab yalnız PyPI'den kurar).
+# Issue, mail, bildirim açmaz. Adım çıkış kodları data/saglik/surekli-deney-<iş>.json (lab/adim.py).
+on:
+  schedule:
+    - cron: "29 1-22/3 * * *"    # 01:29, 04:29, … 22:29 UTC
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: surekli-deney
+  cancel-in-progress: false
+jobs:
+  deney:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        is: [futbol, basket, at, autolab]
+    env:
+      ADIM_ALT: ${{ matrix.is }}
+      DENEY_BUDGET: "1080"
+      DENEY_N: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install -q numpy==2.1.3
+      - name: 🗃️ Önbellekleri arşivden al (basket ve at sanal oynatması için)
+        if: matrix.is == 'basket' || matrix.is == 'at'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 lab/adim.py arsiv-indir --onem bilgi -- python3 lab/arsiv.py indir data/bk_games.json data/at/replay_kosular.json
+      - name: Laboratuvar bağımlılıkları (yalnız autolab; penaltyblog, MIT lisans)
+        if: matrix.is == 'autolab'
+        run: |
+          pip install -q tqdm pandas scipy orjson tabulate networkx pulp requests beautifulsoup4 lxml fsspec plotly matplotlib
+          python3 lab/adim.py penaltyblog-kurulum --onem bilgi -- pip install -q --no-deps penaltyblog statsbombpy
+      - name: 🧪 Deney (${{ matrix.is }})
+        run: python3 lab/adim.py deney -- timeout 1260 python3 lab/surekli_deney.py deney ${{ matrix.is }}
+      - name: Sonucu karar işine aktar (yapıt, 3 gün)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: deney-${{ matrix.is }}
+          path: |
+            data/deney/${{ matrix.is }}/*.json
+            data/saglik/surekli-deney-${{ matrix.is }}.json
+          retention-days: 3
+          if-no-files-found: ignore
+  karar:
+    needs: deney
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      ADIM_ALT: karar
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install -q numpy==2.1.3
+      - uses: actions/download-artifact@v4
+        with:
+          path: ${{ runner.temp }}/deney
+      - name: ⚖️ Karar (kapı + gölge A/B; yalnız geçen uygulanır)
+        run: python3 lab/adim.py karar -- python3 lab/surekli_deney.py karar --kaynak "$RUNNER_TEMP/deney"
+      - name: Kaydet (uzak dal ilerlediyse karar güncel uçta yeniden üretilir)
+        run: |
+          python3 lab/gonder.py -m "Sürekli deney kararı $(date -u +%FT%H:%M) [skip ci]" \
+            --yeniden "python3 lab/surekli_deney.py karar --kaynak '$RUNNER_TEMP/deney'" \
+            data/deney data/oxx_ayar.json data/deney_kuyrugu.json data/ogrenme_gunlugu.json data/gelisim.json data/saglik

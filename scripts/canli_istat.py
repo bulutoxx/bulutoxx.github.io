@@ -52,15 +52,59 @@ def coef(data_dir=None):
     return C
 
 
-def rem_share(t, h1=0.4428):
-    if t < 45: return (45 - t) / 45 * h1 + (1 - h1)
-    if t <= 90: return max(.012, (90 - t) / 45 * (1 - h1))
-    return max(.012, (120 - t) / 45 * (1 - h1))
+# ---------------------------------------------------------------- v117 · kalan süre modeli (uzatma dakikası + artan gol yoğunluğu)
+# Uygulamadaki <script id="canli-dr-v117"> → remShare() ile BİREBİR aynı. Parametreler tek kaynaktan gelir: data/daily.json → canli.zaman
+# (toplayıcının zaman sıralı kapısı kabul ettiyse). Kabul yoksa eski doğrusal model (90+ hatası düzeltilmiş hâli) kullanılır.
+#   • Devre süresi 45 + e (beklenen uzatma: 1. yarı e1, 2. yarı e2 dk). Uzatma başladıysa kalan uzatma = max(e − geçen, rmin).
+#   • Yarı içinde gol yoğunluğu doğrusal artar: λ(u) ∝ 1 + ξ(u − ½), u = yarı içinde geçen pay (Dixon & Robinson 1998,
+#     The Statistician 47(3): gol hızı maç ilerledikçe artar). Kalan pay = 1 − F(u), F(u) = u + ξ(u² − u)/2.
+#   • Yarıların toplam payı h1 / 1 − h1 (uzatmalar dahil, model.json → params.h1) değişmez.
+#   • iddaa durum kodu: s=2 → 1. yarı (dakika 45'i geçebilir: 45+X), s=3 → 2. yarı (90+X), s=49 → devre arası.
+#     Normal sürede asla uzatma devresi (120) formülüne geçilmez.
+ZDEF = {"v": 117, "e1": 3.0, "e2": 3.0, "xi": 1.0, "rmin": 1.0}   # zamanca ilk yarıda Platt sonrası Brier ile seçildi (lab/canli_dr_lab.py)
 
 
-def rem_lams(lh, la, hs, as_, t, rc, h1=0.4428):
+def period_of(s):
+    """iddaa canlı durum kodu → devre: 1 (ilk yarı), 2 (ikinci yarı), 0 (devre arası), None (bilinmiyor)."""
+    return {2: 1, 3: 2, 49: 0}.get(s)
+
+
+def zaman(data_dir=None, daily=None):
+    """Kabul edilmiş kalan süre parametreleri (daily.json → canli.zaman) ya da None (eski model)."""
+    try:
+        D = daily if daily is not None else json.load(open(os.path.join(data_dir, "daily.json"), encoding="utf-8"))
+        z = (D.get("canli") or {}).get("zaman") or {}
+        if not z.get("kabul"): return None
+        Z = dict(ZDEF)
+        for k in ("e1", "e2", "xi", "rmin"):
+            v = z.get(k)
+            if isinstance(v, (int, float)) and math.isfinite(v): Z[k] = float(v)
+        return Z
+    except Exception:
+        return None
+
+
+def _F(u, xi): return u + xi * (u * u - u) / 2
+
+
+def rem_share(t, h1=0.4428, pd=None, Z=None):
+    """Kalan sürede beklenen gol payı (maç toplamına göre). Z=None → eski doğrusal model; Z → v117 modeli."""
+    if pd == 0: return 1 - h1                                      # devre arası: ikinci yarının tamamı kaldı
+    if Z is None:                                                  # eski model (yalnız 90+ → 120 hatası düzeltildi)
+        if t < 45: return (45 - t) / 45 * h1 + (1 - h1)
+        return max(.012, (90 - t) / 45 * (1 - h1))
+    if pd is None: pd = 1 if t < 45 else 2
+    e1, e2, xi, rmin = Z["e1"], Z["e2"], Z["xi"], Z["rmin"]
+    if pd == 1:
+        a = max(0.0, t); r = (45 - t) + e1 if t < 45 else max(e1 - (t - 45), rmin)
+        return (1 - _F(a / (a + r), xi)) * h1 + (1 - h1)
+    a = max(0.0, t - 45); r = (90 - t) + e2 if t < 90 else max(e2 - (t - 90), rmin)
+    return max(.004, (1 - _F(a / (a + r), xi)) * (1 - h1))
+
+
+def rem_lams(lh, la, hs, as_, t, rc, h1=0.4428, pd=None, Z=None):
     """Uygulamadaki skor/zaman/kırmızı kart modeli: kalan süre gol beklentileri (istatistiksiz)."""
-    rem = rem_share(t, h1); d = hs - as_; st = t >= 15; up, dn = math.exp(.1), math.exp(-.1)
+    rem = rem_share(t, h1, pd, Z); d = hs - as_; st = t >= 15; up, dn = math.exp(.1), math.exp(-.1)
     LH = lh * rem * ((up if d < 0 else dn) if st else 1) * .72 ** rc[0] * 1.25 ** rc[1]
     LA = la * rem * ((up if d > 0 else dn) if st else 1) * .72 ** rc[1] * 1.25 ** rc[0]
     return LH, LA

@@ -1,0 +1,65 @@
+{
+ "zaman": "2026-10-26T23:25Z",
+ "alarm": true,
+ "sorunlar": [
+  "kalite alarmı (qa.json): bulten: menü düğmesi tıklanamadı, canli: menü düğmesi tıklanamadı, power: menü düğmesi tıklanamadı"
+ ],
+ "adimlar": {},
+ "tazelik": [
+  {
+   "ad": "Fikstür ve oranlar",
+   "dosya": "data/fixtures.json",
+   "yas_saat": 0.67,
+   "beklenen_saat": 4.0,
+   "is_akisi": "update.yml",
+   "bayat": false
+  },
+  {
+   "ad": "Futbol modeli",
+   "dosya": "data/model.json",
+   "yas_saat": 0.68,
+   "beklenen_saat": 4.0,
+   "is_akisi": "update.yml",
+   "bayat": false
+  },
+  {
+   "ad": "Günlük karne (toplayıcı)",
+   "dosya": "data/daily.json",
+   "yas_saat": 0.68,
+   "beklenen_saat": 4.0,
+   "is_akisi": "update.yml",
+   "bayat": false
+  },
+  {
+   "ad": "Kilitli tahmin günlüğü (predlog)",
+   "dosya": "data/predlog.json",
+   "yas_saat": 1.0,
+   "beklenen_saat": 12.0,
+   "is_akisi": "update.yml",
+   "bayat": false
+  },
+  {
+   "ad": "Canlı kayıt nabzı",
+   "dosya": "data/health.json",
+   "yas_saat": 0.11,
+   "beklenen_saat": 1.5,
+   "is_akisi": "live-log.yml",
+   "bayat": false
+  }
+ ],
+ "kalite": {
+  "qa.json": {
+   "alarm": true,
+   "zaman": "2026-10-26T22:24:46.872Z",
+   "hatalar": [
+    "bulten: menü düğmesi tıklanamadı",
+    "canli: menü düğmesi tıklanamadı",
+    "power: menü düğmesi tıklanamadı",
+    "sonuclar: menü düğmesi tıklanamadı",
+    "menu: menü düğmesi tıklanamadı"
+   ],
+   "acilis_ms": 8127
+  }
+ },
+ "aciklama": "Sağlık özeti (lab/kurtarici.py): adım çıkış kodları (data/saglik/*.json, lab/adim.py), ana dosyaların tazeliği, kalite alarmları. Sorun görülürse ilgili iş akışı bir kez yeniden tetiklenir; issue/mail/bildirim açılmaz."
+}
