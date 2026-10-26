@@ -5661,7 +5661,7 @@ if((location.hash||"")==="#sonuclar") setTimeout(()=>$("navRes").click(),200);
 // =====================================================================
 // OXXai v35: Otomatik sürüm güncelleme — yeni sürüm yayınlanınca uygulama kendini yeniler
 // =====================================================================
-const APP_V="2026-10-26.111";
+const APP_V="2026-10-27.112";
 (function autoUpdate(){
   let shown=false;
   async function check(auto){
@@ -12308,5 +12308,16 @@ nav.tabs .pw-btn .pw-lb{background:linear-gradient(180deg,#FFE9A3,#F7CD55 45%,#C
   menu(); setTimeout(menu,1200);
 })();
 </script>
+<style id="onay-tik-v112">
+/* Onay kutusu: genel input kuralı (appearance:none) tik işaretini gizliyordu — kendi çizimimiz */
+.g2-chk input[type=checkbox]{-webkit-appearance:none;appearance:none;flex:none;width:28px;height:28px;min-width:28px;margin:0;padding:0;border-radius:9px;border:2px solid #F7CD55;background:rgba(3,6,13,.55);display:grid;place-items:center;cursor:pointer;transition:background .15s,box-shadow .15s,transform .1s}
+.g2-chk input[type=checkbox]::after{content:"";width:15px;height:15px;background:no-repeat center/contain url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M4 12.5l5 5L20 6.5' fill='none' stroke='%2303060D' stroke-width='3.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");transform:scale(0);transition:transform .15s}
+.g2-chk input[type=checkbox]:checked{background:linear-gradient(160deg,#FFE7A0,#F7CD55 45%,#C28A1C);border-color:#F7CD55;box-shadow:0 0 0 4px rgba(247,205,85,.18)}
+.g2-chk input[type=checkbox]:checked::after{transform:scale(1)}
+.g2-chk input[type=checkbox]:focus-visible{outline:2px solid #7FE3FF;outline-offset:2px}
+.g2-chk input[type=checkbox]:active{transform:scale(.94)}
+.g2-chk:has(input:checked){border-color:rgba(247,205,85,.7);background:rgba(247,205,85,.08)}
+@media (prefers-reduced-motion:reduce){.g2-chk input[type=checkbox],.g2-chk input[type=checkbox]::after{transition:none}}
+</style>
 </body>
 </html>
