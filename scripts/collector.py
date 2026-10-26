@@ -117,7 +117,7 @@ def live_snapshot():
     os.makedirs(LIVE, exist_ok=True); fp = os.path.join(LIVE, f"{d}.json")
     try: log = json.load(open(fp, encoding="utf-8"))
     except Exception: log = {}
-    n = 0
+    n = 0; st_c = []
     for e in (ev.get("events") or []):
         if e.get("s") != 1: continue
         k = str(e["i"]); s = sc.get(k); L = lam.get(k)
@@ -125,6 +125,7 @@ def live_snapshot():
         t = s["min"] + (s.get("sec") or 0) / 60; hs, as_ = int(s["ht"].get("c") or 0), int(s["at"].get("c") or 0)
         rc = [int(s["ht"].get("rc") or 0), int(s["at"].get("rc") or 0)]
         P = live_pred(L[0], L[1], hs, as_, t, rc, h1)
+        st_c.append({"id": k, "t": t, "hs": hs, "as": as_, "rc": rc, "lam": [float(L[0]), float(L[1])], "h": e.get("hn") or "", "a": e.get("an") or ""})
         cands = []
         for m in e.get("m") or []:
             if m.get("s") != 1 or m.get("t") != 4: continue     # yalnız canlı pazarlar
@@ -146,6 +147,74 @@ def live_snapshot():
         n += 1
     json.dump(log, open(fp, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
     print(f"Canlı kayıt: {n} yeni seçim ({len(log)} bugün)", flush=True)
+    try: live_stats_snapshot(st_c, h1, now)
+    except Exception as ex: print("canlı istatistik atlandı:", ex.__class__.__name__, flush=True)
+
+# ---------------------------------------------------------------- v107 · canlı istatistik anlık görüntüsü (gelecekte kalibrasyon için)
+LIVE_ST = os.path.join(ARC, "live_stats")
+LIVE_ST_MAX, LIVE_ST_KEEP = 800, 90          # gün başına en çok kayıt · tutulan gün sayısı
+
+def live_stats_snapshot(cands, h1, now, espn=None):
+    """ESPN'den erişilebiliyorsa oynanan maçların istatistik anlık görüntüsü + ayarsız (p0) ve ayarlı (p1) olasılık.
+    Yalnız türetilmiş sayılar yazılır (ham API yanıtı yok). Ağ yoksa ya da eşleşme yoksa sessizce atlar."""
+    import canli_istat as CI
+    if not cands: return 0
+    E = CI.espn_live() if espn is None else espn
+    if not E: return 0                                    # ağ yok / ESPN erişilemedi → sessiz
+    C = CI.coef(DATA); d = now.astimezone(TR).date().isoformat()
+    os.makedirs(LIVE_ST, exist_ok=True); fp = os.path.join(LIVE_ST, f"{d}.json")
+    try: log = json.load(open(fp, encoding="utf-8"))
+    except Exception: log = {}
+    n = 0; r4 = lambda x: round(x, 4)
+    for c in cands:
+        if len(log) >= LIVE_ST_MAX: break
+        m = CI.best_match(E, c["h"], c["a"])
+        if not m: continue
+        key = f"{c['id']}-{int(c['t'])}"
+        if key in log: continue
+        prev = None                                          # aynı maçın 8–20 dk önceki kaydı (son dönem isabetli şut farkı)
+        for r in log.values():
+            if r.get("id") == c["id"] and 8 <= c["t"] - r.get("t", -99) <= 20 and (prev is None or r["t"] < prev["t"]): prev = r
+        F = CI.feats(m["st"], prev and prev.get("st"), c["lam"], c["t"], C)
+        mH, mA = CI.mult(F, C)
+        LH, LA = CI.rem_lams(c["lam"][0], c["lam"][1], c["hs"], c["as"], c["t"], c["rc"], h1)
+        p0, p1 = CI.probs(LH, LA, c["hs"], c["as"]), CI.probs(LH * mH, LA * mA, c["hs"], c["as"])
+        K = ("H", "D", "A", "r05", "kg")
+        log[key] = {"id": c["id"], "e": m["e"], "lg": m["lg"], "ts": int(now.timestamp()), "t": round(c["t"], 1), "hs": c["hs"], "as": c["as"], "rc": c["rc"],
+                    "lam": [r4(c["lam"][0]), r4(c["lam"][1])], "L0": [r4(LH), r4(LA)], "st": m["st"],
+                    "f": {k: (None if v is None else r4(v)) for k, v in F.items()}, "k": C["kappa"], "m": [r4(mH), r4(mA)],
+                    "p0": [r4(p0[k]) for k in K], "p1": [r4(p1[k]) for k in K]}
+        n += 1
+    if n:
+        json.dump(log, open(fp, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
+        for old in sorted(glob.glob(os.path.join(LIVE_ST, "*.json")))[:-LIVE_ST_KEEP]: os.remove(old)
+    print(f"Canlı istatistik: {n} yeni anlık görüntü ({len(log)} bugün)", flush=True)
+    return n
+
+def live_stats_grade():
+    """Biten maçların son skorunu (fh, fa) istatistik kayıtlarına ekle — lab/canli_istat_lab.py ileriye dönük sınar."""
+    import urllib.request
+    now = datetime.now(timezone.utc); n = 0
+    for f in sorted(glob.glob(os.path.join(LIVE_ST, "*.json")))[-3:]:
+        d = os.path.basename(f)[:10]
+        try: log = json.load(open(f, encoding="utf-8"))
+        except Exception: continue
+        need = [r for r in log.values() if "fh" not in r]
+        if not need or d < (now.astimezone(TR).date() - timedelta(days=2)).isoformat(): continue
+        fin = {}
+        for back in (0, 1):
+            dd = (date.fromisoformat(d) + timedelta(days=back)).isoformat()
+            try:
+                data = json.loads(urllib.request.urlopen(urllib.request.Request(f"https://statisticsv2.iddaa.com/live-results?sportId=1&date={dd}", headers=ID.UA), timeout=40).read().decode("utf-8")).get("data") or {}
+            except Exception: continue
+            ph = {str(e["eventId"]): e.get("phase") for e in data.get("events") or []}
+            for k, s_ in (data.get("sc") or {}).items():
+                if ph.get(k) == 2 and s_.get("ht") and s_["ht"].get("c") is not None: fin[k] = (int(s_["ht"]["c"]), int(s_["at"]["c"]))
+        k0 = n
+        for r in need:
+            if r["id"] in fin: r["fh"], r["fa"] = fin[r["id"]]; n += 1
+        if n > k0: json.dump(log, open(f, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
+    return n
 
 LIVE_PLATT_LAM, LIVE_PLATT_MIN = 5.0, 300
 
@@ -332,6 +401,8 @@ def main():
     except Exception as ex: print("canlı kayıt atlandı:", ex.__class__.__name__, ex, flush=True)
     try: out["canli"] = live_grade()
     except Exception as ex: print("canlı puanlama atlandı:", ex.__class__.__name__, ex, flush=True)
+    try: live_stats_grade()
+    except Exception as ex: print("canlı istatistik puanlama atlandı:", ex.__class__.__name__, flush=True)
     json.dump(out, open(os.path.join(DATA, "daily.json"), "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
     print(f"Toplayıcı: {n_pre} maç öncesi kayıt, {n_res} sonuç işlendi; arşivde {len(allg)} puanlanmış öneri", flush=True)
 
