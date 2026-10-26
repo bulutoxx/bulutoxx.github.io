@@ -1,6 +1,6 @@
 # BULUTOXX 🐎 At Yarışı Laboratuvarı — Rapor
 
-_Otomatik üretildi: 2026-10-25T23:47:59+00:00 · model sürümü `20261025T1746` · hobi amaçlıdır, garanti değildir · 18+_
+_Otomatik üretildi: 2026-10-26T00:14:46+00:00 · model sürümü `20261025T1746` · hobi amaçlıdır, garanti değildir · 18+_
 
 ## Yeniden oynatma (replay): 2026-03-16 → 2026-10-23
 
@@ -69,6 +69,10 @@ Tarama: p_min × fark_min × günde en çok (sabah olasılığı; arayüzdeki gi
 - Seçim dilimindeki en iyi aday: p ≥ 0.45, fark ≥ 0.15, günde en çok 1 → sınamada 29 seçim, isabet %34.5 (%95 GA [+0.1994, +0.5266]), ilk 3 %86.2, günde 0.45.
 - Mevcut arayüz kuralı (p ≥ .35, fark ≥ .12, günde 3) sınamada: 140 seçim, isabet %42.1 (%95 GA [+0.3428, +0.5043]), ilk 3 %82.1, günde 2.15.
 - **Karar: mevcut kural (aday sınama diliminde mevcut kuraldan kötü)** → `model.json` `altin_kural`: p ≥ 0.35, fark ≥ 0.12, günde en çok 3 (sınama isabeti %42.1, n 140).
+
+### İdman (galop/sprint) verisi araştırması
+
+- Gece araştırmacısı (2026-10-25): idman/galop ile ilgili 0 GitHub adayı, açık lisanslı 0; hiçbiri otomatik bağlanmaz (`data/at/arastirma.json`).
 
 ## Özet: v4 turu — sabah (oransız) modeli, iki katlı sağlam ölçüm (25.10.2026 gece)
 
@@ -289,8 +293,8 @@ Yorum: sabah tahmininde en çok taşıyan bilgiler reytingler (at/jokey/antrenö
 ## Kapı (sürekli öğrenme)
 
 - Kural: tarif (özellikler/ayarlar) değişirse yeni model ancak **aynı sınama koşularında** yalnız-model log-loss'u düşürür, ilk seçim isabetini düşürmez ve harman log-loss'unu 0,001'den fazla bozmazsa kabul edilir. Tarif aynıysa özellikler her gece yeni sonuçlarla güncellenir, katsayılar haftada bir yeniden eğitilir (KORU = bu gece yenileme günü değil); ortak koşularda belirgin bozulma (veri sorunu) olursa dünkü model korunur. İz: `data/at/sinama_izi.json`.
-- Son karar (2026-10-25T23:47:59+00:00): **KORU** — aynı tarif; katsayılar 0 günlük (haftalık yenileme), özellikler bu gece yeni sonuçlarla güncellendi
-- Yeni: yalnız model log-loss 1.8897, ilk seçim %31.4; harman 1.8004. Kıyas: yalnız model 1.8897, ilk seçim %31.4; harman 1.8004.
+- Son karar (2026-10-26T00:14:46+00:00): **KORU** — aynı tarif; katsayılar 0 günlük (haftalık yenileme), özellikler bu gece yeni sonuçlarla güncellendi
+- Yeni: yalnız model log-loss 1.8901, ilk seçim %31.4; harman 1.8010. Kıyas: yalnız model 1.8901, ilk seçim %31.4; harman 1.8010.
 
 ## Canlı karne (kilitlenmiş tahminler, sonuç gelince)
 
