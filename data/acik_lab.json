@@ -1,0 +1,422 @@
+{
+ "tarih": "2026-10-26",
+ "motor": "2026-10-25.ml80",
+ "kaynak_atfi": [
+  "Club Elo puanları: clubelo.com (api.clubelo.com)",
+  "UEFA kupa sonuçları: github.com/openfootball/champions-league (CC0 1.0)"
+ ],
+ "yontem": "Yürüyen pencere (haftalık; yalnız önceki maçlar + önceki günün Elo'su). Varyant seçimi yalnız seçim diliminde (2023-07-01…2025-07-01); karar 2025-07-01 sonrası sınamada, tarih ortancasıyla iki alt dilimde: MS log-kayıp Δ eşleştirilmiş gün-blok bootstrap %95 GA üst sınırı < 0 (ikisinde de), isabet düşmüyor.",
+ "aileler": {
+  "K1": {
+   "ad": "Club Elo ile kupa/ligler arası güç büzülmesi (model.json cup.teams)",
+   "secim": {
+    "n": 877,
+    "ll_mevcut": 1.00277,
+    "en_iyi": {
+     "ll": 0.94406,
+     "w": 1.0,
+     "beta": 0.4
+    },
+    "izgara_deneme": 45,
+    "ilk5": [
+     {
+      "ll": 0.94406,
+      "w": 1.0,
+      "beta": 0.4
+     },
+     {
+      "ll": 0.94416,
+      "w": 0.8,
+      "beta": 0.4
+     },
+     {
+      "ll": 0.94417,
+      "w": 1.0,
+      "beta": 0.35
+     },
+     {
+      "ll": 0.94457,
+      "w": 0.8,
+      "beta": 0.35
+     },
+     {
+      "ll": 0.94624,
+      "w": 0.8,
+      "beta": 0.45
+     }
+    ]
+   },
+   "sinama_elo_yok_atlanan": 356,
+   "sinama": {
+    "dilimler": [
+     {
+      "ad": "T1",
+      "n": 132,
+      "aralik": [
+       "2025-09-16",
+       "2025-11-05"
+      ],
+      "ll_mevcut": 1.08386,
+      "ll_aday": 1.01758,
+      "dll": -0.06628,
+      "ga95": [
+       -0.12598,
+       0.0004
+      ],
+      "isabet_mevcut": 0.5076,
+      "isabet_aday": 0.553,
+      "ou_ll_mevcut": 0.72947,
+      "ou_ll_aday": 0.7238,
+      "gecti": false
+     },
+     {
+      "ad": "T2",
+      "n": 162,
+      "aralik": [
+       "2025-11-06",
+       "2025-12-18"
+      ],
+      "ll_mevcut": 0.98094,
+      "ll_aday": 0.91115,
+      "dll": -0.06979,
+      "ga95": [
+       -0.14056,
+       0.01796
+      ],
+      "isabet_mevcut": 0.5679,
+      "isabet_aday": 0.5802,
+      "ou_ll_mevcut": 0.72823,
+      "ou_ll_aday": 0.71176,
+      "gecti": false
+     }
+    ],
+    "toplam": {
+     "n": 294,
+     "dll": -0.06821,
+     "ga95": [
+      -0.1156,
+      -0.01397
+     ],
+     "isabet_mevcut": 0.5408,
+     "isabet_aday": 0.568,
+     "ou_dll": -0.01162
+    },
+    "kabul": false
+   }
+  },
+  "K2": {
+   "ad": "openfootball (CC0) ile daha uzun kupa geçmişi (learn_strength penceresi)",
+   "secim": {
+    "700": {
+     "dll": -0.01163
+    },
+    "900": {
+     "dll": -0.00958
+    }
+   },
+   "secilen_pencere": 700,
+   "sinama": {
+    "dilimler": [
+     {
+      "ad": "T1",
+      "n": 323,
+      "aralik": [
+       "2025-09-16",
+       "2026-01-20"
+      ],
+      "ll_mevcut": 1.02366,
+      "ll_aday": 1.01902,
+      "dll": -0.00464,
+      "ga95": [
+       -0.01539,
+       0.00613
+      ],
+      "isabet_mevcut": 0.5449,
+      "isabet_aday": 0.5542,
+      "ou_ll_mevcut": 0.72012,
+      "ou_ll_aday": 0.71384,
+      "gecti": false
+     },
+     {
+      "ad": "T2",
+      "n": 327,
+      "aralik": [
+       "2026-01-21",
+       "2026-10-22"
+      ],
+      "ll_mevcut": 0.96872,
+      "ll_aday": 0.97534,
+      "dll": 0.00662,
+      "ga95": [
+       -0.01067,
+       0.02103
+      ],
+      "isabet_mevcut": 0.5566,
+      "isabet_aday": 0.5443,
+      "ou_ll_mevcut": 0.72554,
+      "ou_ll_aday": 0.72044,
+      "gecti": false
+     }
+    ],
+    "toplam": {
+     "n": 650,
+     "dll": 0.00103,
+     "ga95": [
+      -0.00892,
+      0.01039
+     ],
+     "isabet_mevcut": 0.5508,
+     "isabet_aday": 0.5492,
+     "ou_dll": -0.00569
+    },
+    "kabul": false
+   }
+  },
+  "L1": {
+   "ad": "Lig maçlarında piyasa olasılığına Club Elo farkı düzeltmesi",
+   "secim": {
+    "n": 13218,
+    "varyantlar": [
+     {
+      "dll": -0.0,
+      "var": "fark",
+      "lam": 10.0
+     },
+     {
+      "dll": -0.0,
+      "var": "fark",
+      "lam": 100.0
+     },
+     {
+      "dll": 7e-05,
+      "var": "fark+beraberlik",
+      "lam": 10.0
+     },
+     {
+      "dll": 6e-05,
+      "var": "fark+beraberlik",
+      "lam": 100.0
+     }
+    ],
+    "secilen": {
+     "var": "fark",
+     "lam": 10.0
+    }
+   },
+   "sinama": {
+    "theta": [
+     -0.0053
+    ],
+    "dilimler": [
+     {
+      "n": 1810,
+      "ll_mevcut": 1.00157,
+      "ll_aday": 1.00144,
+      "dll": -0.00012,
+      "ga95": [
+       -0.00032,
+       0.00011
+      ],
+      "mevcut": {
+       "oneri_ll": 0.65846,
+       "oneri_isabet": 0.5768,
+       "guclu_n": 200,
+       "guclu_hit": 0.785,
+       "altin_n": 57,
+       "altin_hit": 0.9298
+      },
+      "aday": {
+       "oneri_ll": 0.65755,
+       "oneri_isabet": 0.5751,
+       "guclu_n": 197,
+       "guclu_hit": 0.7919,
+       "altin_n": 54,
+       "altin_hit": 0.9259
+      },
+      "gecti": false,
+      "ad": "T1",
+      "aralik": [
+       "2025-07-05",
+       "2025-10-24"
+      ]
+     },
+     {
+      "n": 1889,
+      "ll_mevcut": 0.97962,
+      "ll_aday": 0.97962,
+      "dll": 1e-05,
+      "ga95": [
+       -0.00026,
+       0.00028
+      ],
+      "mevcut": {
+       "oneri_ll": 0.66101,
+       "oneri_isabet": 0.5733,
+       "guclu_n": 210,
+       "guclu_hit": 0.8048,
+       "altin_n": 61,
+       "altin_hit": 0.8197
+      },
+      "aday": {
+       "oneri_ll": 0.66071,
+       "oneri_isabet": 0.5728,
+       "guclu_n": 202,
+       "guclu_hit": 0.8119,
+       "altin_n": 60,
+       "altin_hit": 0.8167
+      },
+      "gecti": false,
+      "ad": "T2",
+      "aralik": [
+       "2025-10-25",
+       "2026-01-18"
+      ]
+     }
+    ],
+    "kabul": false
+   }
+  }
+ },
+ "kaynaklar": [
+  {
+   "kaynak": "Club Elo (api.clubelo.com)",
+   "icerik": "Avrupa kulüpleri günlük Elo",
+   "lisans": "açık API, anahtarsız; atıf clubelo.com",
+   "karar": "entegre (K1, L1 sınandı)"
+  },
+  {
+   "kaynak": "openfootball/champions-league",
+   "icerik": "UEFA kupa sonuçları 2021-26",
+   "lisans": "CC0",
+   "karar": "entegre (sınama geçmişi, K2)"
+  },
+  {
+   "kaynak": "football-data.co.uk",
+   "icerik": "sonuç + oran + şut/korner CSV",
+   "lisans": "ücretsiz",
+   "karar": "zaten kullanılıyor"
+  },
+  {
+   "kaynak": "ESPN açık uçlar / EuroLeague resmi akış",
+   "icerik": "kupa, ek ligler, basket + oran",
+   "lisans": "resmî olmayan açık uç",
+   "karar": "zaten kullanılıyor"
+  },
+  {
+   "kaynak": "StatsBomb open-data",
+   "icerik": "olay verisi (seçili turnuvalar)",
+   "lisans": "kullanıcı sözleşmesi + atıf",
+   "karar": "alınmadı: güncel sezon yok"
+  },
+  {
+   "kaynak": "Understat / FBref xG",
+   "icerik": "xG",
+   "lisans": "kazıma; FBref gelişmiş veriyi 2026'da kaldırdı",
+   "karar": "alınmadı: şartlar/kazıma"
+  },
+  {
+   "kaynak": "martj42/international_results",
+   "icerik": "milli maç sonuçları",
+   "lisans": "CC0",
+   "karar": "alınmadı: motorda milli takım ligi yok"
+  },
+  {
+   "kaynak": "openfootball/football.json",
+   "icerik": "lig sonuçları",
+   "lisans": "CC0",
+   "karar": "alınmadı: football-data ile örtüşüyor"
+  },
+  {
+   "kaynak": "xgabora/Club-Football-Match-Data",
+   "icerik": "football-data + Elo birleşik",
+   "lisans": "MIT",
+   "karar": "alınmadı: 2025-06 sonrası Elo kendi tahmini (ClubElo değil)"
+  },
+  {
+   "kaynak": "tonyelhabr/club-rankings (Club Elo/Opta)",
+   "icerik": "günlük sıralama anlık görüntüleri",
+   "lisans": "belirtilmemiş; Opta kazıma",
+   "karar": "yalnız yerel sınamada Club Elo aynası; üretimde kullanılmaz"
+  },
+  {
+   "kaynak": "cenkozgur/tjk-data memory/ ve odds-snapshots",
+   "icerik": "at özetleri, gün içi oran",
+   "lisans": "belirtilmemiş ayna",
+   "karar": "alınmadı: memory geleceği içerir, oran görüntüleri 2026-06'da durdu"
+  },
+  {
+   "kaynak": "Diğer GitHub TJK depoları (bilaleren/tjk-api vb.)",
+   "icerik": "TJK istemcileri",
+   "lisans": "çoğu belirtilmemiş",
+   "karar": "alınmadı: tjk.org'a istek atar / veri seti değil"
+  },
+  {
+   "kaynak": "NBA stats / basketball-reference",
+   "icerik": "NBA istatistik",
+   "lisans": "kullanım şartları kazımayı kısıtlıyor",
+   "karar": "alınmadı"
+  }
+ ],
+ "veri": {
+  "kupa_maci": 2425,
+  "kupa_openfootball": 1750,
+  "kupa_espn": 675,
+  "elo_kaynagi": "ayna+api",
+  "elo_ayna_son": "2026-01-14",
+  "lig_takimi_elo_eslesen": 523
+ },
+ "deneme_sayisi": {
+  "K1": 45,
+  "K2": 2,
+  "L1": 4
+ },
+ "deneme_toplam": 51,
+ "karar_sayisi": 3,
+ "uretim": {
+  "K1_elo_kupa": {
+   "aktif": false,
+   "w": 1.0,
+   "beta": 0.4,
+   "karar_tarihi": "2026-10-26",
+   "kanit": "data/acik_lab.json → aileler.K1",
+   "kaynak": "Club Elo puanları: clubelo.com (api.clubelo.com)",
+   "geri_alma": "aktif=false yaz (ya da ACIK_ELO=0); scripts/acik_veri.py bir sonraki çalışmada kupa güçlerini ham hale döndürür"
+  }
+ },
+ "sure_sn": 552,
+ "donguler": {
+  "1": {
+   "B_izgara": [
+    0.15,
+    0.2,
+    0.25,
+    0.3,
+    0.35,
+    0.4
+   ],
+   "secilen": {
+    "w": 1.0,
+    "beta": 0.4
+   },
+   "not": "en iyi beta ızgara sınırında"
+  },
+  "2": {
+   "B_izgara": [
+    0.15,
+    0.2,
+    0.25,
+    0.3,
+    0.35,
+    0.4,
+    0.45,
+    0.5,
+    0.6
+   ],
+   "secilen": {
+    "w": 1.0,
+    "beta": 0.4
+   },
+   "not": "seçim değişmedi; sınama dilimine ikinci bakış, karar aynı (red)"
+  }
+ }
+}

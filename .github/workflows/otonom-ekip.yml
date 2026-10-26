@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths: ["lab/research.py", "lab/analyst.py", "lab/qa.mjs", "lab/guardian.py", "lab/dq.py", "lab/derin.py", "scripts/arsiv.py", "lab/bot_coach.mjs", "lab/bot/**", ".github/workflows/otonom-ekip.yml"]
+    paths: ["lab/research.py", "lab/analyst.py", "lab/qa.mjs", "lab/guardian.py", "lab/dq.py", "lab/derin.py", "scripts/arsiv.py", "lab/bot_coach.mjs", "lab/bot/**", "lab/oxx_ogren.py", ".github/workflows/otonom-ekip.yml"]
 permissions:
   contents: write
 concurrency:
@@ -18,7 +18,7 @@ concurrency:
 jobs:
   ekip:
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 47   # +7 dk: OXX öğrenme döngüsü (en fazla 420 sn); diğer adımların bütçesi değişmedi
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -35,6 +35,9 @@ jobs:
         run: python lab/analyst.py || echo "analist atlandı"
       - name: 🛡️ Koruyucu (değişiklik izleme, gerekirse geri alma)
         run: python lab/guardian.py || echo "koruyucu atlandı"
+      - name: 🔁 OXX öğrenme döngüsü (deney kuyruğu → ileriye dönük sanal oynatma → kapı; 14 gün sonra yeniden sınama/geri alma)
+        env: { OXX_N: "3", OXX_BUDGET: "300" }
+        run: timeout 420 python lab/oxx_ogren.py || echo "OXX öğrenme döngüsü atlandı"
       - name: 🧹 Veri ve güvenlik denetçisi
         run: python lab/dq.py || echo "denetçi atlandı"
       - name: 🎨 Tasarımcı / kalite
@@ -47,6 +50,7 @@ jobs:
         run: |
           git config user.name "bulutoxx-bot"; git config user.email "bulutoxx-bot@users.noreply.github.com"
           git add data/derin data/research.json data/analyst.json data/qa.json data/qa data/changes.json data/rollback.json data/dq.json data/gelisim.json data/bot_kb.json data/bot_coach.json data/bot_tests.json 2>/dev/null || true
+          git add data/oxx_ayar.json data/deney_kuyrugu.json data/ogrenme_gunlugu.json data/oxx_rollback.json 2>/dev/null || true
           git diff --cached --quiet && exit 0
           git commit -qm "Otonom ekip raporu $(date -u +%F)"
           for i in 1 2 3; do git pull -q --rebase -X theirs origin main && git push -q origin HEAD:main && break; sleep 8; done

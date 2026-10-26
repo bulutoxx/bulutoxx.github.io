@@ -82,6 +82,9 @@ Futbolda tek maçın sonucu doğası gereği belirsizdir; hiçbir model her maç
 | bot_kb.json | Sohbet koçu | Uygulama (Bulut, `bot-v70`) | Bulut'un bilgi bankası: takım takma adları/okunuşları (`takim`), lig adları (`lig`), eş anlamlılar (`esanlam`), yazım hataları (`yazim`), kalıp cümleler (`para`), terimler (`sozluk`), öne çıkan maçlar (`onemli`), `sayim` |
 | bot_coach.json | Sohbet koçu | Uygulama (sohbet başlığı, Otonom ekip paneli) | Son gece: soru sayısı, niyet/faydalı %, önceki bankayla karşılaştırma, eklenenler, yayın kararı ve nedeni; `yayin` = yayındaki bankanın skoru; `gecmis` |
 | bot_tests.json | Sohbet koçu | Sohbet koçu | Her gece büyüyen test soruları (veriye bağlı olanlar 21 gün sonra emekli olur); sabit 224 soru `lab/bot/suite.cjs`'te |
+| oxx_kupon/GGGG-AA-GG.json, oxx_kupon/at/GGGG-AA-GG.json | OXX kupon robotu (`scripts/oxx_kupon.py`; update.yml / at-canli.yml) | Uygulama, öğrenme döngüsü | OXX'un maçtan önce KİLİTLEDİĞİ kendi kuponları (Altın, %70+, 3'lü, değerli, güvenli; basket; at Altın/ikili/çifte/6'lı) + sonuçlar. Şema: `lab/OXX_KUPON.md` |
+| oxx_karne.json | OXX kupon robotu | Uygulama, öğrenme döngüsü | Strateji başına kupon/bacak isabeti, beklenen, kalibrasyon, son 7/30 gün, seri (canlı ve geriye dönük ayrı) |
+| oxx_ayar.json, deney_kuyrugu.json, ogrenme_gunlugu.json, oxx_rollback.json | OXX öğrenme döngüsü (`lab/oxx_ogren.py`, otonom-ekip) | OXX kupon robotu, uygulama | Sinyal → deney adayı → ileriye dönük sanal oynatma + Bonferroni kapısı → yalnız OXX strateji ayarı; 14 gün sonra yeniden sınama / geri alma |
 
 ## 💬 Bulut'un kendini geliştirmesi (v70)
 

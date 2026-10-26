@@ -5660,7 +5660,7 @@ if((location.hash||"")==="#sonuclar") setTimeout(()=>$("navRes").click(),200);
 // =====================================================================
 // BULUTOXX v35: Otomatik sürüm güncelleme — yeni sürüm yayınlanınca uygulama kendini yeniler
 // =====================================================================
-const APP_V="2026-10-26.105";
+const APP_V="2026-10-26.107";
 (function autoUpdate(){
   let shown=false;
   async function check(auto){
@@ -8850,7 +8850,7 @@ small>.tvar.d:first-child{margin-left:0;margin-right:2px}
       try{ const ds=JSON.parse(localStorage.getItem("bx-kuponlar-sil")||"[]"); if(Array.isArray(ds)) ds.forEach(x=>DEL.add(x)); }catch(e){}
       if(Array.isArray(D)){ const M=new Map(KX.L.map(c=>[c.id,c]));
         for(const d of D){ if(!d||!d.id||!Array.isArray(d.items)||DEL.has(d.id)) continue; const m=M.get(d.id);
-          if(!m){ d.items=d.items.filter(x=>x&&x.h&&x.a); KX.L.push(d); } else if(ts(d)>ts(m)){ Object.assign(m,d); m.items=d.items.filter(x=>x&&x.h&&x.a); } } }
+          if(!m){ d.items=d.items.filter(x=>x&&x.h&&x.a); atFix(d); KX.L.push(d); } else if(ts(d)>ts(m)){ Object.assign(m,d); m.items=d.items.filter(x=>x&&x.h&&x.a); atFix(m); } } }
       KX.L=KX.L.filter(c=>!DEL.has(c.id));
       // sınır: arşiv/biten kuponlardan en eski olanlar 300'ü aşarsa düşer (açık kuponlara dokunulmaz)
       const P=KX.L.filter(c=>c.durum!=="acik").sort((a,b)=>ts(b)-ts(a)); if(P.length>300){ const drop=new Set(P.slice(300).map(c=>c.id)); KX.L=KX.L.filter(c=>!drop.has(c.id)); }
@@ -8858,13 +8858,16 @@ small>.tvar.d:first-child{margin-left:0;margin-right:2px}
       localStorage.setItem("bx-kuponlar-sil",JSON.stringify([...DEL].slice(-500)));
     }catch(e){} }
   function kxDel(id){ DEL.add(id); KX.L=KX.L.filter(z=>z.id!==id); }
+  // at kuponu satırları (v98): bozuk/eksik satır yüklemede düşer; spor:"at" olup at dizisi yoksa [] sayılır
+  const AT_TUR=new Set(["ganyan","plase","ikili","sirali_ikili","cifte","uclu","tabela","altili"]);
+  function atFix(c){ if(c&&c.spor==="at") c.at=(Array.isArray(c.at)?c.at:[]).filter(x=>x&&AT_TUR.has(x.tur)&&Array.isArray(x.kid)&&x.kid.length&&Array.isArray(x.sec)&&x.sec.every(Array.isArray)); }
   function nextNo(){ let mx=0; for(const c of KX.L){ const m=/^Kupon(?:um)? (\d+)$/.exec(c.ad||""); if(m) mx=Math.max(mx,+m[1]); } return Math.max(mx,0)+1; }
   function kxNew(ad,items){ const c={id:uid(),ad:ad||("Kupon "+nextNo()),items:items||[],olusturma:NOW(),durum:"acik"}; KX.L.push(c); return c; }
   function load(){ let L=null, raw=null; try{ raw=localStorage.getItem(LSK); L=JSON.parse(raw||"null"); }catch(e){}
     if(raw&&!Array.isArray(L)){ try{ localStorage.setItem("bx-kuponlar-bozuk",raw); }catch(e){} }   // bozuk kayıt silinmeden önce yedeklenir
     if(!Array.isArray(L)){ let old=[]; try{ old=JSON.parse(localStorage.getItem("bx-coupon")||"[]"); }catch(e){} if(!Array.isArray(old)) old=[];
       KX.L=[]; const c=kxNew("Kupon 1",old.filter(x=>x&&x.h&&x.a)); c.tasindi=old.length?1:0; KX.aktif=c.id; saveL(); }
-    else { KX.L=L.filter(c=>c&&c.id&&Array.isArray(c.items)&&!DEL.has(c.id)); KX.L.forEach(c=>{ c.items=c.items.filter(x=>x&&x.h&&x.a); }); try{ KX.aktif=localStorage.getItem(LSA)||null; }catch(e){} } }
+    else { KX.L=L.filter(c=>c&&c.id&&Array.isArray(c.items)&&!DEL.has(c.id)); KX.L.forEach(c=>{ c.items=c.items.filter(x=>x&&x.h&&x.a); atFix(c); }); try{ KX.aktif=localStorage.getItem(LSA)||null; }catch(e){} } }
   function act(){ let c=null; for(const x of KX.L) if(x.id===KX.aktif){ c=x; break; }
     if(!c||c.durum!=="acik"){ c=KX.L.filter(x=>x.durum==="acik").sort((a,b)=>(b.upd||b.olusturma)-(a.upd||a.olusturma))[0]||kxNew(); KX.aktif=c.id; saveL(); }
     return c; }
@@ -9194,13 +9197,23 @@ small>.tvar.d:first-child{margin-left:0;margin-right:2px}
             // başlamış maç: canlı eşi varsa aynı seçim canlı oran + canlı OXX olasılığıyla eklenir
             const lv=(typeof IDL!=="undefined"&&IDL.live&&IDL.live[1]||[]).find(x=>tmEq(x.h,m.h)&&tmEq(x.a,m.a));
             if(!lv){ toast(t<NOW()-150*60e3?"Bu maç bitmiş; kupona eklenemez":"Bu maç başladı: canlı tahmini Canlı sekmesinden ya da ＋ Kupon ile ekleyebilirsin"); return; }
-            try{ const P=idlPred(lv), K=idlPick(lv,P), base=/^[UA][\d.]+$/.test(String(mk))?String(mk).charAt(0):String(mk), c=K&&K.all.find(z=>z.k===base);
-              if(!c||!c.o){ toast("Bu seçimin canlı oranı şu an kapalı"); return; }
-              const lk=(base==="U"||base==="A")&&P.line!==2.5?base+String(P.line):mk, pp=typeof liveCal==="function"?Math.min(.99,liveCal(c.p).p):c.p;
-              const mm={lg:"i"+lv.ci,h:lv.h,a:lv.a,dt:new Date(lv.ts)}, k2=cpKey(mm);
+            try{ const P=idlPred(lv), K=idlPick(lv,P); if(!K){ toast("Canlı tahmin şu an hesaplanamadı"); return; }
+              const smk=String(mk), base=/^[UA][\d.]+$/.test(smk)?smk.charAt(0):smk, ou=base==="U"||base==="A", nz=v=>{ v=String(v); return v==="U"||v==="A"?v+"2.5":v; };
+              const mm={lg:"i"+lv.ci,h:lv.h,a:lv.a,dt:new Date(lv.ts)}, k2=cpKey(mm), fl=v=>String(v).replace(".",",");
+              // ikinci dokunuş: aynı canlı seçim (canlı anahtar k2 / canlı kod) zaten kuponda → çıkar, "eklendi" deme
+              const hi=I.findIndex(x=>(x.k===k2||(x.live&&tmEq(x.h,mm.h)&&tmEq(x.a,mm.a)))&&nz(x.mk)===nz(smk));
+              if(hi>=0){ I.splice(hi,1); cpSave(); try{ Sound.toggle(false); }catch(_){} toast("Canlı seçim kupondan çıkarıldı"); return; }
+              // Üst/Alt: istenen çizgi canlı çizgiyle aynı değilse sessizce başka çizgiye çevirme
+              if(ou){ const want=smk.length>1?+smk.slice(1):2.5, line=+P.line;
+                if(!isFinite(line)){ toast("Bu seçim canlı bültende yok"); return; }
+                if(line!==want){ toast(`Canlı çizgi şu an ${fl(line)}; ${fl(want)} ${base==="U"?"Üst":"Alt"} canlı bültende yok`); return; } }
+              const c=K.all.find(z=>z.k===base);
+              if(!c){ toast("Bu seçim canlı bültende yok"); return; }
+              if(!c.o){ toast("Bu seçimin canlı oranı şu an kapalı"); return; }
+              const pp=typeof liveCal==="function"?Math.min(.99,liveCal(c.p).p):c.p;
               const d=I.findIndex(x=>x.k!==k2&&tmEq(x.h,mm.h)&&tmEq(x.a,mm.a)); if(d>=0) I.splice(d,1);
-              const r=_ct.call(this,mm,lk,+c.o,pp); const it=CP.items.find(x=>x.k===k2); if(it){ it.live=1; it.s0=`${lv.hs}-${lv.as}`; it.iid=lv.id; cpSave(); }
-              toast(`Canlı eklendi · ${mkName(lk)} %${Math.round(pp*100)} · oran ${(+c.o).toFixed(2)}`); return r; }catch(e){ toast("Canlı tahmin şu an hesaplanamadı"); return; } }
+              const r=_ct.call(this,mm,smk,+c.o,pp); const it=CP.items.find(x=>x.k===k2); if(it){ it.live=1; it.s0=`${lv.hs}-${lv.as}`; it.iid=lv.id; cpSave(); }
+              toast(`Canlı eklendi · ${mkName(smk)} %${Math.round(pp*100)} · oran ${(+c.o).toFixed(2)}`); return r; }catch(e){ toast("Canlı tahmin şu an hesaplanamadı"); return; } }
           const d=I.findIndex(x=>x.k!==k&&tmEq(x.h,m.h)&&tmEq(x.a,m.a)); if(d>=0) I.splice(d,1); } }catch(e){}
       return _ct.apply(this,arguments); }; }catch(e){}
   // ---------- adlar: Menü, sekme, Power Now, Kayıtlı ----------
@@ -9292,8 +9305,10 @@ small>.tvar.d:first-child{margin-left:0;margin-right:2px}
 (function(){
   const LV=()=>(typeof IDL!=="undefined"&&IDL.live&&IDL.live[1])||[];
   function liveFor(x){ return LV().find(m=>(x.iid&&String(m.id)===String(x.iid))||(tmEq(m.h,x.h)&&tmEq(m.a,x.a)))||null; }
+  // maç öncesi "U"/"A" kalemi 2,5 çizgisidir: yalnız canlı çizgi 2,5 iken eşleşir; değilse null → "canlı tahmin bekleniyor"
   function nowP(m,mk){ try{ const P=idlPred(m), K=idlPick(m,P); if(!K) return null; const key=k=>(k==="U"||k==="A")?k+String(P.line):k;
-      const c=K.all.find(z=>key(z.k)===mk||z.k===mk); if(!c) return null; return typeof liveCal==="function"?Math.min(.99,liveCal(c.p).p):c.p; }catch(e){ return null; } }
+      let want=String(mk); if(want==="U"||want==="A") want+="2.5";
+      const c=K.all.find(z=>key(z.k)===want); if(!c) return null; return typeof liveCal==="function"?Math.min(.99,liveCal(c.p).p):c.p; }catch(e){ return null; } }
   function deco(){ try{ const box=document.getElementById("cpBox"); if(!box) return; const I=CP.items||[];
       box.querySelectorAll(".cprow[data-cpi]").forEach(r=>{ const x=I[+r.dataset.cpi]; const old=r.querySelector(".kx-lv"); if(old) old.remove(); if(!x||x.ok!=null) return;
         const m=liveFor(x); if(!m) return; const pn=nowP(m,x.mk), l=r.querySelector(".l")||r;
@@ -9305,7 +9320,8 @@ small>.tvar.d:first-child{margin-left:0;margin-right:2px}
   try{ const _r=renderKupon; renderKupon=function(){ const r=_r.apply(this,arguments); deco(); return r; }; }catch(e){}
   try{ const _k=window.kxRefresh; if(_k) window.kxRefresh=function(){ const r=_k.apply(this,arguments); deco(); return r; }; }catch(e){}
   try{ new MutationObserver(()=>{ const b=document.getElementById("cpBox"); if(b&&!b.querySelector(".kx-lv")&&(CP.items||[]).some(x=>x.ok==null&&liveFor(x))) deco(); }).observe(document.getElementById("cpBox")||document.body,{childList:true,subtree:false}); }catch(e){}
-  setInterval(()=>{ try{ const v=document.getElementById("v-kupon"); if(!v||v.hidden||document.hidden) return; if(!(CP.items||[]).some(x=>x.ok==null)) return;
+  const tms=d=>{ const t=Date.parse(d instanceof Date?d.toISOString():d); return isNaN(t)?0:t; };
+  setInterval(()=>{ try{ const v=document.getElementById("v-kupon"); if(!v||v.hidden||document.hidden) return; if(!(CP.items||[]).some(x=>x.ok==null&&(x.live||(tms(x.dt)&&tms(x.dt)<Date.now())))) return;
       if(typeof IDL!=="undefined"&&IDL.load) IDL.load(1).then(deco).catch(()=>{}); }catch(e){} },20000);
 })();
 </script>
@@ -9447,6 +9463,12 @@ small>.tvar.d:first-child{margin-left:0;margin-right:2px}
 .atk-sec .atk-ic{width:22px;height:22px}
 .atk-old .kx-oh small{grid-column:1}
 #cpBox .atk-r .kx-lnk{margin-left:-8px}
+.atk-bd{display:inline-flex;align-items:center;min-height:20px;padding:0 7px;border-radius:6px;font:700 11.5px/1 var(--font);letter-spacing:.01em}
+.atk-bd.srz{background:rgba(143,180,255,.16);color:#BFD3FF}
+.atk-bd.iade{background:rgba(255,255,255,.08);color:var(--ink2)}
+.atk-bd.kx{background:rgba(255,176,32,.12);color:#FFC86B}
+.atk-bdn{flex-basis:100%;font-size:12px;color:var(--ink3);line-height:1.35}
+.atk-h.k{opacity:.5;text-decoration:line-through}
 @media (max-width:380px){
   .atk-hr{gap:4px;padding:2px 8px;grid-template-columns:26px minmax(0,1fr) 36px var(--atk-cols,36px)}
   .atk-c{width:36px;height:36px}
@@ -9524,10 +9546,14 @@ small>.tvar.d:first-child{margin-left:0;margin-right:2px}
   function started(r){ const c=cOf(r.kosu_id); if(c&&(c.sonuc||c.durum==="bitti")) return true; const t=startTs(r); return isFinite(t)&&t<=NOW(); }
   function altOf(r){ const Al=(A().AT.alt||{})[dayOf(r.kosu_id)]; return ((Al&&Al.altililar)||[]).filter(X=>X.hipodrom===r.hipodrom&&(X.kosular||[]).includes(r.kosu)); }
   function altById(d,id){ const Al=(A().AT.alt||{})[d]; return ((Al&&Al.altililar)||[]).find(X=>X.id===id)||null; }
-  function ekuriOf(r){ const G=[], seen=new Set(), c=cOf(r.kosu_id);
-    for(const g of (c&&Array.isArray(c.ekuri)?c.ekuri:[])) if(Array.isArray(g)){ const m=g.map(String).sort(); const k=m.join(","); if(m.length>1&&!seen.has(k)){ seen.add(k); G.push(m); } }
-    for(const X of altOf(r)) for(const L of Object.values(X.seviyeler||{})) for(const a of L.ayaklar||[]) if(a.kosu===r.kosu) for(const g of a.ekuri||[]){ const m=g.map(String).sort(); const k=m.join(","); if(m.length>1&&!seen.has(k)){ seen.add(k); G.push(m); } }
+  // ekürili gruplar: canlı dosyada koşu düzeyi "ekuri" (koşu öncesi, programdan) + sonuc.ekuri + 6'lı ayakları
+  function ekK(kid){ const G=[], seen=new Set(), c=cOf(kid), r=raceOf(kid);
+    const put=g=>{ if(!Array.isArray(g)) return; const m=g.map(String).sort(); const k=m.join(","); if(m.length>1&&!seen.has(k)){ seen.add(k); G.push(m); } };
+    for(const g of (c&&Array.isArray(c.ekuri)?c.ekuri:[])) put(g);
+    for(const g of (c&&c.sonuc&&Array.isArray(c.sonuc.ekuri)?c.sonuc.ekuri:[])) put(g);
+    if(r) for(const X of altOf(r)) for(const L of Object.values(X.seviyeler||{})) for(const a of L.ayaklar||[]) if(a.kosu===r.kosu) for(const g of a.ekuri||[]) put(g);
     return G; }
+  const ekuriOf=r=>ekK(r.kosu_id);
   function field(r){ const c=cOf(r.kosu_id), by={}; if(c) for(const h of c.atlar||[]) by[String(h.no)]=h;
     const oranli=!!(c&&(c.atlar||[]).some(h=>h.p_oran!=null));
     const H=(r.atlar||[]).map(h=>{ const x=by[String(h.no)]||{}; const p=oranli?(x.p_oran!=null?+x.p_oran:0):(+h.p_kazanma||0);
@@ -9603,7 +9629,7 @@ small>.tvar.d:first-child{margin-left:0;margin-right:2px}
   function addRow(row,c){ c=c||atAct(true); const R0=raceOf(row.kid[0]); if(R0&&started(R0)){ toast("Bu koşu başladı; kupona eklenemez"); return false; }
     const ov=c.at.filter(x=>x.id!==row.id&&x.kid.some(k=>row.kid.includes(k)));
     const wasEdit=c.at.some(x=>x.id===row.id);
-    c.at=c.at.filter(x=>x.id!==row.id&&!ov.includes(x)); c.at.push(row); c.at.sort((a,b)=>(a.t||0)-(b.t||0)||a.hip.localeCompare(b.hip,"tr")||a.kosu-b.kosu);
+    c.at=c.at.filter(x=>x.id!==row.id&&!ov.includes(x)); c.at.push(row); c.at.sort((a,b)=>(a.t||0)-(b.t||0)||String(a.hip||"").localeCompare(String(b.hip||""),"tr")||(a.kosu||0)-(b.kosu||0));
     setActive(c); save(c); try{ Sound.toggle(true); buzz(10); }catch(e){}
     toast(wasEdit?`Satır güncellendi · ${TUR[row.tur].ad}`:ov.length?`Aynı koşudan tek satır: ${TUR[row.tur].ad} olarak güncellendi · ${c.at.length} satır`:`${sfx(c.ad)} eklendi · ${TUR[row.tur].ad} · ${c.at.length} satır`);
     refresh(); return true; }
@@ -9620,62 +9646,116 @@ small>.tvar.d:first-child{margin-left:0;margin-right:2px}
   function recalc(x){ try{ if(x.ok!=null) return false; const r=raceOf(x.kid[0]); if(!r||started(r)) return false;
       if(x.tur==="altili"){ const X=altById(x.d,x.alt), L=X&&X.seviyeler&&X.seviyeler[x.sev]; if(L&&Math.abs(L.p-x.p)>1e-6){ x.p=L.p; x.pk=X.kaynak==="oran"?"oran":"sabah"; return true; } return false; }
       const F=field(r), F2=x.tur==="cifte"?(()=>{ const r2=raceOf(x.kid[1]); return r2?field(r2):null; })():null; if(x.tur==="cifte"&&!F2) return false;
-      const R=calcF(x.tur,x.sec,F,F2), pk=F.oranli?"oran":"sabah"; if(Math.abs(R.p-x.p)>1e-6||pk!==x.pk){ x.p=R.p; x.pk=pk; x.gd=R.gd; return true; } }catch(e){} return false; }
+      // koşmayacak at (oran açıldı, bu atın oranı yok): seçimden düşülür, kombinasyon ve olasılık yeniden hesaplanır (seçim silinmez; oran gelirse geri sayılır)
+      const off=(G,no)=>{ const h=G&&G.H.find(z=>z.no===String(no)); return !!(h&&h.off); }, G_=i=>x.tur==="cifte"&&i===1?F2:F;
+      const es=x.sec.map((c,i)=>c.filter(no=>!off(G_(i),no))), kx=[...new Set(x.sec.flatMap((c,i)=>c.filter(no=>off(G_(i),no)).map(no=>(x.tur==="cifte"&&i?"2:":"")+no)))];
+      const R=calcF(x.tur,es,F,F2), pk=F.oranli?"oran":"sabah", kxs=kx.join(",");
+      if(Math.abs(R.p-x.p)>1e-6||pk!==x.pk||R.komb!==x.komb||kxs!==(x.kx||[]).join(",")){ x.p=R.p; x.pk=pk; x.gd=R.gd; x.komb=R.komb; if(kx.length) x.kx=kx; else delete x.kx; return true; } }catch(e){} return false; }
   // ---------- sonuç ----------
-  function gradeRow(x){ if(x.ok!=null&&!x.need) return false; if(x.man) return false;
+  // her derece (1..k) için geçerli atlar: eşit dereceli (dead heat) atların hepsi kapladıkları her sıra için geçerli sayılır.
+  // O[p]: o sıra açık (sonuç eksik ya da listenin sonundaki eşitlik bloğu listelenmeyen bir atla uzayabilir) → yalnız o zaman belirsiz.
+  function slots(s,k){ const q=(Array.isArray(s.sira)&&s.sira.length?s.sira:(s.kazanan!=null?[s.kazanan]:[])).map(String).filter(Boolean);
+    let dr=Array.isArray(s.derece)&&s.derece.length===q.length?s.derece.map(Number):null;
+    if(dr&&dr.some((d,i)=>!(d>=1)||(i&&d<dr[i-1]))) dr=null;
+    if(!dr){ if(s.esit) return {q,bad:1}; dr=q.map((_,i)=>i+1); }
+    const trunc=q.length>=4&&!(+s.kosan>0&&+s.kosan<=q.length), V=[], O=[];
+    for(let p=1;p<=k;p++){ const v=[]; for(let j=0;j<q.length;j++){ const d=dr[j], t=dr.filter(z=>z===d).length; if(d<=p&&p<=d+t-1) v.push(q[j]); }
+      let open=!v.length; if(!open&&trunc){ const d=dr[q.indexOf(v[v.length-1])]; if(dr[dr.length-1]===d&&dr.filter(z=>z===d).length>1) open=true; }
+      V.push(v); O.push(open); }
+    return {q,V,O}; }
+  // sıra başına aday kümelerinden farklı atlarla geçerli bir dizilim var mı: 1 kesin, .5 belirsiz (açık sırada listelenmeyen at), 0 yok
+  function fit(cols,V,O,L){ let uns=false;
+    const rec=(p,used,w)=>{ if(p===cols.length){ if(w){ uns=true; return false; } return true; }
+      for(const h of cols[p]){ if(used.has(h)) continue; const inV=V[p].includes(h), wi=!inV&&O[p]&&!L.has(h); if(!inV&&!wi) continue;
+        used.add(h); const r=rec(p+1,used,w||wi); used.delete(h); if(r) return true; }
+      return false; };
+    return rec(0,new Set(),false)?1:uns?.5:0; }
+  const ekx=(S,G)=>{ const o=new Set(S.map(String)); for(const g of G||[]) if(g.some(n=>o.has(n))) g.forEach(n=>o.add(n)); return [...o]; };
+  const NEED_N={ganyan:1,plase:2,ikili:2,sirali_ikili:2,uclu:3,tabela:4};
+  function gradeRow(x){ if(x.man) return false; if(x.gv===2&&!x.need&&(x.ok!=null||x.iade)) return false;
+    const T=TUR[x.tur]; if(!T) return false;
+    const sig=()=>JSON.stringify([x.ok,!!x.need,x.res||"",x.iade||"",!!x.srz,x.kx||[],x.komb,x.gv||0]), b0=sig();
     const S=x.kid.map(k=>{ const c=cOf(k); return c&&c.sonuc?c.sonuc:null; });
-    const sira=s=>s?(Array.isArray(s.sira)&&s.sira.length?s.sira.map(String):(s.kazanan!=null?[String(s.kazanan)]:[])):[];
-    const has=(i,no)=>(x.sec[i]||[]).includes(String(no));
-    let ok=null, need=false, res="";
-    if(x.tur==="cifte"||x.tur==="altili"){ const W=S.map(s=>sira(s)[0]); if(W.some(w=>w!=null)) res=W.map(w=>w==null?"…":w).join(x.tur==="cifte"?" / ":"-");
-      if(W.some((w,i)=>w!=null&&!has(i,w))) ok=false; else if(W.every(w=>w!=null)) ok=true; }
-    else { const s=S[0]; if(s){ const q=sira(s); res=q.join("-"); const need_n={ganyan:1,plase:2,ikili:2,sirali_ikili:2,uclu:3,tabela:4}[x.tur];
-        if(x.tur==="ganyan") ok=q[0]!=null?has(0,q[0]):null;
-        else if(x.tur==="plase"){ if(q[0]!=null&&has(0,q[0])) ok=true; else if(q.length>=2) ok=has(0,q[1]); }
-        else if(x.tur==="ikili"){ if(q.length>=2) ok=q[0]!==q[1]&&has(0,q[0])&&has(0,q[1]); else if(q[0]!=null&&!has(0,q[0])) ok=false; }
-        else { const k=need_n; let bad=false; for(let i=0;i<Math.min(k,q.length);i++) if(!has(i,q[i])){ bad=true; break; }
-          if(bad) ok=false; else if(q.length>=k) ok=true; }
-        if(s.esit&&ok!==false){ ok=null; need=true; }   // eşit derece: kural belirsiz → elle işaretle
-        if(ok==null&&q.length) need=true; } }
+    const multi=x.tur==="cifte"||x.tur==="altili", legOf=i=>multi?i:0;
+    // koşmayan atlar (sonuc.kosmayan) seçimden düşülür
+    const kmy=S.map(s=>s&&Array.isArray(s.kosmayan)?s.kosmayan.map(String):null);
+    const eff=x.sec.map((c,i)=>{ const K=kmy[legOf(i)]; c=(c||[]).map(String); return K?c.filter(n=>!K.includes(n)):c; });
+    let ok=null, need=false, res="", iade="", srz=false;
+    if(kmy.some(Boolean)){ const kx=[...new Set(x.sec.flatMap((c,i)=>(c||[]).map(String).filter(n=>!eff[i].includes(n)).map(n=>(x.tur==="cifte"&&i?"2:":"")+(x.tur==="altili"&&i?(i+1)+":":"")+n)))];
+      if(kx.length){ x.kx=kx; try{ if(x.tur==="altili") x.komb=eff.reduce((a,c)=>a*c.length,1); else { const r=raceOf(x.kid[0]); if(r){ const F=field(r), r2=x.tur==="cifte"?raceOf(x.kid[1]):null; if(x.tur!=="cifte"||r2) x.komb=calcF(x.tur,eff,F,r2?field(r2):null).komb; } } }catch(e){} } }
+    if(multi){ const W=[];
+      const R=S.map((s,i)=>{ if(!s) return null; const sl=slots(s,1); W[i]=sl.bad?sl.q[0]||"?":sl.V[0].join("="); if(sl.bad||!eff[i].length) return .5;
+        return fit([ekx(eff[i],ekK(x.kid[i]))],sl.V,sl.O,new Set(sl.q)); });
+      if(R.some(r=>r!=null)) res=R.map((r,i)=>r==null?"…":W[i]).join(x.tur==="cifte"?" / ":"-");
+      if(R.some(r=>r===0)) ok=false; else if(R.every(r=>r===1)) ok=true; else if(R.every(r=>r!=null)) need=true; }
+    else { const s=S[0]; if(s){ const k=NEED_N[x.tur], sl=slots(s,k), kos=+s.kosan||0, L=new Set(sl.q); res=sl.q.join("-");
+        if(kos&&T.enaz&&kos<T.enaz) iade=`${kos} at koştu; ${T.ad} en az ${T.enaz} atla geçerli`;
+        else if(eff.some(c=>!c.length)||(x.tur==="ikili"&&eff[0].length<2)) iade="seçilen at koşmadı";
+        else if(sl.bad) need=true;
+        else { let r;
+          if(x.tur==="ganyan") r=fit([ekx(eff[0],ekK(x.kid[0]))],sl.V,sl.O,L);
+          else if(x.tur==="plase"){ const ex=ekx(eff[0],ekK(x.kid[0])), U=new Set([...sl.V[0],...sl.V[1]]); r=ex.some(h=>U.has(h))?1:(sl.O[0]||sl.O[1])&&ex.some(h=>!L.has(h))?.5:0; }
+          else if(x.tur==="ikili") r=fit([eff[0],eff[0]],sl.V,sl.O,L);
+          else r=fit(eff.slice(0,k),sl.V,sl.O,L);
+          if(r===1) ok=true; else if(r===0) ok=false; else need=true;
+          // tabela: sıralı tutmadı ama seçilen dört at ilk dörde girdi → "sırasız" bilgisi (satır ✗ kalır)
+          if(x.tur==="tabela"&&r===0&&!sl.O.some(Boolean)){ const F4=[...new Set(sl.V.flat())]; if(fit(eff.slice(0,4),[F4,F4,F4,F4],[0,0,0,0],L)===1) srz=true; } } } }
     // sonuç hiç gelmediyse: son koşunun saatinden 36 saat sonra "sonuç eksik"
-    if(ok==null&&!need){ const last=x.kid[x.kid.length-1].split("/"); const t=tsOf(last[0],x.tur==="altili"||x.tur==="cifte"?null:x.saat); if(isFinite(t)&&NOW()-t>36*3600e3) need=true; }
-    const ch=(ok!=null&&ok!==x.ok)||(!!need!==!!x.need)||(res&&res!==x.res);
-    if(ok!=null){ x.ok=ok; delete x.need; } else if(need) x.need=1; if(res) x.res=res;
-    return ch; }
-  const doneR=x=>x.ok!=null||!!x.need;
-  function stAt(c){ const I=c.at||[]; if(!I.length) return "e"; if(I.some(i=>i.ok===false)) return "x"; if(I.every(i=>i.ok===true)) return "g"; if(I.every(doneR)) return "q"; return "w"; }
-  const ST={e:"Boş",w:"Bekliyor",g:"Tuttu",x:"Tutmadı",q:"Sonuç eksik"};
-  const stPill=c=>{ const s=stAt(c); return `<span class="kx-st ${s}">${s==="g"?"✓ ":s==="x"?"✗ ":""}${ST[s]}</span>`; };
+    if(ok==null&&!need&&!iade&&x.ok==null){ const last=x.kid[x.kid.length-1].split("/"); const t=tsOf(last[0],multi?null:x.saat); if(isFinite(t)&&NOW()-t>36*3600e3) need=true; }
+    if(iade){ x.iade=iade; delete x.ok; delete x.need; delete x.srz; x.gv=2; }
+    else if(ok!=null){ x.ok=ok; delete x.need; delete x.iade; if(srz) x.srz=1; else delete x.srz; x.gv=2; }
+    else if(need&&x.ok==null) x.need=1;   // eski kesin sonucu belirsizlikle ezme
+    if(res) x.res=res;
+    return sig()!==b0; }
+  const doneR=x=>x.ok!=null||!!x.need||!!x.iade;
+  function stAt(c){ try{ const I=Array.isArray(c&&c.at)?c.at:[]; if(!I.length) return "e"; if(I.some(i=>i.ok===false)) return "x"; const L=I.filter(i=>!i.iade); if(!L.length) return "i";
+      if(L.every(i=>i.ok===true)) return "g"; if(I.every(doneR)) return "q"; return "w"; }catch(e){ return "w"; } }
+  const ST={e:"Boş",w:"Bekliyor",g:"Tuttu",x:"Tutmadı",q:"Sonuç eksik",i:"İade"};
+  const stPill=c=>{ const s=stAt(c); return `<span class="kx-st ${s==="i"?"e":s}">${s==="g"?"✓ ":s==="x"?"✗ ":s==="i"?"↺ ":""}${ST[s]}</span>`; };
+  // bozuk/eksik at satırları (elle düzenlenmiş ya da yarım yazılmış kayıt) sessizce ayıklanır; spor:"at" olup at dizisi yoksa [] sayılır
+  const atOk=x=>!!x&&!!TUR[x.tur]&&Array.isArray(x.kid)&&x.kid.length>0&&x.kid.every(k=>typeof k==="string")&&Array.isArray(x.sec)&&x.sec.every(Array.isArray);
+  function fixAll(){ try{ for(const c of KX.L) if(isAt(c)&&(!Array.isArray(c.at)||c.at.some(x=>!atOk(x)))) c.at=(Array.isArray(c.at)?c.at:[]).filter(atOk); }catch(e){} }
+  fixAll();
+  const kStarted=(x,k)=>{ const r=raceOf(k); return r?started(r):(x.t||0)<=NOW(); };
+  const ageOf=C=>{ const t=Date.parse(String(C&&C.guncelleme_tsi||"").replace(" ","T")+":00+03:00"); return isFinite(t)?NOW()-t:Infinity; };
   let fetching=false;
-  async function fetchDays(){ if(fetching) return; const need=new Set(), now=NOW(), vis=$("v-kupon")&&!$("v-kupon").hidden;
-    for(const c of KX.L) if(isAt(c)) for(const x of c.at||[]) if(!(x.ok!=null&&!x.need)&&!x.man) for(const k of x.kid){ const d=dayOf(k);
-      if(now<tsOf(d,"00:00")) continue; const C=((A().AT.canli)||{})[d];
-      if(!C&&!CAN[d]) need.add(d); else if(vis&&CAN[d]&&now-CAN[d].t>10*60e3&&!(cOf(k)||{}).sonuc&&!C) need.add(d); }
-    if(!need.size) return; fetching=true;
-    try{ await Promise.all([...need].slice(0,4).map(d=>A().j("data/at/canli/"+d+".json").then(v=>{ CAN[d]={v:v&&v.kosular?v:null,t:NOW()}; }))); }finally{ fetching=false; }
-    gradeAll(); }
-  function gradeAll(){ let ch=false;
+  // sonuç tazeleme: başlamış ve sonucu gelmemiş satır varsa (KUPO görünürken) canlı dosya 10 dakikada bir yeniden çekilir — AT.load'un
+  // yüklediği gün (C) dolu olsa da; C taze ise (güncelleme < 10 dk) beklenir. Eski hatalı puanlanmış satırlar için gün bir kez çekilir.
+  async function fetchDays(){ if(fetching) return; try{ fixAll(); const need=new Set(), now=NOW(), vis=$("v-kupon")&&!$("v-kupon").hidden;
+      for(const c of KX.L) if(isAt(c)) for(const x of c.at||[]){ if(x.man) continue; const open=!(x.ok!=null&&!x.need)&&!x.iade, regr=x.gv!==2&&x.ok!=null; if(!open&&!regr) continue;
+        for(const k of x.kid){ const d=dayOf(k); if(now<tsOf(d,"00:00")) continue; const C=((A().AT.canli)||{})[d];
+          if(!C&&!CAN[d]) need.add(d);
+          else if(open&&vis&&!(cOf(k)||{}).sonuc&&kStarted(x,k)&&(CAN[d]?now-CAN[d].t>10*60e3:ageOf(C)>10*60e3)) need.add(d); } }
+      if(!need.size) return; fetching=true;
+      try{ await Promise.all([...need].slice(0,4).map(d=>A().j("data/at/canli/"+d+".json").then(v=>{ CAN[d]={v:v&&v.kosular?v:null,t:NOW()}; }))); }finally{ fetching=false; }
+      gradeAll(); }catch(e){ fetching=false; console.error(e); } }
+  // KUPO görünürken 5 dakikada bir: yalnız başlamış/sonuçsuz satır varsa istek atar (fetchDays kendisi süzer)
+  setInterval(()=>{ try{ if(document.hidden) return; const v=$("v-kupon"); if(!v||v.hidden) return; fetchDays(); }catch(e){} },5*60e3);
+  function gradeAll(){ try{ fixAll(); let ch=false;
     for(const c of KX.L){ if(!isAt(c)) continue; let cc=false; for(const x of c.at||[]){ if(gradeRow(x)) cc=true; if(c.durum==="acik"&&recalc(x)) cc=true; } if(cc){ c.upd=NOW(); ch=true; } }
     const fin=[]; for(const c of KX.L){ if(!isAt(c)||c.durum!=="acik"||!(c.at||[]).length||!c.at.every(doneR)) continue; c.durum="bitti"; c.bitti=NOW(); c.upd=NOW(); fin.push(c); ch=true; }
     if(ch){ save(); if(fin.length){ act(); const c=fin[0], s=stAt(c); try{ toast(fin.length>1?`🏆 ${fin.length} at kuponun sonuçlandı · Eski kuponlarım`:`🏆 ${c.ad} sonuçlandı: ${ST[s]} (${c.at.filter(i=>i.ok).length}/${c.at.length}) · Eski kuponlarım`); Sound.toggle(s==="g"); }catch(e){} } refresh(); }
-    return ch; }
+    return ch; }catch(e){ console.error(e); return false; } }
   window.atkGrade=gradeAll;
   // ---------- KUPO ekranında at kuponu ----------
   const UI={edit:false,cf:null,od:null,ocf:null};
   function selHtml(x){ const W=x.res?x.res.split(/\s*[\/-]\s*/):[];
     return `<div class="atk-sel">${x.sec.map((c,i)=>{ const lb=legLbl(x,i), win=x.tur==="cifte"||x.tur==="altili"?W[i]:(x.tur==="ikili"?null:W[i]);
       return `<div class="atk-sl">${lb?`<i>${esc(lb)}</i>`:""}<span>${c.map(no=>{ const nm=nmOf(x,x.tur==="cifte"||x.tur==="altili"?i:0,no); const w=(win!=null&&String(win)===no)||(x.tur==="ikili"&&W.slice(0,2).includes(no))||(x.tur==="plase"&&W.slice(0,2).includes(no));
-        return `<span class="atk-h${w?" w":""}"><u>${esc(no)}</u>${nm&&c.length<=4&&x.tur!=="altili"?esc(String(nm).slice(0,18)):""}</span>`; }).join("")}</span></div>`; }).join("")}</div>`; }
+        const w2=w||(win!=null&&String(win).split("=").includes(no)), kx=(x.kx||[]).includes((x.tur==="cifte"&&i?"2:":x.tur==="altili"&&i?(i+1)+":":"")+no);
+        return `<span class="atk-h${w2?" w":""}${kx?" k":""}"${kx?` title="koşmadı"`:""}><u>${esc(no)}</u>${nm&&c.length<=4&&x.tur!=="altili"?esc(String(nm).slice(0,18)):""}</span>`; }).join("")}</span></div>`; }).join("")}</div>`; }
   function rowAt(x,i,weak,old,cid){ const T=TUR[x.tur], lbl=A().dLbl(x.d), r=raceOf(x.kid[0]), st=r?started(r):x.t<=NOW();
     const where=x.tur==="altili"?`${esc(x.hip)} ${x.altNo||""}. 6'lı · ${x.kosu}.–${x.kosu+5}. koşular`:x.tur==="cifte"?`${esc(x.hip)} ${x.kosu}. + ${x.kosu+1}. koşu`:`${esc(x.hip)} ${x.kosu}. koşu`;
-    const res=x.ok===true?`<span class="kx-res g" role="img" aria-label="Tuttu"><i>✓</i></span>`:x.ok===false?`<span class="kx-res x" role="img" aria-label="Tutmadı"><i>✗</i></span>`
-      :old?`<span class="kx-res w" role="img" aria-label="Bekliyor"><i>⏳</i></span>`:`<button class="rm" type="button" data-atk="rm" data-i="${i}" aria-label="${esc(where)} satırını kupondan çıkar">✕</button>`;
-    const man=x.need&&x.ok==null?`<div class="kx-hint">Sonuç eksik:<span class="kx-man"><button type="button" data-atk="man" data-c="${cid}" data-i="${i}" data-v="1" aria-label="Tuttu olarak işaretle">✓</button><button type="button" data-atk="man" data-c="${cid}" data-i="${i}" data-v="0" aria-label="Tutmadı olarak işaretle">✗</button></span></div>`:"";
+    const res=x.ok===true?`<span class="kx-res g" role="img" aria-label="Tuttu"><i>✓</i></span>`:x.ok===false?`<span class="kx-res x" role="img" aria-label="${x.srz?"Sıralı tutmadı, sırasız tuttu":"Tutmadı"}"><i>✗</i></span>`
+      :x.iade?`<span class="kx-res w" role="img" aria-label="İade, koşul dışı"><i>↺</i></span>`:old?`<span class="kx-res w" role="img" aria-label="Bekliyor"><i>⏳</i></span>`:`<button class="rm" type="button" data-atk="rm" data-i="${i}" aria-label="${esc(where)} satırını kupondan çıkar">✕</button>`;
+    const bd=(x.srz?`<span class="atk-bd srz">sırasız</span><span class="atk-bdn">4 at ilk dörtte, sıra tutmadı</span>`:"")+(x.iade?`<span class="atk-bd iade">iade · koşul dışı</span><span class="atk-bdn">${esc(x.iade)}</span>`:"")
+      +((x.kx||[]).length?`<span class="atk-bd kx">koşmayan at çıkarıldı</span><span class="atk-bdn">${esc(x.kx.join(", "))} · kombinasyon ve olasılık yeniden hesaplandı</span>`:"");
+    const man=x.need&&x.ok==null&&!x.iade?`<div class="kx-hint">Sonuç eksik:<span class="kx-man"><button type="button" data-atk="man" data-c="${cid}" data-i="${i}" data-v="1" aria-label="Tuttu olarak işaretle">✓</button><button type="button" data-atk="man" data-c="${cid}" data-i="${i}" data-v="0" aria-label="Tutmadı olarak işaretle">✗</button></span></div>`:"";
     return `<div class="cprow kx-r atk-r${weak?" weak":""}"><div class="l"><small>${HORSE}${esc(lbl)} · ${where}${x.saat?" · "+esc(x.saat):""}${x.tur==="altili"?" · "+({dar:"Dar",orta:"Orta",genis:"Geniş"}[x.sev]||""):""}</small>
       <b>${esc(T.ad)} <small>${esc(T.kisa)}</small></b>${selHtml(x)}
-      <span class="kx-line"><span>${fN(x.komb)} kombinasyon</span><span>OXX <span class="kx-pp">${fP(x.p)}</span></span>${weak&&x.ok==null?`<span class="kx-weak">En zayıf halka</span>`:""}${x.res?`<span class="kx-sc">Sonuç ${esc(x.res)}</span>`:st&&x.ok==null&&!x.need?`<span class="kx-sc">koşu başladı · sonuç bekleniyor</span>`:""}${!old&&!st&&x.ok==null?`<button type="button" class="kx-lnk" data-atk="ed" data-i="${i}">Düzenle</button>`:""}</span>${man}</div>${res}</div>`; }
+      <span class="kx-line"><span>${fN(x.komb)} kombinasyon</span><span>OXX <span class="kx-pp">${fP(x.p)}</span></span>${weak&&x.ok==null?`<span class="kx-weak">En zayıf halka</span>`:""}${x.res?`<span class="kx-sc">Sonuç ${esc(x.res)}</span>`:st&&x.ok==null&&!x.need?`<span class="kx-sc">koşu başladı · sonuç bekleniyor</span>`:""}${bd}${!old&&!st&&x.ok==null?`<button type="button" class="kx-lnk" data-atk="ed" data-i="${i}">Düzenle</button>`:""}</span>${man}</div>${res}</div>`; }
   function sumAt(c){ const I=c.at, n=I.length, K=I.reduce((a,x)=>a+(+x.komb||0),0), p=I.reduce((a,x)=>a*(x.p||0),1), e=I.reduce((a,x)=>a+(x.p||0),0);
-    const wi=I.reduce((b,x,i)=>(x.p||0)<(I[b].p||0)?i:b,0), w=I[wi], g=I.filter(x=>x.ok===true).length, xx=I.filter(x=>x.ok===false).length, wt=n-g-xx;
+    const wi=I.reduce((b,x,i)=>(x.p||0)<(I[b].p||0)?i:b,0), w=I[wi], g=I.filter(x=>x.ok===true).length, xx=I.filter(x=>x.ok===false).length, iq=I.filter(x=>x.iade).length, sz=I.filter(x=>x.ok===false&&x.srz).length, wt=n-g-xx-iq;
     const no=I.filter(x=>x.pk==="oran").length, ks=new Set(I.flatMap(x=>x.kid)).size;
     return `<div class="panel cpsum kx-sum"><div class="list">
       <div><span>Satır</span><span>${n} satır<span class="kx-sub">${ks} koşu</span></span></div>
@@ -9683,7 +9763,7 @@ small>.tvar.d:first-child{margin-left:0;margin-right:2px}
       <div><span>BULUTOXX birlikte tutma olasılığı<span class="kx-sub">tüm satırlar birden</span></span><span><b>${fP(p)}</b></span></div>
       <div><span>Beklenen tutan satır<span class="kx-sub">olasılıklar toplamı</span></span><span>${f1(e)} / ${n}</span></div>
       ${n>1?`<div><span>En zayıf halka</span><span>${esc(w.hip)} ${w.kosu}. koşu<span class="kx-sub">${esc(TUR[w.tur].ad)} · ${fP(w.p)}</span></span></div>`:""}
-      ${g||xx?`<div><span>Sonuç</span><span>${g} tuttu · ${xx} tutmadı${wt?` · ${wt} bekliyor`:""}</span></div>`:""}
+      ${g||xx||iq?`<div><span>Sonuç</span><span>${g} tuttu · ${xx} tutmadı${sz?` (${sz} sırasız)`:""}${iq?` · ${iq} iade`:""}${wt?` · ${wt} bekliyor`:""}</span></div>`:""}
       <div><span>Olasılık kaynağı</span><span>${no===n?"oranla güncel":no?`${no} satır oranla, ${n-no} sabah`:"sabah tahmini"}</span></div></div>
       <p class="note">Her satırın olasılığı indirimli Harville yöntemiyle koşu olasılıklarından hesaplanır; birlikte tutma olasılığı satırların çarpımıdır (koşular bağımsız sayılır, aynı koşu tek satırda). Koşu başlayana kadar oran geldikçe güncellenir. Para tutarı ve kazanç gösterilmez.</p></div>`; }
   function karPanel(c){ if(!KAR) return ""; const T=[...new Set(c.at.map(x=>x.tur))]; const L=T.map(t=>{ const x=c.at.find(z=>z.tur===t); const s=karLine(t,x.komb); return s?`<p class="atk-kar"><b>${esc(TUR[t].ad)}</b> · ${s}</p>`:""; }).filter(Boolean);
@@ -9705,7 +9785,7 @@ small>.tvar.d:first-child{margin-left:0;margin-right:2px}
     const inp=$("atkIn"); if(inp){ inp.focus(); inp.select(); inp.onkeydown=e=>{ if(e.key==="Enter"){ e.preventDefault(); rename(c,inp.value); } else if(e.key==="Escape"){ UI.edit=false; refresh(); } }; inp.onblur=()=>setTimeout(()=>{ if(UI.edit) rename(c,inp.value); },120); } }
   function rename(c,v){ v=String(v||"").replace(/\s+/g," ").trim().slice(0,32); UI.edit=false; if(v&&v!==c.ad){ c.ad=v; save(c); toast("Kupon adı: "+v); } refresh(); }
   function shareText(c){ const s=stAt(c);
-    return `🏆 BULUTOXX · ${c.ad}${s==="g"||s==="x"?" · "+ST[s]:""}\n`+c.at.map((x,i)=>`${i+1}) 🐎 ${x.hip} ${x.tur==="altili"?x.kosu+".–"+(x.kosu+5)+". koşular":x.tur==="cifte"?x.kosu+".+"+(x.kosu+1)+". koşu":x.kosu+". koşu"} ${x.saat} · ${TUR[x.tur].ad}: ${x.sec.map(c=>c.join(",")).join(" / ")} · ${fN(x.komb)} komb. · OXX ${fP(x.p)}${x.ok===true?" ✓":x.ok===false?" ✗":""}${x.res?" (sonuç "+x.res+")":""}`).join("\n")
+    return `🏆 BULUTOXX · ${c.ad}${s==="g"||s==="x"?" · "+ST[s]:""}\n`+c.at.map((x,i)=>`${i+1}) 🐎 ${x.hip} ${x.tur==="altili"?x.kosu+".–"+(x.kosu+5)+". koşular":x.tur==="cifte"?x.kosu+".+"+(x.kosu+1)+". koşu":x.kosu+". koşu"} ${x.saat} · ${TUR[x.tur].ad}: ${x.sec.map(c=>c.join(",")).join(" / ")} · ${fN(x.komb)} komb. · OXX ${fP(x.p)}${x.ok===true?" ✓":x.ok===false?(x.srz?" ✗ (sırasız)":" ✗"):x.iade?" ↺ iade":""}${x.res?" (sonuç "+x.res+")":""}`).join("\n")
       +`\nToplam ${fN(c.at.reduce((a,x)=>a+(+x.komb||0),0))} kombinasyon · birlikte tutma olasılığı ${fP(c.at.reduce((a,x)=>a*(x.p||0),1))}\nHobi amaçlı olasılık; garanti değildir · 18+`; }
   // Eski kuponlarım: at kuponları ayrı bölüm + istatistik
   function statsAt(P){ const D=P.filter(c=>{ const s=stAt(c); return s==="g"||s==="x"; }), W=D.filter(c=>stAt(c)==="g"), R=P.flatMap(c=>c.at).filter(x=>x.ok!=null);
@@ -9714,12 +9794,12 @@ small>.tvar.d:first-child{margin-left:0;margin-right:2px}
     const kt=ORDER.filter(t=>by[t]).map(t=>{ const b=by[t], z=KAR&&KAR.turler&&KAR.turler[t]; return `<div><span><b>${esc(TUR[t].ad)}</b></span><span>${b.h}/${b.n}</span><span>${fP(b.e/b.n)}</span><span>${z&&z.n?fP(rate(z)):"–"}</span></div>`; }).join("");
     return `<div class="panel"><div class="kx-kh"><b>${D.length} at kuponundan ${W.length} tuttu</b><small>${P.length>D.length?`${P.length-D.length} kuponun sonucu eksik`:"yalnızca bu telefonda"}</small></div>
       <div class="kx-tiles"><div class="kx-tile gd"><small>Kupon kazanma oranı</small><b>${D.length?fP(W.length/D.length):"–"}</b><div class="kx-bar"><i style="width:${D.length?Math.round(W.length/D.length*100):0}%"></i></div></div>
-        <div class="kx-tile"><small>Satır isabeti</small><b>${R.length?fP(hr):"–"}</b><i>${R.filter(x=>x.ok).length} / ${R.length} satır tuttu</i></div>
+        <div class="kx-tile"><small>Satır isabeti</small><b>${R.length?fP(hr):"–"}</b><i>${R.filter(x=>x.ok).length} / ${R.length} satır tuttu${(()=>{ const z=R.filter(x=>x.ok===false&&x.srz).length; return z?` · ${z} sırasız`:""; })()}</i></div>
         ${D.length?`<div class="kx-tile w2"><small>OXX kalibrasyonu · kupon</small><i>OXX bu kuponlara ortalama <b>${fP(pc)}</b> birlikte tutma olasılığı vermişti; gerçekte <b>${fP(W.length/D.length)}</b> tuttu.${D.length<10?" Örnek az, temkinli oku.":""}</i></div>`:""}
         ${R.length?`<div class="kx-tile w2"><small>OXX kalibrasyonu · satır</small><i>Satırlarda OXX ortalama <b>${fP(pr)}</b> demişti; gerçekte <b>${fP(hr)}</b> tuttu.</i></div>`:""}</div>
       ${kt?`<div class="atk-kt" style="margin-top:10px"><div><span>Tür</span><span>Tutan</span><span>OXX bekl.</span><span>Geri test</span></div>${kt}</div><p class="note" style="margin:6px 0 0">Geri test: en olası tek kombinasyonun geçmiş koşulardaki isabeti${KAR?` (${esc((KAR.donem||[]).join(" – "))})`:""}.</p>`:""}</div>`; }
-  function oldCard(c){ const I=c.at, s=stAt(c), h=I.filter(i=>i.ok).length, opn=UI.od===c.id;
-    return `<div class="kx-oc"><button type="button" class="kx-oh" data-atk="oo" data-c="${c.id}" aria-expanded="${opn}"><b>${HORSE}${esc(c.ad)}</b>${stPill(c)}<small>${esc(ist(new Date(c.bitti||c.arsivAt||c.olusturma),{day:"numeric",month:"short",year:"numeric"}))} · ${I.length} satır · ${h}/${I.length} tuttu · OXX ${fP(I.reduce((a,x)=>a*(x.p||0),1))}${c.durum==="arsiv"&&s==="w"?" · arşivde, sonuç bekliyor":""}</small></button>
+  function oldCard(c){ const I=c.at, s=stAt(c), h=I.filter(i=>i.ok).length, sz=I.filter(i=>i.ok===false&&i.srz).length, iq=I.filter(i=>i.iade).length, opn=UI.od===c.id;
+    return `<div class="kx-oc"><button type="button" class="kx-oh" data-atk="oo" data-c="${c.id}" aria-expanded="${opn}"><b>${HORSE}${esc(c.ad)}</b>${stPill(c)}<small>${esc(ist(new Date(c.bitti||c.arsivAt||c.olusturma),{day:"numeric",month:"short",year:"numeric"}))} · ${I.length} satır · ${h}/${I.length} tuttu${sz?` · ${sz} sırasız`:""}${iq?` · ${iq} iade`:""} · OXX ${fP(I.reduce((a,x)=>a*(x.p||0),1))}${c.durum==="arsiv"&&s==="w"?" · arşivde, sonuç bekliyor":""}</small></button>
       ${opn?`<div class="kx-od">${I.map((x,i)=>rowAt(x,i,false,true,c.id)).join("")}
         ${UI.ocf===c.id?`<div class="kx-cf"><p><b>${esc(c.ad)}</b> kalıcı olarak silinsin mi?</p><div><button type="button" class="btn ghost" data-atk="ocfno">Vazgeç</button><button type="button" class="btn dng" data-atk="ocfdel" data-c="${c.id}">Sil</button></div></div>`
           :`<div class="kx-acts"><button type="button" data-atk="osh" data-c="${c.id}"><svg viewBox="0 0 24 24"><path d="M12 3v12M8 7l4-4 4 4"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg>Paylaş</button>${c.durum==="arsiv"?`<button type="button" data-atk="oback" data-c="${c.id}"><svg viewBox="0 0 24 24"><path d="M9 14 4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg>Geri al</button>`:`<span></span>`}<button type="button" class="dng" data-atk="odel" data-c="${c.id}"><svg viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg>Sil</button></div>`}</div>`:""}</div>`; }
@@ -9731,7 +9811,7 @@ small>.tvar.d:first-child{margin-left:0;margin-right:2px}
     const sec=document.createElement("div"); sec.className="atk-old"; sec.innerHTML=`<div class="atk-sec">${HORSE}At kuponları</div>${statsAt(P)}<div class="kx-old">${P.map(oldCard).join("")}</div>`;
     box.appendChild(sec); }
   // ---------- KUPO kabuğuna bağlanma (futbol kodu değişmeden) ----------
-  function decorate(){ try{ const v=$("v-kupon"); if(!v) return; const c=act();
+  function decorate(){ try{ const v=$("v-kupon"); if(!v) return; fixAll(); const c=act();
       const cb=$("cpBox"); if(cb&&isAt(c)&&!(KP.tab==="eski"||KP.tab==="oyn")){ const root=cb.querySelector(":scope > .atk-root"); if(!root||root.dataset.c!==c.id||root.dataset.v!==String(c.upd||0)+(UI.edit?"e":"")+(UI.cf||"")){ renderCp(cb,c); const r=cb.querySelector(":scope > .atk-root"); if(r){ r.dataset.c=c.id; r.dataset.v=String(c.upd||0)+(UI.edit?"e":"")+(UI.cf||""); } } }
       const sub=$("kxSub"); if(sub&&isAt(c)&&KP.tab==="cp"){ const want=`Aktif: <b>${esc(c.ad)}</b> · 🐎 ${c.at.length} satır · ${KX.L.filter(x=>x.durum==="acik").length} kupon`; if(sub.innerHTML!==want) sub.innerHTML=want; }
       const ch=$("kxChips"); if(ch){ ch.querySelectorAll("button[data-kc]").forEach(b=>{ const k=KX.L.find(x=>x.id===b.dataset.kc); if(!isAt(k)||b.querySelector(".atk-ic")) return;
@@ -9743,8 +9823,8 @@ small>.tvar.d:first-child{margin-left:0;margin-right:2px}
   const oldSig=()=>KX.L.filter(c=>isAt(c)&&c.durum!=="acik").map(c=>c.id+":"+(c.upd||0)).join(",")+"|"+UI.od+"|"+UI.ocf;
   let mo=null; function hook(){ const v=$("v-kupon"); if(!v||mo) return; mo=new MutationObserver(()=>{ decorate(); }); mo.observe(v,{childList:true,subtree:true}); decorate(); }
   hook(); setTimeout(hook,1500);
-  function hdrFix(){ const b=$("hdrKup"); if(!b) return; const c=act(); if(!isAt(c)) return; const bd=b.querySelector(".kx-bd"), n=c.at.length;
-    if(bd&&(bd.hidden!==!n||bd.textContent!==String(n))){ bd.hidden=!n; bd.textContent=n; } const al=`KUPO: ${c.ad}, ${n} at satırı`; if(b.getAttribute("aria-label")!==al) b.setAttribute("aria-label",al); }
+  function hdrFix(){ try{ const b=$("hdrKup"); if(!b) return; const c=act(); if(!isAt(c)) return; fixAll(); const bd=b.querySelector(".kx-bd"), n=c.at.length;
+    if(bd&&(bd.hidden!==!n||bd.textContent!==String(n))){ bd.hidden=!n; bd.textContent=n; } const al=`KUPO: ${c.ad}, ${n} at satırı`; if(b.getAttribute("aria-label")!==al) b.setAttribute("aria-label",al); }catch(e){} }
   let hmo=null; function hdrHook(){ const b=$("hdrKup"); if(!b||hmo) return; hmo=new MutationObserver(hdrFix); hmo.observe(b,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:["hidden","aria-label"]}); hdrFix(); }
   hdrHook(); setTimeout(hdrHook,1500); setTimeout(hdrHook,4500);
   try{ const _rp=renderPower; renderPower=function(){ const r=_rp.apply(this,arguments); try{ const b=$("pwCp"), c=act(); if(b&&isAt(c)) b.innerHTML=`${lion()}${esc(c.ad)} · <b>${c.at.length} at satırı</b><span>Aç ›</span>`; }catch(e){} return r; }; }catch(e){}
@@ -10019,6 +10099,497 @@ small>.tvar.d:first-child{margin-left:0;margin-right:2px}
   setInterval(()=>{ const v=$("v-canli"); if(v&&!v.hidden&&!document.hidden) paint(); },60000);
   try{ const i=$("cvQi"); if(i) i.placeholder="Maç ara: takım veya lig (canlı ve sıradaki)"; }catch(e){}
   setTimeout(()=>{ try{ const i=$("cvQi"); if(i) i.placeholder="Maç ara: takım veya lig (canlı ve sıradaki)"; }catch(e){} },2600);
+})();
+</script>
+<style id="pazar-v104">
+/* v104 · Tüm tahminler (yeni pazarlar): maç sayfası paneli, KUPO seçim listesi, OXX sohbet cevabı */
+.pz{display:flex;flex-direction:column;gap:10px;margin:0 0 12px}
+.pz-hd{display:flex;flex-direction:column;gap:2px;margin:6px 2px 0}
+.pz-hd h3{margin:0;font:700 var(--t-3,19px)/1.2 var(--font-d,system-ui)!important;letter-spacing:-.016em;color:var(--ink)!important;text-transform:none!important}
+.pz-hd small{font:500 var(--t-c1,12px)/1.35 var(--font);color:var(--ink3)}
+.pz-leg{margin:0 2px;font:500 var(--t-fn,13px)/1.45 var(--font);color:var(--ink2)}
+.pz-leg b{color:var(--ink);font-weight:600}
+.pz-fit{border:1px solid rgba(47,123,255,.34);background:rgba(47,123,255,.08);border-radius:var(--r-lg,16px);padding:12px 12px 10px;display:flex;flex-direction:column;gap:8px}
+.pz-fit>p{margin:0;font:600 var(--t-fn,13px)/1.35 var(--font);color:#CFE0FF}
+.pz-fit>p b{color:var(--ink);font-weight:700}
+.pz-g{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg,16px);overflow:hidden}
+.pz-gh{width:100%;min-height:52px;display:flex;align-items:center;gap:10px;padding:8px 14px;background:none;border:0;color:var(--ink);text-align:left;cursor:pointer}
+.pz-gh>span{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.pz-gh b{font:650 var(--t-b,15px)/1.25 var(--font);letter-spacing:-.01em}
+.pz-gh small{font:500 var(--t-c1,12px)/1.3 var(--font);color:var(--ink3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pz-gh i{font-style:normal;color:var(--ink3);font-size:13px;transition:transform var(--d2,.18s) var(--ease,ease)}
+.pz-gh[aria-expanded="true"] i{transform:rotate(90deg)}
+.pz-gh:focus-visible,.pz-add:focus-visible,.pz-oc:focus-visible{outline:2px solid #6AA8FF;outline-offset:2px}
+.pz-gb{border-top:1px solid var(--line)}
+.pz-gb[hidden]{display:none}
+.pz-r{display:grid;grid-template-columns:minmax(0,1fr) auto auto;grid-template-areas:"n p b" "c c c";column-gap:10px;row-gap:2px;align-items:center;padding:9px 12px 9px 14px;border-top:1px solid var(--line)}
+.pz-r:first-child{border-top:0}
+.pz-r.fit{background:rgba(47,123,255,.07)}
+.pz-n{grid-area:n;min-width:0;display:flex;flex-direction:column;gap:1px}
+.pz-n b{font:600 var(--t-b,15px)/1.25 var(--font);letter-spacing:-.01em;color:var(--ink)}
+.pz-n small{font:500 var(--t-c1,12px)/1.3 var(--font);color:var(--ink2)}
+.pz-tag{display:inline-block;margin-left:6px;padding:1px 6px;border-radius:6px;background:rgba(47,123,255,.18);color:#CFE0FF;font:600 11px/1.4 var(--font);vertical-align:1px;white-space:nowrap}
+.pz-p{grid-area:p;display:flex;flex-direction:column;align-items:flex-end;gap:1px;min-width:54px}
+.pz-p b{font:750 17px/1.1 var(--font-d,system-ui);letter-spacing:-.01em;color:var(--ink);font-variant-numeric:tabular-nums}
+.pz-p small{font:500 11.5px/1.2 var(--font);color:var(--ink2);white-space:nowrap;font-variant-numeric:tabular-nums}
+.pz-p small.fair{color:var(--ink3)}
+.pz-c{grid-area:c;margin-top:2px;font:500 11.5px/1.35 var(--font);color:var(--ink3)}
+.pz-add{grid-area:b;min-height:44px;min-width:84px;padding:0 10px;border-radius:12px;border:1px solid rgba(120,170,255,.38);background:rgba(47,123,255,.12);color:#DCE8FF;font:650 13.5px/1 var(--font);letter-spacing:-.005em;white-space:nowrap;cursor:pointer;transition:transform var(--d1,.12s) var(--ease,ease)}
+.pz-add b{font-weight:800}
+.pz-add[aria-pressed="true"]{background:#2F6BFF;border-color:#2F6BFF;color:#fff}
+.pz-add:active{transform:scale(.96)}
+.pz-add[disabled]{opacity:.45}
+.pz-oc{display:flex;align-items:center;gap:10px;min-height:44px}
+.pz-oc>span{flex:1;min-width:0;font:600 var(--t-sub,14px)/1.3 var(--font);color:var(--ink)}
+.pz-oc>span small{display:block;font:500 12px/1.3 var(--font);color:var(--ink2)}
+.pz-more{align-self:flex-start;min-height:44px;padding:0 2px;background:none;border:0;color:#8CB8FF;font:600 var(--t-sub,14px)/1 var(--font);cursor:pointer}
+.pz-note{margin:2px 2px 0;font:500 var(--t-c1,12px)/1.45 var(--font);color:var(--ink3)}
+.ms-body .pz-tah{margin:10px 0 2px}
+/* KUPO · seçim değiştir: gruplu liste */
+.kx-opts.pz-ko{display:flex;flex-direction:column;gap:8px}
+.pz-kg{display:flex;flex-direction:column;gap:6px}
+.pz-kg>small,.pz-kg>details>summary{font:600 11.5px/1.3 var(--font);color:var(--ink3);letter-spacing:.02em;text-transform:uppercase}
+.pz-kg>details>summary{min-height:36px;display:flex;align-items:center;cursor:pointer;list-style:none}
+.pz-kg>details>summary::-webkit-details-marker{display:none}
+.pz-kg>details>summary::after{content:"›";margin-left:6px;transition:transform var(--d2,.18s)}
+.pz-kg>details[open]>summary::after{transform:rotate(90deg)}
+.pz-kw{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:6px}
+.kx-opts.pz-ko .pz-kw button{min-height:48px;min-width:0;max-width:none;width:100%;text-align:center}
+.pz-fair{display:block;margin-top:3px;font:500 11.5px/1.35 var(--font);color:var(--ink3)}
+/* sohbet */
+.bt-msg .pz-bl{display:block;margin:6px 0 2px;padding:8px 10px;border-radius:12px;background:rgba(47,123,255,.1);border:1px solid rgba(120,170,255,.25)}
+.bt-msg .pz-bl small{display:block;color:var(--ink3);font-size:12px;margin-top:2px}
+@media (max-width:370px){.pz-r{padding:9px 10px 9px 12px;column-gap:8px}.pz-add{min-width:78px;font-size:13px;padding:0 8px}.pz-p{min-width:48px}}
+</style>
+<script id="pazar-v104">
+// =====================================================================
+// v104 · TÜM TAHMİNLER — motorun yeni pazarları (data/fixtures.json → pz / po; data/pazar_karne.json)
+// • Maç sayfası "Seçenekler" sekmesi: gruplu, katlanabilir panel (MS · Çifte şans · Alt/Üst · KG · İlk yarı · İkinci yarı · İY/MS ·
+//   MS + Alt/Üst · MS + KG · Daha gollü yarı). Her seçenek: OXX olasılığı, oran (yoksa adil oran 1/p), geçmiş kalibrasyon notu, ＋ Kupon.
+//   Tahmini skorla uyumlu birleşik seçenek vurgulanır ("2-1 ⇒ MS 1 & 2,5 Üst"). Tahmin sekmesinde kısa "skorla uyumlu" kartı.
+// • Kod eşlemesi: uygulamada eskiden U15 = "1,5 Alt", U35 = "3,5 Alt", O15/O35 = Üst, IO05/IU05… = İY Üst/Alt idi (eski kuponlar
+//   bozulmasın diye korunur). Motor kodları kupona eşdeğer uygulama koduyla yazılır: U15→O15, A15→U15, U35→O35, A35→U35,
+//   U25→U, A25→A, IYU05→IO05, IYA05→IU05, IYU15→IO15, IYA15→IU15; diğer yeni kodlar (2Y…, IYMS_…, 1&U25…, DGY…) aynen.
+// • mkHit genişletildi (İY skoru h1/a1; 2Y = MS − İY; İY skoru yoksa null → KUPO "sonuç eksik" + elle işaretleme).
+// • Öneri / Altın mantığına dokunulmaz: yalnız gösterim ve kupon.
+// =====================================================================
+(function(){
+  const CAT=[
+    ["MS","Maç sonucu",["1","X","2"]],
+    ["ÇŞ","Çifte şans",["1X","12","X2"]],
+    ["AÜ","Alt / Üst",["U15","A15","U25","A25","U35","A35"]],
+    ["KG","Karşılıklı gol",["KGV","KGY"]],
+    ["İY","İlk yarı",["IY1","IYX","IY2","IYU05","IYA05","IYU15","IYA15"]],
+    ["2Y","İkinci yarı",["2Y1","2YX","2Y2","2YU05","2YA05","2YU15","2YA15"]],
+    ["İYMS","İY / MS",["IYMS_1_1","IYMS_1_X","IYMS_1_2","IYMS_X_1","IYMS_X_X","IYMS_X_2","IYMS_2_1","IYMS_2_X","IYMS_2_2"]],
+    ["MSAÜ","MS + Alt/Üst",["1&U25","1&A25","X&U25","X&A25","2&U25","2&A25"]],
+    ["MSKG","MS + KG",["1&KGV","1&KGY","X&KGV","X&KGY","2&KGV","2&KGY"]],
+    ["YARI","Daha gollü yarı",["DGY1","DGYE","DGY2"]]];
+  const AD={"1":"MS 1","X":"MS X","2":"MS 2","1X":"Çifte şans 1X","12":"Çifte şans 12","X2":"Çifte şans X2",
+    U15:"1,5 Üst",A15:"1,5 Alt",U25:"2,5 Üst",A25:"2,5 Alt",U35:"3,5 Üst",A35:"3,5 Alt",KGV:"KG Var",KGY:"KG Yok",
+    IY1:"İY 1",IYX:"İY X",IY2:"İY 2",IYU05:"İY 0,5 Üst",IYA05:"İY 0,5 Alt",IYU15:"İY 1,5 Üst",IYA15:"İY 1,5 Alt",
+    "2Y1":"2Y 1","2YX":"2Y X","2Y2":"2Y 2","2YU05":"2Y 0,5 Üst","2YA05":"2Y 0,5 Alt","2YU15":"2Y 1,5 Üst","2YA15":"2Y 1,5 Alt",
+    DGY1:"Daha gollü yarı: 1. yarı",DGYE:"Daha gollü yarı: eşit",DGY2:"Daha gollü yarı: 2. yarı"};
+  for(const a of ["1","X","2"]) for(const b of ["1","X","2"]) AD[`IYMS_${a}_${b}`]=`İY/MS ${a}/${b}`;
+  for(const a of ["1","X","2"]){ AD[a+"&U25"]=`MS ${a} & 2,5 Üst`; AD[a+"&A25"]=`MS ${a} & 2,5 Alt`; AD[a+"&KGV"]=`MS ${a} & KG Var`; AD[a+"&KGY"]=`MS ${a} & KG Yok`; }
+  const GRP={}; CAT.forEach(([g,,L])=>L.forEach(k=>{ GRP[k]=g; }));
+  const IYG=new Set(["İY","2Y","İYMS","YARI"]);
+  const TUM={A15:"U15",A25:"U25",A35:"U35",KGY:"KGV",IYA05:"IYU05",IYA15:"IYU15","2YA05":"2YU05","2YA15":"2YU15"};
+  // motor kodu → uygulama (kupon) kodu; çakışan eski kodlar korunur
+  const E2A={U15:"O15",A15:"U15",U35:"O35",A35:"U35",U25:"U",A25:"A",IYU05:"IO05",IYA05:"IU05",IYU15:"IO15",IYA15:"IU15"};
+  const A2E={}; for(const [e,a] of Object.entries(E2A)) A2E[a]=e;
+  const toApp=e=>E2A[e]||e, toEng=a=>A2E[a]||(a==="U"?"U25":a==="A"?"A25":a);
+  window.pzToApp=toApp; window.pzToEng=toEng; window.PZ_CAT=CAT; window.PZ_AD=AD;
+  // ---------- adlar (mkName) ----------
+  try{ Object.assign(MKT_N,{U:"2,5 Üst",A:"2,5 Alt",U25:"2,5 Üst",A25:"2,5 Alt",A15:"1,5 Alt",A35:"3,5 Alt",IYU05:"İY 0,5 Üst",IYA05:"İY 0,5 Alt",IYU15:"İY 1,5 Üst",IYA15:"İY 1,5 Alt"});
+    for(const [k,v] of Object.entries(AD)) if(!(k in E2A)&&k!=="U15"&&k!=="U35") MKT_N[k]=v; }catch(e){}
+  // ---------- mkHit: yeni kodlar ----------
+  const fin=x=>x!=null&&x!==""&&isFinite(+x)&&+x>=0;
+  function res3(h,a){ return h>a?"1":h<a?"2":"X"; }
+  function pzHit(k,hs,as,h1,a1){
+    if(!fin(hs)||!fin(as)) return null; hs=+hs; as=+as; const t=hs+as;
+    const iy=fin(h1)&&fin(a1)&&+h1<=hs&&+a1<=as; const H1=iy?+h1:null, A1=iy?+a1:null;
+    const H2=iy?hs-H1:null, A2=iy?as-A1:null, t1=iy?H1+A1:null, t2=iy?H2+A2:null, ms=res3(hs,as);
+    let m;
+    if((m=/^([UA])(15|25|35)$/.exec(k))){ const l=+m[2]/10; return m[1]==="U"?t>l:t<l; }
+    if((m=/^(IY|2Y)([UA])(05|15)$/.exec(k))){ if(!iy) return null; const g=m[1]==="IY"?t1:t2, l=+m[3]/10; return m[2]==="U"?g>l:g<l; }
+    if((m=/^(IY|2Y)([1X2])$/.exec(k))){ if(!iy) return null; return (m[1]==="IY"?res3(H1,A1):res3(H2,A2))===m[2]; }
+    if((m=/^IYMS_([1X2])_([1X2])$/.exec(k))){ if(!iy) return null; return res3(H1,A1)===m[1]&&ms===m[2]; }
+    if((m=/^([1X2])&(U25|A25|KGV|KGY)$/.exec(k))){ const sec=m[2]==="U25"?t>2.5:m[2]==="A25"?t<2.5:m[2]==="KGV"?(hs>0&&as>0):!(hs>0&&as>0); return ms===m[1]&&sec; }
+    if((m=/^DGY([12E])$/.exec(k))){ if(!iy) return null; return m[1]==="1"?t1>t2:m[1]==="2"?t2>t1:t1===t2; }
+    return undefined; }
+  window.pzHit=pzHit;
+  const NEWK=/^(U25|A25|A15|A35|(IY|2Y)[UA](05|15)|2Y[1X2]|IYMS_[1X2]_[1X2]|[1X2]&(U25|A25|KGV|KGY)|DGY[12E])$/;
+  try{ const _mh=mkHit; mkHit=function(mk,hs,as,h1,a1,s0){ const k=String(mk||"");
+      if(NEWK.test(k)){ const r=pzHit(k,hs,as,h1,a1); return r===undefined?null:r; }
+      // eski İY kodları: İY skoru tutarsızsa (İY > MS) kontrol edilemez
+      if(/^(IY[1X2]|I[OU](05|15))$/.test(k)&&fin(h1)&&fin(a1)&&(+h1>+hs||+a1>+as)) return null;
+      return _mh.apply(this,arguments); }; }catch(e){}
+  const needIY=a=>IYG.has(GRP[toEng(a)])||/^(IY[1X2]|I[OU](05|15))$/.test(a);
+  window.pzNeedIY=needIY;
+  // ---------- veri ----------
+  let KAR=null;
+  fetch("data/pazar_karne.json",{cache:"no-cache"}).then(r=>r.ok?r.json():null).then(d=>{ KAR=d; try{ if(MS.m&&MS.tab==="oran") msRender(); }catch(e){} }).catch(()=>{});
+  function pzFull(f){ if(!f||!f.pz||typeof f.pz!=="object") return null; const P={};
+    for(const [k,v] of Object.entries(f.pz)) if(v!=null&&isFinite(+v)) P[k]=+v;
+    if(P.U25==null&&P.U!=null) P.U25=P.U; if(P.A25==null&&P.A!=null) P.A25=P.A;
+    for(const [a,b] of Object.entries(TUM)) if(P[a]==null&&P[b]!=null) P[a]=Math.round((1-P[b])*1000)/1000;
+    return Object.keys(P).length?P:null; }
+  function oddOf(f,e){ const po=f&&f.po||{}; let o=po[e]; if(o==null&&e==="U25") o=po.U; if(o==null&&e==="A25") o=po.A;
+    if(o==null&&f){ const L={"1":f.odds&&f.odds[0],"X":f.odds&&f.odds[1],"2":f.odds&&f.odds[2],U25:f.ou&&f.ou[0],A25:f.ou&&f.ou[1],KGV:f.ikg&&f.ikg[0],KGY:f.ikg&&f.ikg[1]}; o=L[e]; }
+    o=+o; return o>1.001&&isFinite(o)?o:null; }
+  window.pzFull=pzFull; window.pzOdd=oddOf;
+  const f2=x=>(+x).toLocaleString("tr-TR",{minimumFractionDigits:2,maximumFractionDigits:2});
+  const fair=p=>p>0.005?1/p:null;
+  const pp=p=>p==null?"–":p<.01?"<1":String(Math.round(p*100));
+  function calNote(e,p){ const K=KAR&&KAR.pazarlar&&KAR.pazarlar[e]; if(!K||!Array.isArray(K.kalibrasyon)) return "";
+    const B=K.kalibrasyon.find(b=>{ const [lo,hi]=String(b.aralik||"").split("-").map(Number); return p>=lo&&(p<hi||(hi>=1&&p<=1)); });
+    if(!B||!(B.n>=50)) return "Geçmişte bu olasılıkta yeterli örnek yok";
+    return `Geçmişte bu olasılıkta %${Math.round(B.gercek*100)} tuttu · ${B.n.toLocaleString("tr-TR")} maç${K.oneriye_uygun===false?" · sınırlı ölçüm":""}`; }
+  window.pzCal=calNote;
+  // takım adlarıyla kısa açıklama
+  function desc(e,m){ const H=shortTeam(m.h), A=shortTeam(m.a), R={"1":`${H} kazanır`,"X":"Beraberlik","2":`${A} kazanır`};
+    const G={U15:"en az 2 gol",A15:"en fazla 1 gol",U25:"en az 3 gol",A25:"en fazla 2 gol",U35:"en az 4 gol",A35:"en fazla 3 gol",KGV:"iki takım da gol atar",KGY:"en az bir takım gol atmaz"};
+    let x;
+    if(R[e]) return R[e];
+    if(e==="1X") return `${H} kaybetmez`; if(e==="X2") return `${A} kaybetmez`; if(e==="12") return "Beraberlik olmaz";
+    if(G[e]) return G[e].charAt(0).toLocaleUpperCase("tr")+G[e].slice(1);
+    if((x=/^(IY|2Y)([1X2])$/.exec(e))){ const y=x[1]==="IY"?"İlk yarı":"İkinci yarı"; return x[2]==="X"?`${y} berabere (eşit gol)`:`${y}nı ${x[2]==="1"?H:A} önde kapatır`.replace("İlk yarını","İlk yarıyı").replace("İkinci yarını","İkinci yarıyı"); }
+    if((x=/^(IY|2Y)([UA])(05|15)$/.exec(e))){ const y=x[1]==="IY"?"İlk yarıda":"İkinci yarıda"; return x[3]==="05"?`${y} gol ${x[2]==="U"?"olur":"olmaz"}`:`${y} ${x[2]==="U"?"en az 2":"en fazla 1"} gol`; }
+    if((x=/^IYMS_([1X2])_([1X2])$/.exec(e))){ const a={"1":`${H} önde`,"X":"berabere","2":`${A} önde`}[x[1]], b={"1":H,"X":"berabere","2":A}[x[2]]; return `İY ${a} · MS ${b}`; }
+    if((x=/^([1X2])&(U25|A25|KGV|KGY)$/.exec(e))){ if(e==="X&KGY") return "0-0 biter"; return `${R[x[1]]} + ${G[x[2]]}`; }
+    if(e==="DGY1") return "İlk yarıda daha çok gol"; if(e==="DGY2") return "İkinci yarıda daha çok gol"; if(e==="DGYE") return "İki yarıda eşit gol";
+    return ""; }
+  window.pzDesc=desc;
+  // tahmini skorla uyumlu kodlar
+  function fitCodes(ft,ht){ const out=new Set(); const s=/^(\d+)-(\d+)$/.exec(ft||""); if(!s) return out; const h=+s[1], a=+s[2];
+    const all=[].concat(...CAT.map(c=>c[2])); const q=/^(\d+)-(\d+)$/.exec(ht||""); const h1=q?+q[1]:null, a1=q?+q[2]:null;
+    for(const e of all){ if(IYG.has(GRP[e])&&!(q&&h1<=h&&a1<=a)) continue; const r=pzHit(e,h,a,h1,a1); if(r===true) out.add(e); }
+    return out; }
+  window.pzFit=fitCodes;
+  // ---------- maç bağlamı ----------
+  function ctxOf(m,f){ if(!m) return null; const dt=m.sp?new Date(m.ts):m.dt; const mm=m.sp?{lg:"i"+m.ci,h:m.h,a:m.a,dt}:m;
+    const P=pzFull(f); if(!P) return null; try{ uyum(P,m,f); }catch(e){} return {m,f,mm,P,ex:{iid:(f&&f.iid)||m.iid||(m.sp?m.id:null)||null}}; }
+  // Tutarlılık: MS 1/X/2 ve 2,5 A/Ü uygulamanın gösterdiği (harmanlı) olasılıktan; birleşikler bu toplamlara IPF ile uydurulur
+  function uyum(P,m,f){ if(m.sp) return; const q=quickPred(m,f); if(!q||!q.pm) return; const H=q.pm[0],D=q.pm[1],A=q.pm[2],O=q.o25m!=null?q.o25m:q.o25; if(!(H>0&&O>0)) return;
+    const R={"1":H,"X":D,"2":A}; P["1"]=H; P.X=D; P["2"]=A; P.U25=O; P.A25=1-O; P["1X"]=H+D; P["12"]=H+A; P.X2=D+A;
+    const ipf=(cols,cm)=>{ const T={}; let ok=true; for(const r of ["1","X","2"]) for(const c of cols){ const v=P[r+"&"+c]; if(v==null){ ok=false; } T[r+"&"+c]=Math.max(1e-6,v||0); } if(!ok) return;
+      for(let it=0;it<60;it++){ for(const r of ["1","X","2"]){ const s=cols.reduce((a,c)=>a+T[r+"&"+c],0); cols.forEach(c=>T[r+"&"+c]*=R[r]/s); }
+        cols.forEach((c,i)=>{ const s=["1","X","2"].reduce((a,r)=>a+T[r+"&"+c],0); ["1","X","2"].forEach(r=>T[r+"&"+c]*=cm[i]/s); }); }
+      for(const k in T) P[k]=Math.round(T[k]*1000)/1000; };
+    ipf(["U25","A25"],[O,1-O]);
+    if(P.KGV!=null) ipf(["KGV","KGY"],[P.KGV,1-P.KGV]);
+    for(const r of ["1","X","2"]){ const ks=["1","X","2"].map(x=>"IYMS_"+x+"_"+r).filter(k=>P[k]!=null); const s=ks.reduce((a,k)=>a+P[k],0); if(s>0) ks.forEach(k=>P[k]=Math.round(P[k]*R[r]/s*1000)/1000); }
+    if(P.U15!=null&&P.U15<O) P.U15=O; if(P.U35!=null&&P.U35>O) P.U35=O;
+    for(const [x,y] of Object.entries(TUM)) if(P[y]!=null) P[x]=Math.round((1-P[y])*1000)/1000; }
+  window.pzCtx=ctxOf;
+  const optOf=(C,e)=>{ const p=C.P[e]; if(p==null) return null; const o=oddOf(C.f,e); return {k:toApp(e),e,n:AD[e]||e,p,o}; };
+  const inCp=(C,a)=>{ try{ const k=cpKey(C.mm); return CP.items.some(c=>c.k===k&&c.mk===a); }catch(e){ return false; } };
+  function toggle(C,e){ const o=optOf(C,e); if(!o) return; const O={mm:C.mm,ex:C.ex,opts:[o],rec:null};
+    try{ buzz(8); }catch(_){}
+    if(typeof kxAdd==="function") kxAdd(O,{k:o.k,n:o.n,o:o.o,p:o.p});
+    else { cpToggle(C.mm,o.k,o.o||+(1/Math.max(.02,o.p)).toFixed(2),o.p); }
+    const el=$("msheet");
+    if(el&&!el.hidden&&MS.m){ const st=el.scrollTop; try{ msRender(); }catch(_){} el.scrollTop=st;
+      try{ const nb=el.querySelector(`[data-pzk="${CSS.escape(e)}"]`); if(nb) nb.focus({preventScroll:true}); }catch(_){} }
+    paintBtns(); try{ kxPaint(); }catch(_){} }
+  window.pzToggle=toggle;
+  // ---------- panel ----------
+  const LSO="bx-pz-acik";
+  const DEF_OPEN=["MS","AÜ","KG","MSAÜ"];
+  let OPEN=null; function openSet(){ if(OPEN) return OPEN; let v=null; try{ v=JSON.parse(localStorage.getItem(LSO)||"null"); }catch(e){} OPEN=new Set(Array.isArray(v)?v:DEF_OPEN); return OPEN; }
+  function saveOpen(){ try{ localStorage.setItem(LSO,JSON.stringify([...openSet()])); }catch(e){} }
+  function btnHtml(C,e,label){ const a=toApp(e), on=inCp(C,a), n=AD[e]||e;
+    return `<button type="button" class="pz-add" data-pzk="${esc(e)}" aria-pressed="${on}" aria-label="${esc(n)} ${on?"kuponda, çıkarmak için dokun":"aktif kupona ekle"}">${on?"✓ Kuponda":label||"<b>＋</b> Kupon"}</button>`; }
+  function rowHtml(C,e,fit){ const o=optOf(C,e); if(!o) return "";
+    const ds=desc(e,C.m), cn=calNote(e,o.p), fo=fair(o.p);
+    return `<div class="pz-r${fit?" fit":""}" data-pzr="${esc(e)}"><div class="pz-n"><b>${esc(o.n)}${fit?`<span class="pz-tag">${esc(fit)} ile uyumlu</span>`:""}</b>${ds?`<small>${esc(ds)}</small>`:""}</div>
+      <div class="pz-p"><b>%${pp(o.p)}</b>${o.o?`<small>oran ${f2(o.o)}</small>`:fo?`<small class="fair">adil ${f2(fo)}</small>`:""}</div>
+      ${btnHtml(C,e)}${cn?`<div class="pz-c">${esc(cn)}</div>`:""}</div>`; }
+  function panelHtml(C,r){ const ft=r&&r.topFT&&r.topFT[0]&&r.topFT[0].s, ht=r&&r.topH1&&r.topH1[0]&&r.topH1[0].s; const FIT=fitCodes(ft,ht), O=openSet();
+    const fitTop=["1&U25","1&A25","X&U25","X&A25","2&U25","2&A25","1&KGV","1&KGY","X&KGV","X&KGY","2&KGV","2&KGY","IYMS_1_1","IYMS_X_1","IYMS_X_X","IYMS_1_X","IYMS_2_2","IYMS_X_2"].filter(e=>FIT.has(e)&&C.P[e]!=null).slice(0,3);
+    const fitBox=ft&&fitTop.length?`<div class="pz-fit" role="group" aria-label="Tahmini skorla uyumlu seçenekler"><p>Tahmini skor <b>${esc(ft)}</b>${ht?` (İY ${esc(ht)})`:""} ⇒ <b>${esc(AD[fitTop[0]])}</b></p>
+      ${fitTop.map(e=>{ const o=optOf(C,e); return `<div class="pz-oc"><span>${esc(o.n)} · %${pp(o.p)}<small>${esc(desc(e,C.m))} · ${o.o?`oran ${f2(o.o)}`:`adil oran ${f2(fair(o.p))}`}</small></span>${btnHtml(C,e)}</div>`; }).join("")}</div>`:"";
+    const groups=CAT.map(([g,t,L])=>{ const ks=L.filter(e=>C.P[e]!=null); if(!ks.length) return "";
+      const best=ks.slice().sort((a,b)=>C.P[b]-C.P[a])[0], op=O.has(g), id="pzg-"+g.replace(/[^A-Za-z0-9]/g,"x");
+      const kn=KAR&&KAR.gruplar&&KAR.gruplar[g==="MSAÜ"?"MS&AÜ":g==="MSKG"?"MS&KG":g==="AÜ"?"AÜ25":g];
+      return `<div class="pz-g" data-pzg="${esc(g)}"><button type="button" class="pz-gh" aria-expanded="${op}" aria-controls="${id}"><span><b>${esc(t)}</b><small>En olası: ${esc(AD[best])} %${pp(C.P[best])}${kn&&kn.isabet!=null?` · geçmiş isabet %${Math.round(kn.isabet*100)}`:""}</small></span><i aria-hidden="true">›</i></button>
+        <div class="pz-gb" id="${id}"${op?"":" hidden"}>${ks.map(e=>rowHtml(C,e,FIT.has(e)&&["MSAÜ","MSKG","İYMS"].includes(g)?ft:"")).join("")}</div></div>`; }).join("");
+    const src=C.f&&C.f.pzy==="m"?"model yolu":"piyasa yolu";
+    return `<section class="pz" aria-label="Tüm tahminler"><div class="pz-hd"><h3>Tüm tahminler</h3><small>OXX pazar motoru · ${src}</small></div>
+      <p class="pz-leg">1 = <b>${esc(C.m.h)}</b> · 2 = <b>${esc(C.m.a)}</b>. Yüzde: OXX olasılığı. Oran yoksa <b>adil oran</b> (1 ÷ olasılık) gösterilir; gerçek oran değildir.</p>
+      ${fitBox}${groups}
+      <p class="pz-note">Kalibrasyon notu, geçmiş ${KAR&&KAR.n_mac?KAR.n_mac.toLocaleString("tr-TR")+" maçta":"maçlarda"} aynı olasılık aralığındaki tahminlerin gerçekte ne sıklıkla tuttuğunu gösterir. İlk/ikinci yarı seçenekleri ilk yarı skoruyla puanlanır. Garanti değildir.</p></section>`; }
+  function paintBtns(){ try{ const C=curCtx(); if(!C) return; document.querySelectorAll("#msheet [data-pzk]").forEach(b=>{ const on=inCp(C,toApp(b.dataset.pzk)); if(b.getAttribute("aria-pressed")!==String(on)){ b.setAttribute("aria-pressed",on); b.innerHTML=on?"✓ Kuponda":"<b>＋</b> Kupon"; const n=AD[b.dataset.pzk]||b.dataset.pzk; b.setAttribute("aria-label",`${n} ${on?"kuponda, çıkarmak için dokun":"aktif kupona ekle"}`); } }); }catch(e){} }
+  window.pzPaint=paintBtns;
+  function curCtx(){ try{ if(!MS.m||MS.live) return null; return ctxOf(MS.m,MS.f); }catch(e){ return null; } }
+  // Seçenekler sekmesi: pz varsa eski kutular yerine gruplu panel (canlı maçta eski canlı pazarlar aynen)
+  let LASTR=null;
+  try{ const _mo=msOran; msOran=function(m,f,r,lv){ if(lv||!f||!f.pz) return _mo.apply(this,arguments); const C=ctxOf(m,f); if(!C) return _mo.apply(this,arguments);
+      const mm=C.mm; let pb=""; try{ pb=playBar(mm); }catch(e){}
+      const sc=(r&&r.topFT||[]).slice(0,9).map(x=>`<span class="msc"><b>${esc(x.s)}</b><small>%${(x.p*100).toFixed(1)}</small></span>`).join("");
+      return pb+panelHtml(C,r)+(sc?`<div class="mg"><h4>En olası skorlar</h4><div class="msc-w">${sc}</div></div>`:""); }; }catch(e){}
+  try{ const _mt=msTahmin; msTahmin=function(m,f,r,lv){ LASTR={m,r}; return _mt.apply(this,arguments); }; }catch(e){}
+  function tahCard(C,r){ const ft=r&&r.topFT&&r.topFT[0]&&r.topFT[0].s, ht=r&&r.topH1&&r.topH1[0]&&r.topH1[0].s; const FIT=fitCodes(ft,ht);
+    const e=["1&U25","1&A25","2&U25","2&A25","X&U25","X&A25"].find(k=>FIT.has(k)&&C.P[k]!=null); if(!e) return "";
+    const o=optOf(C,e);
+    return `<div class="pz-fit pz-tah" role="group" aria-label="Tahmini skorla uyumlu seçenek"><p>Tahmini skor <b>${esc(ft)}</b> ⇒ <b>${esc(o.n)}</b></p>
+      <div class="pz-oc"><span>%${pp(o.p)} · ${o.o?`oran ${f2(o.o)}`:`adil oran ${f2(fair(o.p))}`}<small>${esc(desc(e,C.m))}</small></span>${btnHtml(C,e)}</div>
+      <button type="button" class="pz-more" data-pzall="1">Tüm tahminler: İY, 2Y, İY/MS, MS + KG ›</button></div>`; }
+  try{ const _mr=msRender; msRender=function(){ const r=_mr.apply(this,arguments); try{ const el=$("msheet"), m=MS.m; if(!el||!m) return r;
+      const C=curCtx(); const tb=el.querySelector('.ms-tabs button[data-t="oran"]'); if(tb&&tb.textContent!=="Seçenekler") tb.textContent="Seçenekler";
+      if(!C) return r;
+      const al=el.querySelector("[data-allm]"); if(al) al.textContent="Tüm tahminler (İY, 2Y, İY/MS, MS + Alt/Üst…)";
+      if(MS.tab==="tahmin"&&LASTR&&LASTR.m===m&&!el.querySelector(".pz-tah")){ const h=tahCard(C,LASTR.r); if(h){ const rb=el.querySelector(".ms-body .recbig"); if(rb) rb.insertAdjacentHTML("afterend",h); else { const b=el.querySelector(".ms-body"); if(b) b.insertAdjacentHTML("afterbegin",h); } } }
+    }catch(e){ console.warn("pazar-v104",e); } return r; }; }catch(e){}
+  document.addEventListener("click",e=>{ const el=e.target.closest&&e.target.closest("#msheet [data-pzk],#msheet .pz-gh,#msheet [data-pzall]"); if(!el) return;
+    e.preventDefault(); e.stopPropagation();
+    if(el.dataset.pzall){ try{ msGo("oran"); }catch(_){} return; }
+    if(el.classList.contains("pz-gh")){ const g=el.closest("[data-pzg]").dataset.pzg, S=openSet(), op=el.getAttribute("aria-expanded")!=="true";
+      el.setAttribute("aria-expanded",op); const gb=el.nextElementSibling; if(gb) gb.hidden=!op; if(op) S.add(g); else S.delete(g); saveOpen(); try{ buzz(5); Sound.tap(); }catch(_){} return; }
+    const C=curCtx(); if(!C){ toast("Bu maç için pazar olasılığı yok"); return; } toggle(C,el.dataset.pzk); },true);
+  // ---------- KUPO: seçim değiştir listesine yeni pazarlar (gruplu) + adil oran notu + "sonuç eksik" ----------
+  function augO(O){ if(!O||O._pz||!O.mm||O.ex&&(O.ex.live||O.ex.sp)) return O; O._pz=1;
+    let f=null; try{ const m=O.mm; f=m.src==="fx"?FIXTURES.find(x=>x.lg===m.lg&&x.h===m.h&&x.a===m.a):(FIXTURES.find(x=>x.lg===m.lg&&x.h===m.h&&x.a===m.a)||(O.ex&&O.ex.iid?FIXTURES.find(x=>x.iid===O.ex.iid):null)||fxOdds(m)); }catch(e){}
+    const P=pzFull(f); if(!P) return O; O._P=P; O._f=f;
+    const have=new Set((O.opts||[]).map(o=>o.k));
+    for(const [,,L] of CAT) for(const e of L){ if(P[e]==null) continue; const a=toApp(e); if(have.has(a)) continue; O.opts.push({k:a,n:AD[e],o:oddOf(f,e),p:P[e],_e:e}); have.add(a); }
+    return O; }
+  const ORD={}; CAT.forEach(([,,L])=>L.forEach((k,i)=>{ ORD[k]=i; }));
+  function koHtml(O,i,cur){ const by={}; for(const o of O.opts){ const g=GRP[toEng(o.k)]||(/^[UA]$/.test(o.k)?"AÜ":"MS"); (by[g]=by[g]||[]).push(o); }
+    for(const g in by) by[g].sort((a,b)=>(ORD[toEng(a.k)]??99)-(ORD[toEng(b.k)]??99));
+    const curG=GRP[toEng(cur)]||"MS";
+    return CAT.filter(([g])=>by[g]&&by[g].length).map(([g,t])=>{ const sn=k=>String(mkName(k)).replace(/^Çifte şans /,"").replace(/^Daha gollü yarı: /,"").replace(/^(\d)\. yarı$/,"$1. yarı");
+    const bt=by[g].map(o=>`<button type="button" data-kx="sw" data-i="${i}" data-k="${esc(o.k)}" aria-pressed="${o.k===cur}" aria-label="${esc(mkName(o.k))}" class="${O.rec&&O.rec.k===o.k?"rec":""}">${esc(sn(o.k))}<small>${o.o?f2(o.o):"adil "+f2(1/Math.max(.02,o.p||.5))} · %${pp(o.p)}</small></button>`).join("");
+      const open=["MS","ÇŞ","AÜ","KG"].includes(g)||g===curG;
+      return `<div class="pz-kg">${open?`<small>${esc(t)}</small><div class="pz-kw">${bt}</div>`:`<details><summary>${esc(t)}</summary><div class="pz-kw">${bt}</div></details>`}</div>`; }).join(""); }
+  function kupoDeco(){ const box=$("cpBox"); if(!box) return; const OO=box._O;
+    if(Array.isArray(OO)) OO.forEach(augO);
+    box.querySelectorAll(".kx-opts:not(.pz-ko)").forEach(k=>{ const row=k.closest("[data-cpi]"); if(!row) return; const i=+row.dataset.cpi, O=OO&&OO[i], x=CP.items[i]; if(!O||!x||!O._P) return;
+      k.classList.add("pz-ko"); k.innerHTML=koHtml(O,i,x.mk); });
+    // adil oran notu (toplam oran)
+    const I=CP.items||[], nf=I.filter(x=>x.fair).length, ko=box.querySelector(".kx-sum .kp-odd>span:first-child");
+    if(ko&&!ko.querySelector(".pz-fair")&&nf) ko.insertAdjacentHTML("beforeend",`<span class="pz-fair">${nf===I.length?"Tüm seçimlerde":nf+" seçimde"} gerçek oran yok: adil oran (1 ÷ OXX olasılığı) ile hesaplandı</span>`);
+    // İY gerektiren seçimde ilk yarı skoru gelmediyse
+    box.querySelectorAll(".cprow[data-cpi] .kx-hint").forEach(h=>{ const x=I[+h.closest("[data-cpi]").dataset.cpi]; if(!x||!x.need||x.ok!=null||h.dataset.pz) return;
+      const tn=[...h.childNodes].find(n=>n.nodeType===3&&/Sonuç otomatik bulunamadı/.test(n.textContent)); if(!tn) return; h.dataset.pz="1";
+      tn.textContent=x.s&&!x.s1&&needIY(x.mk)?`Sonuç eksik: ilk yarı skoru gelmedi (MS ${x.s}). Elle işaretle:`:"Sonuç eksik. Elle işaretle:"; }); }
+  window.pzKupoDeco=kupoDeco;
+  let kq=0; const ksched=()=>{ if(kq) return; kq=1; requestAnimationFrame(()=>{ kq=0; try{ kupoDeco(); }catch(e){} }); };
+  function obsCp(){ const b=$("cpBox"); if(!b||b.dataset.pzo) return; b.dataset.pzo="1"; try{ new MutationObserver(ksched).observe(b,{childList:true,subtree:true}); }catch(e){} ksched(); }
+  obsCp(); setTimeout(obsCp,1500);
+  try{ const _rk=renderKupon; renderKupon=function(){ const r=_rk.apply(this,arguments); obsCp(); ksched(); return r; }; }catch(e){}
+  // eski kuponlarım: İY gerektiren seçimde sonuç eksikse açıklama
+  // ---------- OXX sohbet: pazar soruları ----------
+  const NZ=t=>String(t||"").toLocaleLowerCase("tr").replace(/ç/g,"c").replace(/ğ/g,"g").replace(/ı/g,"i").replace(/ö/g,"o").replace(/ş/g,"s").replace(/ü/g,"u").replace(/â/g,"a")
+    .replace(/(\d)\s*[.,]\s*(\d)/g,"$1$2").replace(/[^a-z0-9&]+/g," ").replace(/\s+/g," ").trim();
+  window.pzNZ=NZ;
+  function teamPos(s,name){ let best=-1; const keys=new Set([NZ(name)]);
+    try{ const T=TEAMS.find(t=>t.name===name||tmEq(t.name,name)); if(T) T.keys.forEach(k=>keys.add(NZ(k))); }catch(e){}
+    NZ(name).split(" ").filter(w=>w.length>=4&&!/^(fc|sk|spor|club|city|united|real|athletic|deportivo|sporting)$/.test(w)).forEach(w=>keys.add(w));
+    for(const k of keys){ if(!k||k.length<2) continue; const re=new RegExp("(^| )"+k.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+"\\w*","g"); let x; while((x=re.exec(s))) best=Math.max(best,x.index); }
+    return best; }
+  function lastPos(s,re){ let p=-1, x; const g=new RegExp(re.source,"g"); while((x=g.exec(s))) p=x.index; return p; }
+  // metinden istenen pazar kodlarını çıkarır (motor kodları). Boş dizi → pazar sorusu değil.
+  function detect(raw,m){ const s=NZ(raw); if(!s) return [];
+    if(/\b(ne demek\w*|nedir|ne anlama|anlami\w*|manasi|nasil hesap\w*|aciklar misin)\b/.test(s)) return [];
+    const out=[];
+    const DG=/\b(daha gollu|gollu yari|en gollu|hangi yari\w*)\b/.test(s);
+    const IYMS=/\b(iy ?ms|iyms|ilk yari ?(ve )?mac sonu\w*|ilk yari ?\/? ?ms)\b/.test(s);
+    const Y2=/\b(ikinci yari\w*|2 yari\w*|2y|ikinci devre\w*|2 devre\w*|ikinci 45)\b/.test(s);
+    const Y1=!Y2&&/\b(ilk yari\w*|ilkyari\w*|iy|1 yari\w*|ilk devre\w*|devre\w*|ilk 45)\b/.test(s);
+    const KG=/\b(kg|kgv|kgy|karsilikli gol\w*|iki takim da gol\w*|iki takimda gol\w*)\b/.test(s), KGN=/\b(kg yok|kgy|karsilikli gol yok\w*|kg olmaz)\b/.test(s);
+    const UST=/\b(ust\w*|over)\b/.test(s), ALT=/\b(alt|alti|altinda|under)\b/.test(s), LN=(/\b(05|15|25|35)\b/.exec(s)||[])[1]||null;
+    const GOL=/\bgol\w*\b/.test(s), GOLN=/\b(gol (olmaz|yok|cikmaz|atilmaz|gelmez)|golsuz)\b/.test(s);
+    const WIN=/\b(kazan\w*|galip\w*|yener|yenecek|alir|alacak|onde\w*|ustun)\b/.test(s), DRAW=/\b(berabere\w*|beraberlik)\b/.test(s), KIM=/\bkim\b/.test(s);
+    const CS=/\b(cifte sans\w*|cs)\b/.test(s)||/\bkaybetmez\b/.test(s);
+    // hangi takım?
+    let side=null; const ex=/\bms ?([12x])\b/.exec(s)||/(^| )([12x]) ?(ve|&|\+) ?(2 ?5 |25 )?(ust|alt|kg)/.exec(s);
+    if(ex) side=(ex[1]&&/^[12x]$/.test(ex[1])?ex[1]:ex[2]).toUpperCase();
+    if(!side&&m&&(WIN||/\bkaybetmez\b/.test(s))&&!KIM){ const wp=lastPos(s,/\b(kazan\w*|galip\w*|yener|yenecek|alir|alacak|onde\w*|ustun|kaybetmez)\b/); const ph=teamPos(s.slice(0,wp+1),m.h), pa=teamPos(s.slice(0,wp+1),m.a);
+      if(ph>=0||pa>=0) side=ph>pa?"1":"2"; else { const qh=teamPos(s,m.h), qa=teamPos(s,m.a); if(qh>=0&&qa<0) side="1"; else if(qa>=0&&qh<0) side="2"; } }
+    if(!side&&DRAW) side="X";
+    if(DG){ out.push("DGY1","DGYE","DGY2"); return out; }
+    if(IYMS){ const q=/\b(?:iy ?ms|iyms)\s*([12x])\s*([12x])\b/.exec(s)||/\b([12x]) ?\/? ?([12x])\b/.exec(s.replace(/\biy ?ms\b/,""));
+      if(q&&/iy ?ms|iyms/.test(s)) out.push(`IYMS_${q[1].toUpperCase()}_${q[2].toUpperCase()}`); else out.push("*IYMS"); return out; }
+    if(Y1||Y2){ const H=Y1?"IY":"2Y";
+      if(UST||ALT){ const l=LN==="15"?"15":"05"; out.push(H+(ALT&&!UST?"A":"U")+l); }
+      else if(GOL&&!KG) out.push(H+(GOLN?"A05":"U05"));
+      if(side) out.push(H+side); else if(KIM&&WIN) out.push(H+"1",H+"X",H+"2");
+      return out; }
+    if(CS&&!out.length){ const t=/\b(1x|x2|12)\b/.exec(s); if(t) out.push(t[1].toUpperCase()); else if(side==="1") out.push("1X"); else if(side==="2") out.push("X2"); else out.push("1X","12","X2"); return out; }
+    const line=LN==="15"||LN==="35"||LN==="25"?LN:"25";
+    if(side&&(UST||ALT)&&line==="25") out.push(`${side}&${ALT&&!UST?"A25":"U25"}`);
+    else if(side&&KG) out.push(`${side}&${KGN?"KGY":"KGV"}`);
+    else if(UST||ALT){ if(LN||side) out.push((ALT&&!UST?"A":"U")+line); }
+    else if(KG) out.push(KGN?"KGY":"KGV");
+    return out; }
+  window.pzDetect=detect;
+  const CHIP="＋ Kupona ekle: ";
+  const BQ=new Map();
+  function fxFor(m){ try{ if(m.sp) return FIXTURES.find(x=>x.iid===m.id)||null; return (m.src==="fx"?FIXTURES.find(x=>x.lg===m.lg&&x.h===m.h&&x.a===m.a):FIXTURES.find(x=>x.lg===m.lg&&x.h===m.h&&x.a===m.a)||fxOdds(m))||null; }catch(e){ return null; } }
+  function botBlock(m,codes){ const f=fxFor(m), C=ctxOf(m,f); if(!C) return null;
+    let L=codes.slice(); if(L[0]==="*IYMS") L=CAT.find(c=>c[0]==="İYMS")[2].filter(e=>C.P[e]!=null).sort((a,b)=>C.P[b]-C.P[a]).slice(0,3);
+    L=L.filter(e=>C.P[e]!=null).slice(0,4); if(!L.length) return null;
+    const lines=L.map(e=>{ const o=optOf(C,e), cn=calNote(e,o.p); return `<span class="pz-bl">🧮 <b>${esc(o.n)}</b> · ${esc(desc(e,m))}: <b>%${pp(o.p)}</b>${o.o?` (oran ${f2(o.o)})`:` (adil oran ${f2(fair(o.p))})`}${cn?`<small>${esc(cn)}</small>`:""}</span>`; });
+    const prim=L.length>1&&codes[0]!=="*IYMS"&&!/^DGY/.test(L[0])&&!/^(IY|2Y)[1X2]$/.test(L[0])&&!["1X","12","X2"].includes(L[0])?L[0]:L.slice().sort((a,b)=>C.P[b]-C.P[a])[0];
+    const chips=[prim].concat(L.filter(e=>e!==prim).slice(0,1)).map(e=>{ const t=CHIP+AD[e]; BQ.set(t,{m,e}); return t; });
+    return {C,L,html:lines.join(""),chips}; }
+  const LEG={KGV:"KG Var",KGY:"KG Yok",U25:"2,5 Üst",A25:"2,5 Alt",U15:"1,5 Üst","1":"MS 1","X":"MS X","2":"MS 2",IYU05:"İY 0,5 Üst"};
+  function mergeInto(R,B){ let h=String(R.html||"");
+    for(const e of B.L){ const n=LEG[e]; if(!n) continue;
+      const rx=new RegExp(`(?:✅|⚠️) <b>${n.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")}</b>: <b>%\\d+</b>(?: \\(oran [\\d.,]+\\))?\\. [^<]*(?:<br>)?`); h=h.replace(rx,"");
+      if(e==="IYU05") h=h.replace(/ · İY'de gol \(İY 0,5 Üst\) %\d+/,""); }
+    const at=[h.indexOf('<div class="bt-card'),h.indexOf('<small class="v69-g"'),h.indexOf('<small class="v70-g"')].filter(i=>i>=0).sort((a,b)=>a-b)[0];
+    h=at!=null?h.slice(0,at).replace(/(<br>)+$/,"")+B.html+h.slice(at):h.replace(/(<br>)+$/,"")+B.html;
+    return Object.assign({},R,{html:h,chips:[...new Set([...B.chips,"Tüm tahminleri aç",...(R.chips||[]).filter(c=>!/^＋ Kupona ekle/.test(c))])].slice(0,6)}); }
+  if(typeof botAnswer==="function"){ const _ba=botAnswer; botAnswer=async function(raw){ const c0=typeof BOT!=="undefined"?BOT.ctx:null;
+      const R=await _ba.apply(this,arguments);
+      try{ const c1=typeof BOT!=="undefined"?BOT.ctx:null;
+        let m=null; if(c1&&c1!==c0&&c1.kind==="analiz"&&c1.match&&!c1.match.live) m=c1.match;
+        if(!m){ // bağlam: önceki maç sorulmuşken yalnız pazar sorusu ("ikinci yarı gol") ve önceki katmanlar anlamadıysa
+          const cm=c0&&c0.match; if(!cm||cm.live) return R; const h0=String(R&&R.html||"");
+          if(!/tam anlayamadım|kafası biraz karıştı|anlayamadım/.test(h0)) return R;
+          const codes=detect(raw,cm); if(!codes.length) return R; const B=botBlock(cm,codes); if(!B) return R;
+          try{ BOT.ctx=c0; }catch(e){}
+          return {html:`<b>${esc(cm.h)} - ${esc(cm.a)}</b>${B.html}`,chips:[...B.chips,"Tüm tahminleri aç","İlk yarı ne olur"]}; }
+        const codes=detect(raw,m); if(!codes.length) return R;
+        const B=botBlock(m,codes); if(!B) return R;
+        return mergeInto(R&&typeof R==="object"?R:{html:String(R||"")},B); }catch(e){ console.warn("pazar-v104 bot",e); }
+      return R; }; }
+  document.addEventListener("click",e=>{ const b=e.target.closest&&e.target.closest("#botChips button[data-q]"); if(!b) return; const t=b.dataset.q;
+    if(t==="Tüm tahminleri aç"){ const cm=typeof BOT!=="undefined"&&BOT.ctx&&BOT.ctx.match; if(!cm) return; e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation();
+      const go=()=>{ openMatch(cm); setTimeout(()=>{ try{ msGo("oran"); }catch(_){} },60); }; try{ botThen(go); }catch(_){ go(); } return; }
+    if(!t||t.indexOf(CHIP)!==0) return;
+    e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation();
+    const q=BQ.get(t); if(!q){ toast("Bu seçim artık geçerli değil; maçı yeniden sor"); return; }
+    const C=ctxOf(q.m,fxFor(q.m)); if(!C){ toast("Bu maç için pazar olasılığı yok"); return; }
+    toggle(C,q.e); const on=inCp(C,toApp(q.e)); b.textContent=on?`✓ Kuponda: ${AD[q.e]}`:t; b.setAttribute("aria-pressed",on); },true);
+})();
+</script>
+<style id="sonuc-oxx-v104">
+/* v104 · Sonuçlar: OXX'un kilitli maç öncesi önerisi (altın çerçeve) ve senin kupon seçimin (camgöbeği), günlük karşılaştırma */
+.rs-bx{display:flex;flex-wrap:wrap;gap:6px;margin-top:2px}
+.rs-ml{font:600 11px/1 var(--font);color:var(--ink3);letter-spacing:.02em;margin-right:2px}
+.rs-np[hidden]{display:none}
+.rs-ox,.rs-me{display:inline-flex;align-items:center;gap:6px;max-width:100%;min-height:30px;padding:3px 10px 3px 4px;border-radius:999px;font:600 12.5px/1.2 var(--font);color:var(--ink);letter-spacing:-.005em;font-variant-numeric:tabular-nums}
+.rs-ox{border:1px solid rgba(233,199,102,.62);background:rgba(233,199,102,.07)}
+.rs-ox img{width:22px;height:22px;border-radius:50%;flex:none;object-fit:cover;background:#1a1408}
+.rs-ox .tg{font:800 11px/1 var(--font);letter-spacing:.06em;color:#F3DC8A}
+.rs-me{position:relative;border:1px solid rgba(34,211,255,.6);background:rgba(34,211,255,.08);padding-left:10px;cursor:pointer}
+.rs-me::after{content:"";position:absolute;inset:-7px -2px}
+.rs-me .tg{font:800 11px/1 var(--font);letter-spacing:.04em;color:#7FE6FF}
+.rs-me small{font:500 11.5px/1.2 var(--font);color:var(--ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:110px}
+.rs-me:active{transform:scale(.97)}
+.rs-me:focus-visible,.rs-vs:focus-visible{outline:2px solid #7FE6FF;outline-offset:2px}
+.rs-ox .k,.rs-me .k{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rs-v{display:inline-grid;place-items:center;width:18px;height:18px;border-radius:50%;font:800 11px/1 var(--font);flex:none}
+.rs-v.y{background:rgba(59,234,126,.18);color:#3BEA7E}.rs-v.n{background:rgba(255,107,120,.18);color:#FF9AA4}.rs-v.q{background:rgba(255,255,255,.08);color:var(--ink3)}
+.rs-vsw{margin:4px 0 10px}
+.rs-vs{width:100%;min-height:52px;display:flex;align-items:center;gap:10px;padding:8px 14px;border-radius:var(--r-lg,16px);background:var(--surface);border:1px solid var(--line);color:var(--ink);text-align:left;cursor:pointer;box-shadow:var(--hl),var(--sh-2)}
+.rs-vs>span{flex:1;min-width:0;display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px}
+.rs-vs .d{font:600 var(--t-c1,12px)/1.2 var(--font);color:var(--ink3);width:100%}
+.rs-vs .o,.rs-vs .m{font:600 var(--t-b,15px)/1.25 var(--font);letter-spacing:-.01em}
+.rs-vs .o i,.rs-vs .m i{font-style:normal;font:800 11px/1 var(--font);letter-spacing:.06em;margin-right:6px;vertical-align:1px}
+.rs-vs .o i{color:#F3DC8A}.rs-vs .m i{color:#7FE6FF}
+.rs-vs .o b,.rs-vs .m b{font-weight:800}
+.rs-vs .o small,.rs-vs .m small{font:500 12px/1 var(--font);color:var(--ink3);margin-left:4px}
+.rs-vs>em{font-style:normal;color:var(--ink3);font-size:13px;transition:transform var(--d2,.18s)}
+.rs-vs[aria-expanded="true"]>em{transform:rotate(90deg)}
+.rs-cmp{margin-top:6px;padding:12px 14px;border-radius:var(--r-lg,16px);background:var(--surface);border:1px solid var(--line)}
+.rs-cmp[hidden]{display:none}
+.rs-cmp table{width:100%;border-collapse:collapse;font:500 13px/1.3 var(--font);font-variant-numeric:tabular-nums}
+.rs-cmp th{font:600 11.5px/1.2 var(--font);color:var(--ink3);text-align:right;padding:4px 0 6px;letter-spacing:.02em}
+.rs-cmp th:first-child,.rs-cmp td:first-child{text-align:left}
+.rs-cmp td{padding:7px 0;border-top:1px solid var(--line);text-align:right;color:var(--ink)}
+.rs-cmp td small{color:var(--ink3);font-size:11.5px;margin-left:3px}
+.rs-cmp th.o{color:#F3DC8A}.rs-cmp th.m{color:#7FE6FF}
+.rs-cmp p{margin:8px 0 0;font:500 12px/1.45 var(--font);color:var(--ink3)}
+.rs-cmp p b{color:var(--ink2);font-weight:600}
+</style>
+<script id="sonuc-oxx-v104">
+// =====================================================================
+// v104 · SONUÇLAR: her biten maçta
+//  • "OXX" rozeti: OXX'un maç öncesi KİLİTLİ önerisi. Kaynak: data/archive/GÜN.json (maç başlayınca kilitlenen kayıt: sk/sp →
+//    uygulamanın gösterdiği öneri, yoksa rk/rp); arşivde yoksa data/predlog.json (motorun kilitli günlüğü; yalnız ts ≤ başlama saati,
+//    öneri kilitli olasılıklardan en olası seçenek). Kilitli kayıt yoksa rozet GÖSTERİLMEZ (sonradan hesaplanan tahmin gösterilmez).
+//  • "Sen" rozeti: maç KUPO'daki bir kuponundaysa (açık + eski) seçimin ve sonucu; dokun → KUPO'da o kupon.
+//  • Üstte günlük özet şeridi (OXX x/y · Sen x/y), dokun → pazar bazında karşılaştırma. Kullanıcı verisi yalnız bu telefonda okunur.
+// =====================================================================
+(function(){
+  const ARC=new Map(), ABUSY={}; let PLOG=null, PBUSY=null;
+  function arcLoad(d){ if(ARC.has(d)) return Promise.resolve(ARC.get(d)); if(ABUSY[d]) return ABUSY[d];
+    return ABUSY[d]=fetch(`data/archive/${d}.json`,{cache:"no-cache"}).then(r=>r.ok?r.json():null).catch(()=>null).then(A=>{ ARC.set(d,A&&typeof A==="object"?A:null); delete ABUSY[d]; return ARC.get(d); }); }
+  function plogLoad(){ if(PLOG) return Promise.resolve(PLOG); if(PBUSY) return PBUSY;
+    return PBUSY=fetch("data/predlog.json",{cache:"no-cache"}).then(r=>r.ok?r.json():null).catch(()=>null).then(L=>{ PLOG=Array.isArray(L)?L:[]; PBUSY=null; return PLOG; }); }
+  window.rsOxxReset=()=>{ ARC.clear(); PLOG=null; };
+  const NM=k=>{ try{ return mkName(k); }catch(e){ return k; } };
+  const pcs=p=>Math.round((+p||0)*100);
+  // OXX'un kilitli önerisi (yoksa null)
+  function oxxOf(m,day){ const A=ARC.get(day), r=A&&A[String(m.id)];
+    if(r&&(r.sk||r.rk)){ const k=r.sk||r.rk, p=r.sk?r.sp:r.rp; if(p!=null&&isFinite(+p)) return {k:String(k),p:+p,src:"arşiv"}; }
+    if(PLOG&&m.ts){ const e=PLOG.find(x=>x&&x.d===day&&Array.isArray(x.p)&&x.p.length===3&&x.ts&&tmEq(x.h,m.h)&&tmEq(x.a,m.a));
+      const lt=e?Date.parse(String(e.ts)):NaN;
+      if(e&&isFinite(lt)&&lt<=m.ts){ const c=[["1",e.p[0]],["X",e.p[1]],["2",e.p[2]]]; if(e.o!=null&&isFinite(+e.o)) c.push(["U",+e.o],["A",1-e.o]);
+        const b=c.sort((x,y)=>y[1]-x[1])[0]; return {k:b[0],p:+b[1],src:"günlük",ft:e.ft||null}; } }
+    return null; }
+  window.rsOxxOf=oxxOf;
+  const hit=(k,m,s0)=>{ try{ const r=mkHit(k,m.hs,m.as,m.h1,m.a1,s0); return r==null?null:!!r; }catch(e){ return null; } };
+  // kullanıcının kuponlarındaki seçimler (açık + eski), yalnız bu telefondan
+  function mineOf(m,day){ const out=[]; try{ const L=(window.KX&&KX.L)||[];
+      for(const c of L) for(const it of (c.items||[])){ if(!it||it.sp==="bk") continue;
+        const same=(it.iid&&String(it.iid)===String(m.id))||(tmEq(it.h,m.h)&&tmEq(it.a,m.a)&&istDay(new Date(Date.parse(it.dt)))===day);
+        if(!same) continue; const ok=it.ok!=null?!!it.ok:hit(it.mk,m,it.s0); out.push({c,it,ok}); } }catch(e){} return out; }
+  window.rsMineOf=mineOf;
+  const V=ok=>ok===true?`<i class="rs-v y" aria-hidden="true">✓</i>`:ok===false?`<i class="rs-v n" aria-hidden="true">✗</i>`:`<i class="rs-v q" aria-hidden="true">?</i>`;
+  const VT=ok=>ok===true?"tuttu":ok===false?"tutmadı":"sonuç eksik";
+  function badges(m,day){ const o=oxxOf(m,day), me=mineOf(m,day); let h="";
+    if(o){ const ok=hit(o.k,m); o.ok=ok;
+      h+=`<span class="rs-ox" role="img" aria-label="OXX maç öncesi kilitli tahmini: ${esc(NM(o.k))}, yüzde ${pcs(o.p)}, ${VT(ok)}" title="Maç başlamadan kilitlenen OXX önerisi (${o.src})"><img src="icons/bulut-bot-96.png" alt=""><span class="tg">OXX</span><span class="k">${esc(NM(o.k))} %${pcs(o.p)}</span>${V(ok)}</span>`; }
+    const seen=new Set();
+    for(const x of me.slice(0,3)){ const key=x.c.id+"|"+x.it.mk; if(seen.has(key)) continue; seen.add(key);
+      h+=`<button type="button" class="rs-me" data-rsc="${esc(x.c.id)}" aria-label="Senin seçimin: ${esc(NM(x.it.mk))}, ${VT(x.ok)}, ${esc(x.c.ad)} kuponunda. KUPO'da aç"><span class="tg">Sen</span><span class="k">${esc(NM(x.it.mk))}</span>${V(x.ok)}<small>${esc(x.c.ad)}</small></button>`; }
+    return {html:h?`<div class="rs-bx">${h}</div>`:"",o,me}; }
+  // pazar grubu (karşılaştırma tablosu)
+  function grp(k){ k=String(k); if(/^G[012G]$/.test(k)) return "Canlı"; if(/^[1X2]$/.test(k)) return "MS"; if(/^(1X|12|X2)$/.test(k)) return "Çifte şans";
+    if(/^[UAO]\d|^[UA]$|^[UA][\d.]+$/.test(k)) return "Alt/Üst"; if(/^KG/.test(k)) return "KG"; if(/^(IY[1X2]|I[OU]\d\d|IY[UA]\d\d)$/.test(k)) return "İlk yarı";
+    if(/^2Y/.test(k)) return "İkinci yarı"; if(/^IYMS/.test(k)) return "İY/MS"; if(/&(U25|A25)$/.test(k)) return "MS + Alt/Üst"; if(/&KG/.test(k)) return "MS + KG"; if(/^DGY/.test(k)) return "Daha gollü yarı"; return "Diğer"; }
+  let OPEN=false;
+  function dayLbl(d){ const t=istDay(new Date()), y=istDay(new Date(Date.now()-864e5)); return d===t?"bugün":d===y?"dün":ist(new Date(d+"T12:00:00+03:00"),{day:"numeric",month:"long"}); }
+  function strip(list,day){ const O={n:0,h:0}, M={n:0,h:0}, G={}, both={o:0,m:0,n:0};
+    for(const m of list){ const o=oxxOf(m,day), ok=o?hit(o.k,m):null, me=mineOf(m,day);
+      if(o&&ok!=null){ O.n++; if(ok) O.h++; const g=grp(o.k); (G[g]=G[g]||{o:[0,0],m:[0,0]}).o[0]+=ok?1:0; G[g].o[1]++; }
+      const u=new Map(); for(const x of me) if(x.ok!=null) u.set(x.c.id+"|"+x.it.mk,x);
+      for(const x of u.values()){ M.n++; if(x.ok) M.h++; const g=grp(x.it.mk); (G[g]=G[g]||{o:[0,0],m:[0,0]}).m[0]+=x.ok?1:0; G[g].m[1]++; }
+      if(o&&ok!=null&&u.size){ both.n++; if(ok) both.o++; const x=[...u.values()][0]; if(x.ok) both.m++; } }
+    if(!O.n&&!M.n) return "";
+    const D=dayLbl(day), r=(a,b)=>b?`${a}/${b}<small>%${Math.round(a/b*100)}</small>`:"–";
+    const rows=Object.entries(G).sort((a,b)=>(b[1].o[1]+b[1].m[1])-(a[1].o[1]+a[1].m[1])).map(([g,v])=>`<tr><td>${esc(g)}</td><td>${v.o[1]?`${v.o[0]}/${v.o[1]}<small>%${Math.round(v.o[0]/v.o[1]*100)}</small>`:"–"}</td><td>${v.m[1]?`${v.m[0]}/${v.m[1]}<small>%${Math.round(v.m[0]/v.m[1]*100)}</small>`:"–"}</td></tr>`).join("");
+    return `<div class="rs-vsw"><button type="button" class="rs-vs" id="rsVs" aria-expanded="${OPEN}" aria-controls="rsCmp" aria-label="OXX ${D} ${O.h}/${O.n}${M.n?`, sen ${M.h}/${M.n}`:""}. Karşılaştırmayı ${OPEN?"gizle":"göster"}">
+        <span><span class="d">${esc(D.charAt(0).toUpperCase()+D.slice(1))} · biten maçlarda isabet</span><span class="o"><i>OXX</i><b>${O.h}/${O.n}</b>${O.n?`<small>%${Math.round(O.h/O.n*100)}</small>`:""}</span><span class="m"><i>SEN</i><b>${M.n?`${M.h}/${M.n}`:"–"}</b>${M.n?`<small>%${Math.round(M.h/M.n*100)}</small>`:`<small>kuponunda maç yok</small>`}</span></span><em aria-hidden="true">›</em></button>
+      <div class="rs-cmp" id="rsCmp"${OPEN?"":" hidden"}><table><thead><tr><th>Pazar</th><th class="o">OXX</th><th class="m">Sen</th></tr></thead><tbody>${rows}
+        <tr><td><b>Toplam</b></td><td><b>${r(O.h,O.n)}</b></td><td><b>${r(M.h,M.n)}</b></td></tr></tbody></table>
+        ${both.n?`<p>Aynı <b>${both.n}</b> maçta: OXX <b>${both.o}</b>, sen <b>${both.m}</b> tutturdun.</p>`:""}
+        <p>OXX: maç başlamadan kilitlenen öneri (kilitli kaydı olmayan maç sayılmaz). Sen: KUPO'daki kuponların; bu bilgiler yalnız bu telefonda tutulur, hiçbir yere gönderilmez.</p></div></div>`; }
+  function deco(){ try{ const list=$("rsList"), sum=$("rsSum"); if(!list||!sum) return; const c=RS.cache.get(RS.day); const L=c&&c.list; const day=RS.day;
+      let w=$("rsVsBox"); if(!w){ w=document.createElement("div"); w.id="rsVsBox"; sum.before(w); }
+      if(!L){ w.innerHTML=""; return; }
+      w.innerHTML=strip(L,day);
+      list.querySelectorAll(".rs-r").forEach(r=>{ const old=r.querySelector(".rs-bx"); if(old) old.remove();
+        const tn=(r.querySelector(".ib-tm")||{}).textContent||""; const m=L.find(x=>`${x.h} - ${x.a}`===tn)||L.find(x=>{ const [h,a]=tn.split(" - "); return tmEq(x.h,h)&&tmEq(x.a,a); });
+        if(!m) return; r.dataset.rsid=m.id; const B=badges(m,day); if(B.html){ const p=r.querySelector(".rs-p"); (p||r.lastElementChild).insertAdjacentHTML(p?"beforebegin":"afterend",B.html); }
+        if(B.o){ const np=r.querySelector(".rs-np"); if(np) np.hidden=true;
+          const p=r.querySelector(".rs-p:not(.rs-np)"); if(p&&!p.querySelector(".rs-ml")){ const t=p.firstChild; if(t&&t.nodeType===3&&/🔮/.test(t.textContent)){ t.textContent=t.textContent.replace("🔮",""); p.insertAdjacentHTML("afterbegin",`<span class="rs-ml" title="Güncel model hesabı; kilitli öneri değildir">Model</span>`); } } } }); }catch(e){ console.warn("sonuc-oxx-v104",e); } }
+  window.rsOxxDeco=deco;
+  let gen=0;
+  try{ const _rr=renderRes; renderRes=function(){ const r=_rr.apply(this,arguments); const g=++gen, d=RS.day; deco();
+      if(!ARC.has(d)||!PLOG) Promise.all([arcLoad(d),plogLoad()]).then(()=>{ if(g===gen&&RS.day===d) deco(); }); return r; }; }catch(e){}
+  document.addEventListener("click",e=>{ const v=e.target.closest&&e.target.closest("#rsVs"); if(v){ OPEN=!OPEN; v.setAttribute("aria-expanded",OPEN); const c=$("rsCmp"); if(c) c.hidden=!OPEN; try{ buzz(5); Sound.tap(); }catch(_){} return; }
+    const b=e.target.closest&&e.target.closest(".rs-me[data-rsc]"); if(!b) return; e.preventDefault(); e.stopPropagation();
+    const id=b.dataset.rsc, c=(KX.L||[]).find(x=>x.id===id); if(!c){ toast("Bu kupon artık yok"); return; } try{ buzz(8); }catch(_){}
+    if(c.durum==="acik"){ KX.aktif=id; try{ kxSave(); localStorage.setItem("bx-coupon",JSON.stringify(c.items)); paintCoupon(); }catch(_){} kxOpen("cp"); toast(`KUPO · ${c.ad}`); }
+    else { kxOpen("eski"); setTimeout(()=>{ const h=document.querySelector(`#kxOld .kx-oh[data-c="${CSS.escape(id)}"]`); if(h){ if(h.getAttribute("aria-expanded")!=="true") h.click();
+        setTimeout(()=>{ const h2=document.querySelector(`#kxOld .kx-oh[data-c="${CSS.escape(id)}"]`); if(h2) h2.scrollIntoView({block:"center",behavior:"smooth"}); },80); } },160); } },true);
 })();
 </script>
 <style id="at2-v106">
