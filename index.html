@@ -5658,7 +5658,7 @@ if((location.hash||"")==="#sonuclar") setTimeout(()=>$("navRes").click(),200);
 // =====================================================================
 // BULUTOXX v35: Otomatik sürüm güncelleme — yeni sürüm yayınlanınca uygulama kendini yeniler
 // =====================================================================
-const APP_V="2026-10-26.95";
+const APP_V="2026-10-26.96";
 (function autoUpdate(){
   let shown=false;
   async function check(auto){
@@ -8423,7 +8423,6 @@ section.view{animation:apViewIn var(--d3) var(--ease) both}
   .lg-btn::after,.rec.rec-g.rec-gold::after{display:none!important}
 }
 </style>
-=======
 <style id="derbi-v95">
 /* v95: derbi maçları — ince sıcak kırmızı-turuncu şerit + "Derbi" rozeti (altın = en güvenli seçim, mavi = U21, pembe = kadın ile karışmaz) */
 :root{--dx:#FF6B4A;--dx-ink:#FF8E72;--dx-bg:rgba(255,107,74,.14);--dx-bd:rgba(255,107,74,.40)}
@@ -8594,6 +8593,613 @@ small>.tvar.d:first-child{margin-left:0;margin-right:2px}
   if(typeof botAnswer==="function"){ const _ba=botAnswer; botAnswer=async function(raw){ try{ const r=answer(raw); if(r) return r; }catch(e){}
       try{ const q=rewrite(raw); if(q){ const args=[...arguments]; args[0]=q; return _ba.apply(this,args); } }catch(e){}
       return _ba.apply(this,arguments); }; }
+})();
+</script>
+<style id="kuponum-v95">
+/* =====================================================================
+   v95 · Kuponum — sınırsız kupon, altın aslan kimliği, sonuçlar ve Eski kuponlarım.
+   apple-v94 ölçeğine uyar: tip ölçeği, 44 px dokunma, AA kontrast. Altın yalnız aslan kimliğinde ve "Tuttu" vurgusunda.
+   ===================================================================== */
+:root{--kx-gold:#E9C766;--kx-gold2:#D4AF37;--kx-ink-g:#F3DC8A;--kx-ok:#3BEA7E;--kx-no:#FF6B78;--kx-sf:rgba(255,255,255,.045);--kx-bd:rgba(255,255,255,.08)}
+.kx-lion{display:block;flex:none;overflow:visible}
+/* ---------- Üst çubuk: Kuponum düğmesi (OXX ile aynı boy) ---------- */
+.topbar .iconbtn#hdrKup{width:54px;height:48px;border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:0;position:relative;
+  background:linear-gradient(160deg,rgba(233,199,102,.12),rgba(80,60,10,.08));border:1px solid rgba(233,199,102,.34);box-shadow:none;color:var(--ink)}
+.topbar .iconbtn#hdrKup svg.kx-lion{width:26px;height:26px;stroke:none}
+.topbar .iconbtn#hdrKup .tbl{font:600 11px/1 var(--font)!important;letter-spacing:0;color:var(--kx-ink-g)}
+.topbar .iconbtn#hdrKup:active{transform:scale(.94)}
+.topbar .iconbtn#hdrKup[aria-current="page"]{border-color:rgba(233,199,102,.7);background:linear-gradient(160deg,rgba(233,199,102,.22),rgba(80,60,10,.12))}
+#hdrKup .kx-bd{position:absolute;top:-5px;right:-5px;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--kx-gold);color:#241800;font:700 11px/18px var(--font);text-align:center;box-shadow:0 0 0 2px var(--bg,#050A14)}
+@media (max-width:430px){
+  .topbar .in{gap:5px}
+  .logo{gap:6px} .logo img{height:28px;width:auto} .logo b{font-size:15px;letter-spacing:.02em}
+  .topbar .iconbtn#hdrKup,.topbar .iconbtn#hdrBot,.topbar .iconbtn#modeBtn,.topbar .iconbtn#hdrRefresh{width:48px}
+  .topbar .iconbtn#hdrKup .tbl{font-size:10px!important;letter-spacing:-.01em}
+}
+@media (max-width:380px){
+  .topbar .iconbtn#hdrKup{width:48px}
+  .topbar .in{gap:4px}
+  .topbar .iconbtn#hdrBot .tbl,.topbar .iconbtn#modeBtn .tbl,.topbar .iconbtn#hdrRefresh .tbl{font-size:10.5px!important}
+}
+@media (max-width:350px){ .topbar .iconbtn#hdrKup,.topbar .iconbtn#hdrBot,.topbar .iconbtn#modeBtn,.topbar .iconbtn#hdrRefresh{width:46px} }
+
+/* ---------- Kuponum ekranı ---------- */
+#v-kupon>.ltitle,#v-kupon #kpSeg{display:none!important}
+.kx-hero{display:flex;align-items:center;gap:14px;margin:14px 2px 12px}
+.kx-hero .kx-lion{width:64px;height:64px;filter:drop-shadow(0 6px 14px rgba(212,175,55,.22))}
+.kx-hero h1{font:700 var(--t-lt,30px)/1.1 var(--font-d,system-ui);letter-spacing:-.022em;margin:0}
+.kx-hero p{margin:4px 0 0;font-size:var(--t-fn,13px);line-height:1.35;color:var(--ink3)}
+.kx-hero p b{color:var(--ink2);font-weight:600}
+#kxSeg{margin:0 0 12px;display:grid;grid-template-columns:1fr 1.3fr .78fr}
+#kxSeg button{white-space:nowrap;padding:0 6px;min-width:0}
+#kxSeg button small{font-size:11px;font-weight:600;color:var(--ink3);margin-left:3px}
+#kxSeg button[aria-pressed="true"] small{color:var(--ink2)}
+.kx-chips{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin:0 -16px 12px;padding:2px 16px;scroll-snap-type:x proximity}
+.kx-chips::-webkit-scrollbar{display:none}
+.kx-chips button{flex:none;min-height:44px;padding:0 14px;border-radius:999px;display:inline-flex;align-items:center;gap:7px;scroll-snap-align:start;
+  background:var(--kx-sf);border:1px solid var(--kx-bd);color:var(--ink2);font:600 var(--t-sub,14px)/1 var(--font);letter-spacing:-.006em;white-space:nowrap}
+.kx-chips button small{font:600 12px/1 var(--font);color:var(--ink3);font-variant-numeric:tabular-nums}
+.kx-chips button[aria-pressed="true"]{background:rgba(233,199,102,.14);border-color:rgba(233,199,102,.55);color:#FFF6D6}
+.kx-chips button[aria-pressed="true"] small{color:var(--kx-ink-g)}
+.kx-chips button.kx-new{color:var(--ink);border-style:dashed;border-color:rgba(255,255,255,.22)}
+.kx-chips button:active{transform:scale(.96)}
+.kx-dot{width:7px;height:7px;border-radius:50%;background:var(--ink3);flex:none}
+.kx-dot.g{background:var(--kx-ok)}.kx-dot.x{background:var(--kx-no)}.kx-dot.w{background:#8FB4FF}
+.kx-card{gap:4px!important}
+.kx-ch{display:flex;align-items:center;gap:6px;min-height:44px}
+.kx-nm{display:flex;align-items:center;gap:2px;flex:1;min-width:0}
+.kx-nm h2{margin:0;font:700 var(--t-3,19px)/1.25 var(--font-d);letter-spacing:-.016em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.kx-ic{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;color:var(--ink2);flex:none;background:none}
+.kx-ic svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.kx-ic:active{background:rgba(255,255,255,.08)}
+.kx-in{flex:1;min-width:0;height:44px;border-radius:12px;padding:0 12px;font:600 17px/1 var(--font);background:rgba(255,255,255,.07);border:1px solid rgba(233,199,102,.55);color:var(--ink)}
+.kx-meta{font-size:var(--t-fn,13px);color:var(--ink3);margin:-2px 0 4px}
+.kx-st{flex:none;display:inline-flex;align-items:center;gap:5px;min-height:26px;padding:0 10px;border-radius:999px;font:700 12px/1 var(--font);letter-spacing:.01em;
+  background:rgba(143,180,255,.12);color:#BFD3FF;border:1px solid rgba(143,180,255,.3)}
+.kx-st.g{background:rgba(233,199,102,.16);color:var(--kx-ink-g);border-color:rgba(233,199,102,.5)}
+.kx-st.x{background:rgba(255,107,120,.12);color:#FF9AA4;border-color:rgba(255,107,120,.38)}
+.kx-st.e{background:rgba(255,255,255,.05);color:var(--ink3);border-color:var(--kx-bd)}
+.kx-st.q{background:rgba(255,176,32,.12);color:#FFC86B;border-color:rgba(255,176,32,.35)}
+#cpBox .cprow.kx-r{grid-template-columns:1fr auto 44px;gap:8px;padding:12px 0}
+#cpBox .cprow.kx-r .rm,.kx-res{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;font-size:15px}
+#cpBox .cprow.kx-r .rm{background:none;color:var(--ink3)}
+#cpBox .cprow.kx-r .rm:active{background:rgba(255,255,255,.08)}
+.kx-res{font-weight:800;font-size:18px}
+.kx-res i{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-size:15px}
+.kx-res.g i{background:rgba(59,234,126,.16);color:var(--kx-ok)}
+.kx-res.x i{background:rgba(255,107,120,.16);color:var(--kx-no)}
+.kx-res.w i{background:rgba(255,255,255,.06);color:var(--ink3);font-size:13px}
+.kx-line{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;font-size:13px;color:var(--ink2)}
+.kx-mk{min-height:32px;padding:0 10px;border-radius:9px;display:inline-flex;align-items:center;gap:4px;background:rgba(47,123,255,.14);border:1px solid rgba(120,170,255,.32);color:#CFE0FF;font:600 13px/1 var(--font);position:relative}
+.kx-mk::after{content:"";position:absolute;inset:-6px -2px}
+.kx-mk[disabled]{background:rgba(255,255,255,.05);border-color:var(--kx-bd);color:var(--ink2)}
+.kx-mk .cv{font-size:10px;opacity:.8}
+.kx-pp{font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums}
+.kx-sc{color:var(--ink2);font-variant-numeric:tabular-nums}
+.kx-hint{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:12.5px;color:var(--ink3);margin-top:2px}
+.kx-hint b{color:#BFD3FF;font-weight:600}
+.kx-lnk{min-height:32px;padding:0 8px;border-radius:8px;color:#7FC4FF;font:600 12.5px/1 var(--font);background:none;position:relative}
+.kx-lnk::after{content:"";position:absolute;inset:-6px 0}
+.kx-opts{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.kx-opts button{min-height:44px;min-width:64px;padding:4px 10px;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+  background:rgba(255,255,255,.05);border:1px solid var(--kx-bd);color:var(--ink);font:600 12.5px/1.1 var(--font)}
+.kx-opts button small{font:500 11px/1 var(--font);color:var(--ink3)}
+.kx-opts button[aria-pressed="true"]{background:rgba(47,123,255,.22);border-color:rgba(120,170,255,.6)}
+.kx-opts button.rec small{color:var(--kx-ink-g)}
+.kx-r.weak .kx-pp{color:#FFC86B}
+.kx-weak{display:inline-flex;align-items:center;min-height:22px;padding:0 8px;border-radius:999px;background:rgba(255,176,32,.12);border:1px solid rgba(255,176,32,.32);color:#FFC86B;font:600 11.5px/1 var(--font)}
+.kx-man{display:inline-flex;gap:6px}
+.kx-man button{min-width:44px;min-height:36px;border-radius:10px;background:rgba(255,255,255,.06);border:1px solid var(--kx-bd);color:var(--ink)}
+.kx-sum .list>div{min-height:40px}
+.kx-sum .list>div>span:last-child{text-align:right}
+.kx-sum .kx-sub{display:block;font-size:12px;color:var(--ink3);font-weight:500}
+.kx-acts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.kx-acts button{min-height:56px;border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;background:var(--kx-sf);border:1px solid var(--kx-bd);color:var(--ink2);font:600 12px/1.1 var(--font)}
+.kx-acts button svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.kx-acts button.dng{color:#FF9AA4}
+.kx-acts button:active{transform:scale(.97);background:rgba(255,255,255,.08)}
+.kx-acts button[disabled]{opacity:.4}
+.kx-cf{display:flex;flex-direction:column;gap:10px;padding:14px;border-radius:16px;background:rgba(255,107,120,.08);border:1px solid rgba(255,107,120,.3)}
+.kx-cf p{margin:0;font-size:var(--t-sub,14px);color:var(--ink)}
+.kx-cf div{display:flex;gap:8px}
+.kx-cf .btn{flex:1;min-height:44px}
+.kx-cf .btn.dng{background:#C8324A}
+.kx-tip{font-size:12.5px;color:var(--ink3);margin:0 2px}
+.kx-empty{text-align:center;align-items:center}
+.kx-empty .kx-lion{width:56px;height:56px;opacity:.9}
+.kx-empty b{font-size:var(--t-hl,17px)}
+.kx-empty p{margin:0;font-size:var(--t-fn,13px);color:var(--ink2);line-height:1.45}
+/* ---------- Eski kuponlarım ---------- */
+.kx-kh{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.kx-kh b{font:700 22px/1.15 var(--font-d);letter-spacing:-.018em}
+.kx-kh small{font-size:var(--t-fn);color:var(--ink3)}
+.kx-tiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.kx-tile{padding:12px;border-radius:14px;background:var(--kx-sf);border:1px solid var(--kx-bd);display:flex;flex-direction:column;gap:3px;min-width:0}
+.kx-tile small{font-size:12px;color:var(--ink3)}
+.kx-tile b{font:700 20px/1.1 var(--font-d);letter-spacing:-.015em;font-variant-numeric:tabular-nums}
+.kx-tile i{font-style:normal;font-size:12px;color:var(--ink2);line-height:1.35}
+.kx-tile.w2 i{font-size:13px}.kx-tile i b{font:700 13px/1 var(--font);color:var(--ink)}
+.kx-tile.w2{grid-column:1/-1}
+.kx-tile.gd b{color:var(--kx-ink-g)}
+.kx-bar{height:6px;border-radius:3px;background:rgba(255,255,255,.08);overflow:hidden;margin-top:4px}
+.kx-bar i{display:block;height:100%;border-radius:3px;background:linear-gradient(90deg,#B8892B,#F3DC8A)}
+.kx-old{display:flex;flex-direction:column;gap:8px}
+.kx-oc{border-radius:16px;background:var(--surface,rgba(255,255,255,.04));border:1px solid var(--kx-bd);overflow:hidden}
+.kx-oh{width:100%;min-height:64px;padding:12px 14px;display:grid;grid-template-columns:1fr auto;align-items:center;gap:4px 10px;text-align:left;background:none;color:var(--ink)}
+.kx-oh b{font-size:16px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kx-oh small{grid-column:1;font-size:12.5px;color:var(--ink3)}
+.kx-oh .kx-st{grid-row:1/3;grid-column:2}
+.kx-oh:active{background:rgba(255,255,255,.04)}
+.kx-od{padding:0 14px 12px;border-top:1px solid var(--line)}
+.kx-od .cprow{grid-template-columns:1fr auto 44px}
+.kx-od .kx-acts{grid-template-columns:repeat(3,minmax(0,1fr));margin-top:8px}
+#kxSnc{margin-top:4px}
+/* ---------- Maç satırlarında ＋ Kupon ---------- */
+.kx-add{flex:none;margin-left:auto;min-height:30px;padding:0 10px;border-radius:999px;display:inline-flex;align-items:center;gap:4px;position:relative;
+  background:rgba(233,199,102,.08);border:1px solid rgba(233,199,102,.32);color:var(--kx-ink-g);font:600 12px/1 var(--font);letter-spacing:-.004em;white-space:nowrap;
+  -webkit-touch-callout:none;user-select:none;-webkit-user-select:none;touch-action:manipulation}
+.kx-add::after{content:"";position:absolute;inset:-7px -4px}
+.kx-add b{font-weight:700;font-size:14px;line-height:1}
+.kx-add.on{background:rgba(233,199,102,.2);border-color:rgba(233,199,102,.7);color:#FFF3C9}
+.kx-add:active{transform:scale(.95)}
+.ib-top{display:flex;align-items:center}
+/* uzun ad + U21/Kadın/Derbi rozeti kesilmesin: ad en çok iki satıra iner, ＋ Kupon sağda sabit */
+.ib-r .ib-top .ib-tm{flex:1;min-width:0;white-space:normal;overflow:hidden;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-height:1.28;overflow-wrap:anywhere}
+.ib-top .kx-add{margin-left:auto}
+.lv-c .kx-lvb{display:flex;justify-content:flex-end;margin-top:6px}
+.bk-row .bk-p{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.bk-row .bk-p .kx-add{margin-left:auto}
+.kx-fxw{display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--line)}
+.kx-fxw:last-child{border-bottom:0}
+.kx-fxw .fxrow{flex:1;min-width:0;border-bottom:0}
+.kx-which{display:flex;align-items:center;justify-content:center;gap:6px;width:calc(100% - 32px);margin:8px 16px 0;min-height:44px;border-radius:12px;background:rgba(233,199,102,.06);border:1px solid rgba(233,199,102,.26);color:var(--ink2);font:600 13px/1.2 var(--font)}
+.kx-which b{color:var(--kx-ink-g);font-weight:600}
+.kx-which svg.kx-lion{width:20px;height:20px}
+/* ---------- Hangi kupona? sayfası ---------- */
+.kx-sh{position:fixed;inset:0;z-index:120;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.5);animation:kxFade .18s ease both}
+.kx-sh>div{width:100%;max-width:520px;max-height:80vh;overflow:auto;background:#0E1526;border-radius:20px 20px 0 0;border:1px solid rgba(255,255,255,.09);border-bottom:0;
+  padding:8px 16px calc(16px + env(safe-area-inset-bottom,0px));animation:kxUp .24s cubic-bezier(.25,.8,.25,1) both}
+.kx-sh .gr{width:36px;height:5px;border-radius:3px;background:rgba(255,255,255,.2);margin:4px auto 10px}
+.kx-sh h3{margin:0;font:700 var(--t-hl,17px)/1.3 var(--font-d);color:var(--ink);text-transform:none;letter-spacing:-.012em}
+.kx-sh p{margin:2px 0 12px;font-size:var(--t-fn);color:var(--ink3)}
+.kx-sh .ls{display:flex;flex-direction:column;border-radius:14px;overflow:hidden;background:rgba(255,255,255,.04);border:1px solid var(--kx-bd)}
+.kx-sh .ls button{min-height:52px;padding:8px 14px;display:flex;align-items:center;gap:10px;text-align:left;color:var(--ink);background:none;border-bottom:1px solid var(--line);font:600 15px/1.2 var(--font)}
+.kx-sh .ls button:last-child{border-bottom:0}
+.kx-sh .ls button span{flex:1;min-width:0}
+.kx-sh .ls button small{display:block;font:500 12.5px/1.3 var(--font);color:var(--ink3);margin-top:2px}
+.kx-sh .ls button i{font-style:normal;color:var(--kx-ink-g);font-weight:700}
+.kx-sh .ls button:active{background:rgba(255,255,255,.06)}
+.kx-sh .btn{margin-top:12px;width:100%}
+@keyframes kxFade{from{opacity:0}to{opacity:1}}
+@keyframes kxUp{from{transform:translateY(24px);opacity:.6}to{transform:none;opacity:1}}
+#moreCp .ic.kx-ic2{background:#17120A!important;border:1px solid rgba(233,199,102,.35);display:grid;place-items:center}
+#moreCp .ic.kx-ic2 svg{width:22px;height:22px}
+.pw-cp .kx-lion{display:inline-block;width:18px;height:18px;vertical-align:-4px;margin-right:4px}
+@media (prefers-reduced-motion:reduce){.kx-sh,.kx-sh>div{animation:none}}
+</style>
+<script id="kuponum-v95">
+// =====================================================================
+// v95 · KUPONUM — sınırsız kupon (Kuponum 1, 2, 3… ya da kendi adın), altın aslan kimliği
+// • Veri: localStorage "bx-kuponlar" = [{id,ad,items,olusturma,durum:"acik"|"bitti"|"arsiv",upd,bitti,arsivAt}] + "bx-kupon-aktif"
+//   CP.items artık AKTİF kuponun items dizisidir (getter/setter) → cpToggle, pwAdd, OXX "bunu ekle/hepsini ekle", bülten hücreleri
+//   ve maç sayfası hiç değişmeden aktif kupona yazar. cpSave aktif kuponu da kaydeder; eski "bx-coupon" anahtarı yazılmaya devam eder.
+// • Geriye uyum: ilk açılışta mevcut "bx-coupon" içeriği "Kuponum 1"e taşınır.
+// • Sonuç: OYN'un kullandığı RS.load (iddaa sonuç servisi, gün önbellekli) yeniden kullanılır; oynGrade bitince aynı önbellekten
+//   kupon maçları puanlanır (yeni ağ isteği yok). Basket maçları BK canlı verisinden. Tüm maçları biten kupon "Eski kuponlarım"a geçer.
+// • Bilgi mimarisi: Kuponum ekranı = Kuponlarım · Eski kuponlarım · Takip (eski "Sonuç takibim"; içinde "Kayıtlı tahminler" bağlantısı)
+// • Maç satırları (bülten, canlı, ligler fikstürü, basket, maç sayfası): "＋ Kupon / ✓ Kuponda"; basılı tut → "Hangi kupona?"
+// =====================================================================
+(function(){
+  const LSK="bx-kuponlar", LSA="bx-kupon-aktif", NOW=()=>Date.now();
+  const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+  const KX=window.KX={L:[],aktif:null};
+  const pct=p=>p==null||isNaN(p)?"–":p<.1&&p>0?(p*100).toLocaleString("tr-TR",{maximumFractionDigits:1}):String(Math.round(p*100));
+  const f2=x=>(+x||0).toLocaleString("tr-TR",{minimumFractionDigits:2,maximumFractionDigits:2});
+  const f1=x=>(+x||0).toLocaleString("tr-TR",{maximumFractionDigits:1});
+  const tms=d=>{ const t=Date.parse(d instanceof Date?d.toISOString():d); return isNaN(t)?0:t; };
+  // ---------- altın aslan (özgün, geometrik): 16 köşeli faset yele + koyu kalkan yüz + altın çizgi hatlar ----------
+  let LN=0;
+  // yele: yanlarda geniş, altta sakal ucuna inen, tutam tutam (dönüşümlü uzun/kısa) faset çokgen — güneş değil, aslan silueti
+  function mane(cx,cy,R0,r0,n,rot,k){ const P=[]; for(let i=0;i<n*2;i++){ const a=rot+i*Math.PI/n, sd=Math.pow(Math.sin(a),2), bt=Math.pow(Math.max(0,-Math.cos(a)),3);
+      const tuft=(i%4===0?1.6:i%4===2?-0.4:0)*k; const q=i%2?r0+sd*2.2+bt*3:R0+sd*3+bt*5.5+tuft; P.push((cx+q*Math.sin(a)).toFixed(2)+","+(cy-q*Math.cos(a)).toFixed(2)); } return P.join(" "); }
+  const MANE=mane(32,32.5,24.5,19,14,0,1), MANE2=mane(32,32.5,20.5,16.5,14,Math.PI/14,.6);
+  function lion(cls){ const u="kxl"+(++LN);
+    return `<svg class="kx-lion ${cls||""}" viewBox="0 0 64 64" aria-hidden="true" focusable="false"><defs>
+<linearGradient id="${u}a" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFF3C4"/><stop offset=".38" stop-color="#EDCB68"/><stop offset=".68" stop-color="#C99A2E"/><stop offset="1" stop-color="#8C6620"/></linearGradient>
+<linearGradient id="${u}b" x1="1" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F7DC7A"/><stop offset="1" stop-color="#A47A22"/></linearGradient>
+<linearGradient id="${u}f" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2E2412"/><stop offset="1" stop-color="#0D0904"/></linearGradient>
+<linearGradient id="${u}l" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFE9A3"/><stop offset="1" stop-color="#D4AF37"/></linearGradient></defs>
+<polygon points="${MANE}" style="fill:url(#${u}a)"/><polygon points="${MANE2}" style="fill:url(#${u}b);opacity:.55"/>
+<path d="M21 22 18.6 12.6 27.4 17.6Z M43 22 45.4 12.6 36.6 17.6Z" style="fill:url(#${u}a)"/>
+<path d="M32 14.5 43.4 20.6 46.4 33 40.2 46.4 32 52.4 23.8 46.4 17.6 33 20.6 20.6Z" style="fill:url(#${u}f);stroke:url(#${u}l);stroke-width:1.3;stroke-linejoin:round"/>
+<path d="M32 14.5 27.6 25.6M32 14.5 36.4 25.6M17.6 33 25 36.5M46.4 33 39 36.5" style="fill:none;stroke:#E9C766;stroke-width:.8;opacity:.38;stroke-linecap:round"/>
+<path d="M23.2 29.6 28.6 31.3M40.8 29.6 35.4 31.3" style="fill:none;stroke:url(#${u}l);stroke-width:2.2;stroke-linecap:round"/>
+<path d="M32 31.2V39.4" style="fill:none;stroke:#E9C766;stroke-width:1;opacity:.55;stroke-linecap:round"/>
+<path d="M28.4 39.4H35.6L32 43.6Z" style="fill:url(#${u}l)"/>
+<path d="M32 43.6V45.8M32 45.8Q29.4 48.2 27.2 46.6M32 45.8Q34.6 48.2 36.8 46.6" style="fill:none;stroke:url(#${u}l);stroke-width:1.3;stroke-linecap:round;stroke-linejoin:round"/></svg>`; }
+  window.kxLion=lion;
+  const IC={
+    pen:`<svg viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg>`,
+    share:`<svg viewBox="0 0 24 24"><path d="M12 3v12M8 7l4-4 4 4"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg>`,
+    copy:`<svg viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2.5"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg>`,
+    arch:`<svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="5" rx="1.5"/><path d="M5 9v9a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V9M10 13h4"/></svg>`,
+    del:`<svg viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg>`,
+    back:`<svg viewBox="0 0 24 24"><path d="M9 14 4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg>`};
+  // ---------- Türkçe ekler (yönelme / ayrılma) ----------
+  function sfx(s,abl){ s=String(s||"").trim(); const m=/(\d+)$/.exec(s);
+    if(!m) return `“${s}” kuponu${abl?"ndan":"na"}`;
+    const n=+m[1]; const D=abl?{1:"den",2:"den",3:"ten",4:"ten",5:"ten",6:"dan",7:"den",8:"den",9:"dan"}:{1:"e",2:"ye",3:"e",4:"e",5:"e",6:"ya",7:"ye",8:"e",9:"a"};
+    const T=abl?{1:"dan",2:"den",3:"dan",4:"tan",5:"den",6:"tan",7:"ten",8:"den",9:"dan"}:{1:"a",2:"ye",3:"a",4:"a",5:"ye",6:"a",7:"e",8:"e",9:"a"};
+    const x=n===0?(abl?"dan":"a"):n%10?D[n%10]:n%100?T[Math.floor(n/10)%10]:(abl?"den":"e"); return s+"'"+x; }
+  window.kxSfx=sfx;
+  function acc(n){ n=Math.round(+n)||0; const L={1:"i",2:"si",3:"ü",4:"ü",5:"i",6:"sı",7:"si",8:"i",9:"u"}, T={1:"u",2:"si",3:"u",4:"ı",5:"si",6:"ı",7:"i",8:"i",9:"ı"};
+    return n+"'"+(n===0?"ı":n%10?L[n%10]:n%100?T[Math.floor(n/10)%10]:n%1000?"ü":"i"); }
+  const accP=p=>"%"+acc(Math.round((p||0)*100));
+  // ---------- depo ----------
+  function saveL(){ try{ localStorage.setItem(LSK,JSON.stringify(KX.L)); localStorage.setItem(LSA,KX.aktif||""); }catch(e){} }
+  function nextNo(){ let mx=0; for(const c of KX.L){ const m=/^Kuponum (\d+)$/.exec(c.ad||""); if(m) mx=Math.max(mx,+m[1]); } return Math.max(mx,0)+1; }
+  function kxNew(ad,items){ const c={id:uid(),ad:ad||("Kuponum "+nextNo()),items:items||[],olusturma:NOW(),durum:"acik"}; KX.L.push(c); return c; }
+  function load(){ let L=null; try{ L=JSON.parse(localStorage.getItem(LSK)||"null"); }catch(e){}
+    if(!Array.isArray(L)){ let old=[]; try{ old=JSON.parse(localStorage.getItem("bx-coupon")||"[]"); }catch(e){} if(!Array.isArray(old)) old=[];
+      KX.L=[]; const c=kxNew("Kuponum 1",old.filter(x=>x&&x.h&&x.a)); c.tasindi=old.length?1:0; KX.aktif=c.id; saveL(); }
+    else { KX.L=L.filter(c=>c&&c.id&&Array.isArray(c.items)); try{ KX.aktif=localStorage.getItem(LSA)||null; }catch(e){} } }
+  function act(){ let c=null; for(const x of KX.L) if(x.id===KX.aktif){ c=x; break; }
+    if(!c||c.durum!=="acik"){ c=KX.L.filter(x=>x.durum==="acik").sort((a,b)=>(b.upd||b.olusturma)-(a.upd||a.olusturma))[0]||kxNew(); KX.aktif=c.id; saveL(); }
+    return c; }
+  const byId=id=>KX.L.find(c=>c.id===id);
+  const open=()=>KX.L.filter(c=>c.durum==="acik").sort((a,b)=>a.olusturma-b.olusturma);
+  const past=()=>KX.L.filter(c=>c.durum!=="acik").sort((a,b)=>(b.bitti||b.arsivAt||b.olusturma)-(a.bitti||a.arsivAt||a.olusturma));
+  load(); act();
+  Object.defineProperty(CP,"items",{configurable:true,enumerable:true,get(){ return act().items; },set(v){ act().items=Array.isArray(v)?v:[]; }});
+  window.kxAct=act; window.kxSave=saveL;
+  function kxSetActive(id){ const c=byId(id); if(!c||c.durum!=="acik") return; KX.aktif=id; saveL(); try{ paintCoupon(); }catch(e){} }
+  // ---------- hesaplar ----------
+  const kOdd=c=>c.items.reduce((a,x)=>a*(+x.odd||1),1), kP=c=>c.items.reduce((a,x)=>a*(x.p||.5),1);
+  const done=i=>i.ok!=null||!!i.need;
+  function kxSt(c){ const I=c.items; if(!I.length) return "e"; if(I.some(i=>i.ok===false)) return "x"; if(I.every(i=>i.ok===true)) return "g"; if(I.every(done)) return "q"; return "w"; }
+  const ST={e:"Boş",w:"Bekliyor",g:"Tuttu",x:"Tutmadı",q:"Sonuç eksik"};
+  const stPill=c=>{ const s=kxSt(c); return `<span class="kx-st ${s}">${s==="g"?"✓ ":s==="x"?"✗ ":""}${ST[s]}</span>`; };
+  function rating(p,odd){ const ev=p*odd; return ev>=1.05?["Değerli görünüyor","g"]:ev>=.92?["Adil","m"]:["Oran olasılığa göre düşük","x"]; }
+  window.kxSt=kxSt;
+  // ---------- sonuçlar: OYN ile aynı kaynak (RS.load gün önbelleği) ----------
+  let gBusy=false;
+  async function kxGrade(){ if(gBusy) return; gBusy=true; let ch=0;
+    try{ const t=NOW(), due=[];
+      for(const c of KX.L) for(const it of c.items) if(it.ok==null&&!it.man&&!it.need&&t-tms(it.dt)>100*60e3) due.push(it);
+      for(const it of due.filter(i=>i.sp==="bk")){ try{ const f=(BK.data&&BK.data.fixtures||[]).find(x=>x.h===it.h&&x.a===it.a); const lv=f&&bkLiveOf(f);
+          if(lv&&lv.state==="post"&&lv.hs!=null){ it.s=`${lv.hs}-${lv.as}`; const ok=mkHit(it.mk,+lv.hs,+lv.as,null,null,null); if(ok!=null){ it.ok=ok; ch++; } }
+          else if(t-tms(it.dt)>30*3600e3){ it.need=1; ch++; } }catch(e){} }
+      const fb=due.filter(i=>i.sp!=="bk"), days=[...new Set(fb.map(it=>istDay(new Date(tms(it.dt)))))].slice(0,8);
+      for(const d of days){ let R=null; try{ R=await RS.load(d); }catch(e){} if(!R||!R.list) continue;
+        for(const it of fb){ if(istDay(new Date(tms(it.dt)))!==d) continue;
+          const m=(it.iid&&R.list.find(x=>x.id===it.iid))||R.list.find(x=>tmEq(x.h,it.h)&&tmEq(x.a,it.a));
+          if(!m){ if(t-tms(it.dt)>30*3600e3){ it.need=1; ch++; } continue; }
+          it.s=`${m.hs}-${m.as}`; it.s1=m.h1!=null?`${m.h1}-${m.a1}`:null; it.at=t;
+          const ok=mkHit(it.mk,m.hs,m.as,m.h1,m.a1,it.s0); if(ok!=null) it.ok=ok; else it.need=1; ch++; } }
+    }catch(e){}
+    gBusy=false; if(ch){ settle(); saveL(); kxRefresh(); } return ch; }
+  window.kxGrade=kxGrade;
+  function settle(){ const fin=[];
+    for(const c of KX.L){ if(c.durum!=="acik"||!c.items.length||!c.items.every(done)) continue; c.durum="bitti"; c.bitti=NOW(); fin.push(c); }
+    if(!fin.length) return; act();
+    const c=fin[0], s=kxSt(c), h=c.items.filter(i=>i.ok).length;
+    try{ toast(fin.length>1?`🦁 ${fin.length} kuponun sonuçlandı · Eski kuponlarım`:`🦁 ${c.ad} sonuçlandı: ${ST[s]} (${h}/${c.items.length}) · Eski kuponlarım`); Sound.toggle(s==="g"); }catch(e){} }
+  try{ const _og=oynGrade; oynGrade=async function(){ let r; try{ r=await _og.apply(this,arguments); }finally{ kxGrade(); } return r; }; }catch(e){}
+  setTimeout(kxGrade,5000);
+  // ---------- pazar seçenekleri + OXX önerisi ----------
+  function optsFor(m){ if(!m) return null;
+    try{ if(m.sp===1){ const P=idlPred(m), K=idlPick(m,P); if(!K) return null; const mm={lg:"i"+m.ci,h:m.h,a:m.a,dt:new Date(m.ts)};
+        const fx=x=>({k:(x.k==="U"||x.k==="A")?x.k+String(P.line):x.k,n:x.n,o:x.o||null,p:x.p});
+        return {mm,ex:{live:1,s0:`${m.hs}-${m.as}`,iid:m.id},opts:K.all.filter(x=>x.o&&x.p>0).map(fx),rec:fx(K.best)}; } }catch(e){ return null; }
+    if(m.sp) return null;
+    if(m.bk) return bkOpts(m.bk);
+    const qf=window.QP_FORCE; window.QP_FORCE=true;
+    try{ const f=m.src==="fx"?FIXTURES.find(x=>x.lg===m.lg&&x.h===m.h&&x.a===m.a):fxOdds(m); const p=quickPred(m,f); if(!p) return null;
+      const pq=p.pm?{H:p.pm[0],D:p.pm[1],A:p.pm[2],o25:p.o25m!=null?p.o25m:p.o25}:{H:p.p[0],D:p.p[1],A:p.p[2],o25:p.o25};
+      const o=f&&f.odds, ou=f&&f.ou;
+      const opts=[{k:"1",n:"MS 1",p:pq.H,o:o&&o[0]},{k:"X",n:"MS X",p:pq.D,o:o&&o[1]},{k:"2",n:"MS 2",p:pq.A,o:o&&o[2]},{k:"A",n:"2,5 Alt",p:1-pq.o25,o:ou&&ou[1]},{k:"U",n:"2,5 Üst",p:pq.o25,o:ou&&ou[0]}]
+        .filter(x=>x.p!=null&&!isNaN(x.p)).map(x=>Object.assign(x,{o:x.o?+x.o:null}));
+      const R=recOf(pq,f); const rec=R?{k:R.k,n:R.n,o:R.o?+R.o:null,p:R.cp}:opts.slice().sort((a,b)=>b.p-a.p)[0];
+      return {mm:m,ex:{iid:m.iid||(f&&f.iid)||null},opts,rec};
+    }catch(e){ return null; } finally{ window.QP_FORCE=qf; } }
+  function bkOpts(f){ try{ const p=bkPredict(f); if(!p) return null; const io=f.io||[];
+      const mm={lg:"bk-"+f.lg,h:f.h,a:f.a,dt:new Date(f.dt||f.t)};
+      const opts=[{k:"1",n:"MS 1",p:p.pH,o:io[0]?+io[0]:null},{k:"2",n:"MS 2",p:p.pA,o:io[1]?+io[1]:null}];
+      return {mm,ex:{sp:"bk"},opts,rec:opts.slice().sort((a,b)=>b.p-a.p)[0]}; }catch(e){ return null; } }
+  function matchOfItem(it){ if(it.sp==="bk"){ const f=(BK.data&&BK.data.fixtures||[]).find(x=>x.h===it.h&&x.a===it.a); return f?{bk:f}:null; }
+    try{ return findMatchByTeams(it.h,it.a); }catch(e){ return null; } }
+  // ---------- ekle / çıkar ----------
+  const inAct=(h,a,k)=>CP.items.find(c=>(k&&c.k===k)||(tmEq(c.h,h)&&tmEq(c.a,a)));
+  function kxAdd(O,opt,quiet){ if(!O||!opt) return false; const mm=O.mm, ex=O.ex||{}, t=tms(mm.dt), c=act();
+    if(!ex.live&&t&&t<NOW()-110*60e3){ toast("Bu maç bitmiş; kupona eklenemez"); return false; }
+    const I=CP.items, k=cpKey(mm);
+    const dup=I.findIndex(x=>x.k!==k&&tmEq(x.h,mm.h)&&tmEq(x.a,mm.a)); let repl=dup>=0; if(dup>=0) I.splice(dup,1);
+    const had=I.find(x=>x.k===k); if(had&&had.mk!==opt.k) repl=true;
+    const odd=opt.o?+opt.o:+(1/Math.max(.02,opt.p||.5)).toFixed(2);
+    cpToggle(mm,opt.k,odd,opt.p);
+    const it=CP.items.find(x=>x.k===k);
+    if(it){ if(ex.sp) it.sp=ex.sp; if(ex.live){ it.live=1; it.s0=ex.s0; } if(ex.iid) it.iid=ex.iid; if(!opt.o) it.fair=1; cpSave(); }
+    if(!quiet){ const n=CP.items.length;
+      if(!it) toast(`${sfx(c.ad,1)} çıkarıldı · ${n} maç`);
+      else if(repl) toast(`Aynı maçtan tek seçim: ${mkName(opt.k)} olarak güncellendi · ${sfx(c.ad)} ${n} maç`);
+      else toast(`${sfx(c.ad)} eklendi · ${n} maç${!ex.live&&t&&t<NOW()?" · maç başladı, maç öncesi oranla":""}`); }
+    kxPaint(); return !!it; }
+  function kxRemoveMatch(h,a){ const I=CP.items, i=I.findIndex(x=>tmEq(x.h,h)&&tmEq(x.a,a)); if(i<0) return false; I.splice(i,1); cpSave(); toast(`${sfx(act().ad,1)} çıkarıldı · ${I.length} maç`); try{ Sound.toggle(false); }catch(e){} kxPaint(); return true; }
+  window.kxAdd=kxAdd;
+  // ---------- maç satırlarına ＋ Kupon ----------
+  function ctxOf(el){ const r=el.closest("[data-kxr]"); if(!r) return null; const kind=r.dataset.kxr;
+    try{ if(kind==="ib"){ const x=IB.rows[+r.dataset.i]; return x?optsFor(x.m):null; }
+      if(kind==="lv"){ const id=+r.dataset.id; const m=(IDL.byId[1]||{})[id]; return m?optsFor(m):null; }
+      if(kind==="bk"){ const f=BK.rows&&BK.rows[+r.dataset.i]; if(f) return bkOpts(f); const em=[...r.querySelectorAll(".bk-tm em")].map(e=>e.textContent.trim()); const g=(BK.data&&BK.data.fixtures||[]).find(x=>x.h===em[0]&&x.a===em[1]); return g?bkOpts(g):null; }
+      if(kind==="fx"){ const b=[...r.querySelectorAll(".tm b")].map(e=>e.textContent.trim()); const m=b.length===2?findMatchByTeams(b[0],b[1]):null; return m?optsFor(m):null; }
+      if(kind==="ms"){ const m=MS.m; return m?optsFor(m):null; } }catch(e){} return null; }
+  function btn(on){ return `<button type="button" class="kx-add${on?" on":""}" data-kxa="1" aria-pressed="${!!on}" aria-label="${on?"Kupondan çıkar (basılı tut: hangi kupon)":"Aktif kupona ekle (basılı tut: hangi kupona)"}">${on?"✓ Kuponda":"<b>＋</b> Kupon"}</button>`; }
+  const namesOf=r=>{ const k=r.dataset.kxr;
+    if(k==="ib"){ const x=IB.rows[+r.dataset.i]; return x?[x.m.h,x.m.a]:null; }
+    if(k==="lv"){ const m=(IDL.byId[1]||{})[+r.dataset.id]; return m?[m.h,m.a]:null; }
+    if(k==="bk"){ const em=[...r.querySelectorAll(".bk-tm em")].map(e=>e.textContent.trim()); return em.length===2?em:null; }
+    if(k==="fx"){ const b=[...r.querySelectorAll(".tm b")].map(e=>e.textContent.trim()); return b.length===2?b:null; }
+    if(k==="ms"){ return MS.m?[MS.m.h,MS.m.a]:null; } return null; };
+  function scanRows(){ try{
+    document.querySelectorAll(".ib-r:not([data-kxr])").forEach(r=>{ const x=IB.rows[+r.dataset.i]; r.dataset.kxr="ib"; if(!x||!x.m) return; const top=r.querySelector(".ib-top"); if(top) top.insertAdjacentHTML("beforeend",btn(!!inAct(x.m.h,x.m.a))); });
+    document.querySelectorAll(".lv-c:not([data-kxr])").forEach(r=>{ r.dataset.kxr="lv"; const m=(IDL.byId[1]||{})[+r.dataset.id]; if(!m) return; r.insertAdjacentHTML("beforeend",`<div class="kx-lvb">${btn(!!inAct(m.h,m.a))}</div>`); });
+    document.querySelectorAll(".bk-row:not([data-kxr])").forEach(r=>{ r.dataset.kxr="bk"; const n=namesOf(r), bp=r.querySelector(".bk-p"); if(!n||!bp) return;
+      const f=BK.rows&&BK.rows[+r.dataset.i]; const lv=f&&bkLiveOf(f); if(lv&&lv.state==="post") return; bp.insertAdjacentHTML("beforeend",btn(!!inAct(n[0],n[1]))); });
+    document.querySelectorAll("#lgBox .fxrow:not([data-kxr])").forEach(r=>{ r.dataset.kxr="-"; const b=[...r.querySelectorAll(".tm b")].map(e=>e.textContent.trim()); if(b.length!==2) return;
+      let m=null; try{ m=findMatchByTeams(b[0],b[1]); }catch(e){} if(!m||m.sp===2) return; if(!m.sp&&m.dt&&m.dt.getTime()<NOW()-5*60e3&&!m.live) return;
+      const w=document.createElement("div"); w.className="kx-fxw"; w.dataset.kxr="fx"; r.before(w); w.appendChild(r); w.insertAdjacentHTML("beforeend",btn(!!inAct(b[0],b[1]))); });
+    const ms=$("msheet"); if(ms&&MS.m){ const ad=ms.querySelectorAll(".rb-add"); ad.forEach(b=>{ const t=b.classList.contains("sel")?"✓ Kuponda":"＋ Kupona ekle"; if(b.textContent!==t) b.textContent=t; });
+      const rb=ms.querySelector(".recbig"); if(rb&&!ms.querySelector(".kx-which")){ ms.dataset.kxr="ms"; rb.insertAdjacentHTML("afterend",`<button type="button" class="kx-which" data-kxw="1">${lion()}<span>Kupon: <b>${esc(act().ad)}</b> · değiştir ›</span></button>`); } }
+  }catch(e){} }
+  let sq=0; const sched=()=>{ if(sq) return; sq=1; setTimeout(()=>requestAnimationFrame(()=>{ sq=0; scanRows(); }),40); };
+  try{ new MutationObserver(sched).observe(document.body,{childList:true,subtree:true}); }catch(e){} sched();
+  function kxPaint(){ try{
+    document.querySelectorAll("[data-kxr] .kx-add").forEach(b=>{ const r=b.closest("[data-kxr]"), n=namesOf(r); if(!n) return; const on=!!inAct(n[0],n[1]);
+      if(b.classList.contains("on")!==on){ b.classList.toggle("on",on); b.setAttribute("aria-pressed",on); b.innerHTML=on?"✓ Kuponda":"<b>＋</b> Kupon"; } });
+    document.querySelectorAll(".ib-r[data-i]").forEach(r=>{ const x=IB.rows[+r.dataset.i]; if(!x||!x.m) return; const k=cpKey(x.m);
+      r.querySelectorAll(".ib-od span[data-mk]").forEach(z=>z.classList.toggle("sel",CP.items.some(c=>c.k===k&&c.mk===z.dataset.mk))); });
+    const w=document.querySelector(".kx-which b"); if(w) w.textContent=act().ad;
+    const ms=$("msheet"); if(ms&&MS.m) ms.querySelectorAll(".rb-add").forEach(b=>{ const on=CP.items.some(c=>c.k===cpKey(MS.m.sp?{lg:"i"+MS.m.ci,h:MS.m.h,a:MS.m.a}:MS.m)&&c.mk===b.dataset.mk); b.classList.toggle("sel",on); b.textContent=on?"✓ Kuponda":"＋ Kupona ekle"; });
+    hdrPaint();
+  }catch(e){} }
+  window.kxPaint=kxPaint;
+  // dokun: ekle/çıkar · basılı tut / sağ tık: Hangi kupona?
+  let lpT=0, lpFired=false;
+  document.addEventListener("pointerdown",e=>{ const b=e.target.closest("[data-kxr] .kx-add"); if(!b) return; lpFired=false; clearTimeout(lpT);
+    lpT=setTimeout(()=>{ lpFired=true; try{ buzz(12); }catch(_){} openPick(ctxOf(b)); },480); },true);
+  ["pointerup","pointercancel","pointerleave"].forEach(t=>document.addEventListener(t,()=>clearTimeout(lpT),true));
+  document.addEventListener("scroll",()=>clearTimeout(lpT),{passive:true,capture:true});
+  document.addEventListener("contextmenu",e=>{ const b=e.target.closest("[data-kxr] .kx-add"); if(!b) return; e.preventDefault(); clearTimeout(lpT); if(!lpFired){ lpFired=true; openPick(ctxOf(b)); } },true);
+  document.addEventListener("click",e=>{ const b=e.target.closest("[data-kxr] .kx-add,[data-kxw]"); if(!b) return; e.preventDefault(); e.stopPropagation();
+    if(b.dataset.kxw){ openPick(ctxOf(b),true); return; }
+    if(lpFired){ lpFired=false; return; }
+    const r=b.closest("[data-kxr]"), n=namesOf(r); try{ buzz(8); }catch(_){}
+    if(n&&inAct(n[0],n[1])){ kxRemoveMatch(n[0],n[1]); return; }
+    const O=ctxOf(b); if(!O||!O.rec){ toast("Bu maç için seçim bulunamadı; oran kutusuna dokunarak ekleyebilirsin"); return; }
+    kxAdd(O,O.rec); },true);
+  // bülten oran hücresi / maç sayfası kutusu ile ekleme → kısa bilgi
+  document.addEventListener("click",e=>{ const ob=e.target.closest(".ib-od span[data-mk],#msheet .mo"); if(!ob) return;
+    const row=ob.closest(".ib-r"); let key=null; try{ if(row){ const x=IB.rows[+row.dataset.i]; key=x&&cpKey(x.m); } else if(MS.m) key=cpKey(MS.m.sp?{lg:"i"+MS.m.ci,h:MS.m.h,a:MS.m.a}:MS.m); }catch(_){} const mk=ob.dataset.mk;
+    setTimeout(()=>{ try{ const c=act(); const on=key?c.items.some(z=>z.k===key&&z.mk===mk):ob.classList.contains("sel"); toast(on?`${sfx(c.ad)} eklendi · ${c.items.length} maç`:`${sfx(c.ad,1)} çıkarıldı · ${c.items.length} maç`); kxPaint(); }catch(_){} },0); });
+  // ---------- Hangi kupona? ----------
+  function closePick(){ const s=$("kxSheet"); if(s) s.remove(); }
+  function openPick(O,switchOnly){ closePick(); const L=open(); const c0=act();
+    const has=c=>O&&c.items.some(x=>tmEq(x.h,O.mm.h)&&tmEq(x.a,O.mm.a));
+    const s=document.createElement("div"); s.id="kxSheet"; s.className="kx-sh"; s.setAttribute("role","dialog"); s.setAttribute("aria-modal","true"); s.setAttribute("aria-label","Hangi kupona?");
+    s.innerHTML=`<div><div class="gr"></div><h3>${O?"Hangi kupona?":"Aktif kupon"}</h3><p>${O?`${esc(O.mm.h)} – ${esc(O.mm.a)} · OXX önerisi <b>${esc(O.rec?mkName(O.rec.k):"")}</b> %${pct(O.rec&&O.rec.p)}`:"Eklediğin maçlar aktif kupona gider."}</p>
+      <div class="ls">${L.map(c=>`<button type="button" data-pk="${c.id}"><span>${esc(c.ad)}<small>${c.items.length} maç${c.items.length?` · OXX %${pct(kP(c))}`:""}${c.id===c0.id?" · aktif":""}</small></span>${has(c)?"<i>✓ Kuponda</i>":c.id===c0.id?"<i>●</i>":""}</button>`).join("")}
+      <button type="button" data-pk="new"><span>＋ Yeni kupon<small>Kuponum ${nextNo()} olarak açılır; adını sonra değiştirebilirsin</small></span></button></div>
+      <button type="button" class="btn ghost" data-pk="x">Vazgeç</button></div>`;
+    document.body.appendChild(s);
+    s.addEventListener("click",e=>{ if(e.target===s){ closePick(); return; } const b=e.target.closest("[data-pk]"); if(!b) return; e.stopPropagation(); const id=b.dataset.pk; closePick(); if(id==="x") return;
+      const c=id==="new"?kxNew():byId(id); if(!c) return; kxSetActive(c.id); saveL();
+      if(O&&!switchOnly){ if(has(c)) toast(`Bu maç zaten ${esc(c.ad)} içinde`); else kxAdd(O,O.rec); }
+      else if(O&&switchOnly){ toast(`Aktif kupon: ${c.ad}`); }
+      kxPaint(); kxRefresh(); });
+    const f=s.querySelector("[data-pk]"); if(f) try{ f.focus({preventScroll:true}); }catch(_){} }
+  document.addEventListener("keydown",e=>{ if(e.key==="Escape"&&$("kxSheet")) closePick(); });
+  // ---------- üst çubuk: Kuponum ----------
+  function hdr(){ const tin=document.querySelector(".topbar .in"); if(!tin) return; let b=$("hdrKup");
+    if(!b){ b=document.createElement("button"); b.className="iconbtn"; b.id="hdrKup"; b.type="button";
+      b.innerHTML=`${lion()}<span class="tbl">Kuponum</span><span class="kx-bd" hidden></span>`;
+      b.onclick=()=>{ try{ buzz(6); }catch(e){} kxOpen("cp"); }; }
+    const bot=$("hdrBot"); if(bot&&b.nextElementSibling!==bot) bot.before(b); else if(!bot&&!b.parentElement) tin.appendChild(b);
+    hdrPaint(); }
+  function hdrPaint(){ const b=$("hdrKup"); if(!b) return; const c=act(), n=c.items.length, bd=b.querySelector(".kx-bd");
+    if(bd){ bd.hidden=!n; bd.textContent=n; } b.setAttribute("aria-label",`Kuponum: ${c.ad}, ${n} maç`); }
+  hdr(); setTimeout(hdr,1300); setTimeout(hdr,4200);
+  function kxOpen(tab){ KP.tab=tab||"cp"; const b=document.querySelector('nav.tabs button[data-v="kupon"]'); if(b) b.click(); setTimeout(()=>{ try{ kuponTab(KP.tab); }catch(e){} },30); }
+  window.kxOpen=kxOpen;
+  // görünüm açıkken üst düğme seçili
+  document.addEventListener("click",()=>setTimeout(()=>{ const v=$("v-kupon"), b=$("hdrKup"); if(!b) return; if(v&&!v.hidden) b.setAttribute("aria-current","page"); else b.removeAttribute("aria-current"); },40));
+  // ---------- Kuponum ekranı ----------
+  const UI={edit:false,cf:null,mk:-1,od:null,ocf:null};
+  function shell(){ const v=$("v-kupon"); if(!v) return null;
+    if(!$("kxHero")){ const lt=v.querySelector(".ltitle");
+      const h=`<div class="kx-hero" id="kxHero">${lion()}<div><h1>Kuponum</h1><p id="kxSub"></p></div></div>
+        <div class="seg" role="group" id="kxSeg" aria-label="Kuponum"><button type="button" data-kt="cp">Kuponlarım</button><button type="button" data-kt="eski">Eski kuponlarım<small id="kxN2"></small></button><button type="button" data-kt="oyn">Takip</button></div>`;
+      lt?lt.insertAdjacentHTML("afterend",h):v.insertAdjacentHTML("afterbegin",h);
+      $("kxSeg").onclick=e=>{ const b=e.target.closest("[data-kt]"); if(!b) return; try{ buzz(6); Sound.tap(); }catch(_){} UI.od=null; kuponTab(b.dataset.kt); window.scrollTo({top:0}); }; }
+    const cb=$("cpBox");
+    if(!$("kxChips")&&cb){ cb.insertAdjacentHTML("beforebegin",`<div class="kx-chips" id="kxChips" role="group" aria-label="Kupon seç"></div>`);
+      $("kxChips").onclick=e=>{ const b=e.target.closest("[data-kc]"); if(!b) return; try{ buzz(6); }catch(_){} UI.edit=false; UI.cf=null; UI.mk=-1;
+        if(b.dataset.kc==="new"){ const c=kxNew(); kxSetActive(c.id); saveL(); toast(`${c.ad} açıldı · eklediğin maçlar buraya gelir`); }
+        else kxSetActive(b.dataset.kc);
+        renderKupon(); }; }
+    if(!$("kxOld")){ const ob=$("oynBox"), anchor=ob||cb; const d=document.createElement("div"); d.id="kxOld"; d.className="wrap"; d.hidden=true; if(anchor) anchor.after(d); else v.appendChild(d); }
+    if(!$("kxSnc")){ const d=document.createElement("button"); d.type="button"; d.id="kxSnc"; d.className="btn ghost"; d.hidden=true; d.textContent="Kayıtlı tahminler (maç analizlerin) ›";
+      d.onclick=()=>{ const b=document.querySelector('nav.tabs button[data-v="sonuc"]'); if(b) b.click(); }; $("kxOld").after(d); }
+    return v; }
+  function applyTab(t){ const cb=$("cpBox"), ob=$("oynBox"), od=$("kxOld"), ch=$("kxChips"), sn=$("kxSnc"); if(!od) return;
+    if(cb) cb.hidden=t!=="cp"; if(ob) ob.hidden=t!=="oyn"; od.hidden=t!=="eski"; if(ch) ch.hidden=t!=="cp"; if(sn) sn.hidden=t!=="oyn";
+    const sg=$("kxSeg"); if(sg) sg.querySelectorAll("[data-kt]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.kt===t));
+    const n2=$("kxN2"), P=past(); if(n2) n2.textContent=P.length?String(P.length):"";
+    const sub=$("kxSub"), c=act();
+    if(sub) sub.innerHTML=t==="eski"?"Biten ve arşivlediğin kuponlar, isabet özetin":t==="oyn"?"Takip ettiğin listeler ve kişisel istatistiğin":`Aktif: <b>${esc(c.ad)}</b> · ${c.items.length} maç · ${open().length} kupon`;
+    if(t==="eski") renderOld(); }
+  const _kt=kuponTab; kuponTab=function(t){ if(t==="snc") return _kt.apply(this,arguments); shell(); const r=_kt.call(this,t==="eski"?"cp":t); KP.tab=t; applyTab(t); return r; };
+  function chipsHtml(){ const c0=act();
+    return open().map(c=>{ const s=kxSt(c); return `<button type="button" data-kc="${c.id}" aria-pressed="${c.id===c0.id}">${s!=="e"?`<i class="kx-dot ${s==="q"?"w":s}"></i>`:""}${esc(c.ad)}<small>${c.items.length||""}</small></button>`; }).join("")
+      +`<button type="button" class="kx-new" data-kc="new" aria-label="Yeni kupon">＋ Yeni kupon</button>`; }
+  function rowHtml(x,i,opt){ const O=opt.O, weak=opt.weak===i, started=tms(x.dt)<NOW(), canSw=O&&O.opts&&O.opts.length>1&&!started&&x.ok==null;
+    const lgN=x.sp==="bk"?"🏀 Basketbol":(LEAGUES[x.lg]?LEAGUES[x.lg].n:x.live?"Canlı":"");
+    const res=x.ok===true?`<span class="kx-res g" role="img" aria-label="Tuttu"><i>✓</i></span>`:x.ok===false?`<span class="kx-res x" role="img" aria-label="Tutmadı"><i>✗</i></span>`
+      :`<button class="rm" type="button" data-kx="rm" data-i="${i}" aria-label="${esc(x.h)} – ${esc(x.a)} maçını kupondan çıkar">✕</button>`;
+    const rec=O&&O.rec&&O.rec.k!==x.mk&&x.ok==null&&!started?`<div class="kx-hint">OXX önerisi: <b>${esc(mkName(O.rec.k))} %${pct(O.rec.p)}</b><button type="button" class="kx-lnk" data-kx="use" data-i="${i}">Uygula</button></div>`:"";
+    const man=x.need&&x.ok==null?`<div class="kx-hint">Sonuç otomatik bulunamadı:<span class="kx-man"><button type="button" data-kx="man" data-i="${i}" data-v="1" aria-label="Tuttu olarak işaretle">✓</button><button type="button" data-kx="man" data-i="${i}" data-v="0" aria-label="Tutmadı olarak işaretle">✗</button></span></div>`:"";
+    const ops=UI.mk===i&&canSw?`<div class="kx-opts" role="group" aria-label="Seçimi değiştir">${O.opts.map(o=>`<button type="button" data-kx="sw" data-i="${i}" data-k="${o.k}" aria-pressed="${o.k===x.mk}" class="${O.rec&&O.rec.k===o.k?"rec":""}">${esc(mkName(o.k))}<small>${o.o?f2(o.o):"–"} · %${pct(o.p)}</small></button>`).join("")}</div>`:"";
+    return `<div class="cprow kx-r${weak?" weak":""}" data-cpi="${i}"><div class="l"><small>${x.sp==="bk"?"":(FLAG[x.lg]||"")} ${lgN?esc(lgN)+" · ":""}${esc(ist(new Date(tms(x.dt)),{weekday:"short",hour:"2-digit",minute:"2-digit"}))}${x.live?" · canlı eklendi":""}</small>
+      <b>${esc(x.h)} – ${esc(x.a)}</b><span class="kx-line"><button type="button" class="kx-mk" data-kx="mk" data-i="${i}" ${canSw?`aria-expanded="${UI.mk===i}"`:"disabled"} aria-label="Seçim: ${esc(mkName(x.mk))}${canSw?", değiştir":""}">${esc(mkName(x.mk))}${canSw?`<span class="cv">▾</span>`:""}</button><span>OXX <span class="kx-pp">%${pct(x.p)}</span></span>${weak&&x.ok==null?`<span class="kx-weak">En zayıf halka</span>`:""}${x.s?`<span class="kx-sc">Skor ${esc(x.s)}${x.s1?` (İY ${esc(x.s1)})`:""}</span>`:started&&x.ok==null?`<span class="kx-sc">${tms(x.dt)>NOW()-110*60e3?"oynanıyor":"sonuç bekleniyor"}</span>`:""}</span>${rec}${man}${ops}</div>
+      <span class="o">${f2(x.odd)}${x.fair?`<small style="display:block;font:500 10.5px var(--font);color:var(--ink3)">adil</small>`:""}</span>${res}</div>`; }
+  function sumHtml(c){ const I=c.items, n=I.length, odd=kOdd(c), p=kP(c), mkt=1/odd, avgO=I.reduce((a,x)=>a+(+x.odd||1),0)/n, avgP=I.reduce((a,x)=>a+(x.p||.5),0)/n, exp=I.reduce((a,x)=>a+(x.p||.5),0);
+    const wi=I.reduce((b,x,i)=>(x.p||.5)<(I[b].p||.5)?i:b,0), w=I[wi], R=rating(p,odd), diff=Math.round((p-mkt)*100);
+    const g=I.filter(x=>x.ok===true).length, x=I.filter(x=>x.ok===false).length, wt=n-g-x;
+    return `<div class="panel cpsum kx-sum"><div class="list">
+      <div><span>Seçim</span><span>${n} maç</span></div>
+      <div class="kp-odd"><span>Toplam oran</span><span><b>${f2(odd)}</b></span></div>
+      <div><span>BULUTOXX birlikte tutma olasılığı</span><span><b>%${pct(p)}</b></span></div>
+      <div><span>Piyasa olasılığı<span class="kx-sub">1 / toplam oran</span></span><span>%${pct(mkt)}<span class="kx-sub">${n?(Math.abs(diff)<1?"OXX ile aynı":`OXX ${Math.abs(diff)} puan ${diff>0?"daha iyimser":"daha temkinli"}`):""}</span></span></div>
+      <div><span>Ortalama oran</span><span>${f2(avgO)}</span></div>
+      <div><span>Ortalama OXX olasılığı</span><span>%${pct(avgP)}</span></div>
+      <div><span>Beklenen tutan maç<span class="kx-sub">olasılıklar toplamı</span></span><span>${f1(exp)} / ${n}</span></div>
+      ${n>1?`<div><span>En zayıf halka</span><span>${esc(w.h)} – ${esc(w.a)}<span class="kx-sub">${esc(mkName(w.mk))} · %${pct(w.p)}</span></span></div>`:""}
+      ${g||x?`<div><span>Sonuç</span><span>${g} tuttu · ${x} tutmadı${wt?` · ${wt} bekliyor`:""}</span></div>`:""}
+      <div class="kp-ev"><span>Değerlendirme</span><span class="pill ${R[1]}">${R[0]}</span></div></div>
+      <p class="note">Birlikte tutma olasılığı, her seçimin BULUTOXX olasılığının çarpımıdır (maçlar bağımsız sayılır). Maç sayısı arttıkça olasılık hızla düşer. Değerlendirme: olasılık × toplam oran 1,05 üstü değerli, 0,92–1,05 adil.</p>
+      <div class="actions"><button class="btn ghost" type="button" id="cpClear">Temizle</button></div></div>`; }
+  function actsHtml(c){ const n=c.items.length;
+    if(UI.cf==="del") return `<div class="kx-cf" role="alertdialog" aria-label="Kuponu sil"><p><b>${esc(c.ad)}</b> silinsin mi? İçindeki ${n} maç da silinir; bu geri alınamaz.</p><div><button type="button" class="btn ghost" data-kx="cfno">Vazgeç</button><button type="button" class="btn dng" data-kx="cfdel">Sil</button></div></div>`;
+    if(UI.cf==="clr") return `<div class="kx-cf" role="alertdialog" aria-label="Kuponu temizle"><p><b>${esc(c.ad)}</b> içindeki ${n} maç çıkarılsın mı? Kupon boş olarak kalır.</p><div><button type="button" class="btn ghost" data-kx="cfno">Vazgeç</button><button type="button" class="btn dng" data-kx="cfclr">Temizle</button></div></div>`;
+    return `<div class="kx-acts"><button type="button" data-kx="share" ${n?"":"disabled"}>${IC.share}Paylaş</button><button type="button" data-kx="dup" ${n?"":"disabled"}>${IC.copy}Çoğalt</button><button type="button" data-kx="arch" ${n?"":"disabled"}>${IC.arch}Arşive kaldır</button><button type="button" class="dng" data-kx="del">${IC.del}Sil</button></div>`; }
+  function kxRenderCp(){ const box=$("cpBox"); if(!box) return; const c=act(), I=c.items;
+    const ch=$("kxChips"); if(ch) ch.innerHTML=chipsHtml();
+    const head=`<div class="kx-ch"><div class="kx-nm">${UI.edit?`<input class="kx-in" id="kxIn" maxlength="32" value="${esc(c.ad)}" aria-label="Kupon adı" enterkeyhint="done"><button type="button" class="kx-ic" data-kx="rok" aria-label="Adı kaydet">✓</button>`
+        :`<h2>${esc(c.ad)}</h2><button type="button" class="kx-ic" data-kx="ren" aria-label="Kupon adını değiştir">${IC.pen}</button>`}</div>${UI.edit?"":stPill(c)}</div>
+      <div class="kx-meta">${I.length} maç · ${esc(ist(new Date(c.olusturma),{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}))} açıldı${c.tasindi?" · önceki listenden taşındı":""}</div>`;
+    if(!I.length){ box.innerHTML=`<div class="panel kx-card">${head}<div class="kx-empty panel" style="background:none;border:0;padding:8px 0">${lion()}<b>${esc(c.ad)} boş</b><p>Bültende, canlıda ya da fikstürde maç satırındaki <b>＋ Kupon</b>'a dokun; OXX'un önerdiği seçim eklenir. Kendi seçimin için oran kutusuna dokun.</p></div>
+        <button class="btn" type="button" id="cpSuggest">Günün en olası tahminlerini getir</button><button class="btn ghost" type="button" id="cpGo">Bültene git</button></div>${actsHtml(c)}
+        <p class="kx-tip">İpucu: ＋ Kupon'a basılı tutarsan hangi kupona ekleneceğini seçebilirsin.</p>`;
+      $("cpGo").onclick=goHome; $("cpSuggest").onclick=()=>{ suggestCoupon(); try{ paintCoupon(); }catch(e){} };
+    } else {
+      const O=I.map(x=>x.ok==null&&tms(x.dt)>NOW()?(x.sp==="bk"?(()=>{ const m=matchOfItem(x); return m?bkOpts(m.bk):null; })():optsFor(matchOfItem(x))):null);
+      const wi=I.length>1?I.reduce((b,x,i)=>(x.p||.5)<(I[b].p||.5)?i:b,0):-1;
+      box.innerHTML=`<div class="panel kx-card">${head}${I.map((x,i)=>rowHtml(x,i,{O:O[i],weak:wi})).join("")}</div>${sumHtml(c)}${actsHtml(c)}
+        <p class="kx-tip">Maçlar bitince her satırda ✓/✗ görünür; tüm maçlar bitince kupon sonucuyla <b>Eski kuponlarım</b>'a geçer. Kayıtlar yalnızca bu telefonda tutulur.</p>
+        <p class="disc">BULUTOXX yalnızca hobi amaçlı maç tahmini ve takip aracıdır; bahis amaçlı değildir, bahis almaz ve hiçbir siteye yönlendirmez · 18+</p>`;
+      box._O=O; }
+    const inp=$("kxIn"); if(inp){ inp.focus(); inp.select(); inp.onkeydown=e=>{ if(e.key==="Enter"){ e.preventDefault(); rename(inp.value); } else if(e.key==="Escape"){ UI.edit=false; kxRenderCp(); } }; inp.onblur=()=>setTimeout(()=>{ if(UI.edit) rename(inp.value); },120); }
+    const cl=$("cpClear"); if(cl) cl.onclick=()=>{ UI.cf="clr"; kxRenderCp(); };
+    applyTab(KP.tab||"cp"); }
+  function rename(v){ const c=act(); v=String(v||"").replace(/\s+/g," ").trim().slice(0,32); UI.edit=false; if(v&&v!==c.ad){ c.ad=v; c.upd=NOW(); saveL(); toast("Kupon adı: "+v); } kxRenderCp(); hdrPaint(); }
+  function shareText(c){ const I=c.items, st=kxSt(c);
+    return `🦁 BULUTOXX · ${c.ad}${st==="g"||st==="x"?" · "+ST[st]:""}\n`+I.map((x,i)=>`${i+1}) ${x.sp==="bk"?"🏀":"⚽"} ${x.h} – ${x.a}: ${mkName(x.mk)} · oran ${f2(x.odd)} · OXX %${pct(x.p)}${x.ok===true?" ✓":x.ok===false?" ✗":""}${x.s?" ("+x.s+")":""}`).join("\n")
+      +`\nToplam oran ${f2(kOdd(c))} · BULUTOXX birlikte tutma olasılığı %${pct(kP(c))}\n${LEGAL_SHARE}`; }
+  function dupOf(c){ const up=c.items.filter(x=>tms(x.dt)>NOW()).map(x=>{ const y=Object.assign({},x); ["ok","s","s1","need","man","at"].forEach(k=>delete y[k]); return y; });
+    if(!up.length){ toast("Çoğaltılacak, henüz başlamamış maç yok"); return null; }
+    const n=kxNew(`${c.ad} kopya`.slice(0,32),up); kxSetActive(n.id); saveL(); toast(`${n.ad} açıldı · ${up.length} maç`); return n; }
+  document.addEventListener("click",e=>{ const b=e.target.closest("#cpBox [data-kx],#kxOld [data-kx]"); if(!b) return; e.stopPropagation(); const a=b.dataset.kx, c=act(), i=+b.dataset.i;
+    try{ buzz(6); }catch(_){}
+    if(a==="rm"){ const x=c.items[i]; if(!x) return; c.items.splice(i,1); UI.mk=-1; cpSave(); toast(`${sfx(c.ad,1)} çıkarıldı · ${c.items.length} maç`); renderKupon(); return; }
+    if(a==="mk"){ UI.mk=UI.mk===i?-1:i; kxRenderCp(); return; }
+    if(a==="sw"||a==="use"){ const O=($("cpBox")._O||[])[i]; if(!O) return; const o=a==="use"?O.rec:O.opts.find(z=>z.k===b.dataset.k); if(!o) return; UI.mk=-1;
+      const x=c.items[i]; if(x&&x.mk===o.k){ kxRenderCp(); return; } kxAdd(O,o,true); toast(`Seçim: ${mkName(o.k)} · OXX %${pct(o.p)}`); renderKupon(); return; }
+    if(a==="man"){ const x=c.items[i]; if(!x) return; x.ok=b.dataset.v==="1"; x.man=1; settle(); saveL(); renderKupon(); return; }
+    if(a==="ren"){ UI.edit=true; kxRenderCp(); return; }
+    if(a==="rok"){ const inp=$("kxIn"); rename(inp?inp.value:c.ad); return; }
+    if(a==="share"){ openShare({title:"Kuponu paylaş",text:shareText(c),url:appLink()}); return; }
+    if(a==="dup"){ if(dupOf(c)) renderKupon(); return; }
+    if(a==="arch"){ c.durum="arsiv"; c.arsivAt=NOW(); saveL(); act(); toast(`${c.ad} Eski kuponlarım'a taşındı`); try{ paintCoupon(); }catch(_){} renderKupon(); return; }
+    if(a==="del"){ UI.cf="del"; kxRenderCp(); const cf=document.querySelector("#cpBox .kx-cf"); if(cf) cf.scrollIntoView({block:"nearest",behavior:"smooth"}); return; }
+    if(a==="cfno"){ UI.cf=null; kxRenderCp(); return; }
+    if(a==="cfclr"){ UI.cf=null; c.items.length=0; cpSave(); toast(`${c.ad} temizlendi`); renderKupon(); return; }
+    if(a==="cfdel"){ UI.cf=null; const ad=c.ad; KX.L=KX.L.filter(z=>z.id!==c.id); KX.aktif=null; act(); saveL(); try{ paintCoupon(); }catch(_){} toast(`${ad} silindi`); renderKupon(); return; }
+    // Eski kuponlarım
+    if(a==="oo"){ UI.od=UI.od===b.dataset.c?null:b.dataset.c; UI.ocf=null; renderOld(); return; }
+    const oc=byId(b.dataset.c);
+    if(a==="ocp"&&oc){ if(dupOf(oc)){ KP.tab="cp"; renderKupon(); } return; }
+    if(a==="oback"&&oc){ oc.durum="acik"; delete oc.arsivAt; kxSetActive(oc.id); saveL(); toast(`${oc.ad} Kuponlarım'a geri alındı`); KP.tab="cp"; renderKupon(); return; }
+    if(a==="osh"&&oc){ openShare({title:"Kuponu paylaş",text:shareText(oc),url:appLink()}); return; }
+    if(a==="odel"&&oc){ UI.ocf=oc.id; renderOld(); return; }
+    if(a==="ocfno"){ UI.ocf=null; renderOld(); return; }
+    if(a==="ocfdel"&&oc){ KX.L=KX.L.filter(z=>z.id!==oc.id); UI.ocf=null; UI.od=null; saveL(); toast(`${oc.ad} silindi`); renderOld(); applyTab("eski"); return; }
+    if(a==="oman"&&oc){ const x=oc.items[i]; if(!x) return; x.ok=b.dataset.v==="1"; x.man=1; saveL(); renderOld(); return; }
+  },true);
+  // ---------- Eski kuponlarım + istatistik ----------
+  function kxStats(){ const P=past().filter(c=>c.items.length), D=P.filter(c=>{ const s=kxSt(c); return s==="g"||s==="x"; }), W=D.filter(c=>kxSt(c)==="g");
+    const items=KX.L.flatMap(c=>c.items).filter(i=>i.ok!=null), ih=items.filter(i=>i.ok).length, ip=items.filter(i=>i.p);
+    const seq=D.slice().sort((a,b)=>(a.bitti||a.arsivAt||0)-(b.bitti||b.arsivAt||0)).map(c=>kxSt(c)==="g");
+    let cur=0; for(let i=seq.length-1;i>=0&&seq[i]===seq[seq.length-1];i--) cur++;
+    let best=0,run=0; for(const s of seq){ run=s?run+1:0; best=Math.max(best,run); }
+    const top=W.slice().sort((a,b)=>kOdd(b)-kOdd(a))[0]||null;
+    return {nP:P.length,n:D.length,w:W.length,ni:items.length,ih,avgN:D.length?D.reduce((a,c)=>a+c.items.length,0)/D.length:0,avgO:D.length?D.reduce((a,c)=>a+kOdd(c),0)/D.length:0,
+      predC:D.length?D.reduce((a,c)=>a+kP(c),0)/D.length:0,predI:ip.length?ip.reduce((a,i)=>a+i.p,0)/ip.length:0,hitI:ip.length?ip.filter(i=>i.ok).length/ip.length:0,
+      cur,curW:seq.length?seq[seq.length-1]:null,best,top}; }
+  window.kxStats=kxStats;
+  function statsHtml(S){ if(!S.n&&!S.ni) return "";
+    const wr=S.n?S.w/S.n:0, hr=S.ni?S.ih/S.ni:0;
+    return `<div class="panel"><div class="kx-kh"><b>${S.n} kupondan ${acc(S.w)} tuttu</b><small>${S.nP>S.n?`${S.nP-S.n} kuponun sonucu eksik`:"yalnızca bu telefonda"}</small></div>
+      <div class="kx-tiles">
+        <div class="kx-tile gd"><small>Kupon kazanma oranı</small><b>%${pct(wr)}</b><div class="kx-bar"><i style="width:${Math.round(wr*100)}%"></i></div></div>
+        <div class="kx-tile"><small>Maç bazında isabet</small><b>%${pct(hr)}</b><i>${S.ih} / ${S.ni} seçim tuttu</i></div>
+        <div class="kx-tile"><small>Ortalama kupon</small><b>${f1(S.avgN)} maç</b><i>ort. toplam oran ${f2(S.avgO)}</i></div>
+        <div class="kx-tile"><small>Seri</small><b>${S.cur?`${S.cur} ${S.curW?"tuttu":"tutmadı"}`:"–"}</b><i>en uzun tutan seri ${S.best}</i></div>
+        ${S.n?`<div class="kx-tile w2"><small>OXX kalibrasyonu · kupon</small><i>OXX bu kuponlar için ortalama <b>%${pct(S.predC)}</b> demişti; gerçekte <b>${accP(wr)}</b> tuttu.${S.n<10?" Örnek az, temkinli oku.":""}</i></div>`:""}
+        ${S.ni?`<div class="kx-tile w2"><small>OXX kalibrasyonu · maç</small><i>Seçimlerde OXX ortalama <b>%${pct(S.predI)}</b> demişti; gerçekte <b>${accP(S.hitI)}</b> tuttu.</i></div>`:""}
+        ${S.top?`<div class="kx-tile w2 gd"><small>En iyi kupon</small><b>${esc(S.top.ad)}</b><i>${S.top.items.length} maç · toplam oran ${f2(kOdd(S.top))} · OXX %${pct(kP(S.top))} demişti</i></div>`:""}
+      </div></div>`; }
+  function renderOld(){ const box=$("kxOld"); if(!box) return; const P=past(), S=kxStats();
+    if(!P.length){ box.innerHTML=`<div class="panel kx-empty">${lion()}<b>Henüz eski kupon yok</b><p>Kuponundaki tüm maçlar bitince kupon sonucuyla birlikte buraya taşınır. İstersen bir kuponu “Arşive kaldır” ile de taşıyabilirsin. Kayıtlar yalnızca bu telefonda tutulur.</p></div>`; return; }
+    box.innerHTML=statsHtml(S)+`<div class="kx-old">${P.map(c=>{ const I=c.items, s=kxSt(c), h=I.filter(i=>i.ok).length, opn=UI.od===c.id;
+      return `<div class="kx-oc"><button type="button" class="kx-oh" data-kx="oo" data-c="${c.id}" aria-expanded="${opn}"><b>${esc(c.ad)}</b>${stPill(c)}<small>${esc(ist(new Date(c.bitti||c.arsivAt||c.olusturma),{day:"numeric",month:"short",year:"numeric"}))} · ${I.length} maç · ${h}/${I.length} tuttu · oran ${f2(kOdd(c))} · OXX %${pct(kP(c))}${c.durum==="arsiv"&&s==="w"?" · arşivde, sonuç bekliyor":""}</small></button>
+        ${opn?`<div class="kx-od">${I.map((x,i)=>`<div class="cprow"><div class="l"><small>${esc(ist(new Date(tms(x.dt)),{weekday:"short",day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}))}</small><b>${esc(x.h)} – ${esc(x.a)}</b><span class="kx-line"><span>${esc(mkName(x.mk))}</span><span>OXX <span class="kx-pp">%${pct(x.p)}</span></span>${x.s?`<span class="kx-sc">Skor ${esc(x.s)}${x.s1?` (İY ${esc(x.s1)})`:""}</span>`:""}</span>${x.need&&x.ok==null?`<div class="kx-hint">Sonuç bulunamadı:<span class="kx-man"><button type="button" data-kx="oman" data-c="${c.id}" data-i="${i}" data-v="1" aria-label="Tuttu">✓</button><button type="button" data-kx="oman" data-c="${c.id}" data-i="${i}" data-v="0" aria-label="Tutmadı">✗</button></span></div>`:""}</div>
+            <span class="o">${f2(x.odd)}</span>${x.ok===true?`<span class="kx-res g" role="img" aria-label="Tuttu"><i>✓</i></span>`:x.ok===false?`<span class="kx-res x" role="img" aria-label="Tutmadı"><i>✗</i></span>`:`<span class="kx-res w" role="img" aria-label="Bekliyor"><i>⏳</i></span>`}</div>`).join("")}
+          ${UI.ocf===c.id?`<div class="kx-cf"><p><b>${esc(c.ad)}</b> kalıcı olarak silinsin mi?</p><div><button type="button" class="btn ghost" data-kx="ocfno">Vazgeç</button><button type="button" class="btn dng" data-kx="ocfdel" data-c="${c.id}">Sil</button></div></div>`
+            :`<div class="kx-acts"><button type="button" data-kx="osh" data-c="${c.id}">${IC.share}Paylaş</button>${c.durum==="arsiv"?`<button type="button" data-kx="oback" data-c="${c.id}">${IC.back}Geri al</button>`:`<button type="button" data-kx="ocp" data-c="${c.id}">${IC.copy}Çoğalt</button>`}<button type="button" class="dng" data-kx="odel" data-c="${c.id}">${IC.del}Sil</button></div>`}</div>`:""}</div>`; }).join("")}</div>`; }
+  // ---------- renderKupon / paintCoupon zinciri ----------
+  const _rk=renderKupon; renderKupon=function(){ shell(); const r=_rk.apply(this,arguments); try{ kxRenderCp(); }catch(e){ console.error(e); } try{ kxGrade(); }catch(e){} return r; };
+  const _pc=paintCoupon; paintCoupon=function(){ const r=_pc.apply(this,arguments); try{ hdrPaint(); kxPaintLite(); }catch(e){} return r; };
+  let pq=0; function kxPaintLite(){ if(pq) return; pq=1; requestAnimationFrame(()=>{ pq=0; kxPaint(); }); }
+  const _cs=cpSave; cpSave=function(){ try{ const c=act(); c.upd=NOW(); saveL(); }catch(e){} return _cs.apply(this,arguments); };
+  function kxRefresh(){ try{ hdrPaint(); kxPaint(); const v=$("v-kupon"); if(v&&!v.hidden){ if(KP.tab==="eski") renderOld(); else kxRenderCp(); } }catch(e){} }
+  window.kxRefresh=kxRefresh;
+  // ---------- adlar: Menü, sekme, Power Now, Kayıtlı ----------
+  try{ TAB_NAMES.kupon="Kuponum"; }catch(e){}
+  try{ for(const g of MENU_PLAN) for(const it of g[1]) if(it[0]==="#moreCp"){ it[1]="Kuponum"; it[2]="Kuponların, sonuçları ve eski kuponların"; } menuOrganize(); }catch(e){}
+  function menuIc(){ const c=$("moreCp"); if(!c) return; const ic=c.querySelector(".ic"); if(ic&&!ic.classList.contains("kx-ic2")){ ic.classList.add("kx-ic2"); ic.innerHTML=lion(); }
+    c.onclick=()=>kxOpen("cp"); }
+  menuIc(); setTimeout(menuIc,1600);
+  try{ oynBadge=(f=>function(){ const r=f.apply(this,arguments); try{ const c=$("moreCp"), s=c&&c.querySelector(".tx small"); if(s){ const n=open().length, w=OYN.L.filter(sl=>oynSt(sl)==="w").length; s.textContent=`${n} kupon · aktif: ${act().ad}${w?` · ${w} takip bekliyor`:""}`; } }catch(e){} return r; })(oynBadge); oynBadge(); }catch(e){}
+  try{ const sg=$("sncSeg"); if(sg){ const L={cp:"Kuponum",oyn:"Takip",snc:"Kayıtlı"}; sg.querySelectorAll("[data-k]").forEach(b=>{ if(L[b.dataset.k]) b.textContent=L[b.dataset.k]; }); } }catch(e){}
+  try{ const _rp=renderPower; renderPower=function(){ const r=_rp.apply(this,arguments); try{ const b=$("pwCp"); if(b){ const c=act(); b.innerHTML=`${lion()}${esc(c.ad)} · <b>${c.items.length} maç</b><span>Aç ›</span>`; b.onclick=()=>kxOpen("cp"); } }catch(e){} return r; }; }catch(e){}
+  // Kuponum ekranındayken "Kuponum" görünümünü yeni kabukla aç
+  document.querySelector('nav.tabs button[data-v="kupon"]').addEventListener("click",()=>{ shell(); });
+  // ---------- OXX: kuponum · kuponlarım · yeni kupon · eski kuponlarım ----------
+  const NZ=t=>String(t||"").toLocaleLowerCase("tr").replace(/ç/g,"c").replace(/ğ/g,"g").replace(/ı/g,"i").replace(/ö/g,"o").replace(/ş/g,"s").replace(/ü/g,"u").replace(/[^a-z0-9 ]/g," ").replace(/\s+/g," ").trim();
+  const RX_ESKI=/\b(eski|gecmis|biten|bitmis|onceki|arsiv\w*|sonuclanan) kupon\w*|\bkupon (gecmis\w*|arsiv\w*|karne\w*)|\bkupon\w* (istatistig\w*|karnesi|isabet\w*)/;
+  const RX_YENI=/\b(yeni|baska|ikinci|bir daha) (bir )?kupon\w*( ac\w*| olustur\w*| baslat\w*| yap\w*)?$|^kupon ac\w*$|\byeni kupon ac\w*/;
+  const RX_LAR=/\bkuponlar(im|imi|imda|imin|ima)?\b|\bkac kupon\w*|\btum kupon\w*|\bkuponlarimi goster\b/;
+  function kxBot(raw){ const s=NZ(raw); if(!s) return null;
+    if(RX_ESKI.test(s)){ const P=past(), S=kxStats(); if(!P.length) return {html:`🦁 Eski kuponların henüz boş${botName()}. Kuponundaki tüm maçlar bitince sonuçla birlikte <b>Eski kuponlarım</b>'a taşınır.`,chips:["Kuponumu aç","Yeni kupon","3 maçlık liste yap"]};
+      return {html:`🦁 <b>Eski kuponlarım</b>: ${S.n} sonuçlanan kupondan <b>${S.w}</b> tanesi tuttu (kazanma oranı %${pct(S.n?S.w/S.n:0)}).${S.ni?` Maç bazında ${S.ni} seçimin ${acc(S.ih)} tuttu (%${pct(S.ih/S.ni)}).`:""}${S.n?` OXX bu kuponlara ortalama %${pct(S.predC)} birlikte tutma olasılığı vermişti.`:""}${S.top?` En iyi kuponun <b>${esc(S.top.ad)}</b> (toplam oran ${f2(kOdd(S.top))}).`:""}<br><small>Kayıtlar yalnızca bu telefonda. Geçmiş isabet geleceği garanti etmez.</small>`,chips:["Eski kuponlarım","Kuponumu aç","Yeni kupon"]}; }
+    if(RX_YENI.test(s)&&!/\d|maclik|ikili|uclu|dortlu|besli|liste/.test(s)){ const c=kxNew(); kxSetActive(c.id); saveL(); kxRefresh();
+      return {html:`🦁 Yeni kupon açtım: <b>${esc(c.ad)}</b>. Bundan sonra eklediğin maçlar buraya gelir; listen şimdilik boş. Toplam ${open().length} açık kuponun var.`,chips:["En güvenli 3 maç","3 maçlık liste yap","Kuponumu aç"]}; }
+    if(RX_LAR.test(s)&&!/\b(yatti|tuttu|tutmadi|yandi|patladi)\b/.test(s)){ const L=open(), c0=act();
+      return {html:`🦁 ${L.length} açık kuponun var${botName()}:<ul class="bt-ul">${L.map(c=>`<li><b>${esc(c.ad)}</b>${c.id===c0.id?" (aktif)":""} · ${c.items.length} maç${c.items.length?` · toplam oran ${f2(kOdd(c))} · OXX %${pct(kP(c))} · ${ST[kxSt(c)]}`:""}</li>`).join("")}</ul>${past().length?`Eski kuponlarında ${past().length} kupon var.`:""} Eklediğin maçlar aktif kupona gider.`,chips:["Kuponumu aç","Yeni kupon","Eski kuponlarım"]}; }
+    return null; }
+  window.kxBot=kxBot;
+  if(typeof botAnswer==="function"){ const _ba=botAnswer; botAnswer=async function(raw){ try{ const r=kxBot(raw); if(r) return r; }catch(e){}
+      const R=await _ba.apply(this,arguments);
+      try{ if(R&&typeof R==="object"){ if(Array.isArray(R.chips)) R.chips=[...new Set(R.chips.map(c=>c==="Listeyi aç"?"Kuponumu aç":c))];
+          const c=act(), h=R.html||"";
+          if(/📋 Listende <b>/.test(h)){ const odd=kOdd(c), p=kP(c); R.html=h.replace("📋 Listende",`🦁 <b>${esc(c.ad)}</b> · Listende`)+`<br>Toplam oran <b>${f2(odd)}</b> · piyasa olasılığı %${pct(1/odd)} · BULUTOXX birlikte tutma olasılığı <b>%${pct(p)}</b>.${open().length>1?` <small>${open().length} açık kuponun var; "kuponlarım" yaz.</small>`:""}`; }
+          else if(/^Listen boş/.test(h)){ R.html=`🦁 <b>${esc(c.ad)}</b> · `+h; R.chips=[...new Set([...(R.chips||[]),"Kuponumu aç",...(open().length>1?["Kuponlarım"]:[])])]; }
+          else if(/listeye eklendi|listeden çıkarıldı|Listeni temizledim/.test(h)) R.html=h+` <small>(${esc(c.ad)})</small>`; } }catch(e){}
+      return R; }; }
+  document.addEventListener("click",e=>{ const b=e.target.closest("#botChips button[data-q]"); if(!b) return; const t=b.dataset.q;
+    const go=tab=>{ e.preventDefault(); e.stopPropagation(); try{ botThen(()=>kxOpen(tab)); }catch(_){ kxOpen(tab); } };
+    if(t==="Kuponumu aç"||t==="Listeyi aç") return go("cp"); if(t==="Eski kuponlarım") return go("eski"); },true);
+  // ilk boyama
+  setTimeout(()=>{ try{ paintCoupon(); }catch(e){} },300);
 })();
 </script>
 </body>
