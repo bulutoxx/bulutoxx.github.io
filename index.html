@@ -5660,7 +5660,7 @@ if((location.hash||"")==="#sonuclar") setTimeout(()=>$("navRes").click(),200);
 // =====================================================================
 // BULUTOXX v35: Otomatik sürüm güncelleme — yeni sürüm yayınlanınca uygulama kendini yeniler
 // =====================================================================
-const APP_V="2026-10-26.106";
+const APP_V="2026-10-26.107";
 (function autoUpdate(){
   let shown=false;
   async function check(auto){
@@ -8850,7 +8850,7 @@ small>.tvar.d:first-child{margin-left:0;margin-right:2px}
       try{ const ds=JSON.parse(localStorage.getItem("bx-kuponlar-sil")||"[]"); if(Array.isArray(ds)) ds.forEach(x=>DEL.add(x)); }catch(e){}
       if(Array.isArray(D)){ const M=new Map(KX.L.map(c=>[c.id,c]));
         for(const d of D){ if(!d||!d.id||!Array.isArray(d.items)||DEL.has(d.id)) continue; const m=M.get(d.id);
-          if(!m){ d.items=d.items.filter(x=>x&&x.h&&x.a); KX.L.push(d); } else if(ts(d)>ts(m)){ Object.assign(m,d); m.items=d.items.filter(x=>x&&x.h&&x.a); } } }
+          if(!m){ d.items=d.items.filter(x=>x&&x.h&&x.a); atFix(d); KX.L.push(d); } else if(ts(d)>ts(m)){ Object.assign(m,d); m.items=d.items.filter(x=>x&&x.h&&x.a); atFix(m); } } }
       KX.L=KX.L.filter(c=>!DEL.has(c.id));
       // sınır: arşiv/biten kuponlardan en eski olanlar 300'ü aşarsa düşer (açık kuponlara dokunulmaz)
       const P=KX.L.filter(c=>c.durum!=="acik").sort((a,b)=>ts(b)-ts(a)); if(P.length>300){ const drop=new Set(P.slice(300).map(c=>c.id)); KX.L=KX.L.filter(c=>!drop.has(c.id)); }
@@ -8858,13 +8858,16 @@ small>.tvar.d:first-child{margin-left:0;margin-right:2px}
       localStorage.setItem("bx-kuponlar-sil",JSON.stringify([...DEL].slice(-500)));
     }catch(e){} }
   function kxDel(id){ DEL.add(id); KX.L=KX.L.filter(z=>z.id!==id); }
+  // at kuponu satırları (v98): bozuk/eksik satır yüklemede düşer; spor:"at" olup at dizisi yoksa [] sayılır
+  const AT_TUR=new Set(["ganyan","plase","ikili","sirali_ikili","cifte","uclu","tabela","altili"]);
+  function atFix(c){ if(c&&c.spor==="at") c.at=(Array.isArray(c.at)?c.at:[]).filter(x=>x&&AT_TUR.has(x.tur)&&Array.isArray(x.kid)&&x.kid.length&&Array.isArray(x.sec)&&x.sec.every(Array.isArray)); }
   function nextNo(){ let mx=0; for(const c of KX.L){ const m=/^Kupon(?:um)? (\d+)$/.exec(c.ad||""); if(m) mx=Math.max(mx,+m[1]); } return Math.max(mx,0)+1; }
   function kxNew(ad,items){ const c={id:uid(),ad:ad||("Kupon "+nextNo()),items:items||[],olusturma:NOW(),durum:"acik"}; KX.L.push(c); return c; }
   function load(){ let L=null, raw=null; try{ raw=localStorage.getItem(LSK); L=JSON.parse(raw||"null"); }catch(e){}
     if(raw&&!Array.isArray(L)){ try{ localStorage.setItem("bx-kuponlar-bozuk",raw); }catch(e){} }   // bozuk kayıt silinmeden önce yedeklenir
     if(!Array.isArray(L)){ let old=[]; try{ old=JSON.parse(localStorage.getItem("bx-coupon")||"[]"); }catch(e){} if(!Array.isArray(old)) old=[];
       KX.L=[]; const c=kxNew("Kupon 1",old.filter(x=>x&&x.h&&x.a)); c.tasindi=old.length?1:0; KX.aktif=c.id; saveL(); }
-    else { KX.L=L.filter(c=>c&&c.id&&Array.isArray(c.items)&&!DEL.has(c.id)); KX.L.forEach(c=>{ c.items=c.items.filter(x=>x&&x.h&&x.a); }); try{ KX.aktif=localStorage.getItem(LSA)||null; }catch(e){} } }
+    else { KX.L=L.filter(c=>c&&c.id&&Array.isArray(c.items)&&!DEL.has(c.id)); KX.L.forEach(c=>{ c.items=c.items.filter(x=>x&&x.h&&x.a); atFix(c); }); try{ KX.aktif=localStorage.getItem(LSA)||null; }catch(e){} } }
   function act(){ let c=null; for(const x of KX.L) if(x.id===KX.aktif){ c=x; break; }
     if(!c||c.durum!=="acik"){ c=KX.L.filter(x=>x.durum==="acik").sort((a,b)=>(b.upd||b.olusturma)-(a.upd||a.olusturma))[0]||kxNew(); KX.aktif=c.id; saveL(); }
     return c; }
@@ -9194,13 +9197,23 @@ small>.tvar.d:first-child{margin-left:0;margin-right:2px}
             // başlamış maç: canlı eşi varsa aynı seçim canlı oran + canlı OXX olasılığıyla eklenir
             const lv=(typeof IDL!=="undefined"&&IDL.live&&IDL.live[1]||[]).find(x=>tmEq(x.h,m.h)&&tmEq(x.a,m.a));
             if(!lv){ toast(t<NOW()-150*60e3?"Bu maç bitmiş; kupona eklenemez":"Bu maç başladı: canlı tahmini Canlı sekmesinden ya da ＋ Kupon ile ekleyebilirsin"); return; }
-            try{ const P=idlPred(lv), K=idlPick(lv,P), base=/^[UA][\d.]+$/.test(String(mk))?String(mk).charAt(0):String(mk), c=K&&K.all.find(z=>z.k===base);
-              if(!c||!c.o){ toast("Bu seçimin canlı oranı şu an kapalı"); return; }
-              const lk=(base==="U"||base==="A")&&P.line!==2.5?base+String(P.line):mk, pp=typeof liveCal==="function"?Math.min(.99,liveCal(c.p).p):c.p;
-              const mm={lg:"i"+lv.ci,h:lv.h,a:lv.a,dt:new Date(lv.ts)}, k2=cpKey(mm);
+            try{ const P=idlPred(lv), K=idlPick(lv,P); if(!K){ toast("Canlı tahmin şu an hesaplanamadı"); return; }
+              const smk=String(mk), base=/^[UA][\d.]+$/.test(smk)?smk.charAt(0):smk, ou=base==="U"||base==="A", nz=v=>{ v=String(v); return v==="U"||v==="A"?v+"2.5":v; };
+              const mm={lg:"i"+lv.ci,h:lv.h,a:lv.a,dt:new Date(lv.ts)}, k2=cpKey(mm), fl=v=>String(v).replace(".",",");
+              // ikinci dokunuş: aynı canlı seçim (canlı anahtar k2 / canlı kod) zaten kuponda → çıkar, "eklendi" deme
+              const hi=I.findIndex(x=>(x.k===k2||(x.live&&tmEq(x.h,mm.h)&&tmEq(x.a,mm.a)))&&nz(x.mk)===nz(smk));
+              if(hi>=0){ I.splice(hi,1); cpSave(); try{ Sound.toggle(false); }catch(_){} toast("Canlı seçim kupondan çıkarıldı"); return; }
+              // Üst/Alt: istenen çizgi canlı çizgiyle aynı değilse sessizce başka çizgiye çevirme
+              if(ou){ const want=smk.length>1?+smk.slice(1):2.5, line=+P.line;
+                if(!isFinite(line)){ toast("Bu seçim canlı bültende yok"); return; }
+                if(line!==want){ toast(`Canlı çizgi şu an ${fl(line)}; ${fl(want)} ${base==="U"?"Üst":"Alt"} canlı bültende yok`); return; } }
+              const c=K.all.find(z=>z.k===base);
+              if(!c){ toast("Bu seçim canlı bültende yok"); return; }
+              if(!c.o){ toast("Bu seçimin canlı oranı şu an kapalı"); return; }
+              const pp=typeof liveCal==="function"?Math.min(.99,liveCal(c.p).p):c.p;
               const d=I.findIndex(x=>x.k!==k2&&tmEq(x.h,mm.h)&&tmEq(x.a,mm.a)); if(d>=0) I.splice(d,1);
-              const r=_ct.call(this,mm,lk,+c.o,pp); const it=CP.items.find(x=>x.k===k2); if(it){ it.live=1; it.s0=`${lv.hs}-${lv.as}`; it.iid=lv.id; cpSave(); }
-              toast(`Canlı eklendi · ${mkName(lk)} %${Math.round(pp*100)} · oran ${(+c.o).toFixed(2)}`); return r; }catch(e){ toast("Canlı tahmin şu an hesaplanamadı"); return; } }
+              const r=_ct.call(this,mm,smk,+c.o,pp); const it=CP.items.find(x=>x.k===k2); if(it){ it.live=1; it.s0=`${lv.hs}-${lv.as}`; it.iid=lv.id; cpSave(); }
+              toast(`Canlı eklendi · ${mkName(smk)} %${Math.round(pp*100)} · oran ${(+c.o).toFixed(2)}`); return r; }catch(e){ toast("Canlı tahmin şu an hesaplanamadı"); return; } }
           const d=I.findIndex(x=>x.k!==k&&tmEq(x.h,m.h)&&tmEq(x.a,m.a)); if(d>=0) I.splice(d,1); } }catch(e){}
       return _ct.apply(this,arguments); }; }catch(e){}
   // ---------- adlar: Menü, sekme, Power Now, Kayıtlı ----------
@@ -9292,8 +9305,10 @@ small>.tvar.d:first-child{margin-left:0;margin-right:2px}
 (function(){
   const LV=()=>(typeof IDL!=="undefined"&&IDL.live&&IDL.live[1])||[];
   function liveFor(x){ return LV().find(m=>(x.iid&&String(m.id)===String(x.iid))||(tmEq(m.h,x.h)&&tmEq(m.a,x.a)))||null; }
+  // maç öncesi "U"/"A" kalemi 2,5 çizgisidir: yalnız canlı çizgi 2,5 iken eşleşir; değilse null → "canlı tahmin bekleniyor"
   function nowP(m,mk){ try{ const P=idlPred(m), K=idlPick(m,P); if(!K) return null; const key=k=>(k==="U"||k==="A")?k+String(P.line):k;
-      const c=K.all.find(z=>key(z.k)===mk||z.k===mk); if(!c) return null; return typeof liveCal==="function"?Math.min(.99,liveCal(c.p).p):c.p; }catch(e){ return null; } }
+      let want=String(mk); if(want==="U"||want==="A") want+="2.5";
+      const c=K.all.find(z=>key(z.k)===want); if(!c) return null; return typeof liveCal==="function"?Math.min(.99,liveCal(c.p).p):c.p; }catch(e){ return null; } }
   function deco(){ try{ const box=document.getElementById("cpBox"); if(!box) return; const I=CP.items||[];
       box.querySelectorAll(".cprow[data-cpi]").forEach(r=>{ const x=I[+r.dataset.cpi]; const old=r.querySelector(".kx-lv"); if(old) old.remove(); if(!x||x.ok!=null) return;
         const m=liveFor(x); if(!m) return; const pn=nowP(m,x.mk), l=r.querySelector(".l")||r;
@@ -9305,7 +9320,8 @@ small>.tvar.d:first-child{margin-left:0;margin-right:2px}
   try{ const _r=renderKupon; renderKupon=function(){ const r=_r.apply(this,arguments); deco(); return r; }; }catch(e){}
   try{ const _k=window.kxRefresh; if(_k) window.kxRefresh=function(){ const r=_k.apply(this,arguments); deco(); return r; }; }catch(e){}
   try{ new MutationObserver(()=>{ const b=document.getElementById("cpBox"); if(b&&!b.querySelector(".kx-lv")&&(CP.items||[]).some(x=>x.ok==null&&liveFor(x))) deco(); }).observe(document.getElementById("cpBox")||document.body,{childList:true,subtree:false}); }catch(e){}
-  setInterval(()=>{ try{ const v=document.getElementById("v-kupon"); if(!v||v.hidden||document.hidden) return; if(!(CP.items||[]).some(x=>x.ok==null)) return;
+  const tms=d=>{ const t=Date.parse(d instanceof Date?d.toISOString():d); return isNaN(t)?0:t; };
+  setInterval(()=>{ try{ const v=document.getElementById("v-kupon"); if(!v||v.hidden||document.hidden) return; if(!(CP.items||[]).some(x=>x.ok==null&&(x.live||(tms(x.dt)&&tms(x.dt)<Date.now())))) return;
       if(typeof IDL!=="undefined"&&IDL.load) IDL.load(1).then(deco).catch(()=>{}); }catch(e){} },20000);
 })();
 </script>
@@ -9447,6 +9463,12 @@ small>.tvar.d:first-child{margin-left:0;margin-right:2px}
 .atk-sec .atk-ic{width:22px;height:22px}
 .atk-old .kx-oh small{grid-column:1}
 #cpBox .atk-r .kx-lnk{margin-left:-8px}
+.atk-bd{display:inline-flex;align-items:center;min-height:20px;padding:0 7px;border-radius:6px;font:700 11.5px/1 var(--font);letter-spacing:.01em}
+.atk-bd.srz{background:rgba(143,180,255,.16);color:#BFD3FF}
+.atk-bd.iade{background:rgba(255,255,255,.08);color:var(--ink2)}
+.atk-bd.kx{background:rgba(255,176,32,.12);color:#FFC86B}
+.atk-bdn{flex-basis:100%;font-size:12px;color:var(--ink3);line-height:1.35}
+.atk-h.k{opacity:.5;text-decoration:line-through}
 @media (max-width:380px){
   .atk-hr{gap:4px;padding:2px 8px;grid-template-columns:26px minmax(0,1fr) 36px var(--atk-cols,36px)}
   .atk-c{width:36px;height:36px}
@@ -9524,10 +9546,14 @@ small>.tvar.d:first-child{margin-left:0;margin-right:2px}
   function started(r){ const c=cOf(r.kosu_id); if(c&&(c.sonuc||c.durum==="bitti")) return true; const t=startTs(r); return isFinite(t)&&t<=NOW(); }
   function altOf(r){ const Al=(A().AT.alt||{})[dayOf(r.kosu_id)]; return ((Al&&Al.altililar)||[]).filter(X=>X.hipodrom===r.hipodrom&&(X.kosular||[]).includes(r.kosu)); }
   function altById(d,id){ const Al=(A().AT.alt||{})[d]; return ((Al&&Al.altililar)||[]).find(X=>X.id===id)||null; }
-  function ekuriOf(r){ const G=[], seen=new Set(), c=cOf(r.kosu_id);
-    for(const g of (c&&Array.isArray(c.ekuri)?c.ekuri:[])) if(Array.isArray(g)){ const m=g.map(String).sort(); const k=m.join(","); if(m.length>1&&!seen.has(k)){ seen.add(k); G.push(m); } }
-    for(const X of altOf(r)) for(const L of Object.values(X.seviyeler||{})) for(const a of L.ayaklar||[]) if(a.kosu===r.kosu) for(const g of a.ekuri||[]){ const m=g.map(String).sort(); const k=m.join(","); if(m.length>1&&!seen.has(k)){ seen.add(k); G.push(m); } }
+  // ekürili gruplar: canlı dosyada koşu düzeyi "ekuri" (koşu öncesi, programdan) + sonuc.ekuri + 6'lı ayakları
+  function ekK(kid){ const G=[], seen=new Set(), c=cOf(kid), r=raceOf(kid);
+    const put=g=>{ if(!Array.isArray(g)) return; const m=g.map(String).sort(); const k=m.join(","); if(m.length>1&&!seen.has(k)){ seen.add(k); G.push(m); } };
+    for(const g of (c&&Array.isArray(c.ekuri)?c.ekuri:[])) put(g);
+    for(const g of (c&&c.sonuc&&Array.isArray(c.sonuc.ekuri)?c.sonuc.ekuri:[])) put(g);
+    if(r) for(const X of altOf(r)) for(const L of Object.values(X.seviyeler||{})) for(const a of L.ayaklar||[]) if(a.kosu===r.kosu) for(const g of a.ekuri||[]) put(g);
     return G; }
+  const ekuriOf=r=>ekK(r.kosu_id);
   function field(r){ const c=cOf(r.kosu_id), by={}; if(c) for(const h of c.atlar||[]) by[String(h.no)]=h;
     const oranli=!!(c&&(c.atlar||[]).some(h=>h.p_oran!=null));
     const H=(r.atlar||[]).map(h=>{ const x=by[String(h.no)]||{}; const p=oranli?(x.p_oran!=null?+x.p_oran:0):(+h.p_kazanma||0);
@@ -9603,7 +9629,7 @@ small>.tvar.d:first-child{margin-left:0;margin-right:2px}
   function addRow(row,c){ c=c||atAct(true); const R0=raceOf(row.kid[0]); if(R0&&started(R0)){ toast("Bu koşu başladı; kupona eklenemez"); return false; }
     const ov=c.at.filter(x=>x.id!==row.id&&x.kid.some(k=>row.kid.includes(k)));
     const wasEdit=c.at.some(x=>x.id===row.id);
-    c.at=c.at.filter(x=>x.id!==row.id&&!ov.includes(x)); c.at.push(row); c.at.sort((a,b)=>(a.t||0)-(b.t||0)||a.hip.localeCompare(b.hip,"tr")||a.kosu-b.kosu);
+    c.at=c.at.filter(x=>x.id!==row.id&&!ov.includes(x)); c.at.push(row); c.at.sort((a,b)=>(a.t||0)-(b.t||0)||String(a.hip||"").localeCompare(String(b.hip||""),"tr")||(a.kosu||0)-(b.kosu||0));
     setActive(c); save(c); try{ Sound.toggle(true); buzz(10); }catch(e){}
     toast(wasEdit?`Satır güncellendi · ${TUR[row.tur].ad}`:ov.length?`Aynı koşudan tek satır: ${TUR[row.tur].ad} olarak güncellendi · ${c.at.length} satır`:`${sfx(c.ad)} eklendi · ${TUR[row.tur].ad} · ${c.at.length} satır`);
     refresh(); return true; }
@@ -9620,62 +9646,116 @@ small>.tvar.d:first-child{margin-left:0;margin-right:2px}
   function recalc(x){ try{ if(x.ok!=null) return false; const r=raceOf(x.kid[0]); if(!r||started(r)) return false;
       if(x.tur==="altili"){ const X=altById(x.d,x.alt), L=X&&X.seviyeler&&X.seviyeler[x.sev]; if(L&&Math.abs(L.p-x.p)>1e-6){ x.p=L.p; x.pk=X.kaynak==="oran"?"oran":"sabah"; return true; } return false; }
       const F=field(r), F2=x.tur==="cifte"?(()=>{ const r2=raceOf(x.kid[1]); return r2?field(r2):null; })():null; if(x.tur==="cifte"&&!F2) return false;
-      const R=calcF(x.tur,x.sec,F,F2), pk=F.oranli?"oran":"sabah"; if(Math.abs(R.p-x.p)>1e-6||pk!==x.pk){ x.p=R.p; x.pk=pk; x.gd=R.gd; return true; } }catch(e){} return false; }
+      // koşmayacak at (oran açıldı, bu atın oranı yok): seçimden düşülür, kombinasyon ve olasılık yeniden hesaplanır (seçim silinmez; oran gelirse geri sayılır)
+      const off=(G,no)=>{ const h=G&&G.H.find(z=>z.no===String(no)); return !!(h&&h.off); }, G_=i=>x.tur==="cifte"&&i===1?F2:F;
+      const es=x.sec.map((c,i)=>c.filter(no=>!off(G_(i),no))), kx=[...new Set(x.sec.flatMap((c,i)=>c.filter(no=>off(G_(i),no)).map(no=>(x.tur==="cifte"&&i?"2:":"")+no)))];
+      const R=calcF(x.tur,es,F,F2), pk=F.oranli?"oran":"sabah", kxs=kx.join(",");
+      if(Math.abs(R.p-x.p)>1e-6||pk!==x.pk||R.komb!==x.komb||kxs!==(x.kx||[]).join(",")){ x.p=R.p; x.pk=pk; x.gd=R.gd; x.komb=R.komb; if(kx.length) x.kx=kx; else delete x.kx; return true; } }catch(e){} return false; }
   // ---------- sonuç ----------
-  function gradeRow(x){ if(x.ok!=null&&!x.need) return false; if(x.man) return false;
+  // her derece (1..k) için geçerli atlar: eşit dereceli (dead heat) atların hepsi kapladıkları her sıra için geçerli sayılır.
+  // O[p]: o sıra açık (sonuç eksik ya da listenin sonundaki eşitlik bloğu listelenmeyen bir atla uzayabilir) → yalnız o zaman belirsiz.
+  function slots(s,k){ const q=(Array.isArray(s.sira)&&s.sira.length?s.sira:(s.kazanan!=null?[s.kazanan]:[])).map(String).filter(Boolean);
+    let dr=Array.isArray(s.derece)&&s.derece.length===q.length?s.derece.map(Number):null;
+    if(dr&&dr.some((d,i)=>!(d>=1)||(i&&d<dr[i-1]))) dr=null;
+    if(!dr){ if(s.esit) return {q,bad:1}; dr=q.map((_,i)=>i+1); }
+    const trunc=q.length>=4&&!(+s.kosan>0&&+s.kosan<=q.length), V=[], O=[];
+    for(let p=1;p<=k;p++){ const v=[]; for(let j=0;j<q.length;j++){ const d=dr[j], t=dr.filter(z=>z===d).length; if(d<=p&&p<=d+t-1) v.push(q[j]); }
+      let open=!v.length; if(!open&&trunc){ const d=dr[q.indexOf(v[v.length-1])]; if(dr[dr.length-1]===d&&dr.filter(z=>z===d).length>1) open=true; }
+      V.push(v); O.push(open); }
+    return {q,V,O}; }
+  // sıra başına aday kümelerinden farklı atlarla geçerli bir dizilim var mı: 1 kesin, .5 belirsiz (açık sırada listelenmeyen at), 0 yok
+  function fit(cols,V,O,L){ let uns=false;
+    const rec=(p,used,w)=>{ if(p===cols.length){ if(w){ uns=true; return false; } return true; }
+      for(const h of cols[p]){ if(used.has(h)) continue; const inV=V[p].includes(h), wi=!inV&&O[p]&&!L.has(h); if(!inV&&!wi) continue;
+        used.add(h); const r=rec(p+1,used,w||wi); used.delete(h); if(r) return true; }
+      return false; };
+    return rec(0,new Set(),false)?1:uns?.5:0; }
+  const ekx=(S,G)=>{ const o=new Set(S.map(String)); for(const g of G||[]) if(g.some(n=>o.has(n))) g.forEach(n=>o.add(n)); return [...o]; };
+  const NEED_N={ganyan:1,plase:2,ikili:2,sirali_ikili:2,uclu:3,tabela:4};
+  function gradeRow(x){ if(x.man) return false; if(x.gv===2&&!x.need&&(x.ok!=null||x.iade)) return false;
+    const T=TUR[x.tur]; if(!T) return false;
+    const sig=()=>JSON.stringify([x.ok,!!x.need,x.res||"",x.iade||"",!!x.srz,x.kx||[],x.komb,x.gv||0]), b0=sig();
     const S=x.kid.map(k=>{ const c=cOf(k); return c&&c.sonuc?c.sonuc:null; });
-    const sira=s=>s?(Array.isArray(s.sira)&&s.sira.length?s.sira.map(String):(s.kazanan!=null?[String(s.kazanan)]:[])):[];
-    const has=(i,no)=>(x.sec[i]||[]).includes(String(no));
-    let ok=null, need=false, res="";
-    if(x.tur==="cifte"||x.tur==="altili"){ const W=S.map(s=>sira(s)[0]); if(W.some(w=>w!=null)) res=W.map(w=>w==null?"…":w).join(x.tur==="cifte"?" / ":"-");
-      if(W.some((w,i)=>w!=null&&!has(i,w))) ok=false; else if(W.every(w=>w!=null)) ok=true; }
-    else { const s=S[0]; if(s){ const q=sira(s); res=q.join("-"); const need_n={ganyan:1,plase:2,ikili:2,sirali_ikili:2,uclu:3,tabela:4}[x.tur];
-        if(x.tur==="ganyan") ok=q[0]!=null?has(0,q[0]):null;
-        else if(x.tur==="plase"){ if(q[0]!=null&&has(0,q[0])) ok=true; else if(q.length>=2) ok=has(0,q[1]); }
-        else if(x.tur==="ikili"){ if(q.length>=2) ok=q[0]!==q[1]&&has(0,q[0])&&has(0,q[1]); else if(q[0]!=null&&!has(0,q[0])) ok=false; }
-        else { const k=need_n; let bad=false; for(let i=0;i<Math.min(k,q.length);i++) if(!has(i,q[i])){ bad=true; break; }
-          if(bad) ok=false; else if(q.length>=k) ok=true; }
-        if(s.esit&&ok!==false){ ok=null; need=true; }   // eşit derece: kural belirsiz → elle işaretle
-        if(ok==null&&q.length) need=true; } }
+    const multi=x.tur==="cifte"||x.tur==="altili", legOf=i=>multi?i:0;
+    // koşmayan atlar (sonuc.kosmayan) seçimden düşülür
+    const kmy=S.map(s=>s&&Array.isArray(s.kosmayan)?s.kosmayan.map(String):null);
+    const eff=x.sec.map((c,i)=>{ const K=kmy[legOf(i)]; c=(c||[]).map(String); return K?c.filter(n=>!K.includes(n)):c; });
+    let ok=null, need=false, res="", iade="", srz=false;
+    if(kmy.some(Boolean)){ const kx=[...new Set(x.sec.flatMap((c,i)=>(c||[]).map(String).filter(n=>!eff[i].includes(n)).map(n=>(x.tur==="cifte"&&i?"2:":"")+(x.tur==="altili"&&i?(i+1)+":":"")+n)))];
+      if(kx.length){ x.kx=kx; try{ if(x.tur==="altili") x.komb=eff.reduce((a,c)=>a*c.length,1); else { const r=raceOf(x.kid[0]); if(r){ const F=field(r), r2=x.tur==="cifte"?raceOf(x.kid[1]):null; if(x.tur!=="cifte"||r2) x.komb=calcF(x.tur,eff,F,r2?field(r2):null).komb; } } }catch(e){} } }
+    if(multi){ const W=[];
+      const R=S.map((s,i)=>{ if(!s) return null; const sl=slots(s,1); W[i]=sl.bad?sl.q[0]||"?":sl.V[0].join("="); if(sl.bad||!eff[i].length) return .5;
+        return fit([ekx(eff[i],ekK(x.kid[i]))],sl.V,sl.O,new Set(sl.q)); });
+      if(R.some(r=>r!=null)) res=R.map((r,i)=>r==null?"…":W[i]).join(x.tur==="cifte"?" / ":"-");
+      if(R.some(r=>r===0)) ok=false; else if(R.every(r=>r===1)) ok=true; else if(R.every(r=>r!=null)) need=true; }
+    else { const s=S[0]; if(s){ const k=NEED_N[x.tur], sl=slots(s,k), kos=+s.kosan||0, L=new Set(sl.q); res=sl.q.join("-");
+        if(kos&&T.enaz&&kos<T.enaz) iade=`${kos} at koştu; ${T.ad} en az ${T.enaz} atla geçerli`;
+        else if(eff.some(c=>!c.length)||(x.tur==="ikili"&&eff[0].length<2)) iade="seçilen at koşmadı";
+        else if(sl.bad) need=true;
+        else { let r;
+          if(x.tur==="ganyan") r=fit([ekx(eff[0],ekK(x.kid[0]))],sl.V,sl.O,L);
+          else if(x.tur==="plase"){ const ex=ekx(eff[0],ekK(x.kid[0])), U=new Set([...sl.V[0],...sl.V[1]]); r=ex.some(h=>U.has(h))?1:(sl.O[0]||sl.O[1])&&ex.some(h=>!L.has(h))?.5:0; }
+          else if(x.tur==="ikili") r=fit([eff[0],eff[0]],sl.V,sl.O,L);
+          else r=fit(eff.slice(0,k),sl.V,sl.O,L);
+          if(r===1) ok=true; else if(r===0) ok=false; else need=true;
+          // tabela: sıralı tutmadı ama seçilen dört at ilk dörde girdi → "sırasız" bilgisi (satır ✗ kalır)
+          if(x.tur==="tabela"&&r===0&&!sl.O.some(Boolean)){ const F4=[...new Set(sl.V.flat())]; if(fit(eff.slice(0,4),[F4,F4,F4,F4],[0,0,0,0],L)===1) srz=true; } } } }
     // sonuç hiç gelmediyse: son koşunun saatinden 36 saat sonra "sonuç eksik"
-    if(ok==null&&!need){ const last=x.kid[x.kid.length-1].split("/"); const t=tsOf(last[0],x.tur==="altili"||x.tur==="cifte"?null:x.saat); if(isFinite(t)&&NOW()-t>36*3600e3) need=true; }
-    const ch=(ok!=null&&ok!==x.ok)||(!!need!==!!x.need)||(res&&res!==x.res);
-    if(ok!=null){ x.ok=ok; delete x.need; } else if(need) x.need=1; if(res) x.res=res;
-    return ch; }
-  const doneR=x=>x.ok!=null||!!x.need;
-  function stAt(c){ const I=c.at||[]; if(!I.length) return "e"; if(I.some(i=>i.ok===false)) return "x"; if(I.every(i=>i.ok===true)) return "g"; if(I.every(doneR)) return "q"; return "w"; }
-  const ST={e:"Boş",w:"Bekliyor",g:"Tuttu",x:"Tutmadı",q:"Sonuç eksik"};
-  const stPill=c=>{ const s=stAt(c); return `<span class="kx-st ${s}">${s==="g"?"✓ ":s==="x"?"✗ ":""}${ST[s]}</span>`; };
+    if(ok==null&&!need&&!iade&&x.ok==null){ const last=x.kid[x.kid.length-1].split("/"); const t=tsOf(last[0],multi?null:x.saat); if(isFinite(t)&&NOW()-t>36*3600e3) need=true; }
+    if(iade){ x.iade=iade; delete x.ok; delete x.need; delete x.srz; x.gv=2; }
+    else if(ok!=null){ x.ok=ok; delete x.need; delete x.iade; if(srz) x.srz=1; else delete x.srz; x.gv=2; }
+    else if(need&&x.ok==null) x.need=1;   // eski kesin sonucu belirsizlikle ezme
+    if(res) x.res=res;
+    return sig()!==b0; }
+  const doneR=x=>x.ok!=null||!!x.need||!!x.iade;
+  function stAt(c){ try{ const I=Array.isArray(c&&c.at)?c.at:[]; if(!I.length) return "e"; if(I.some(i=>i.ok===false)) return "x"; const L=I.filter(i=>!i.iade); if(!L.length) return "i";
+      if(L.every(i=>i.ok===true)) return "g"; if(I.every(doneR)) return "q"; return "w"; }catch(e){ return "w"; } }
+  const ST={e:"Boş",w:"Bekliyor",g:"Tuttu",x:"Tutmadı",q:"Sonuç eksik",i:"İade"};
+  const stPill=c=>{ const s=stAt(c); return `<span class="kx-st ${s==="i"?"e":s}">${s==="g"?"✓ ":s==="x"?"✗ ":s==="i"?"↺ ":""}${ST[s]}</span>`; };
+  // bozuk/eksik at satırları (elle düzenlenmiş ya da yarım yazılmış kayıt) sessizce ayıklanır; spor:"at" olup at dizisi yoksa [] sayılır
+  const atOk=x=>!!x&&!!TUR[x.tur]&&Array.isArray(x.kid)&&x.kid.length>0&&x.kid.every(k=>typeof k==="string")&&Array.isArray(x.sec)&&x.sec.every(Array.isArray);
+  function fixAll(){ try{ for(const c of KX.L) if(isAt(c)&&(!Array.isArray(c.at)||c.at.some(x=>!atOk(x)))) c.at=(Array.isArray(c.at)?c.at:[]).filter(atOk); }catch(e){} }
+  fixAll();
+  const kStarted=(x,k)=>{ const r=raceOf(k); return r?started(r):(x.t||0)<=NOW(); };
+  const ageOf=C=>{ const t=Date.parse(String(C&&C.guncelleme_tsi||"").replace(" ","T")+":00+03:00"); return isFinite(t)?NOW()-t:Infinity; };
   let fetching=false;
-  async function fetchDays(){ if(fetching) return; const need=new Set(), now=NOW(), vis=$("v-kupon")&&!$("v-kupon").hidden;
-    for(const c of KX.L) if(isAt(c)) for(const x of c.at||[]) if(!(x.ok!=null&&!x.need)&&!x.man) for(const k of x.kid){ const d=dayOf(k);
-      if(now<tsOf(d,"00:00")) continue; const C=((A().AT.canli)||{})[d];
-      if(!C&&!CAN[d]) need.add(d); else if(vis&&CAN[d]&&now-CAN[d].t>10*60e3&&!(cOf(k)||{}).sonuc&&!C) need.add(d); }
-    if(!need.size) return; fetching=true;
-    try{ await Promise.all([...need].slice(0,4).map(d=>A().j("data/at/canli/"+d+".json").then(v=>{ CAN[d]={v:v&&v.kosular?v:null,t:NOW()}; }))); }finally{ fetching=false; }
-    gradeAll(); }
-  function gradeAll(){ let ch=false;
+  // sonuç tazeleme: başlamış ve sonucu gelmemiş satır varsa (KUPO görünürken) canlı dosya 10 dakikada bir yeniden çekilir — AT.load'un
+  // yüklediği gün (C) dolu olsa da; C taze ise (güncelleme < 10 dk) beklenir. Eski hatalı puanlanmış satırlar için gün bir kez çekilir.
+  async function fetchDays(){ if(fetching) return; try{ fixAll(); const need=new Set(), now=NOW(), vis=$("v-kupon")&&!$("v-kupon").hidden;
+      for(const c of KX.L) if(isAt(c)) for(const x of c.at||[]){ if(x.man) continue; const open=!(x.ok!=null&&!x.need)&&!x.iade, regr=x.gv!==2&&x.ok!=null; if(!open&&!regr) continue;
+        for(const k of x.kid){ const d=dayOf(k); if(now<tsOf(d,"00:00")) continue; const C=((A().AT.canli)||{})[d];
+          if(!C&&!CAN[d]) need.add(d);
+          else if(open&&vis&&!(cOf(k)||{}).sonuc&&kStarted(x,k)&&(CAN[d]?now-CAN[d].t>10*60e3:ageOf(C)>10*60e3)) need.add(d); } }
+      if(!need.size) return; fetching=true;
+      try{ await Promise.all([...need].slice(0,4).map(d=>A().j("data/at/canli/"+d+".json").then(v=>{ CAN[d]={v:v&&v.kosular?v:null,t:NOW()}; }))); }finally{ fetching=false; }
+      gradeAll(); }catch(e){ fetching=false; console.error(e); } }
+  // KUPO görünürken 5 dakikada bir: yalnız başlamış/sonuçsuz satır varsa istek atar (fetchDays kendisi süzer)
+  setInterval(()=>{ try{ if(document.hidden) return; const v=$("v-kupon"); if(!v||v.hidden) return; fetchDays(); }catch(e){} },5*60e3);
+  function gradeAll(){ try{ fixAll(); let ch=false;
     for(const c of KX.L){ if(!isAt(c)) continue; let cc=false; for(const x of c.at||[]){ if(gradeRow(x)) cc=true; if(c.durum==="acik"&&recalc(x)) cc=true; } if(cc){ c.upd=NOW(); ch=true; } }
     const fin=[]; for(const c of KX.L){ if(!isAt(c)||c.durum!=="acik"||!(c.at||[]).length||!c.at.every(doneR)) continue; c.durum="bitti"; c.bitti=NOW(); c.upd=NOW(); fin.push(c); ch=true; }
     if(ch){ save(); if(fin.length){ act(); const c=fin[0], s=stAt(c); try{ toast(fin.length>1?`🏆 ${fin.length} at kuponun sonuçlandı · Eski kuponlarım`:`🏆 ${c.ad} sonuçlandı: ${ST[s]} (${c.at.filter(i=>i.ok).length}/${c.at.length}) · Eski kuponlarım`); Sound.toggle(s==="g"); }catch(e){} } refresh(); }
-    return ch; }
+    return ch; }catch(e){ console.error(e); return false; } }
   window.atkGrade=gradeAll;
   // ---------- KUPO ekranında at kuponu ----------
   const UI={edit:false,cf:null,od:null,ocf:null};
   function selHtml(x){ const W=x.res?x.res.split(/\s*[\/-]\s*/):[];
     return `<div class="atk-sel">${x.sec.map((c,i)=>{ const lb=legLbl(x,i), win=x.tur==="cifte"||x.tur==="altili"?W[i]:(x.tur==="ikili"?null:W[i]);
       return `<div class="atk-sl">${lb?`<i>${esc(lb)}</i>`:""}<span>${c.map(no=>{ const nm=nmOf(x,x.tur==="cifte"||x.tur==="altili"?i:0,no); const w=(win!=null&&String(win)===no)||(x.tur==="ikili"&&W.slice(0,2).includes(no))||(x.tur==="plase"&&W.slice(0,2).includes(no));
-        return `<span class="atk-h${w?" w":""}"><u>${esc(no)}</u>${nm&&c.length<=4&&x.tur!=="altili"?esc(String(nm).slice(0,18)):""}</span>`; }).join("")}</span></div>`; }).join("")}</div>`; }
+        const w2=w||(win!=null&&String(win).split("=").includes(no)), kx=(x.kx||[]).includes((x.tur==="cifte"&&i?"2:":x.tur==="altili"&&i?(i+1)+":":"")+no);
+        return `<span class="atk-h${w2?" w":""}${kx?" k":""}"${kx?` title="koşmadı"`:""}><u>${esc(no)}</u>${nm&&c.length<=4&&x.tur!=="altili"?esc(String(nm).slice(0,18)):""}</span>`; }).join("")}</span></div>`; }).join("")}</div>`; }
   function rowAt(x,i,weak,old,cid){ const T=TUR[x.tur], lbl=A().dLbl(x.d), r=raceOf(x.kid[0]), st=r?started(r):x.t<=NOW();
     const where=x.tur==="altili"?`${esc(x.hip)} ${x.altNo||""}. 6'lı · ${x.kosu}.–${x.kosu+5}. koşular`:x.tur==="cifte"?`${esc(x.hip)} ${x.kosu}. + ${x.kosu+1}. koşu`:`${esc(x.hip)} ${x.kosu}. koşu`;
-    const res=x.ok===true?`<span class="kx-res g" role="img" aria-label="Tuttu"><i>✓</i></span>`:x.ok===false?`<span class="kx-res x" role="img" aria-label="Tutmadı"><i>✗</i></span>`
-      :old?`<span class="kx-res w" role="img" aria-label="Bekliyor"><i>⏳</i></span>`:`<button class="rm" type="button" data-atk="rm" data-i="${i}" aria-label="${esc(where)} satırını kupondan çıkar">✕</button>`;
-    const man=x.need&&x.ok==null?`<div class="kx-hint">Sonuç eksik:<span class="kx-man"><button type="button" data-atk="man" data-c="${cid}" data-i="${i}" data-v="1" aria-label="Tuttu olarak işaretle">✓</button><button type="button" data-atk="man" data-c="${cid}" data-i="${i}" data-v="0" aria-label="Tutmadı olarak işaretle">✗</button></span></div>`:"";
+    const res=x.ok===true?`<span class="kx-res g" role="img" aria-label="Tuttu"><i>✓</i></span>`:x.ok===false?`<span class="kx-res x" role="img" aria-label="${x.srz?"Sıralı tutmadı, sırasız tuttu":"Tutmadı"}"><i>✗</i></span>`
+      :x.iade?`<span class="kx-res w" role="img" aria-label="İade, koşul dışı"><i>↺</i></span>`:old?`<span class="kx-res w" role="img" aria-label="Bekliyor"><i>⏳</i></span>`:`<button class="rm" type="button" data-atk="rm" data-i="${i}" aria-label="${esc(where)} satırını kupondan çıkar">✕</button>`;
+    const bd=(x.srz?`<span class="atk-bd srz">sırasız</span><span class="atk-bdn">4 at ilk dörtte, sıra tutmadı</span>`:"")+(x.iade?`<span class="atk-bd iade">iade · koşul dışı</span><span class="atk-bdn">${esc(x.iade)}</span>`:"")
+      +((x.kx||[]).length?`<span class="atk-bd kx">koşmayan at çıkarıldı</span><span class="atk-bdn">${esc(x.kx.join(", "))} · kombinasyon ve olasılık yeniden hesaplandı</span>`:"");
+    const man=x.need&&x.ok==null&&!x.iade?`<div class="kx-hint">Sonuç eksik:<span class="kx-man"><button type="button" data-atk="man" data-c="${cid}" data-i="${i}" data-v="1" aria-label="Tuttu olarak işaretle">✓</button><button type="button" data-atk="man" data-c="${cid}" data-i="${i}" data-v="0" aria-label="Tutmadı olarak işaretle">✗</button></span></div>`:"";
     return `<div class="cprow kx-r atk-r${weak?" weak":""}"><div class="l"><small>${HORSE}${esc(lbl)} · ${where}${x.saat?" · "+esc(x.saat):""}${x.tur==="altili"?" · "+({dar:"Dar",orta:"Orta",genis:"Geniş"}[x.sev]||""):""}</small>
       <b>${esc(T.ad)} <small>${esc(T.kisa)}</small></b>${selHtml(x)}
-      <span class="kx-line"><span>${fN(x.komb)} kombinasyon</span><span>OXX <span class="kx-pp">${fP(x.p)}</span></span>${weak&&x.ok==null?`<span class="kx-weak">En zayıf halka</span>`:""}${x.res?`<span class="kx-sc">Sonuç ${esc(x.res)}</span>`:st&&x.ok==null&&!x.need?`<span class="kx-sc">koşu başladı · sonuç bekleniyor</span>`:""}${!old&&!st&&x.ok==null?`<button type="button" class="kx-lnk" data-atk="ed" data-i="${i}">Düzenle</button>`:""}</span>${man}</div>${res}</div>`; }
+      <span class="kx-line"><span>${fN(x.komb)} kombinasyon</span><span>OXX <span class="kx-pp">${fP(x.p)}</span></span>${weak&&x.ok==null?`<span class="kx-weak">En zayıf halka</span>`:""}${x.res?`<span class="kx-sc">Sonuç ${esc(x.res)}</span>`:st&&x.ok==null&&!x.need?`<span class="kx-sc">koşu başladı · sonuç bekleniyor</span>`:""}${bd}${!old&&!st&&x.ok==null?`<button type="button" class="kx-lnk" data-atk="ed" data-i="${i}">Düzenle</button>`:""}</span>${man}</div>${res}</div>`; }
   function sumAt(c){ const I=c.at, n=I.length, K=I.reduce((a,x)=>a+(+x.komb||0),0), p=I.reduce((a,x)=>a*(x.p||0),1), e=I.reduce((a,x)=>a+(x.p||0),0);
-    const wi=I.reduce((b,x,i)=>(x.p||0)<(I[b].p||0)?i:b,0), w=I[wi], g=I.filter(x=>x.ok===true).length, xx=I.filter(x=>x.ok===false).length, wt=n-g-xx;
+    const wi=I.reduce((b,x,i)=>(x.p||0)<(I[b].p||0)?i:b,0), w=I[wi], g=I.filter(x=>x.ok===true).length, xx=I.filter(x=>x.ok===false).length, iq=I.filter(x=>x.iade).length, sz=I.filter(x=>x.ok===false&&x.srz).length, wt=n-g-xx-iq;
     const no=I.filter(x=>x.pk==="oran").length, ks=new Set(I.flatMap(x=>x.kid)).size;
     return `<div class="panel cpsum kx-sum"><div class="list">
       <div><span>Satır</span><span>${n} satır<span class="kx-sub">${ks} koşu</span></span></div>
@@ -9683,7 +9763,7 @@ small>.tvar.d:first-child{margin-left:0;margin-right:2px}
       <div><span>BULUTOXX birlikte tutma olasılığı<span class="kx-sub">tüm satırlar birden</span></span><span><b>${fP(p)}</b></span></div>
       <div><span>Beklenen tutan satır<span class="kx-sub">olasılıklar toplamı</span></span><span>${f1(e)} / ${n}</span></div>
       ${n>1?`<div><span>En zayıf halka</span><span>${esc(w.hip)} ${w.kosu}. koşu<span class="kx-sub">${esc(TUR[w.tur].ad)} · ${fP(w.p)}</span></span></div>`:""}
-      ${g||xx?`<div><span>Sonuç</span><span>${g} tuttu · ${xx} tutmadı${wt?` · ${wt} bekliyor`:""}</span></div>`:""}
+      ${g||xx||iq?`<div><span>Sonuç</span><span>${g} tuttu · ${xx} tutmadı${sz?` (${sz} sırasız)`:""}${iq?` · ${iq} iade`:""}${wt?` · ${wt} bekliyor`:""}</span></div>`:""}
       <div><span>Olasılık kaynağı</span><span>${no===n?"oranla güncel":no?`${no} satır oranla, ${n-no} sabah`:"sabah tahmini"}</span></div></div>
       <p class="note">Her satırın olasılığı indirimli Harville yöntemiyle koşu olasılıklarından hesaplanır; birlikte tutma olasılığı satırların çarpımıdır (koşular bağımsız sayılır, aynı koşu tek satırda). Koşu başlayana kadar oran geldikçe güncellenir. Para tutarı ve kazanç gösterilmez.</p></div>`; }
   function karPanel(c){ if(!KAR) return ""; const T=[...new Set(c.at.map(x=>x.tur))]; const L=T.map(t=>{ const x=c.at.find(z=>z.tur===t); const s=karLine(t,x.komb); return s?`<p class="atk-kar"><b>${esc(TUR[t].ad)}</b> · ${s}</p>`:""; }).filter(Boolean);
@@ -9705,7 +9785,7 @@ small>.tvar.d:first-child{margin-left:0;margin-right:2px}
     const inp=$("atkIn"); if(inp){ inp.focus(); inp.select(); inp.onkeydown=e=>{ if(e.key==="Enter"){ e.preventDefault(); rename(c,inp.value); } else if(e.key==="Escape"){ UI.edit=false; refresh(); } }; inp.onblur=()=>setTimeout(()=>{ if(UI.edit) rename(c,inp.value); },120); } }
   function rename(c,v){ v=String(v||"").replace(/\s+/g," ").trim().slice(0,32); UI.edit=false; if(v&&v!==c.ad){ c.ad=v; save(c); toast("Kupon adı: "+v); } refresh(); }
   function shareText(c){ const s=stAt(c);
-    return `🏆 BULUTOXX · ${c.ad}${s==="g"||s==="x"?" · "+ST[s]:""}\n`+c.at.map((x,i)=>`${i+1}) 🐎 ${x.hip} ${x.tur==="altili"?x.kosu+".–"+(x.kosu+5)+". koşular":x.tur==="cifte"?x.kosu+".+"+(x.kosu+1)+". koşu":x.kosu+". koşu"} ${x.saat} · ${TUR[x.tur].ad}: ${x.sec.map(c=>c.join(",")).join(" / ")} · ${fN(x.komb)} komb. · OXX ${fP(x.p)}${x.ok===true?" ✓":x.ok===false?" ✗":""}${x.res?" (sonuç "+x.res+")":""}`).join("\n")
+    return `🏆 BULUTOXX · ${c.ad}${s==="g"||s==="x"?" · "+ST[s]:""}\n`+c.at.map((x,i)=>`${i+1}) 🐎 ${x.hip} ${x.tur==="altili"?x.kosu+".–"+(x.kosu+5)+". koşular":x.tur==="cifte"?x.kosu+".+"+(x.kosu+1)+". koşu":x.kosu+". koşu"} ${x.saat} · ${TUR[x.tur].ad}: ${x.sec.map(c=>c.join(",")).join(" / ")} · ${fN(x.komb)} komb. · OXX ${fP(x.p)}${x.ok===true?" ✓":x.ok===false?(x.srz?" ✗ (sırasız)":" ✗"):x.iade?" ↺ iade":""}${x.res?" (sonuç "+x.res+")":""}`).join("\n")
       +`\nToplam ${fN(c.at.reduce((a,x)=>a+(+x.komb||0),0))} kombinasyon · birlikte tutma olasılığı ${fP(c.at.reduce((a,x)=>a*(x.p||0),1))}\nHobi amaçlı olasılık; garanti değildir · 18+`; }
   // Eski kuponlarım: at kuponları ayrı bölüm + istatistik
   function statsAt(P){ const D=P.filter(c=>{ const s=stAt(c); return s==="g"||s==="x"; }), W=D.filter(c=>stAt(c)==="g"), R=P.flatMap(c=>c.at).filter(x=>x.ok!=null);
@@ -9714,12 +9794,12 @@ small>.tvar.d:first-child{margin-left:0;margin-right:2px}
     const kt=ORDER.filter(t=>by[t]).map(t=>{ const b=by[t], z=KAR&&KAR.turler&&KAR.turler[t]; return `<div><span><b>${esc(TUR[t].ad)}</b></span><span>${b.h}/${b.n}</span><span>${fP(b.e/b.n)}</span><span>${z&&z.n?fP(rate(z)):"–"}</span></div>`; }).join("");
     return `<div class="panel"><div class="kx-kh"><b>${D.length} at kuponundan ${W.length} tuttu</b><small>${P.length>D.length?`${P.length-D.length} kuponun sonucu eksik`:"yalnızca bu telefonda"}</small></div>
       <div class="kx-tiles"><div class="kx-tile gd"><small>Kupon kazanma oranı</small><b>${D.length?fP(W.length/D.length):"–"}</b><div class="kx-bar"><i style="width:${D.length?Math.round(W.length/D.length*100):0}%"></i></div></div>
-        <div class="kx-tile"><small>Satır isabeti</small><b>${R.length?fP(hr):"–"}</b><i>${R.filter(x=>x.ok).length} / ${R.length} satır tuttu</i></div>
+        <div class="kx-tile"><small>Satır isabeti</small><b>${R.length?fP(hr):"–"}</b><i>${R.filter(x=>x.ok).length} / ${R.length} satır tuttu${(()=>{ const z=R.filter(x=>x.ok===false&&x.srz).length; return z?` · ${z} sırasız`:""; })()}</i></div>
         ${D.length?`<div class="kx-tile w2"><small>OXX kalibrasyonu · kupon</small><i>OXX bu kuponlara ortalama <b>${fP(pc)}</b> birlikte tutma olasılığı vermişti; gerçekte <b>${fP(W.length/D.length)}</b> tuttu.${D.length<10?" Örnek az, temkinli oku.":""}</i></div>`:""}
         ${R.length?`<div class="kx-tile w2"><small>OXX kalibrasyonu · satır</small><i>Satırlarda OXX ortalama <b>${fP(pr)}</b> demişti; gerçekte <b>${fP(hr)}</b> tuttu.</i></div>`:""}</div>
       ${kt?`<div class="atk-kt" style="margin-top:10px"><div><span>Tür</span><span>Tutan</span><span>OXX bekl.</span><span>Geri test</span></div>${kt}</div><p class="note" style="margin:6px 0 0">Geri test: en olası tek kombinasyonun geçmiş koşulardaki isabeti${KAR?` (${esc((KAR.donem||[]).join(" – "))})`:""}.</p>`:""}</div>`; }
-  function oldCard(c){ const I=c.at, s=stAt(c), h=I.filter(i=>i.ok).length, opn=UI.od===c.id;
-    return `<div class="kx-oc"><button type="button" class="kx-oh" data-atk="oo" data-c="${c.id}" aria-expanded="${opn}"><b>${HORSE}${esc(c.ad)}</b>${stPill(c)}<small>${esc(ist(new Date(c.bitti||c.arsivAt||c.olusturma),{day:"numeric",month:"short",year:"numeric"}))} · ${I.length} satır · ${h}/${I.length} tuttu · OXX ${fP(I.reduce((a,x)=>a*(x.p||0),1))}${c.durum==="arsiv"&&s==="w"?" · arşivde, sonuç bekliyor":""}</small></button>
+  function oldCard(c){ const I=c.at, s=stAt(c), h=I.filter(i=>i.ok).length, sz=I.filter(i=>i.ok===false&&i.srz).length, iq=I.filter(i=>i.iade).length, opn=UI.od===c.id;
+    return `<div class="kx-oc"><button type="button" class="kx-oh" data-atk="oo" data-c="${c.id}" aria-expanded="${opn}"><b>${HORSE}${esc(c.ad)}</b>${stPill(c)}<small>${esc(ist(new Date(c.bitti||c.arsivAt||c.olusturma),{day:"numeric",month:"short",year:"numeric"}))} · ${I.length} satır · ${h}/${I.length} tuttu${sz?` · ${sz} sırasız`:""}${iq?` · ${iq} iade`:""} · OXX ${fP(I.reduce((a,x)=>a*(x.p||0),1))}${c.durum==="arsiv"&&s==="w"?" · arşivde, sonuç bekliyor":""}</small></button>
       ${opn?`<div class="kx-od">${I.map((x,i)=>rowAt(x,i,false,true,c.id)).join("")}
         ${UI.ocf===c.id?`<div class="kx-cf"><p><b>${esc(c.ad)}</b> kalıcı olarak silinsin mi?</p><div><button type="button" class="btn ghost" data-atk="ocfno">Vazgeç</button><button type="button" class="btn dng" data-atk="ocfdel" data-c="${c.id}">Sil</button></div></div>`
           :`<div class="kx-acts"><button type="button" data-atk="osh" data-c="${c.id}"><svg viewBox="0 0 24 24"><path d="M12 3v12M8 7l4-4 4 4"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg>Paylaş</button>${c.durum==="arsiv"?`<button type="button" data-atk="oback" data-c="${c.id}"><svg viewBox="0 0 24 24"><path d="M9 14 4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg>Geri al</button>`:`<span></span>`}<button type="button" class="dng" data-atk="odel" data-c="${c.id}"><svg viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg>Sil</button></div>`}</div>`:""}</div>`; }
@@ -9731,7 +9811,7 @@ small>.tvar.d:first-child{margin-left:0;margin-right:2px}
     const sec=document.createElement("div"); sec.className="atk-old"; sec.innerHTML=`<div class="atk-sec">${HORSE}At kuponları</div>${statsAt(P)}<div class="kx-old">${P.map(oldCard).join("")}</div>`;
     box.appendChild(sec); }
   // ---------- KUPO kabuğuna bağlanma (futbol kodu değişmeden) ----------
-  function decorate(){ try{ const v=$("v-kupon"); if(!v) return; const c=act();
+  function decorate(){ try{ const v=$("v-kupon"); if(!v) return; fixAll(); const c=act();
       const cb=$("cpBox"); if(cb&&isAt(c)&&!(KP.tab==="eski"||KP.tab==="oyn")){ const root=cb.querySelector(":scope > .atk-root"); if(!root||root.dataset.c!==c.id||root.dataset.v!==String(c.upd||0)+(UI.edit?"e":"")+(UI.cf||"")){ renderCp(cb,c); const r=cb.querySelector(":scope > .atk-root"); if(r){ r.dataset.c=c.id; r.dataset.v=String(c.upd||0)+(UI.edit?"e":"")+(UI.cf||""); } } }
       const sub=$("kxSub"); if(sub&&isAt(c)&&KP.tab==="cp"){ const want=`Aktif: <b>${esc(c.ad)}</b> · 🐎 ${c.at.length} satır · ${KX.L.filter(x=>x.durum==="acik").length} kupon`; if(sub.innerHTML!==want) sub.innerHTML=want; }
       const ch=$("kxChips"); if(ch){ ch.querySelectorAll("button[data-kc]").forEach(b=>{ const k=KX.L.find(x=>x.id===b.dataset.kc); if(!isAt(k)||b.querySelector(".atk-ic")) return;
@@ -9743,8 +9823,8 @@ small>.tvar.d:first-child{margin-left:0;margin-right:2px}
   const oldSig=()=>KX.L.filter(c=>isAt(c)&&c.durum!=="acik").map(c=>c.id+":"+(c.upd||0)).join(",")+"|"+UI.od+"|"+UI.ocf;
   let mo=null; function hook(){ const v=$("v-kupon"); if(!v||mo) return; mo=new MutationObserver(()=>{ decorate(); }); mo.observe(v,{childList:true,subtree:true}); decorate(); }
   hook(); setTimeout(hook,1500);
-  function hdrFix(){ const b=$("hdrKup"); if(!b) return; const c=act(); if(!isAt(c)) return; const bd=b.querySelector(".kx-bd"), n=c.at.length;
-    if(bd&&(bd.hidden!==!n||bd.textContent!==String(n))){ bd.hidden=!n; bd.textContent=n; } const al=`KUPO: ${c.ad}, ${n} at satırı`; if(b.getAttribute("aria-label")!==al) b.setAttribute("aria-label",al); }
+  function hdrFix(){ try{ const b=$("hdrKup"); if(!b) return; const c=act(); if(!isAt(c)) return; fixAll(); const bd=b.querySelector(".kx-bd"), n=c.at.length;
+    if(bd&&(bd.hidden!==!n||bd.textContent!==String(n))){ bd.hidden=!n; bd.textContent=n; } const al=`KUPO: ${c.ad}, ${n} at satırı`; if(b.getAttribute("aria-label")!==al) b.setAttribute("aria-label",al); }catch(e){} }
   let hmo=null; function hdrHook(){ const b=$("hdrKup"); if(!b||hmo) return; hmo=new MutationObserver(hdrFix); hmo.observe(b,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:["hidden","aria-label"]}); hdrFix(); }
   hdrHook(); setTimeout(hdrHook,1500); setTimeout(hdrHook,4500);
   try{ const _rp=renderPower; renderPower=function(){ const r=_rp.apply(this,arguments); try{ const b=$("pwCp"), c=act(); if(b&&isAt(c)) b.innerHTML=`${lion()}${esc(c.ad)} · <b>${c.at.length} at satırı</b><span>Aç ›</span>`; }catch(e){} return r; }; }catch(e){}
@@ -10510,6 +10590,632 @@ small>.tvar.d:first-child{margin-left:0;margin-right:2px}
     if(c.durum==="acik"){ KX.aktif=id; try{ kxSave(); localStorage.setItem("bx-coupon",JSON.stringify(c.items)); paintCoupon(); }catch(_){} kxOpen("cp"); toast(`KUPO · ${c.ad}`); }
     else { kxOpen("eski"); setTimeout(()=>{ const h=document.querySelector(`#kxOld .kx-oh[data-c="${CSS.escape(id)}"]`); if(h){ if(h.getAttribute("aria-expanded")!=="true") h.click();
         setTimeout(()=>{ const h2=document.querySelector(`#kxOld .kx-oh[data-c="${CSS.escape(id)}"]`); if(h2) h2.scrollIntoView({block:"center",behavior:"smooth"}); },80); } },160); } },true);
+})();
+</script>
+<style id="at2-v106">
+/* =====================================================================
+   v106 · AT YARIŞI 2.0 (lab/at/TASARIM.md · Aşama 1 + 2) — iskelet, yapışkan sekmeler, Bugün/Program/Bahis/Sonuç/Kupon,
+   koşu kartı (Sade/Meraklı), at · jokey · antrenör profili, takip, istatistik. Tasarım dili apple-v94.
+   Yalnız #v-at içinde geçerli; bu blok ve script#at2-v106 silinirse eski at ekranı geri gelir.
+   ===================================================================== */
+#v-at{--a2-ok:#3BEA7E;--a2-no:#FF6B78;--a2-g1:#E9C766;--a2-gi:#F3DC8A;--a2-gink:#3B2A05;--a2-ink:#F4F7FC;--a2-ink2:#B6C0D3;--a2-ink3:#8893AB;
+  --a2-s1:#0C1322;--a2-s2:#121B2E;--a2-s3:#18233A;--a2-s4:#1F2B45;--a2-line:rgba(255,255,255,.08);--a2-line2:rgba(255,255,255,.13);
+  --a2-gold:linear-gradient(135deg,#BF9535 0%,#C9A227 28%,#F5E08A 52%,#D4AF37 72%,#B8892B 100%);--a2-focus:0 0 0 3px rgba(34,211,255,.55);
+  --a2-ease:cubic-bezier(.25,.8,.25,1)}
+#v-at.at2 #atBox{display:none!important}
+#v-at.at2 .at-head{margin-bottom:4px}
+#at2Box{outline:none;min-height:60vh;padding-bottom:12px}
+#at2Box *,#at2Nav *{box-sizing:border-box}
+:where(#at2Box,#at2Nav) a{color:inherit;text-decoration:none}
+#at2Box button,#at2Nav button{font-family:inherit}
+:where(#at2Box,#at2Nav) button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
+#at2Box :focus-visible,#at2Nav :focus-visible{outline:none;box-shadow:var(--a2-focus);border-radius:12px}
+#at2Box .a2-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+/* ---------- yapışkan üst gezinme (uygulamanın sticky .at-head kabının içinde) ---------- */
+#at2Nav{padding:0}
+.a2-seg{display:flex;gap:3px;padding:3px;margin:8px 0 0;background:var(--a2-s1);border:1px solid var(--a2-line);border-radius:14px}
+.a2-seg a,.a2-seg button{flex:1 1 0;min-width:0;min-height:44px;padding:0 4px;border-radius:11px;display:flex;align-items:center;justify-content:center;gap:4px;
+  font:650 14px/1 var(--font);letter-spacing:-.01em;color:var(--a2-ink2);white-space:nowrap;transition:background .18s var(--a2-ease),color .18s}
+.a2-seg [aria-current="page"],.a2-seg [aria-pressed="true"]{background:var(--a2-s4);color:var(--a2-ink);box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 2px 8px -4px rgba(0,0,0,.6)}
+.a2-seg .a2-n{min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--a2-g1);color:var(--a2-gink);font:800 11px/18px var(--font)}
+.a2-bar{display:flex;align-items:center;gap:6px;min-height:48px;margin:6px 0 0}
+#at2Nav .a2-back{display:flex;align-items:center;gap:0;min-height:44px;min-width:44px;padding:0 8px 0 0;color:#22D3FF;font:600 16px/1 var(--font);flex:none;max-width:42%}
+#at2Nav .a2-back span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#at2Nav .a2-back svg{width:24px;height:24px;flex:none}
+.a2-bt.hid{opacity:0}
+.a2-bt{transition:opacity .2s var(--a2-ease);flex:1;min-width:0;font:700 16px/1.2 var(--font);letter-spacing:-.012em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center}
+.a2-ib{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;background:var(--a2-s2);border:1px solid var(--a2-line);flex:none;position:relative;color:var(--a2-ink)}
+.a2-ib svg{width:20px;height:20px}
+/* ---------- başlık satırı ---------- */
+.a2-hd{display:flex;align-items:center;gap:8px;margin:6px 0 12px}
+.a2-hd h1{margin:0;flex:1;min-width:0;font:750 24px/1.1 var(--font);letter-spacing:-.022em;color:var(--a2-ink)}
+.a2-hd h1 small{display:block;font:500 13px/1.35 var(--font);letter-spacing:0;color:var(--a2-ink3);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.a2-dn{display:inline-block;vertical-align:4px;margin-left:6px;height:18px;padding:0 6px;border-radius:5px;background:rgba(233,199,102,.14);color:var(--a2-gi);font:750 10px/18px var(--font);letter-spacing:.06em}
+.a2-h2{margin:2px 2px 4px;font:750 24px/1.15 var(--font);letter-spacing:-.02em;color:var(--a2-ink);overflow-wrap:anywhere}
+/* ---------- kart / tipografi ---------- */
+.a2-card{display:block;min-width:0;background:var(--a2-s1);border:1px solid var(--a2-line);border-radius:20px;padding:14px;box-shadow:inset 0 1px 0 rgba(255,255,255,.045);margin:0 0 12px;color:var(--a2-ink)}
+.a2-card.gold{border-color:rgba(233,199,102,.35);background:linear-gradient(180deg,rgba(233,199,102,.07),rgba(233,199,102,0) 60%),var(--a2-s1)}
+.a2-ch{display:flex;align-items:center;gap:8px;margin:0 0 10px;min-height:24px}
+.a2-ch h2{margin:0;font:700 17px/1.25 var(--font);letter-spacing:-.012em;flex:1;min-width:0;color:var(--a2-ink)}
+.a2-ch small{font:600 12.5px/1.2 var(--font);color:var(--a2-ink3);text-align:right}
+.a2-ch .a2-more{color:#22D3FF;font:600 13px/1 var(--font);min-height:44px;display:inline-flex;align-items:center;padding:0 2px;margin:-10px 0}
+.a2-sec{font:700 13px/1.2 var(--font);color:var(--a2-ink3);text-transform:uppercase;letter-spacing:.06em;margin:20px 4px 8px}
+.a2-note{font-size:13px;line-height:1.45;color:var(--a2-ink3);margin:6px 2px}
+.a2-mut{color:var(--a2-ink3)}
+.a2-pill{display:inline-flex;align-items:center;gap:4px;height:24px;padding:0 9px;border-radius:99px;font:650 12px/1 var(--font);background:var(--a2-s3);color:var(--a2-ink2);white-space:nowrap;flex:none}
+.a2-pill.ok{background:rgba(59,234,126,.13);color:var(--a2-ok)}
+.a2-pill.no{background:rgba(255,107,120,.13);color:var(--a2-no)}
+.a2-pill.or{background:rgba(34,211,255,.12);color:#22D3FF}
+.a2-pill.g{background:var(--a2-gold);color:var(--a2-gink)}
+.a2-pill.w{background:rgba(255,176,32,.14);color:#FFB020}
+.a2-chips{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin:0 -16px 12px;padding:2px 16px}
+.a2-chips::-webkit-scrollbar{display:none}
+.a2-chip{flex:none;min-height:44px;padding:0 15px;border-radius:99px;background:var(--a2-s2);border:1px solid var(--a2-line);font:650 14px/1 var(--font);color:var(--a2-ink2);display:inline-flex;align-items:center;gap:6px}
+.a2-chip[aria-pressed="true"],.a2-chip[aria-current="true"]{background:rgba(233,199,102,.14);border-color:rgba(233,199,102,.6);color:var(--a2-gi)}
+.a2-chip small{font-size:12px;color:var(--a2-ink3)}
+.a2-chip.sq{min-width:44px;justify-content:center;padding:0 10px;border-radius:12px}
+.a2-chip.sq.done{color:var(--a2-ink3)}
+.a2-chip.sq.done[aria-current="true"]{color:var(--a2-gi)}
+.a2-btn{min-height:48px;border-radius:14px;padding:0 14px;display:flex;align-items:center;justify-content:center;gap:8px;font:700 15px/1.15 var(--font);width:100%;text-align:center}
+.a2-btn.p{background:linear-gradient(135deg,#0A78C0 0%,#1F67E6 55%,#3D5BFF 100%);color:#fff}
+.a2-btn.g{background:rgba(233,199,102,.12);border:1px solid rgba(233,199,102,.5);color:var(--a2-gi)}
+.a2-btn.g.on{background:rgba(59,234,126,.1);border-color:rgba(59,234,126,.45);color:var(--a2-ok)}
+.a2-btn.q{background:var(--a2-s2);border:1px solid var(--a2-line);color:var(--a2-ink2)}
+.a2-btn[disabled]{opacity:.5;cursor:not-allowed}
+.a2-row2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}
+.a2-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.a2-kpis>div{background:var(--a2-s2);border-radius:12px;padding:10px 4px;text-align:center;min-width:0}
+.a2-kpis b{display:block;font:800 19px/1.1 var(--font);letter-spacing:-.02em;color:var(--a2-ink)}
+.a2-kpis small{display:block;font:500 11px/1.25 var(--font);color:var(--a2-ink3);margin-top:3px}
+.a2-kpis.k3{grid-template-columns:repeat(3,minmax(0,1fr))}
+/* ---------- sıradaki koşu ---------- */
+.a2-nx-t{display:flex;align-items:center;gap:12px}
+.a2-nx-c{font:800 34px/1 var(--font);letter-spacing:-.03em;color:var(--a2-gi);flex:none}
+.a2-nx-c small{font-size:14px;font-weight:650;color:var(--a2-ink3);letter-spacing:0;margin-left:2px}
+.a2-nx-m{flex:1;min-width:0}
+.a2-nx-m b{display:block;font:700 16px/1.25 var(--font);color:var(--a2-ink)}
+.a2-nx-m span{font-size:13px;color:var(--a2-ink3)}
+.a2-mini{display:grid;gap:6px;margin-top:12px}
+.a2-mini>div{display:flex;align-items:center;gap:10px;min-height:44px;padding:4px 10px;background:var(--a2-s2);border-radius:12px}
+/* ---------- at satırı ---------- */
+.a2-no{flex:none;width:32px;height:32px;border-radius:9px;background:var(--a2-s3);display:grid;place-items:center;font:800 14px/1 var(--font);color:var(--a2-ink)}
+.a2-no.top{background:var(--a2-gold);color:var(--a2-gink)}
+.a2-no.w{background:var(--a2-ok);color:#03250F}
+.a2-hn{flex:1;min-width:0}
+.a2-hn b{display:block;font:700 15px/1.25 var(--font);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--a2-ink)}
+.a2-hn small{display:block;font:500 12.5px/1.35 var(--font);color:var(--a2-ink3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.a2-hp{flex:none;text-align:right;min-width:52px}
+.a2-hp b{display:block;font:800 17px/1.1 var(--font);color:var(--a2-gi)}
+.a2-hp b.m{color:var(--a2-ink2);font-size:15px}
+.a2-hp small{display:block;font:500 11.5px/1.3 var(--font);color:var(--a2-ink3);white-space:nowrap}
+.a2-barr{height:4px;border-radius:3px;background:rgba(255,255,255,.07);margin-top:6px;overflow:hidden}
+.a2-barr i{display:block;height:100%;border-radius:3px;background:linear-gradient(90deg,#B8892B,#F3DC8A)}
+.a2-star{color:var(--a2-g1)}
+.a2-hrow{display:flex;align-items:center;gap:10px;min-height:52px;padding:6px 2px;border-top:1px solid var(--a2-line)}
+.a2-hrow:first-child{border-top:0}
+.a2-chev{flex:none;color:var(--a2-ink3);width:16px;height:16px}
+/* ---------- program ---------- */
+.a2-rl{display:grid;gap:8px;grid-template-columns:minmax(0,1fr)}
+.a2-rl>*{min-width:0}
+.a2-rr{display:flex;align-items:center;gap:12px;min-height:64px;padding:10px 12px;background:var(--a2-s1);border:1px solid var(--a2-line);border-radius:16px;color:var(--a2-ink)}
+.a2-rr .k{flex:none;width:44px;text-align:center}
+.a2-rr .k b{display:block;font:800 18px/1 var(--font)}
+.a2-rr .k small{display:block;font:600 11px/1.2 var(--font);color:var(--a2-ink3);margin-top:3px}
+.a2-rr .m{flex:1;min-width:0}
+.a2-rr .m b{display:block;font:650 14.5px/1.3 var(--font);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.a2-rr .m small{display:block;font:500 12.5px/1.35 var(--font);color:var(--a2-ink3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.a2-rr.done{opacity:.74}
+.a2-dot{display:inline-block;width:8px;height:8px;border-radius:4px;background:var(--a2-g1);margin-right:5px;vertical-align:1px}
+.a2-legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:var(--a2-ink3);margin:10px 2px 0}
+.a2-pick{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:14px;background:rgba(34,211,255,.07);border:1px solid rgba(34,211,255,.28);font-size:13.5px;color:var(--a2-ink2);margin-bottom:12px}
+.a2-pick span{flex:1;min-width:0}
+.a2-pick button{flex:none;min-height:40px;padding:0 12px;border-radius:10px;background:var(--a2-s3);color:var(--a2-ink);font:650 13px/1 var(--font)}
+/* ---------- padok ---------- */
+.a2-pd p{display:flex;gap:10px;margin:0 0 8px;font-size:14px;line-height:1.5;color:var(--a2-ink2)}
+.a2-pd p>i{flex:none;font-style:normal;width:20px;text-align:center}
+.a2-pd p b{color:var(--a2-ink)}
+.a2-pd .pd-h{color:var(--a2-gi);font-weight:700;border-bottom:1px dotted rgba(243,220,138,.6);cursor:pointer}
+.a2-pd details summary{list-style:none;min-height:44px;display:flex;align-items:center;color:#22D3FF;font-weight:650;font-size:14px;cursor:pointer}
+.a2-pd details summary::-webkit-details-marker{display:none}
+.a2-pd .a2-up{font-size:12px;color:var(--a2-ink3);margin:2px 0 0}
+/* ---------- altın kartları ---------- */
+.a2-gl{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;margin:0 -16px;padding:0 16px 2px;scroll-snap-type:x mandatory;scroll-padding:0 16px}
+.a2-gl::-webkit-scrollbar{display:none}
+.a2-gc{flex:0 0 78%;max-width:300px;scroll-snap-align:start;background:linear-gradient(160deg,rgba(233,199,102,.16),rgba(233,199,102,.03)),var(--a2-s1);border:1px solid rgba(233,199,102,.4);border-radius:18px;padding:14px;color:var(--a2-ink)}
+.a2-gc .p{font:800 32px/1 var(--font);letter-spacing:-.03em;color:var(--a2-gi)}
+.a2-gc>b{display:block;font:750 16px/1.25 var(--font);margin-top:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.a2-gc>small{display:block;font-size:12.5px;color:var(--a2-ink3);margin-top:2px}
+.a2-gc.one{flex-basis:100%;max-width:none}
+/* ---------- koşu kartı ---------- */
+.a2-rh{display:flex;flex-wrap:wrap;gap:6px;margin:2px 0 12px}
+.a2-sade .hc{display:flex;align-items:center;gap:12px;padding:12px;border-radius:16px;background:var(--a2-s2);margin-bottom:8px;color:var(--a2-ink)}
+.a2-sade .hc.first{background:linear-gradient(160deg,rgba(233,199,102,.14),rgba(233,199,102,.02)),var(--a2-s2);border:1px solid rgba(233,199,102,.35)}
+.a2-sade .hc .a2-hp b{font-size:24px}
+.a2-sade .hc .a2-hn b{white-space:normal;overflow-wrap:anywhere}
+.a2-why{font-size:12.5px;color:var(--a2-ink2);margin-top:4px;line-height:1.4}
+.a2-win .a2-hn b{color:var(--a2-ok)}
+.a2-mk{border-top:1px solid var(--a2-line);padding:10px 0}
+.a2-mk:first-of-type{border-top:0}
+.a2-mk-a{display:flex;align-items:center;gap:10px;min-height:44px;color:var(--a2-ink)}
+.a2-mk-b{display:flex;align-items:center;gap:8px;margin:6px 0 0 42px;flex-wrap:wrap;font-size:12px;color:var(--a2-ink3)}
+.a2-mk-c{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;margin:8px 0 0 42px}
+.a2-mk-c>div{background:var(--a2-s2);border-radius:9px;padding:6px 3px;text-align:center;min-width:0}
+.a2-mk-c b{display:block;font:750 14px/1.1 var(--font);color:var(--a2-ink)}
+.a2-mk-c small{display:block;font:500 10.5px/1.2 var(--font);color:var(--a2-ink3);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#at2Box .up{color:var(--a2-ok)!important}#at2Box .dn{color:var(--a2-no)!important}
+.a2-fm{display:inline-flex;gap:3px;flex-wrap:wrap}
+.a2-fm i{font-style:normal;width:22px;height:24px;border-radius:6px;display:grid;place-items:center;font:750 12px/1 var(--font);background:var(--a2-s3);color:var(--a2-ink2)}
+.a2-fm i.f1{background:var(--a2-gold);color:var(--a2-gink)}
+.a2-fm i.f2{background:rgba(59,234,126,.18);color:var(--a2-ok)}
+.a2-fm i.f0{color:var(--a2-ink3)}
+.a2-sortb{display:flex;align-items:center;gap:6px;margin:0 0 6px;flex-wrap:wrap}
+.a2-sortb span{font-size:12.5px;color:var(--a2-ink3)}
+.a2-sortb button{min-height:44px;min-width:44px;padding:0 12px;border-radius:9px;background:var(--a2-s2);font:600 13px/1 var(--font);color:var(--a2-ink2)}
+.a2-sortb button[aria-pressed="true"]{background:var(--a2-s4);color:var(--a2-ink)}
+.a2-res{display:grid;gap:4px}
+.a2-res>div{display:flex;align-items:center;gap:10px;min-height:40px}
+.a2-res .pl{flex:none;width:24px;font:800 15px/1 var(--font);color:var(--a2-ink3)}
+.a2-res>div:first-child .pl{color:var(--a2-gi)}
+.a2-miss{border:1px dashed var(--a2-line2);border-radius:14px;padding:10px 12px;font-size:12.5px;color:var(--a2-ink3);line-height:1.45;margin:10px 0 0}
+.a2-miss b{color:var(--a2-ink2)}
+.a2-tag{display:inline-block;font-size:11.5px;color:#FFB020;margin:0 0 8px}
+/* ---------- 6'lı ---------- */
+.a2-al{display:flex;align-items:center;gap:10px;min-height:48px;border-top:1px solid var(--a2-line);padding:6px 0}
+.a2-al .i{flex:none;width:52px;font:750 14px/1.1 var(--font);color:var(--a2-ink)}
+.a2-al .i small{display:block;font:500 11px/1.25 var(--font);color:var(--a2-ink3)}
+.a2-al .s{flex:1;display:flex;flex-wrap:wrap;gap:5px;min-width:0}
+.a2-al .s>span{height:28px;padding:0 9px;border-radius:8px;background:var(--a2-s3);font:650 12.5px/28px var(--font);white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis;color:var(--a2-ink)}
+.a2-al .s>span.w{background:rgba(59,234,126,.18);color:var(--a2-ok)}
+.a2-al .s em{font-style:normal;height:28px;padding:0 8px;border-radius:8px;background:rgba(233,199,102,.14);color:var(--a2-gi);font:700 12px/28px var(--font)}
+.a2-al .p{flex:none;font:750 13px/1.2 var(--font);color:var(--a2-ink2);text-align:right}
+.a2-al .p small{display:block;font:500 11px/1.2 var(--font);color:var(--a2-ink3)}
+.a2-al.ok .i{color:var(--a2-ok)}.a2-al.no .i{color:var(--a2-no)}
+.a2-kbr{display:grid;grid-template-columns:92px minmax(0,1fr) 52px;align-items:center;gap:8px;font-size:12.5px}
+.a2-kbr .t{color:var(--a2-ink2);font-weight:650}
+.a2-kbr .v{text-align:right;font-weight:750;color:var(--a2-ink)}
+.a2-kbr .tr{position:relative;height:10px;border-radius:5px;background:rgba(255,255,255,.07)}
+.a2-kbr .tr i{position:absolute;left:0;top:0;bottom:0;border-radius:5px;background:linear-gradient(90deg,#B8892B,#F3DC8A)}
+.a2-kbr .tr u{position:absolute;top:-3px;bottom:-3px;width:2px;background:#22D3FF;border-radius:1px}
+/* ---------- kupon ---------- */
+.a2-syn{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:14px;background:rgba(34,211,255,.07);border:1px solid rgba(34,211,255,.25);font-size:13px;color:var(--a2-ink2);margin-bottom:12px}
+.a2-syn svg{flex:none;width:22px;height:22px;color:#22D3FF}
+.a2-kr{display:flex;gap:10px;align-items:flex-start;padding:12px 0;border-top:1px solid var(--a2-line);color:var(--a2-ink)}
+.a2-kr:first-of-type{border-top:0;padding-top:2px}
+.a2-kr .tt{flex:none;min-width:64px;height:26px;padding:0 8px;border-radius:8px;background:rgba(233,199,102,.14);color:var(--a2-gi);font:750 12px/26px var(--font);text-align:center;white-space:nowrap}
+.a2-kr .tx{flex:1;min-width:0}
+.a2-kr .tx b{display:block;font:650 14.5px/1.3 var(--font)}
+.a2-kr .tx small{display:block;font-size:12.5px;color:var(--a2-ink3);line-height:1.4;overflow-wrap:anywhere}
+.a2-kr .tx small b{display:inline;font-size:inherit}
+/* ---------- jokey ---------- */
+.a2-jr{display:flex;align-items:center;gap:10px;min-height:56px;border-top:1px solid var(--a2-line);padding:6px 0;color:var(--a2-ink)}
+.a2-jr:first-of-type{border-top:0}
+.a2-jr .rk{flex:none;width:24px;font:800 14px/1 var(--font);color:var(--a2-ink3);text-align:center}
+.a2-jr .kk{flex:none;width:72px;text-align:right}
+.a2-jr .kk b{font:800 15px/1 var(--font)}
+.a2-jr .kk .a2-barr{margin-top:5px}
+.a2-x{flex:none;width:44px;height:44px;border-radius:12px;display:grid;place-items:center;color:var(--a2-ink3);background:var(--a2-s2)}
+/* ---------- durumlar ---------- */
+.a2-sk{background:linear-gradient(90deg,var(--a2-s1) 0%,var(--a2-s2) 50%,var(--a2-s1) 100%);background-size:200% 100%;animation:a2sk 1.2s linear infinite;border-radius:16px;margin-bottom:10px}
+@keyframes a2sk{to{background-position:-200% 0}}
+.a2-empty{text-align:center;padding:24px 16px}
+.a2-empty .e{font-size:34px;margin-bottom:6px}
+.a2-empty b{display:block;font:700 16px/1.3 var(--font);margin-bottom:4px;color:var(--a2-ink)}
+.a2-empty p{margin:0 0 14px;color:var(--a2-ink3);font-size:13.5px}
+.a2-foot{font-size:12px;color:var(--a2-ink3);line-height:1.5;margin:18px 2px 0}
+@media (prefers-reduced-motion:reduce){#at2Box *,#at2Nav *{animation:none!important;transition:none!important}}
+@media (max-width:370px){
+  #at2Box .a2-kpis b{font-size:17px}.a2-nx-c{font-size:30px}.a2-mk-c,.a2-mk-b{margin-left:0}
+  .a2-seg a{font-size:13px;padding:0 2px}.a2-hd h1{font-size:22px}
+}
+</style>
+<script id="at2-v106">
+// =====================================================================
+// v106 · AT YARIŞI 2.0 — lab/at/TASARIM.md Aşama 1 (iskelet + sekmeler) ve Aşama 2 (koşu kartı, profiller, takip, istatistik)
+// • at-v73 çekirdeği (BX_AT: AT, merged, cRace, load, render, goldOfDay, padok) SARILIR; veri ve OXX cevapları aynen kalır.
+// • Eski render() gizli #atBox'a yazmaya devam eder (atkupon-v98 deco'su ve geriye uyum için); her yeni veri çiziminde
+//   bu ekran yeniden boyanır. Yeni ekranlar #at2Box'ta, sekmeler uygulamanın yapışkan .at-head kabında (#at2Nav).
+// • Yollar: #at · #at/{bugun|program|bahis|sonuc|kupon} (sekme: replaceState) · #at/kosu/<id> · #at/at/<id>/<no>
+//   · #at/jokey/<ad> · #at/antrenor/<ad> · #at/takip · #at/istatistik (detay: pushState → tarayıcı geri tuşu çalışır).
+// • Kupon: atkupon-v98'in kurucusu (data-atkr / data-atkh / data-atka → openB) ve KX deposu kullanılır; ayrı kupon yok.
+// • Takip: "bx-at-fav" (at adları dizisi) aynen kalır; jokey ve antrenör "bx-at-takip" anahtarına eklenir.
+// Veri yalnız depodaki türetilmiş dosyalardan; tjk.org'a istek yok, bahis sitesine bağlantı yok, para tutarı yok · 18+.
+// =====================================================================
+(function(){
+  const X=window.BX_AT; if(!X||!X.AT) return;
+  const AT=X.AT, sec=$("v-at"); if(!sec) return;
+  const head=sec.querySelector(".at-head"), wrap=sec.querySelector(".wrap"), old=$("atBox"); if(!head||!wrap||!old) return;
+  // ---------- yardımcılar ----------
+  const E=s=>s==null?"":esc(s);
+  const enc=encodeURIComponent, dec=s=>{ try{ return decodeURIComponent(s); }catch(e){ return s; } };
+  const K=kid=>String(kid).split("/").map(enc).join("~"), unK=s=>String(s).split("~").map(dec).join("/");
+  const lsG=(k,d)=>{ try{ const v=localStorage.getItem(k); return v==null?d:v; }catch(e){ return d; } };
+  const lsS=(k,v)=>{ try{ localStorage.setItem(k,v); }catch(e){} };
+  const P=(x,d)=>x==null||!isFinite(x)?"–":"%"+(x*100).toLocaleString("tr-TR",{maximumFractionDigits:d==null?(x<.1&&x>0?1:0):d});
+  const fx=(x,d=2)=>x==null||!isFinite(+x)?"–":(+x).toLocaleString("tr-TR",{minimumFractionDigits:d,maximumFractionDigits:d});
+  const tsOf=(d,s)=>Date.parse(d+"T"+(s||"23:59")+":00+03:00");
+  const NOW=()=>Date.now();
+  const dayOf=kid=>String(kid||"").split("/")[0];
+  const tap=()=>{ try{ buzz(6); }catch(e){} };
+  const S={mode:lsG("bx-at2-mod","sade")==="merakli"?"merakli":"sade",sort:"p",bt:lsG("bx-at2-bt","altili")==="turler"?"turler":"altili",
+    hip:"",hipU:false,pickTur:null,pdOpen:false,kk:null,last:"",sig:""};
+  if(!AT.sev) AT.sev=lsG("bx-at2-sev","orta");
+  // ---------- takip (geriye uyumlu) ----------
+  const TK={at:[],jokey:[],antrenor:[]};
+  function tkLoad(){ try{ const a=JSON.parse(localStorage.getItem("bx-at-fav")||"[]"); TK.at=Array.isArray(a)?a.filter(x=>typeof x==="string"):[]; }catch(e){ TK.at=[]; }
+    try{ const o=JSON.parse(localStorage.getItem("bx-at-takip")||"{}")||{}; TK.jokey=Array.isArray(o.jokey)?o.jokey:[]; TK.antrenor=Array.isArray(o.antrenor)?o.antrenor:[]; }catch(e){ TK.jokey=[]; TK.antrenor=[]; } }
+  function tkSave(){ lsS("bx-at-fav",JSON.stringify(TK.at.slice(-200))); lsS("bx-at-takip",JSON.stringify({v:1,jokey:TK.jokey.slice(-100),antrenor:TK.antrenor.slice(-100)})); }
+  tkLoad();
+  const isTk=(k,v)=>!!v&&TK[k].includes(v);
+  function tkTog(k,v){ if(!v) return; const i=TK[k].indexOf(v); if(i>=0) TK[k].splice(i,1); else TK[k].push(v); tkSave(); try{ buzz(8); }catch(e){}
+    toast(i>=0?"Takipten çıkarıldı":"⭐ "+v+" takip listende"); paint(); }
+  const tkN=()=>TK.at.length+TK.jokey.length+TK.antrenor.length;
+  // ---------- veri görünümleri ----------
+  const D=()=>AT.d&&AT.data[AT.d]||null;
+  const races=()=>((D()||{}).kosular||[]).slice().sort((a,b)=>(a.saat||"").localeCompare(b.saat||"")||a.hipodrom.localeCompare(b.hipodrom,"tr")||a.kosu-b.kosu);
+  const hips=()=>[...new Set(races().map(r=>r.hipodrom))];
+  function raceById(id){ const Dd=AT.data[dayOf(id)]; return Dd&&(Dd.kosular||[]).find(r=>r.kosu_id===id)||null; }
+  function M(r){ const m=X.merged(r), by={}; for(const h of (m.c&&m.c.atlar)||[]) by[String(h.no)]=h;
+    m.A.forEach(h=>{ const x=by[String(h.no)]||{}; h.no=String(h.no); h.pq=x.p_piyasa!=null?x.p_piyasa:null; h.p=h.p_goster; h.ps=h.p_kazanma; h.p3=h.p_ilk3_oran!=null?h.p_ilk3_oran:h.p_ilk3; });
+    m.son=m.c&&m.c.sonuc||null; return m; }
+  function st(r){ const c=X.cRace(r); if(c&&c.sonuc) return "bitti"; const t=tsOf(dayOf(r.kosu_id),r.saat);
+    if(isFinite(t)&&NOW()>=t) return "kosuldu"; if(c&&(c.durum==="oran_var"||(c.atlar||[]).some(h=>h.p_oran!=null))) return "oran"; return "bekliyor"; }
+  const open=r=>{ const s=st(r); return s==="bekliyor"||s==="oran"; };
+  function stPill(r,m){ const s=st(r);
+    if(s==="bitti"){ m=m||M(r); const ok=m.son.tuttu!=null?!!m.son.tuttu:(m.A[0]&&String(m.son.kazanan)===m.A[0].no); return `<span class="a2-pill ${ok?"ok":"no"}">${ok?"✓":"✗"} Bitti</span>`; }
+    if(s==="kosuldu") return `<span class="a2-pill w">Sonuç bekleniyor</span>`;
+    if(s==="oran") return `<span class="a2-pill or">Oranla güncel</span>`; return `<span class="a2-pill">Sabah tahmini</span>`; }
+  const golds=()=>D()?X.goldOfDay(D()):[];
+  const dLbl=d=>X.dLbl(d);
+  const ALT=()=>AT.alt&&AT.alt[AT.d]||null;
+  const FORM=f=>f?`<span class="a2-fm" role="img" aria-label="Son koşu dereceleri: ${E(String(f).slice(-6).split("").join(", "))}">${String(f).slice(-6).split("").map(c=>`<i class="${c==="1"?"f1":c==="2"||c==="3"?"f2":c==="0"?"f0":""}">${E(c)}</i>`).join("")}</span>`:`<span class="a2-mut" style="font-size:12.5px">form yok (ilk koşusu olabilir)</span>`;
+  function whyOf(x,r){ const t=[]; if(x.form){ const f=String(x.form).slice(-3); if(/1/.test(f)) t.push("son koşularında birincilik var"); else if(/[23]/.test(f)) t.push("son koşularında tabela yaptı"); }
+    const uy=(x.son3||[]).filter(k=>k.pist===r.pist).length; if(uy>=2) t.push(`${r.pist} pistte deneyimli`);
+    if(x.pq!=null&&x.ps!=null&&x.pq-x.ps>.05) t.push("piyasa da güçlü görüyor");
+    if(x.gerekce&&x.gerekce!=="belirgin artısı yok") t.unshift(x.gerekce);
+    return t.length?t.slice(0,2).join(" · ").replace(/^./,c=>c.toLocaleUpperCase("tr")):"Belirgin bir artısı yok; olasılığı rakiplerin zayıflığından geliyor"; }
+  const JOK=()=>AT.jok||null;
+  const jokOf=ad=>((JOK()||{}).jokeyler||[]).find(z=>z.ad===ad)||null, antOf=ad=>((JOK()||{}).antrenorler||[]).find(z=>z.ad===ad)||null;
+  // KUPO: aktif at kuponu (v98 ile aynı seçim: aktif kupon at ise o, yoksa son açılan at kuponu)
+  function atCoupon(){ const KX=window.KX; if(!KX||!Array.isArray(KX.L)) return null; const L=KX.L.filter(c=>c&&c.spor==="at"&&c.durum==="acik"); if(!L.length) return null;
+    const a=L.find(c=>c.id===KX.aktif); if(a) return a; const id=lsG("bx-kupon-at-son",""); return L.find(c=>c.id===id)||L.slice().sort((x,y)=>(y.upd||y.olusturma)-(x.upd||x.olusturma))[0]; }
+  const inCp=kid=>{ const c=atCoupon(); return c&&(c.at||[]).find(x=>(x.kid||[]).includes(kid))||null; };
+  const TURAD={ganyan:"Ganyan",plase:"Plase",ikili:"İkili",sirali_ikili:"Sıralı İkili",cifte:"Çifte",uclu:"Sıralı Üçlü",tabela:"Tabela",altili:"6'lı Ganyan"};
+  // ---------- simgeler ----------
+  const IC={star:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8L3.5 9.7l5.9-.9z"/></svg>`,
+    starF:`<svg viewBox="0 0 24 24" fill="#E9C766" stroke="#E9C766" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8L3.5 9.7l5.9-.9z"/></svg>`,
+    back:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>`,
+    chev:`<svg class="a2-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>`,
+    stat:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 20V10M12 20V4M19 20v-7"/></svg>`,
+    sync:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12a8 8 0 0 1 14-5.3L20 9M20 4v5h-5M20 12a8 8 0 0 1-14 5.3L4 15M4 20v-5h5"/></svg>`};
+  // =====================================================================
+  // Yönlendirme
+  // =====================================================================
+  const TABS=[["bugun","Bugün"],["program","Program"],["bahis","Bahis"],["sonuc","Sonuç"],["kupon","Kupon"]];
+  const isTab=v=>TABS.some(t=>t[0]===v);
+  function route(){ const m=/^#at(?:\/(.*))?$/.exec(location.hash||""); if(!m) return {v:"bugun",a:[]};
+    const p=(m[1]||"").split("/").filter(Boolean); const v=p[0]||"bugun"; return {v,a:p.slice(1).map((s,i)=>(v==="kosu"||v==="at")&&i===0?s:dec(s))}; }
+  function go(path,push){ const h="#at"+(path?"/"+path:""); if(location.hash===h){ paint(true); return; }
+    try{ if(push) history.pushState({at2:(history.state&&history.state.at2||0)+1},"",h); else history.replaceState(history.state,"",h); }catch(e){}
+    paint(true); }
+  function goBack(fb){ if(history.state&&history.state.at2) history.back(); else go(fb,false); }
+  function onPop(){ if(!/^#at(\/|$)/.test(location.hash||"")) return; const v=$("v-at"); if(v&&v.hidden){ try{ showSport("at"); }catch(e){} return; } paint(true); }
+  window.addEventListener("popstate",onPop); window.addEventListener("hashchange",onPop);
+  // =====================================================================
+  // Üst gezinme (yapışkan) ve boyama
+  // =====================================================================
+  const nav=document.createElement("div"); nav.id="at2Nav"; head.appendChild(nav);
+  const box=document.createElement("div"); box.id="at2Box"; box.tabIndex=-1; box.setAttribute("aria-live","polite"); wrap.insertBefore(box,old);
+  sec.classList.add("at2");
+  function navHtml(rt){ const c=atCoupon(), n=c?(c.at||[]).length:0;
+    if(isTab(rt.v)) return `<nav class="a2-seg" aria-label="At yarışı bölümleri">${TABS.map(([k,l])=>`<a href="#at/${k}" data-tab="${k}"${rt.v===k?' aria-current="page"':""}>${l}${k==="kupon"&&n?`<span class="a2-n" aria-label="${n} satır">${n}</span>`:""}</a>`).join("")}</nav>`;
+    const fb={kosu:"program",at:"program",jokey:"istatistik",antrenor:"istatistik",takip:"bugun",istatistik:"bugun"}[rt.v]||"bugun";
+    const lbl=(history.state&&history.state.at2)?({kosu:"Program",at:"Koşu",jokey:"Geri",antrenor:"Geri",takip:"Geri",istatistik:"Geri"}[rt.v]||"Geri"):({kosu:"Program",at:"Program",jokey:"İstatistik",antrenor:"İstatistik"}[rt.v]||"At Yarışı");
+    let t="", right="";
+    if(rt.v==="kosu"){ const r=raceById(unK(rt.a[0]||"")); t=r?`${r.hipodrom} · ${r.kosu}. Koşu`:"Koşu"; right=`<a class="a2-ib" href="#at/takip" aria-label="Takip listem">${tkN()?IC.starF:IC.star}</a>`; }
+    else if(rt.v==="at"){ const r=raceById(unK(rt.a[0]||"")); const h=r&&(r.atlar||[]).find(x=>String(x.no)===String(rt.a[1])); t=h?h.ad:"At"; const on=h&&isTk("at",h.ad);
+      right=h?`<button class="a2-ib" type="button" data-tk="at|${E(h.ad)}" aria-pressed="${on}" aria-label="${on?"Takipten çıkar":"Takip et"}">${on?IC.starF:IC.star}</button>`:""; }
+    else if(rt.v==="jokey"||rt.v==="antrenor"){ t=rt.a[0]||""; const on=isTk(rt.v,t); right=`<button class="a2-ib" type="button" data-tk="${rt.v}|${E(t)}" aria-pressed="${on}" aria-label="${on?"Takipten çıkar":"Takip et"}">${on?IC.starF:IC.star}</button>`; }
+    else if(rt.v==="takip") t="Takip listem"; else if(rt.v==="istatistik") t="İstatistik";
+    return `<div class="a2-bar"><button class="a2-back" type="button" data-back="${fb}" aria-label="Geri: ${E(lbl)}">${IC.back}<span>${E(lbl)}</span></button><span class="a2-bt" role="heading" aria-level="2">${E(t)}</span>${right||'<span style="width:44px;flex:none"></span>'}</div>`; }
+  let cdT=null, io=null;
+  function paint(nav0){ const v=$("v-at"); if(!v||v.hidden) return; const rt=route();
+    // derin bağlantıda koşunun günü seçili gün değilse ona geç (merged/cRace seçili güne bakar)
+    if((rt.v==="kosu"||rt.v==="at")&&rt.a[0]){ const d=dayOf(unK(rt.a[0])); if(d&&d!==AT.d&&AT.data[d]){ AT.d=d; try{ X.render(); }catch(e){} } }
+    nav.innerHTML=navHtml(rt);
+    let h=""; try{ h=body(rt); }catch(e){ console.error(e); h=`<div class="a2-card a2-empty"><div class="e" aria-hidden="true">⚠️</div><b>Bu ekran açılamadı</b><p>${E(e.message)}</p><a class="a2-btn q" href="#at/bugun" data-tab="bugun">Bugün'e dön</a></div>`; }
+    const y=window.scrollY; box.innerHTML=h; S.sig=sig();
+    if(nav0){ window.scrollTo(0,0); try{ box.focus({preventScroll:true}); }catch(e){} } else if(Math.abs(window.scrollY-y)>2) window.scrollTo(0,y);
+    try{ if(io) io.disconnect(); const bt=nav.querySelector(".a2-bt"), big=box.querySelector("h1.a2-h2"); if(bt&&big&&"IntersectionObserver" in window){ bt.classList.add("hid"); io=new IntersectionObserver(es=>{ for(const x of es) bt.classList.toggle("hid",x.isIntersecting||x.boundingClientRect.top>0); },{rootMargin:"-"+Math.round(nav.getBoundingClientRect().bottom||0)+"px 0px 0px 0px"}); io.observe(big); } }catch(e){}
+    try{ const cc=box.querySelector('.a2-chips .a2-chip[aria-current="true"]'); if(cc){ const sc=cc.parentElement; sc.scrollLeft=Math.max(0,cc.offsetLeft-sc.clientWidth/2+cc.offsetWidth/2); } }catch(e){}
+    S.last=rt.v; clearInterval(cdT); const cd=$("at2cd"); if(cd) cdT=setInterval(tick,15000); }
+  function tick(){ const cd=$("at2cd"); if(!cd){ clearInterval(cdT); return; } const mn=Math.round((+cd.dataset.t-NOW())/6e4); if(mn<=0){ paint(); return; } cd.innerHTML=cdHtml(mn); }
+  const cdHtml=mn=>mn>=60?Math.floor(mn/60)+"<small>sa</small> "+(mn%60)+"<small>dk</small>":mn+"<small>dk</small>";
+  const sig=()=>{ const C=AT.canli&&AT.canli[AT.d], A=ALT(), c=atCoupon(); return [AT.d,AT.days.join(","),AT.busy?1:0,C&&C.guncelleme_tsi,A&&A.guncelleme_tsi,!!AT.jok,!!AT.model,!!AT.karne,c&&c.id,c&&c.upd,c&&(c.at||[]).length,tkN()].join("|"); };
+  let schT=null; function schedule(){ clearTimeout(schT); schT=setTimeout(()=>{ if(sig()!==S.sig) paint(); },60); }
+  new MutationObserver(schedule).observe(old,{childList:true});
+  try{ const _s=window.kxSave; if(typeof _s==="function") window.kxSave=function(){ const r=_s.apply(this,arguments); schedule(); return r; }; }catch(e){}
+  window.addEventListener("storage",e=>{ if(!e.key||/^bx-(kuponlar|at-fav|at-takip)/.test(e.key)){ tkLoad(); paint(); } });
+  // eski at penceresi (horseSheet) → At profili ekranı (uyum işlevi)
+  X.horseSheet=(rid,no)=>{ try{ if($("v-at").hidden) showSport("at"); }catch(e){} go("at/"+K(rid)+"/"+enc(no),true); };
+  // =====================================================================
+  // Ekranlar
+  // =====================================================================
+  function body(rt){
+    if(!AT.d){ if(AT.busy||!AT.model&&!AT.days.length&&!S.loadedOnce) return skel();
+      return `<div class="a2-card a2-empty"><div class="e" aria-hidden="true">🗓️</div><b>Yakın günlerde koşu programı yok</b><p>Laboratuvar her sabah 05:23 ve öğlen 12:23'te yeni programı işler. Hipodromlar genelde pazartesi dinlenir.</p><button class="a2-btn q" type="button" data-re>Yeniden dene</button></div>${istHtml(true)}`; }
+    const V={bugun:vBugun,program:vProgram,bahis:vBahis,sonuc:vSonuc,kupon:vKupon,kosu:vKosu,at:vAt,jokey:a=>person("jokey",a[0]),antrenor:a=>person("antrenor",a[0]),takip:vTakip,istatistik:()=>istHtml(false)}[rt.v]||vBugun;
+    return V(rt.a); }
+  const skel=()=>`<div class="a2-sk" style="height:56px"></div><div class="a2-sk" style="height:150px"></div><div class="a2-sk" style="height:120px"></div><div class="a2-sk" style="height:64px"></div><p class="a2-sr">Yükleniyor</p>`;
+  const notFound=t=>`<div class="a2-card a2-empty"><div class="e" aria-hidden="true">🔎</div><b>${E(t)}</b><p>Bu kayıt seçili günün verisinde yok (eski bir bağlantı olabilir).</p><a class="a2-btn q" href="#at/program" data-tab="program">Programa dön</a></div>`;
+  const foot=()=>{ const Dd=D(); return `<p class="a2-foot">${Dd&&Dd.kilit_zamani_tsi?`Kilit: ${E(Dd.kilit_zamani_tsi)} · model ${E(Dd.model_surumu||"")}. `:""}Veri: herkese açık TJK sonuç arşivi (github.com/cenkozgur/tjk-data); BULUTOXX TJK sitesine istek atmaz. Hobi amaçlı olasılıktır, garanti değildir. Para tutarı gösterilmez · 18+</p>`; };
+  const dayChips=()=>AT.days.length>1?`<div class="a2-chips" role="group" aria-label="Gün seç">${AT.days.map(x=>`<button class="a2-chip" type="button" data-day="${x}" aria-pressed="${x===AT.d}">${E(dLbl(x))}</button>`).join("")}</div>`:"";
+  function titleRow(){ const R=races(); return `<div class="a2-hd"><h1>At Yarışı<span class="a2-dn">DENEME</span><small>${E(dLbl(AT.d))} · ${hips().length} hipodrom · ${R.length} koşu</small></h1>
+    <a class="a2-ib" href="#at/istatistik" aria-label="İstatistik: model karnesi ve jokey sıralaması">${IC.stat}</a><a class="a2-ib" href="#at/takip" aria-label="Takip listem${tkN()?" ("+tkN()+")":""}">${tkN()?IC.starF:IC.star}</a></div>`; }
+  // ---------- 1) BUGÜN ----------
+  function vBugun(){ const d=AT.d, R=races(); let h=titleRow()+dayChips();
+    const nx=R.find(open);
+    if(nx){ const m=M(nx), t=tsOf(d,nx.saat), mn=Math.max(0,Math.round((t-NOW())/6e4)), far=mn>12*60;
+      h+=`<a class="a2-card" href="#at/kosu/${K(nx.kosu_id)}" aria-label="Sıradaki koşu: ${E(nx.hipodrom)} ${nx.kosu}. koşu, saat ${E(nx.saat)}${far?"":", "+mn+" dakika sonra"}">
+        <div class="a2-ch"><h2>Sıradaki koşu</h2>${stPill(nx,m)}</div>
+        <div class="a2-nx-t">${far?`<div class="a2-nx-c" style="font-size:26px">${E(dLbl(d))}<small>${E(nx.saat)}</small></div>`:`<div class="a2-nx-c" id="at2cd" data-t="${t}" aria-hidden="true">${cdHtml(mn)}</div>`}
+          <div class="a2-nx-m"><b>${E(nx.hipodrom)} · ${nx.kosu}. Koşu · ${E(nx.saat)}</b><span>${E(nx.mesafe)} m ${E(nx.pist)} · ${E(nx.sinif)} · ${m.A.length} at</span></div>${IC.chev}</div>
+        <div class="a2-mini">${m.A.slice(0,3).map((x,i)=>`<div><span class="a2-no${i===0?" top":""}">${E(x.no)}</span><span class="a2-hn"><b>${isTk("at",x.ad)?'<span class="a2-star" aria-label="takipte">★</span> ':""}${E(x.ad)}</b></span><span class="a2-hp"><b style="font-size:15px">${P(x.p)}</b></span></div>`).join("")}</div></a>`; }
+    else h+=`<div class="a2-card a2-empty"><div class="e" aria-hidden="true">🏁</div><b>${E(dLbl(d))} koşular tamamlandı</b><p>Sonuçlar ve modelin karnesi "Sonuç" sekmesinde.</p><a class="a2-btn q" href="#at/sonuc" data-tab="sonuc">Sonuçlara git</a></div>`;
+    // takip ettiklerin koşuyor
+    const FT=[], seen=new Set();
+    for(const r of R){ const m=M(r); for(const x of m.A){ const why=isTk("at",x.ad)?"":isTk("jokey",x.jokey)?"jokey "+x.jokey:isTk("antrenor",x.antrenor)?"antrenör "+x.antrenor:null; if(why==null) continue;
+      const k=r.kosu_id+"|"+x.no; if(seen.has(k)) continue; seen.add(k); FT.push({r,x,why,m}); } }
+    if(FT.length) h+=`<div class="a2-card"><div class="a2-ch"><h2>⭐ Takip ettiklerin koşuyor</h2><a class="a2-more" href="#at/takip">Tümü</a></div>${FT.slice(0,5).map(o=>`<a class="a2-hrow" href="#at/at/${K(o.r.kosu_id)}/${enc(o.x.no)}"><span class="a2-no">${E(o.x.no)}</span><span class="a2-hn"><b>${E(o.x.ad)}</b><small>${E(o.r.hipodrom)} ${o.r.kosu}. koşu · ${E(o.r.saat)}${o.why?" · "+E(o.why):""} · ${P(o.x.p)}</small></span>${stPill(o.r,o.m)}</a>`).join("")}</div>`;
+    // altın atlar
+    const G=golds();
+    h+=`<h2 class="a2-sec">🥇 Günün altın atları</h2>`;
+    h+=G.length?`<div class="a2-gl" role="list">${G.map(g=>{ const s=st(g.r), m=s==="bitti"?M(g.r):null;
+        const res=s==="bitti"?(String(m.son.kazanan)===String(g.h.no)?`<span class="a2-pill ok">✓ Kazandı</span>`:`<span class="a2-pill no">✗ Kazanamadı</span>`):s==="kosuldu"?`<span class="a2-pill w">Sonuç bekleniyor</span>`:`<span class="a2-pill">${E(g.r.saat)}</span>`;
+        return `<a class="a2-gc${G.length===1?" one":""}" role="listitem" href="#at/at/${K(g.r.kosu_id)}/${enc(g.h.no)}"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><span class="p">${P(g.h.p_kazanma)}</span>${res}</div><b>${E(g.h.no)} · ${E(g.h.ad)}</b><small>${E(g.r.hipodrom)} ${g.r.kosu}. koşu · ${E(g.r.mesafe)} m ${E(g.r.pist)} · ilk 3: ${P(g.h.p_ilk3)}</small></a>`; }).join("")}</div>
+        <p class="a2-note">Kural: koşusunun en olası atı, %35+ ve en yakın rakibine 12+ puan fark. Model emin değilse altın vermez.</p>`
+      :`<div class="a2-card"><p class="a2-note" style="margin:0">${E(dLbl(d))} altın kuralına uyan at yok: model hiçbir koşuda yeterince emin değil.</p></div>`;
+    // padok notu (kısaltılmış; altın satırı yukarıda kart olarak var)
+    let pd=null; try{ pd=window.BX_padok&&window.BX_padok(); }catch(e){}
+    if(pd&&pd.L&&pd.L.length){ const L=pd.L.filter(([i])=>i!=="🥇"), row=([i,t])=>`<p><i aria-hidden="true">${i}</i><span>${t}</span></p>`;
+      h+=`<h2 class="a2-sec">📋 Padok Notu</h2><div class="a2-card a2-pd">${L.slice(0,3).map(row).join("")}
+        ${L.length>3?`<details id="at2pd"${S.pdOpen?" open":""}><summary>${S.pdOpen?"Daha az göster":`Devamını oku (${L.length-3})`}</summary>${L.slice(3).map(row).join("")}</details>`:""}
+        <p class="a2-up">${pd.up?"Güncellendi "+E(pd.up):"Sabah tahmini"} · oran, sonuç ve 6'lı ayakları geldikçe yeniden yazılır.</p></div>`; }
+    // hipodromlar
+    const A=ALT();
+    h+=`<h2 class="a2-sec">Hipodromlar</h2><div class="a2-rl">${hips().map(x=>{ const RR=R.filter(r=>r.hipodrom===x).sort((a,b)=>a.kosu-b.kosu), b=RR.filter(r=>st(r)==="bitti").length, six=A&&(A.altililar||[]).some(a=>a.hipodrom===x);
+        return `<a class="a2-rr" href="#at/program" data-tab="program" data-hip="${E(x)}"><span class="k"><b>${RR.length}</b><small>koşu</small></span><span class="m"><b>${E(x)}</b><small>${E(RR[0].saat)}–${E(RR[RR.length-1].saat)} · ${b?b+" bitti · ":""}${RR.length-b} kaldı${six?" · 6'lı var":""}</small></span>${IC.chev}</a>`; }).join("")}</div>`;
+    return h+foot(); }
+  // ---------- 2) PROGRAM ----------
+  function vProgram(){ const H=hips(); if(!S.hipU||!H.includes(S.hip)){ const nx=races().find(open); S.hip=nx?nx.hipodrom:H.includes(S.hip)?S.hip:H[0]; } AT.hip=S.hip;
+    const R=races().filter(r=>r.hipodrom===S.hip).sort((a,b)=>a.kosu-b.kosu), G=new Set(golds().map(g=>g.r.kosu_id)), A=ALT(), al=((A&&A.altililar)||[]).filter(a=>a.hipodrom===S.hip);
+    let h=titleRow()+dayChips();
+    if(S.pickTur) h+=`<div class="a2-pick" role="status"><span><b style="color:var(--a2-ink)">${E(TURAD[S.pickTur]||"")}</b> kuponu için başlamamış bir koşu seç.</span><button type="button" data-pickx>Vazgeç</button></div>`;
+    h+=`<div class="a2-chips" role="group" aria-label="Hipodrom seç">${H.map(x=>`<button class="a2-chip" type="button" data-hp="${E(x)}" aria-pressed="${x===S.hip}">${E(x)} <small>${races().filter(r=>r.hipodrom===x).length}</small></button>`).join("")}</div>`;
+    h+=`<div class="a2-rl">${R.map(r=>{ const m=M(r), f=m.A[0]||{}, s=st(r), a6=al.find(a=>(a.kosular||[]).includes(r.kosu)), ay=a6?a6.kosular.indexOf(r.kosu)+1:0, fv=m.A.some(x=>isTk("at",x.ad));
+        const top=s==="bitti"?`🏁 ${E(m.son.kazanan)} ${E(m.son.kazanan_ad||"")}`:`${E(f.no)} ${E(f.ad)} ${P(f.p)}`;
+        return `<a class="a2-rr${s==="bitti"?" done":""}" href="#at/kosu/${K(r.kosu_id)}" data-kid="${E(r.kosu_id)}" aria-label="${r.kosu}. koşu, saat ${E(r.saat)}"><span class="k"><b>${r.kosu}</b><small>${E(r.saat)}</small></span>
+          <span class="m"><b>${G.has(r.kosu_id)?'<span class="a2-dot" role="img" aria-label="altın at"></span>':""}${fv?'<span class="a2-star" role="img" aria-label="takipteki at">★</span> ':""}${top}</b>
+          <small>${E(r.mesafe)} m ${E(r.pist)} · ${m.A.length} at${ay?` · 6'lı ${ay}. ayak`:""} · ${E(r.sinif)}</small></span>${stPill(r,m)}</a>`; }).join("")}</div>`;
+    h+=`<div class="a2-legend"><span><span class="a2-dot"></span>altın at</span><span><span class="a2-star">★</span> takipteki at</span><span>Bitmeyen koşuda ilk satır: en olası at</span></div>`;
+    return h+foot(); }
+  // ---------- 3) KOŞU KARTI ----------
+  function vKosu(a){ const r=raceById(unK(a[0]||"")); if(!r) return notFound("Koşu bulunamadı");
+    const m=M(r), s=st(r), sib=((AT.data[dayOf(r.kosu_id)]||{}).kosular||[]).filter(x=>x.hipodrom===r.hipodrom).sort((x,y)=>x.kosu-y.kosu);
+    let h=`<div class="a2-chips" role="group" aria-label="${E(r.hipodrom)} koşuları">${sib.map(x=>`<a class="a2-chip sq${st(x)==="bitti"?" done":""}" href="#at/kosu/${K(x.kosu_id)}" data-sib="1"${x.kosu_id===r.kosu_id?' aria-current="true"':""} aria-label="${x.kosu}. koşu, saat ${E(x.saat)}${st(x)==="bitti"?", bitti":""}">${x.kosu}</a>`).join("")}</div>`;
+    h+=`<h1 class="a2-h2">${E(r.hipodrom)} · ${r.kosu}. Koşu</h1>
+      <div class="a2-rh"><span class="a2-pill">${E(dLbl(dayOf(r.kosu_id)))} ${E(r.saat)}</span><span class="a2-pill">${E(r.mesafe)} m</span><span class="a2-pill">${E(r.pist)}</span><span class="a2-pill">${E(r.sinif)}</span><span class="a2-pill">${m.A.length} at</span>${stPill(r,m)}</div>`;
+    if(r.kosudan_once===false) h+=`<span class="a2-tag">Koşudan sonra kilitlendi · karneye sayılmaz</span>`;
+    if(m.son){ const nm=no=>(m.A.find(y=>y.no===String(no))||{}).ad||"";
+      h+=`<div class="a2-card gold"><div class="a2-ch"><h2>🏁 Sonuç</h2><small>ganyan oranı ${fx(m.son.ganyan)}</small></div><div class="a2-res">${(m.son.sira||[]).map((no,i)=>`<div><span class="pl">${i+1}.</span><span class="a2-no${i===0?" w":""}">${E(no)}</span><span class="a2-hn"><b>${E(nm(no))}</b></span><span class="a2-hp"><small>model ${P((m.A.find(y=>y.no===String(no))||{}).ps)}</small></span></div>`).join("")}</div>
+        <p class="a2-note" style="margin-top:10px">Modelin ilk seçimi ${E(m.son.model_ilk)} ${E(nm(m.son.model_ilk))}: ${m.son.tuttu?'<b class="up">kazandı ✓</b>':'<b class="dn">kazanamadı ✗</b>'}${m.son.kosan?` · ${m.son.kosan} at koştu`:""}${m.son.esit?" · eşit derece var":""}.</p></div>`; }
+    h+=`<div class="a2-seg" role="group" aria-label="Görünüm" style="margin:0 0 12px"><button type="button" data-mode="sade" aria-pressed="${S.mode==="sade"}">Sade</button><button type="button" data-mode="merakli" aria-pressed="${S.mode==="merakli"}">Meraklı</button></div>`;
+    const win=m.son?String(m.son.kazanan):null, href=x=>`#at/at/${K(r.kosu_id)}/${enc(x.no)}`, star=x=>isTk("at",x.ad)?'<span class="a2-star" aria-label="takipte">★</span> ':"";
+    if(S.mode==="sade"){
+      h+=`<div class="a2-card a2-sade"><div class="a2-ch"><h2>Kim kazanır?</h2><small>${m.oranli?"oranla güncel":"sabah tahmini"}</small></div>
+        ${m.A.slice(0,3).map((x,i)=>`<a class="hc${i===0?" first":""}${win===x.no?" a2-win":""}" href="${href(x)}"><span class="a2-no${win===x.no?" w":i===0?" top":""}">${E(x.no)}</span><span class="a2-hn"><b>${star(x)}${E(x.ad)}${win===x.no?" 🏁":""}</b><small>${E([x.jokey,x.kilo?fx(x.kilo,1)+" kg":null].filter(Boolean).join(" · "))}</small><div class="a2-why">${E(whyOf(x,r))}</div><div class="a2-barr"><i style="width:${Math.max(3,Math.round(x.p/(m.A[0].p||1)*100))}%"></i></div></span><span class="a2-hp"><b>${P(x.p)}</b><small>ilk 3: ${P(x.p3)}</small></span></a>`).join("")}
+        ${m.A.slice(3).map(x=>`<a class="a2-hrow${win===x.no?" a2-win":""}" href="${href(x)}"><span class="a2-no${win===x.no?" w":""}">${E(x.no)}</span><span class="a2-hn"><b>${star(x)}${E(x.ad)}${win===x.no?" 🏁":""}</b><small>${E(x.jokey||"")}</small></span><span class="a2-hp"><b class="m">${P(x.p)}</b></span></a>`).join("")}
+        ${r.ikili_onerisi&&r.ikili_onerisi.sira?`<p class="a2-note" style="margin-top:10px">Sabahın ikili önerisi: <b style="color:var(--a2-gi)">${r.ikili_onerisi.sira.map(E).join(" – ")}</b> · tam bu sırayla gelme olasılığı ${P(r.ikili_onerisi.p,1)}</p>`:""}</div>`;
+    } else {
+      const so={p:(a,b)=>b.p-a.p,no:(a,b)=>(+a.no)-(+b.no),oran:(a,b)=>(a.oran||999)-(b.oran||999),kilo:(a,b)=>(b.kilo||0)-(a.kilo||0)}[S.sort]||((a,b)=>b.p-a.p);
+      const A=m.A.slice().sort(so);
+      h+=`<div class="a2-card"><div class="a2-sortb" role="group" aria-label="Sırala"><span>Sırala:</span>${[["p","Olasılık"],["no","No"],["oran","Ganyan"],["kilo","Kilo"]].map(([k,l])=>`<button type="button" data-sort="${k}" aria-pressed="${S.sort===k}">${l}</button>`).join("")}</div>
+        ${A.map(x=>{ const df=x.pq!=null&&x.ps!=null?x.pq-x.ps:null, s3=x.son3||[], uy=s3.filter(k=>k.pist===r.pist).length, um=s3.filter(k=>Math.abs((+k.mesafe||0)-(+r.mesafe||0))<=200).length;
+          return `<div class="a2-mk"><a class="a2-mk-a" href="${href(x)}"><span class="a2-no${win===x.no?" w":x===m.A[0]?" top":""}">${E(x.no)}</span><span class="a2-hn"><b>${star(x)}${E(x.ad)}${win===x.no?" 🏁":""}</b><small>${E([x.yas?x.yas+" yaş":null,x.kilo?fx(x.kilo,1)+" kg":null,x.jokey].filter(Boolean).join(" · "))}</small></span><span class="a2-hp"><b>${P(x.p)}</b><small>${x.oran?"ganyan "+fx(x.oran):"oran yok"}</small></span></a>
+            <div class="a2-mk-b">${FORM(x.form)}${x.antrenor?`<span>· ${E(x.antrenor)}</span>`:""}</div>
+            <div class="a2-mk-c"><div><b>${P(x.ps)}</b><small>model sabah</small></div><div><b>${P(x.pq)}</b><small>piyasa</small></div><div><b class="${df==null?"":df>0.02?"up":df<-0.02?"dn":""}">${df==null?"–":(df>0.005?"▲ ":df<-0.005?"▼ ":"")+Math.abs(Math.round(df*100))}</b><small>piyasa farkı</small></div><div><b>${s3.length?uy+"/"+s3.length:"–"}</b><small>${E(r.pist)} uyumu</small></div></div></div>`; }).join("")}
+        <div class="a2-legend"><span>Form: son 6 koşu derecesi (sağdaki en yeni; 0 = ilk 9 dışı)</span><span>Piyasa: ganyan oranından marjı ayrılmış olasılık (AGF değildir)</span><span>▲ piyasa modelden fazla inanıyor (puan)</span><span>Pist uyumu: son 3 koşudan kaçı aynı pistte (mesafe uyumu at profilinde)</span></div></div>
+        <div class="a2-miss"><b>Henüz veri yok:</b> start/kulvar, handikap puanı, sahip, pedigri, idman/galop, AGF ve gün içi oran hareketi. Açık arşivde bulunmadıkları için uydurulmaz.</div>`;
+    }
+    const x0=inCp(r.kosu_id);
+    h+=s==="bitti"||s==="kosuldu"?`<p class="a2-note" style="margin-top:12px">Koşu başladı; kupona eklenemez.</p><button class="a2-btn q" type="button" data-share="${E(r.kosu_id)}" style="margin-top:8px">📤 Paylaş</button>`
+      :`<div class="a2-row2" style="margin-top:12px"><button class="a2-btn g${x0?" on":""}" type="button" data-atkr="${E(r.kosu_id)}" aria-label="Bu koşudan at kuponu kur">${x0?`✓ Kuponda · ${E(TURAD[x0.tur]||"")}`:"＋ Kupona ekle"}</button><button class="a2-btn q" type="button" data-share="${E(r.kosu_id)}">📤 Paylaş</button></div>`;
+    return h+foot(); }
+  // ---------- 4) AT PROFİLİ ----------
+  function vAt(a){ const r=raceById(unK(a[0]||"")); if(!r) return notFound("At bulunamadı"); const m=M(r), x=m.A.find(y=>y.no===String(a[1])); if(!x) return notFound("At bulunamadı");
+    const rank=m.A.indexOf(x)+1, fv=isTk("at",x.ad), jk=jokOf(x.jokey), an=antOf(x.antrenor), s=st(r), win=m.son&&String(m.son.kazanan)===x.no, der=m.son?(m.son.sira||[]).map(String).indexOf(x.no)+1:0;
+    let h=`<div style="display:flex;align-items:center;gap:12px;margin:2px 0 6px"><span class="a2-no${win?" w":rank===1?" top":""}" style="width:48px;height:48px;font-size:20px;border-radius:14px">${E(x.no)}</span>
+      <div style="flex:1;min-width:0"><h1 class="a2-h2" style="margin:0">${E(x.ad)}</h1><a class="a2-mut" style="font-size:13px;display:inline-flex;min-height:44px;align-items:center" href="#at/kosu/${K(r.kosu_id)}">${E(r.hipodrom)} ${r.kosu}. koşu · ${E(r.saat)} · ${E(r.mesafe)} m ${E(r.pist)} ›</a></div></div>
+      <div class="a2-rh">${x.yas?`<span class="a2-pill">${E(x.yas)} yaş</span>`:""}${x.kilo?`<span class="a2-pill">${fx(x.kilo,1)} kg</span>`:""}<span class="a2-pill">${rank}. favori</span>${der?`<span class="a2-pill ${der===1?"ok":""}">${der}. geldi</span>`:""}${stPill(r,m)}</div>
+      <div class="a2-card"><div class="a2-kpis"><div><b style="color:var(--a2-gi)">${P(x.p)}</b><small>kazanma<br>${m.oranli&&x.p_oran!=null?"oranla":"sabah"}</small></div><div><b>${P(x.p3)}</b><small>ilk 3'e<br>girme</small></div><div><b>${P(x.pq)}</b><small>piyasa<br>olasılığı</small></div><div><b>${x.oran?fx(x.oran):"–"}</b><small>ganyan<br>oranı</small></div></div>
+        ${x.p_oran!=null?`<p class="a2-note" style="margin:8px 2px 0">Sabah tahmini ${P(x.ps)} · oranla güncel ${P(x.p_oran)}.</p>`:""}
+        <p class="a2-why" style="margin:8px 2px 0">${E(whyOf(x,r))}.</p></div>
+      <div class="a2-card"><div class="a2-ch"><h2>Form</h2><small>son 6 koşu</small></div>${FORM(x.form)}
+        ${(x.son3||[]).length?`<div style="margin-top:10px">${x.son3.map(k=>`<div class="a2-hrow"><span class="a2-no${k.sira===1?" w":""}">${k.sira!=null?E(k.sira):"–"}</span><span class="a2-hn"><b>${E(k.hipodrom)} · ${E(k.mesafe)} m ${E(k.pist)}</b><small>${E(String(k.tarih||"").slice(8,10)+"."+String(k.tarih||"").slice(5,7)+"."+String(k.tarih||"").slice(0,4))}${k.pist===r.pist?" · aynı pist":""}${Math.abs((+k.mesafe||0)-(+r.mesafe||0))<=200?" · benzer mesafe":""}</small></span></div>`).join("")}</div>`:`<p class="a2-note">Son koşu ayrıntısı henüz veri yok (ilk koşusu olabilir ya da oran dosyası gelmedi).</p>`}</div>
+      <div class="a2-card"><div class="a2-ch"><h2>Ekip</h2></div>
+        ${x.jokey?`<a class="a2-hrow" href="#at/jokey/${enc(x.jokey)}"><span class="a2-no" aria-hidden="true">🏇</span><span class="a2-hn"><b>${isTk("jokey",x.jokey)?'<span class="a2-star">★</span> ':""}${E(x.jokey)}</b><small>Jokey${jk?` · 90 günde kazanma ${P(jk.kazanma_90g)} · katkı ${jk.katki>0?"+":""}${fx(jk.katki,1)}`:" · 90 günlük sıralamada yok"}</small></span>${IC.chev}</a>`:""}
+        ${x.antrenor?`<a class="a2-hrow" href="#at/antrenor/${enc(x.antrenor)}"><span class="a2-no" aria-hidden="true">🧑‍🏫</span><span class="a2-hn"><b>${isTk("antrenor",x.antrenor)?'<span class="a2-star">★</span> ':""}${E(x.antrenor)}</b><small>Antrenör${an?` · 90 günde kazanma ${P(an.kazanma_90g)}`:" · 90 günlük sıralamada yok"}</small></span>${IC.chev}</a>`:""}
+        ${!x.jokey&&!x.antrenor?`<p class="a2-note">Ekip bilgisi henüz gelmedi.</p>`:""}</div>
+      <div class="a2-row2"><button class="a2-btn ${fv?"q":"g"}" type="button" data-tk="at|${E(x.ad)}" aria-pressed="${fv}">${fv?"★ Takipte":"☆ Takip et"}</button>${s==="bitti"||s==="kosuldu"?`<a class="a2-btn q" href="#at/kosu/${K(r.kosu_id)}">Koşu kartı</a>`:`<button class="a2-btn q" type="button" data-atkh="${E(r.kosu_id)}|${E(x.no)}">＋ Bu atla kupon</button>`}</div>
+      <div class="a2-miss"><b>Henüz veri yok:</b> kariyer tablosu (pist, mesafe, hipodrom, sınıf, jokeyle uyum) laboratuvarda üretilecek; pedigri, sahip ve idman verisi açık kaynakta yok.</div>`;
+    return h+foot(); }
+  // ---------- 5) JOKEY / ANTRENÖR ----------
+  function person(kind,ad){ ad=ad||""; const L=(JOK()||{})[kind==="jokey"?"jokeyler":"antrenorler"]||[], z=L.find(q=>q.ad===ad), rk=z?L.indexOf(z)+1:null, fv=isTk(kind,ad);
+    const today=[], seen=new Set(); for(const r of races()){ const m=M(r); for(const x of m.A) if(x[kind]===ad&&!seen.has(r.kosu_id+x.no)){ seen.add(r.kosu_id+x.no); today.push({r,x,m}); } }
+    let h=`<h1 class="a2-h2">${E(ad)}</h1><div class="a2-rh"><span class="a2-pill">${kind==="jokey"?"Jokey":"Antrenör"}</span>${rk?`<span class="a2-pill g">${rk}. sırada</span>`:""}${z&&z.form_trend?`<span class="a2-pill">${z.form_trend==="yukseliyor"?"📈 formu yükseliyor":z.form_trend==="dusuyor"?"📉 formu düşüyor":"➖ formu sabit"}</span>`:""}</div>`;
+    if(z) h+=`<div class="a2-card"><div class="a2-kpis"><div><b>${E(z.binis_90g||z.kosu_90g||"–")}</b><small>${kind==="jokey"?"biniş":"koşu"}<br>90 gün</small></div><div><b>${P(z.kazanma_90g)}</b><small>kazanma</small></div><div><b>${P(z.ilk3_90g)}</b><small>ilk 3</small></div><div><b class="${z.katki>0?"up":"dn"}">${z.katki>0?"+":""}${fx(z.katki,1)}</b><small>katkı<br>puanı</small></div></div>
+      <p class="a2-note" style="margin-top:10px">Katkı, ${kind==="jokey"?"jokeyin":"antrenörün"} aynı atlarla beklenenden ne kadar iyi sonuç aldığını ölçer; atın gücünden arındırılmıştır.${z.uzmanlik?` Uzmanlık: <b style="color:var(--a2-ink2)">${E([z.uzmanlik.pist,z.uzmanlik.mesafe&&z.uzmanlik.mesafe+" mesafe",z.uzmanlik.hipodrom].filter(Boolean).join(", "))}</b>.`:""}</p></div>`;
+    else h+=`<div class="a2-card"><p class="a2-note" style="margin:0">${JOK()?"Bu isim son 90 günün sıralamasında yok (az koşu); istatistik için henüz veri yok.":"Jokey istatistikleri yükleniyor."}</p></div>`;
+    if(kind==="jokey"&&z&&(z.bugun_binis||[]).length&&!today.length) for(const b of z.bugun_binis){ const r=raceById(b.kosu_id); if(r){ const m=M(r), x=m.A.find(q=>q.ad===b.at); if(x) today.push({r,x,m}); } }
+    h+=`<div class="a2-card"><div class="a2-ch"><h2>${E(dLbl(AT.d))} ${kind==="jokey"?"binişleri":"atları"}</h2><small>${today.length}</small></div>${today.length?today.map(o=>`<a class="a2-hrow" href="#at/at/${K(o.r.kosu_id)}/${enc(o.x.no)}"><span class="a2-no">${E(o.x.no)}</span><span class="a2-hn"><b>${E(o.x.ad)}</b><small>${E(o.r.hipodrom)} ${o.r.kosu}. koşu · ${E(o.r.saat)}</small></span><span class="a2-hp"><b style="font-size:15px">${P(o.x.p)}</b>${st(o.r)==="bitti"?`<small>${String(o.m.son.kazanan)===o.x.no?"✓ kazandı":"bitti"}</small>`:""}</span></a>`).join(""):`<p class="a2-note" style="margin:0">Bu gün programda kaydı yok.</p>`}</div>
+      <button class="a2-btn ${fv?"q":"g"}" type="button" data-tk="${kind}|${E(ad)}" aria-pressed="${fv}">${fv?"★ Takipte":"☆ Takip et"}</button>`;
+    return h+foot(); }
+  // ---------- 6) SONUÇ ----------
+  function vSonuc(){ const d=AT.d, R=races(), B=R.filter(r=>st(r)==="bitti"), ok=B.filter(r=>{ const m=M(r); return m.son.tuttu!=null?m.son.tuttu:(m.A[0]&&String(m.son.kazanan)===m.A[0].no); }).length;
+    const kg=AT.karne&&AT.karne.gunler, kd=kg&&(Array.isArray(kg)?kg.find(x=>x.tarih===d):kg[d]), me=((AT.model||{}).degerlendirme||{}).metrik||{};
+    let h=titleRow()+dayChips()+`<div class="a2-card"><div class="a2-kpis k3"><div><b>${B.length}/${R.length}</b><small>koşu bitti</small></div><div><b style="color:var(--a2-gi)">${ok}</b><small>ilk seçim<br>kazandı</small></div><div><b>${B.length?P(ok/B.length):"–"}</b><small>günlük<br>isabet</small></div></div>
+      <p class="a2-note" style="margin-top:10px">${kd&&kd.kosu?`Kilitli karne: ${kd.kosu} koşu · ilk seçim ${P(kd.ilk_secim_isabet)}. `:""}Uzun dönem ilk seçim isabeti: sabah modeli ${P(me.model&&me.model.ilk_secim_isabet)}, oranla harman ${P(me.harman&&me.harman.ilk_secim_isabet)}, ganyan favorisi ${P(me.favori&&me.favori.ilk_secim_isabet)}.</p></div>`;
+    // karnede olup canlı dosyada olmayan koşular (eski günler)
+    const have=new Set(B.map(r=>r.kosu_id)), KO=((AT.karne&&AT.karne.kosular)||[]).filter(x=>String(x.kosu_id||"").split("/")[0]===d&&!have.has(x.kosu_id));
+    if(!B.length&&!KO.length) h+=`<div class="a2-card a2-empty"><div class="e" aria-hidden="true">⏳</div><b>Henüz biten koşu yok</b><p>Sonuçlar açık arşive düştükçe yaklaşık 30 dakikada bir buraya gelir.</p></div>`;
+    const lastT=x=>Math.max(...B.filter(r=>r.hipodrom===x).map(r=>tsOf(dayOf(r.kosu_id),r.saat)),0);
+    for(const x of hips().slice().sort((a,b)=>lastT(b)-lastT(a))){ const BB=B.filter(r=>r.hipodrom===x).sort((a,b)=>b.kosu-a.kosu); if(!BB.length) continue;
+      h+=`<h2 class="a2-sec">${E(x)}</h2>`+BB.map(r=>{ const m=M(r), nm=no=>(m.A.find(y=>y.no===String(no))||{}).ad||"", tt=m.son.tuttu!=null?m.son.tuttu:(m.A[0]&&String(m.son.kazanan)===m.A[0].no);
+        return `<a class="a2-card" href="#at/kosu/${K(r.kosu_id)}"><div class="a2-ch"><h2>${r.kosu}. Koşu <span class="a2-mut" style="font-weight:500;font-size:13px">· ${E(r.saat)} · ${E(r.mesafe)} m ${E(r.pist)}</span></h2><span class="a2-pill ${tt?"ok":"no"}">${tt?"✓ model":"✗ model"}</span></div>
+          <div class="a2-res">${(m.son.sira||[]).slice(0,3).map((no,i)=>`<div><span class="pl">${i+1}.</span><span class="a2-no${i===0?" w":""}">${E(no)}</span><span class="a2-hn"><b>${E(nm(no))}</b></span>${i===0?`<span class="a2-hp"><small>ganyan ${fx(m.son.ganyan)}</small></span>`:""}</div>`).join("")}</div>
+          <p class="a2-note" style="margin-bottom:0">Model ilk seçimi: ${E(m.son.model_ilk)} ${E(nm(m.son.model_ilk))} · kazananın sabah olasılığı ${P((m.A.find(y=>y.no===String(m.son.kazanan))||{}).ps)}${r.kosudan_once===false?" · karneye sayılmaz":""}</p></a>`; }).join(""); }
+    if(KO.length) h+=`<h2 class="a2-sec">Karne kayıtları</h2><div class="a2-card">${KO.map(x=>{ const k=String(x.kosu_id).split("/"); return `<div class="a2-hrow"><span class="a2-no">${E(k[2])}</span><span class="a2-hn"><b>${E(k[1])} ${E(k[2])}. koşu · kazanan: ${E(x.kazanan||"–")}</b><small>Modelin ilk seçimi: ${E(x.ilk_secim||"–")} · kazananın olasılığı ${P(x.p_kazanan)}</small></span><span class="a2-pill ${x.ilk_secim_tuttu?"ok":"no"}">${x.ilk_secim_tuttu?"✓":"✗"}</span></div>`; }).join("")}</div>`;
+    const A=ALT(), sv=AT.sev||"orta";
+    if(A&&(A.altililar||[]).length) h+=`<h2 class="a2-sec">6'lı ganyan durumu · ${E(SVN[sv])}</h2>`+A.altililar.map(Xa=>{ const s=Xa.sonuc, at=(s&&s.ayak_tuttu&&s.ayak_tuttu[sv])||[]; const n=at.filter(v=>v!=null).length, dus=at.some(v=>v===false);
+      return `<a class="a2-card" href="#at/bahis" data-tab="bahis" data-bt="altili"><div class="a2-ch"><h2>${E(Xa.hipodrom)} ${Xa.no}. 6'lı</h2><span class="a2-pill ${s&&s.tamam?(s.tuttu&&s.tuttu[sv]?"ok":"no"):dus?"no":n?"or":""}">${s&&s.tamam?(s.tuttu&&s.tuttu[sv]?"✓ Tuttu":"✗ Tutmadı"):dus?"Kupon düştü":n?n+"/6 ayakta":"Başlamadı"}</span></div><p class="a2-note" style="margin:0">${E(SVN[sv])} kupon · ${n}/6 ayak bitti · ${at.filter(Boolean).length} ayak tuttu</p></a>`; }).join("");
+    return h+foot(); }
+  // ---------- 7) BAHİS ----------
+  const SVN={dar:"Dar",orta:"Orta",genis:"Geniş"};
+  function karneK(){ if(S.kk) return S.kk; try{ const k=window.ATK_KARNE&&window.ATK_KARNE(); if(k) return S.kk=k; }catch(e){}
+    if(!S.kkP) S.kkP=X.j("data/at/kupon_karne.json").then(k=>{ S.kk=k&&k.turler?k:null; if(S.kk&&$("v-at")&&!$("v-at").hidden) paint(); }).catch(()=>{});
+    return null; }
+  function vBahis(){ let h=titleRow()+`<div class="a2-seg" role="group" aria-label="Bahis türü" style="margin:0 0 12px"><button type="button" data-bt="altili" aria-pressed="${S.bt==="altili"}">6'lı Ganyan</button><button type="button" data-bt="turler" aria-pressed="${S.bt==="turler"}">Tüm türler</button></div>`;
+    if(S.bt==="altili"){ h+=dayChips(); const A=ALT(), sv=AT.sev||"orta", Kk=AT.altK;
+      if(!A||!(A.altililar||[]).length) return h+`<div class="a2-card a2-empty"><div class="e" aria-hidden="true">🎯</div><b>Bu gün için 6'lı tahmini hazırlanıyor</b><p>Laboratuvar programdaki "ganyan başlangıcı" koşularından 6'lıları kurar ve her ayağın atlarını BULUTOXX olasılıklarıyla seçer.</p></div>`+foot();
+      h+=`<div class="a2-chips" role="group" aria-label="Kapsam">${["dar","orta","genis"].map(k=>`<button class="a2-chip" type="button" data-sev="${k}" aria-pressed="${sv===k}">${SVN[k]} <small>≤${E((A.butce||{})[k]||{dar:64,orta:192,genis:576}[k])}</small></button>`).join("")}</div>
+        <p class="a2-note" style="margin:-4px 2px 12px">"6'yı birden tutma olasılığı" her ayağın seçilen atlarının toplam olasılığının çarpımıdır; kupon ilk ayak başlayınca kilitlenir. 🥇 = banko (tek at) ayak.</p>`;
+      for(const Xa of A.altililar){ const L=Xa.seviyeler&&Xa.seviyeler[sv]; if(!L) continue; const s=Xa.sonuc, at=(s&&s.ayak_tuttu&&s.ayak_tuttu[sv])||[];
+        const first=raceById(`${AT.d}/${Xa.hipodrom}/${Xa.baslangic_kosu}`), started=first?!open(first):true, c=atCoupon(), has=c&&(c.at||[]).find(z=>z.tur==="altili"&&z.alt===Xa.id&&z.sev===sv);
+        h+=`<div class="a2-card"><div class="a2-ch"><h2>${E(Xa.hipodrom)} ${Xa.no}. 6'lı</h2><small>${Xa.baslangic_kosu}.–${Xa.baslangic_kosu+5}. koşu · ${E(Xa.saat||"")}<br>${Xa.kaynak==="oran"?"oranla güncel":"sabah tahmini"}</small></div>
+          <div class="a2-kpis k3" style="margin-bottom:6px"><div><b style="color:var(--a2-gi)">${P(L.p,1)}</b><small>6'yı birden<br>tutma</small></div><div><b>${E(L.kombinasyon)}</b><small>kombinasyon</small></div><div>${s&&s.tamam?`<b class="${s.tuttu&&s.tuttu[sv]?"up":"dn"}">${s.tuttu&&s.tuttu[sv]?"✓ Tuttu":"✗"}</b><small>${at.filter(Boolean).length}/6 ayak</small>`:`<b>${L.ayaklar.filter(x=>x.banko).length}</b><small>banko ayak</small>`}</div></div>
+          ${L.ayaklar.map((g,i)=>{ const w=s&&s.kazananlar?s.kazananlar[i]:null, ok=at[i], kid=`${AT.d}/${Xa.hipodrom}/${g.kosu}`;
+            return `<div class="a2-al${ok===true?" ok":ok===false?" no":""}"><a class="i" href="#at/kosu/${K(kid)}" aria-label="${i+1}. ayak, ${g.kosu}. koşu">${i+1}. ayak<small>${g.kosu}. koşu ${E(g.saat||"")}</small></a><span class="s">${g.secim.map(no=>{ const hh=(g.atlar||[]).find(q=>String(q[0])===String(no)); return `<span class="${w!=null&&String(w)===String(no)?"w":""}">${E(no)}${hh?" "+E(String(hh[1]).slice(0,14)):""}</span>`; }).join("")}${g.banko?`<em>🥇 banko</em>`:""}</span><span class="p">${P(g.p_ayak)}${w!=null?`<small>kazanan ${E(w)}</small>`:""}</span></div>`; }).join("")}
+          ${Xa.kosudan_once===false?`<p class="a2-note">Koşular başladıktan sonra kuruldu; karneye sayılmaz.</p>`:""}
+          <div class="a2-row2" style="margin-top:10px">${started?`<button class="a2-btn q" type="button" disabled>İlk ayak başladı</button>`:`<button class="a2-btn g${has?" on":""}" type="button" data-atka="${E(Xa.id)}">${has?`✓ Kuponda · ${SVN[sv]}`:`＋ Kupona ekle · ${SVN[sv]}`}</button>`}<button class="a2-btn q" type="button" data-als="${E(Xa.id)}">📤 Paylaş</button></div></div>`; }
+      const g=Kk&&Kk.geriye_donuk, gs=g&&g.seviyeler&&g.seviyeler[sv];
+      if(gs&&gs.n){ const si=g.sinama&&g.sinama.seviyeler&&g.sinama.seviyeler[sv], ca=Kk.canli&&Kk.canli.seviyeler&&Kk.canli.seviyeler[sv];
+        h+=`<div class="a2-card"><div class="a2-ch"><h2>📊 6'lı karnesi · ${SVN[sv]}</h2></div><p class="a2-note" style="margin:0">Geriye dönük test (${E((g.donem||[]).join(" – "))}): ${gs.n} altılıdan tutan <b style="color:var(--a2-ink)">${gs.isabet}</b> · model beklentisi ${fx(gs.beklenen,1)} · 5 ayak tutan ${gs.bes_ayak||0} · ort. ${Math.round(gs.ort_kombinasyon||0)} kombinasyon · ayak isabeti ${P(gs.ayak_isabet)}${gs.altin_ayak&&gs.altin_ayak.n?` · banko ayak isabeti ${P(gs.altin_ayak.isabet)} (${gs.altin_ayak.n} ayak)`:""}.${si&&si.n?`<br>Son 1/3 sınama dilimi: ${si.n} altılıdan tutan ${si.isabet} · beklenti ${fx(si.beklenen,1)}.`:""}${ca&&ca.n?`<br>Canlı (koşudan önce kilitli): ${ca.n} altılıdan tutan ${ca.isabet} · beklenti ${fx(ca.beklenen,1)}.`:""} 6'lı bir şans oyunudur.</p></div>`; }
+    } else {
+      const KK=karneK(), T=(KK&&KK.turler)||{};
+      h+=`<p class="a2-note" style="margin:0 2px 10px">Her türün kuralı ve modelin geçmiş koşulardaki dürüst karnesi. Çubuk: gerçekleşen isabet; camgöbeği çizgi: modelin beklediği. Kupon kurmak için bir tür seç, sonra koşuyu seç.</p>`;
+      if(!KK) h+=`<div class="a2-sk" style="height:120px"></div><div class="a2-sk" style="height:120px"></div>`;
+      for(const k of ["ganyan","plase","ikili","sirali_ikili","cifte","uclu","tabela","altili"]){ const z=T[k]; if(!z) continue;
+        const r=z.isabet_orani!=null?+z.isabet_orani:(z.n?z.isabet/z.n:null), e=z.beklenen_oran!=null?+z.beklenen_oran:(z.n?z.beklenen/z.n:null), sc=Math.max(r||0,e||0,.0001);
+        h+=`<div class="a2-card"><div class="a2-ch"><h2>${E(z.ad||TURAD[k])}</h2><small>${E(z.kisa||"")}</small></div><p class="a2-note" style="margin:0 0 10px;color:var(--a2-ink2)">${E(String(z.kural||"").split(" Varsayım")[0])}</p>
+          ${k==="altili"?`<p class="a2-note" style="margin:0">Geçmiş ${E(z.n)} altılıda en olası kupon ${E(z.isabet)} kez tuttu (model beklentisi ${fx(z.beklenen,1)}).</p>`
+            :`<div class="a2-kbr"><span class="t">En olası tek</span><span class="tr" role="img" aria-label="Gerçekleşen ${P(r,1)}, beklenen ${P(e,1)}"><i style="width:${Math.min(100,(r||0)/sc*90)}%"></i><u style="left:${Math.min(98,(e||0)/sc*90)}%"></u></span><span class="v">${P(r,1)}</span></div>
+            ${(z.kutu||[]).slice(0,2).map(q=>{ const rr=+q.isabet_orani||0, ee=+q.beklenen_oran||0; return `<div class="a2-kbr" style="margin-top:6px"><span class="t">${E(q.at)} at kutu</span><span class="tr" role="img" aria-label="Gerçekleşen ${P(rr,0)}, beklenen ${P(ee,0)}"><i style="width:${Math.min(100,rr*100)}%"></i><u style="left:${Math.min(98,ee*100)}%"></u></span><span class="v">${P(rr,0)}</span></div>`; }).join("")}
+            <p class="a2-note" style="margin:8px 0 0">${E(fx(z.n,0))} koşuda gerçekleşen ${P(r,1)} · model ${P(e,1)}</p>`}
+          ${k!=="altili"?`<button class="a2-btn q" type="button" style="margin-top:12px" data-pick="${k}">Koşu seç → ${E(z.ad||TURAD[k])} kur</button>`:`<button class="a2-btn q" type="button" style="margin-top:12px" data-bt="altili">6'lı tahminlerine git</button>`}</div>`; }
+      if(KK&&KK.uyari) h+=`<p class="a2-note">${E(KK.uyari)}</p>`;
+    }
+    return h+foot(); }
+  // ---------- 8) KUPON (KUPO'daki At Kuponu; Aşama 3'te genişleyecek) ----------
+  function vKupon(){ let h=titleRow()+`<div class="a2-syn">${IC.sync}<span>Bu liste KUPO'daki <b style="color:var(--a2-ink)">At Kuponu</b> ile aynıdır: koşu kartında eklediğin satır KUPO'da, KUPO'da eklediğin burada görünür.</span></div>`;
+    const c=atCoupon(), I=(c&&c.at)||[], others=window.KX?(window.KX.L||[]).filter(z=>z&&z.spor==="at"&&z.durum==="acik"&&z!==c).length:0;
+    if(!I.length) return h+`<div class="a2-card a2-empty"><div class="e" aria-hidden="true">🎟️</div><b>At kuponun boş</b><p>Bir koşu kartında “＋ Kupona ekle”ye ya da 6'lı kartında “＋ Kupona ekle”ye dokun.</p><a class="a2-btn p" href="#at/program" data-tab="program">Programa git</a></div>`+(others?`<p class="a2-note">${others} açık at kuponu daha var; KUPO'da görebilirsin.</p>`:"")+foot();
+    const nm=(x,leg,no)=>x.ad&&(x.ad[(leg?(leg+1)+":":"")+no]||(x.tur!=="cifte"&&x.tur!=="altili"&&x.ad[no]))||"";
+    const selTxt=x=>(x.sec||[]).map((col,i)=>{ const lb=x.tur==="cifte"?(i?`${x.kosu+1}. k.: `:`${x.kosu}. k.: `):x.tur==="altili"?`${i+1}. `:(x.sec.length>1?`${i+1}.: `:""); return lb+col.map(no=>x.tur==="altili"?no:`${no} ${nm(x,x.tur==="cifte"?i:0,no)}`.trim()).join(x.tur==="altili"?",":", "); }).join(x.tur==="altili"?" / ":" · ");
+    const stx=x=>x.ok===true?'<b class="up">✓ tuttu</b>':x.ok===false?'<b class="dn">✗ tutmadı</b>':x.need?"sonuç eksik":"bekliyor";
+    const kom=I.reduce((a,x)=>a+(+x.komb||0),0), all=I.reduce((a,x)=>a*(x.p||0),1);
+    h+=`<div class="a2-card gold"><div class="a2-ch"><h2>${E(c.ad||"At Kuponu")}</h2><small>${I.length} satır</small></div>
+      ${I.map(x=>`<a class="a2-kr" href="#at/kosu/${K((x.kid||[])[0]||"")}"><span class="tt">${E(x.tur==="altili"?"6'lı":TURAD[x.tur]||x.tur)}</span><span class="tx"><b>${E(x.hip)} ${E(x.kosu)}. ${x.tur==="altili"?"6'lı":"koşu"} · ${E(x.saat||"")}${x.d&&x.d!==AT.d?` · ${E(dLbl(x.d))}`:""}</b><small>${E(selTxt(x))}</small><small>${E(x.komb)} kombinasyon · tutma olasılığı <b style="color:var(--a2-gi)">${P(x.p,1)}</b> · ${stx(x)}${x.res?` · sonuç ${E(x.res)}`:""}</small></span>${IC.chev}</a>`).join("")}
+      ${I.length>1?`<p class="a2-note" style="margin:10px 0 0">Tüm satırların birlikte tutma olasılığı ${P(all,2)} · toplam ${kom.toLocaleString("tr-TR")} kombinasyon.</p>`:""}
+      <button class="a2-btn p" type="button" data-kupo="${E(c.id)}" style="margin-top:12px">KUPO'da aç</button></div>
+      ${others?`<p class="a2-note">${others} açık at kuponu daha var; KUPO'da görebilirsin.</p>`:""}
+      <p class="a2-note">Satırı değiştirmek için koşu kartındaki “✓ Kuponda” düğmesine dokun. Silme ve arşiv KUPO'da.</p>`;
+    return h+foot(); }
+  // ---------- 9) TAKİP ----------
+  function vTakip(){ let h=`<h1 class="a2-h2" style="margin-bottom:12px">Takip listem</h1>`;
+    const run=(k,ad)=>{ for(const r of races()){ const m=M(r); const x=m.A.find(y=>y[k==="at"?"ad":k]===ad); if(x) return {r,x,m}; } return null; };
+    const secH=(k,l)=>{ const L=TK[k]; return `<div class="a2-card"><div class="a2-ch"><h2>${l}</h2><small>${L.length}</small></div>${L.length?L.map(ad=>{ const o=run(k,ad), href=k==="at"?(o?`#at/at/${K(o.r.kosu_id)}/${enc(o.x.no)}`:""):`#at/${k}/${enc(ad)}`;
+        const inner=`<b>${E(ad)}</b><small>${o?`${E(dLbl(AT.d))} ${E(o.r.hipodrom)} ${o.r.kosu}. koşu · ${E(o.r.saat)}${k!=="at"?" · "+E(o.x.ad):""} · ${P(o.x.p)}`:`${E(dLbl(AT.d))} programda yok`}</small>`;
+        return `<div class="a2-hrow">${href?`<a class="a2-hn" href="${href}" style="min-height:44px;display:flex;flex-direction:column;justify-content:center">${inner}</a>`:`<span class="a2-hn">${inner}</span>`}${o?stPill(o.r,o.m):""}<button class="a2-x" type="button" data-tk="${k}|${E(ad)}" aria-label="${E(ad)} takipten çıkar">✕</button></div>`; }).join(""):`<p class="a2-note" style="margin:0">Henüz yok. ${k==="at"?"At":k==="jokey"?"Jokey":"Antrenör"} profilindeki “☆ Takip et” ile ekle.</p>`}</div>`; };
+    h+=secH("at","🐎 Atlar")+secH("jokey","🏇 Jokeyler")+secH("antrenor","🧑‍🏫 Antrenörler");
+    h+=`<div class="a2-card"><div class="a2-ch"><h2>🔔 “Atım koşuyor” bildirimi</h2><span class="a2-pill">yakında</span></div><p class="a2-note" style="margin:0">Takip ettiğin at, jokey ya da antrenör programa girince Bugün ekranının üstünde “Takip ettiklerin koşuyor” kartında görünür. Telefona bildirim gönderimi ayrı bir aşamada, yalnız sen açarsan gelecek.</p></div>`;
+    return h+foot(); }
+  // ---------- 10) İSTATİSTİK (eski hero + "Model ne kadar başarılı?" + jokey sıralaması) ----------
+  function istHtml(short){ const Mm=AT.model&&AT.model.degerlendirme, me=(Mm&&Mm.metrik)||{}, n=(Mm&&Mm.kosu_sayisi&&Mm.kosu_sayisi.sinama)||0;
+    const Kk=((AT.karne&&AT.karne.kosular)||[]).filter(x=>x.kosudan_once!==false), kn=Kk.length, kh=Kk.filter(x=>x.ilk_secim_tuttu).length;
+    let h=short?"":`<h1 class="a2-h2" style="margin-bottom:12px">İstatistik<span class="a2-dn">DENEME</span></h1>`;
+    h+=`<div class="a2-card"><div class="a2-ch"><h2>Model ne kadar başarılı?</h2><small>${n?n.toLocaleString("tr-TR")+" koşu":""}</small></div>
+      <div class="a2-kpis"><div><b>${P(me.model&&me.model.ilk_secim_isabet)}</b><small>sabah tahmini<br>ilk seçim</small></div><div><b style="color:var(--a2-gi)">${P(me.harman&&me.harman.ilk_secim_isabet)}</b><small>oranla harman<br>ilk seçim</small></div><div><b>${P(me.favori&&me.favori.ilk_secim_isabet)}</b><small>ganyan favorisi<br>aynı koşular</small></div><div><b>${kn?P(kh/kn):"–"}</b><small>kilitli karne<br>${kn?kn+" koşu":"birikiyor"}</small></div></div>
+      <p class="a2-note" style="margin-top:10px">🧪 Dürüst durum: <b style="color:var(--a2-ink2)">sabah tahmini</b> oran açılmadan yapılır ve ganyan favorisinin gerisindedir. Koşu öncesi oranla harmanlanınca olasılık hatasında piyasayı az farkla geçiyor, ilk seçim isabetinde ise henüz favori seviyesinde. BULUTOXX at laboratuvarı her gece geçmiş koşulardan yeniden öğrenir, yalnız isabeti artıran ayarı kabul eder. Garanti değildir · 18+. Bahis sitesine yönlendirme yoktur.</p></div>`;
+    if(short) return h;
+    const J=JOK(); if(!J||!(J.jokeyler||[]).length) return h+`<div class="a2-card"><p class="a2-note" style="margin:0">Jokey istatistikleri hazırlanıyor. Laboratuvar her gece geçmiş koşulardan jokeylerin atın gücünden arındırılmış katkısını hesaplar.</p></div>`+foot();
+    const tr=t=>t==="yukseliyor"?" 📈":t==="dusuyor"?" 📉":"";
+    const L=(arr,k,nn)=>{ const A=arr.slice(0,nn), mx=Math.max(...A.map(x=>Math.abs(+x.katki||0)),1e-9);
+      return A.map((x,i)=>`<a class="a2-jr" href="#at/${k}/${enc(x.ad)}"><span class="rk">${i+1}</span><span class="a2-hn"><b>${isTk(k,x.ad)?'<span class="a2-star">★</span> ':""}${E(x.ad)}${tr(x.form_trend)}</b><small>${E(x.binis_90g||x.kosu_90g)} ${k==="jokey"?"biniş":"koşu"} · kazanma ${P(x.kazanma_90g)} · ilk 3 ${P(x.ilk3_90g)}${(x.bugun_binis||[]).length?` · bugün ${x.bugun_binis.length} biniş`:""}</small></span><span class="kk"><b class="${+x.katki>0?"up":"dn"}">${+x.katki>0?"+":""}${fx(x.katki,1)}</b><div class="a2-barr"><i style="width:${Math.max(4,Math.abs(+x.katki||0)/mx*100)}%;${+x.katki<0?"background:#FF8A80":""}"></i></div></span></a>`).join(""); };
+    h+=`<h2 class="a2-sec">🏇 Jokeyler · son 90 gün</h2><div class="a2-card"><p class="a2-note" style="margin:0 0 6px">“Katkı”, jokeyin aynı atla beklenenden ne kadar iyi sonuç aldığını gösterir; yalnız kazanma sayısına bakmaz. 📈 formu yükselen, 📉 düşen.</p>${L(J.jokeyler,"jokey",25)}</div>`;
+    if((J.antrenorler||[]).length) h+=`<h2 class="a2-sec">🧑‍🏫 Antrenörler</h2><div class="a2-card">${L(J.antrenorler,"antrenor",15)}</div>`;
+    if((J.ikililer||[]).length) h+=`<h2 class="a2-sec">🤝 En uyumlu jokey–antrenör ikilileri</h2><div class="a2-card">${J.ikililer.slice(0,10).map((x,i)=>`<div class="a2-jr"><span class="rk">${i+1}</span><span class="a2-hn"><b>${E(x.jokey)} + ${E(x.antrenor)}</b><small>${E(x.binis)} birliktelik · kazanma ${P(x.kazanma)}</small></span><span class="kk"><b class="${+x.katki>0?"up":"dn"}">${+x.katki>0?"+":""}${fx(x.katki,1)}</b></span></div>`).join("")}</div>`;
+    return h+`<p class="a2-note">Dönem: ${E((J.donem||[]).join(" – "))} · güncelleme ${E(J.guncelleme||"")}. Kaynak: açık TJK sonuç arşivi; yalnız türetilmiş istatistik.</p>`+foot(); }
+  // =====================================================================
+  // Paylaş (eski metinlerle aynı)
+  // =====================================================================
+  async function shareText(t,ok){ try{ if(navigator.share){ await navigator.share({text:t}); return; } }catch(e){ return; }
+    try{ await navigator.clipboard.writeText(t); toast(ok); }catch(e){ location.href="https://wa.me/?text="+encodeURIComponent(t); } }
+  function shareRace(rid){ const r=raceById(rid); if(!r) return; const m=M(r);
+    shareText(`🐎 ${r.hipodrom} ${r.kosu}. koşu · ${r.saat||""} (${r.mesafe} m ${r.pist})\nBULUTOXX tahmini${m.oranli?" (oranla güncel)":" (sabah)"}:\n`+m.A.slice(0,3).map((h,i)=>`${i+1}) ${h.no} ${h.ad} %${Math.round(h.p_goster*100)}`).join("\n")+`\nHobi amaçlı olasılıktır, garanti değildir · 18+\nbulutoxx.github.io/#at/kosu/${K(rid)}`,"📋 Koşu tahmini kopyalandı"); }
+  function shareAlt(id){ const A=ALT(), Xa=A&&(A.altililar||[]).find(x=>x.id===id); if(!Xa) return; const sv=AT.sev||"orta", L=Xa.seviyeler[sv]; if(!L) return;
+    shareText(`🎯 ${Xa.hipodrom} ${Xa.no}. 6'lı (${Xa.baslangic_kosu}.–${Xa.baslangic_kosu+5}. koşular) · BULUTOXX ${SVN[sv]} tahmini\n`+L.ayaklar.map((g,i)=>`${i+1}. ayak: ${g.secim.join("-")}${g.banko?" (banko)":""}`).join("\n")+`\n6'yı birden tutma olasılığı %${(L.p*100).toFixed(1).replace(".",",")} · ${L.kombinasyon} kombinasyon\nHobi amaçlı olasılıktır, garanti değildir · 18+`,"📋 6'lı tahmini kopyalandı"); }
+  // =====================================================================
+  // Etkileşim (tek dinleyici; kupon düğmeleri data-atkr/atkh/atka → atkupon-v98 yakalar)
+  // =====================================================================
+  function onClick(e){ const t=e.target;
+    const a=t.closest("a[href^='#at']");
+    if(a&&(nav.contains(a)||box.contains(a))){ e.preventDefault(); tap();
+      if(a.dataset.hip){ S.hip=a.dataset.hip; S.hipU=true; }
+      if(a.dataset.bt){ S.bt=a.dataset.bt; lsS("bx-at2-bt",S.bt); }
+      const path=a.getAttribute("href").replace(/^#at\/?/,""), v=path.split("/")[0]||"bugun";
+      // 6'lı/tür seçimi modunda programdan koşuya dokununca kurucu doğrudan açılır
+      if(S.pickTur&&v==="kosu"&&a.dataset.kid){ const r=raceById(a.dataset.kid); if(r&&open(r)&&typeof window.atkOpen==="function"){ const tur=S.pickTur; S.pickTur=null; paint(); window.atkOpen(r.kosu_id,{tur}); return; } if(r&&!open(r)){ toast("Bu koşu başladı; başlamamış bir koşu seç"); return; } }
+      if(isTab(v)){ if(v!=="program") S.pickTur=null; go(path,false); }
+      else if(a.dataset.sib) go(path,false);   // koşu çipleri: aynı yığın seviyesinde geçiş (geri tuşu programa döner)
+      else go(path,true);
+      return; }
+    const b=t.closest("button"); if(!b||!(nav.contains(b)||box.contains(b))) return;
+    const d=b.dataset;
+    if(d.back!=null){ tap(); goBack(d.back); return; }
+    if(d.day){ tap(); AT.d=d.day; S.hipU=false; try{ X.render(); }catch(_){} paint(); return; }
+    if(d.hp){ tap(); S.hip=d.hp; S.hipU=true; paint(); return; }
+    if(d.mode){ tap(); S.mode=d.mode; lsS("bx-at2-mod",S.mode); paint(); return; }
+    if(d.sort){ tap(); S.sort=d.sort; paint(); return; }
+    if(d.bt){ tap(); S.bt=d.bt; lsS("bx-at2-bt",S.bt); if(route().v!=="bahis") go("bahis",false); else paint(); return; }
+    if(d.sev){ tap(); AT.sev=d.sev; lsS("bx-at2-sev",d.sev); try{ X.render(); }catch(_){} paint(); return; }
+    if(d.tk){ const i=d.tk.indexOf("|"); tkTog(d.tk.slice(0,i),d.tk.slice(i+1)); return; }
+    if(d.share){ shareRace(d.share); return; }
+    if(d.als){ shareAlt(d.als); return; }
+    if(d.pick){ tap(); S.pickTur=d.pick; go("program",false); return; }
+    if(d.pickx!=null){ S.pickTur=null; paint(); return; }
+    if(d.kupo){ try{ const KX=window.KX, c=KX&&KX.L.find(z=>z.id===d.kupo); if(c){ KX.aktif=c.id; lsS("bx-kupon-at-son",c.id); window.kxSave&&window.kxSave(); } window.kxOpen("cp"); }catch(_){ toast("KUPO açılamadı"); } return; }
+    if(d.re!=null){ X.load(); return; } }
+  nav.addEventListener("click",onClick); box.addEventListener("click",onClick);
+  // padok içindeki at adları (eski data-ah) → At profili
+  box.addEventListener("click",e=>{ const s=e.target.closest("[data-ah]"); if(!s||!box.contains(s)) return; e.preventDefault(); const [rid,no]=s.dataset.ah.split("|"); tap(); go("at/"+K(rid)+"/"+enc(no),true); });
+  box.addEventListener("keydown",e=>{ if((e.key==="Enter"||e.key===" ")&&e.target.matches&&e.target.matches(".pd-h[data-ah]")){ e.preventDefault(); e.target.click(); } });
+  box.addEventListener("toggle",e=>{ if(e.target&&e.target.id==="at2pd"){ S.pdOpen=e.target.open; const s=e.target.querySelector("summary"); if(s) s.textContent=S.pdOpen?"Daha az göster":`Devamını oku (${e.target.querySelectorAll("p").length})`; } },true);
+  // padok bağlantıları klavyeyle de açılsın
+  new MutationObserver(()=>box.querySelectorAll(".pd-h[data-ah]:not([tabindex])").forEach(x=>x.tabIndex=0)).observe(box,{childList:true});
+  // =====================================================================
+  // showSport("at") sarmalayıcısı: eski AT.tab değerleri yeni sekmelere eşlenir, #at/... bağlantısı korunur
+  // =====================================================================
+  const MAP={altin:"bugun",sonuc:"sonuc",altili:"bahis",jokey:"istatistik"};
+  try{ const _ss=showSport; showSport=function(s){ if(s!=="at") return _ss.apply(this,arguments);
+      const h0=location.hash, st0=history.state; const r=_ss.apply(this,arguments);
+      let path=/^#at\//.test(h0)?h0:null; const lt=AT.tab; if(lt&&lt!=="tah"){ AT.tab="tah"; const v=MAP[lt]; if(v){ path="#at/"+v; if(v==="bahis"){ S.bt="altili"; } } }
+      if(path) try{ history.replaceState(/^#at\//.test(h0)?st0:null,"",path); }catch(e){}
+      paint(true); return r; }; }catch(e){}
+  // derin bağlantı: #at/... ile açılış
+  if(/^#at\//.test(location.hash||"")) setTimeout(()=>{ try{ showSport("at"); }catch(e){} },450);
+  const _ld=X.load; X.load=async function(){ const r=await _ld.apply(this,arguments); S.loadedOnce=true; schedule(); return r; };
+  setInterval(()=>{ const v=$("v-at"); if(v&&!v.hidden&&!document.hidden&&route().v==="bugun") paint(); },60000);
+  window.BX_AT2={paint,route,go,TK};
+  paint();
 })();
 </script>
 <style id="canli-gt-v107">

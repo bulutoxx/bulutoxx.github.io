@@ -64,10 +64,10 @@ async function run(vw, vh, tag) {
 
   // 2) canlı maç: düğme görünür, sonuç yok; değerler henüz istatistiksiz
   await p.evaluate(() => openMatch(IDL.byId[1][7001]));
-  await p.waitForTimeout(200);
+  await p.waitForTimeout(600);   // açılış animasyonu bitsin (ölçüm ölçekli kutudan yapılmasın)
   let st = await p.evaluate(() => { const el = $("msheet"), b = el.querySelector(".cgt-btn"); const r = b && b.getBoundingClientRect();
     return { btn: !!b, vis: !!(r && r.width > 40 && r.height >= 40), res: !!el.querySelector(".cgt-res"), at: (el.querySelector(".cgt-at") || {}).textContent, adj: !!liveProbs(IDL.byId[1][7001]).adj }; });
-  ok(st.btn && st.vis && !st.res && !st.adj, `${tag} canlı maçta "Güncel tahmin" düğmesi görünür (${st.at})`);
+  ok(st.btn && st.vis && !st.res && !st.adj, `${tag} canlı maçta "Güncel tahmin" düğmesi görünür (${st.at}) ${JSON.stringify([st.btn, st.vis, st.res, st.adj])}`);
   await shot("01_canli_once"); await ovc("canli_once");
 
   // 3) bas (çift dokunuş → tek ESPN özet isteği)

@@ -82,6 +82,9 @@ Futbolda tek maçın sonucu doğası gereği belirsizdir; hiçbir model her maç
 | bot_kb.json | Sohbet koçu | Uygulama (Bulut, `bot-v70`) | Bulut'un bilgi bankası: takım takma adları/okunuşları (`takim`), lig adları (`lig`), eş anlamlılar (`esanlam`), yazım hataları (`yazim`), kalıp cümleler (`para`), terimler (`sozluk`), öne çıkan maçlar (`onemli`), `sayim` |
 | bot_coach.json | Sohbet koçu | Uygulama (sohbet başlığı, Otonom ekip paneli) | Son gece: soru sayısı, niyet/faydalı %, önceki bankayla karşılaştırma, eklenenler, yayın kararı ve nedeni; `yayin` = yayındaki bankanın skoru; `gecmis` |
 | bot_tests.json | Sohbet koçu | Sohbet koçu | Her gece büyüyen test soruları (veriye bağlı olanlar 21 gün sonra emekli olur); sabit 224 soru `lab/bot/suite.cjs`'te |
+| oxx_kupon/GGGG-AA-GG.json, oxx_kupon/at/GGGG-AA-GG.json | OXX kupon robotu (`scripts/oxx_kupon.py`; update.yml / at-canli.yml) | Uygulama, öğrenme döngüsü | OXX'un maçtan önce KİLİTLEDİĞİ kendi kuponları (Altın, %70+, 3'lü, değerli, güvenli; basket; at Altın/ikili/çifte/6'lı) + sonuçlar. Şema: `lab/OXX_KUPON.md` |
+| oxx_karne.json | OXX kupon robotu | Uygulama, öğrenme döngüsü | Strateji başına kupon/bacak isabeti, beklenen, kalibrasyon, son 7/30 gün, seri (canlı ve geriye dönük ayrı) |
+| oxx_ayar.json, deney_kuyrugu.json, ogrenme_gunlugu.json, oxx_rollback.json | OXX öğrenme döngüsü (`lab/oxx_ogren.py`, otonom-ekip) | OXX kupon robotu, uygulama | Sinyal → deney adayı → ileriye dönük sanal oynatma + Bonferroni kapısı → yalnız OXX strateji ayarı; 14 gün sonra yeniden sınama / geri alma |
 
 ## 💬 Bulut'un kendini geliştirmesi (v70)
 
@@ -131,3 +134,10 @@ Yerel deneme: `node lab/bot_coach.mjs --dry` (dosya yazmaz) · `node lab/bot_coa
   (ikinci yarıda LL 1,00572 → 1,00589), kademe bazında dk (1,00092 → 1,00095), lig bazında ev sahibi kayması (1,00105 → 1,00102, ihmal edilebilir).
 - **İzleme:** toplayıcı artık uygulamanın gösterdiği öneriyi (`sp`) de kilitler; koruyucu kalibrasyon değişikliklerini bununla ölçer.
 
+
+## 🐎 At Yarışı 2.0 (v106, lab/at/TASARIM.md Aşama 1–2)
+- Bloklar: `<style id="at2-v106">` + `<script id="at2-v106">` (</body> öncesi). Silinirse eski at ekranı (`at-v73`) geri gelir.
+- `at-v73` çekirdeği (`BX_AT`) sarılır: eski `render()` gizli `#atBox`'a yazmaya devam eder (atkupon-v98 `deco` ve geriye uyum); yeni ekranlar `#at2Box`'ta, sekmeler uygulamanın yapışkan `.at-head` kabında (`#at2Nav`).
+- Yollar: `#at` · `#at/{bugun|program|bahis|sonuc|kupon}` (sekme: replaceState) · `#at/kosu/<gün~hipodrom~no>` · `#at/at/<koşu>/<no>` · `#at/jokey/<ad>` · `#at/antrenor/<ad>` · `#at/takip` · `#at/istatistik` (detay: pushState; tarayıcı geri tuşu çalışır). Eski `AT.tab` (altili/sonuc/jokey/altin) yeni sekmeye eşlenir; `BX_AT.horseSheet` at profiline yönlenir.
+- Kupon: ayrı kupon yok; koşu kartı/at profili/6'lı düğmeleri `data-atkr` / `data-atkh` / `data-atka` ile atkupon-v98 kurucusunu açar. Kupon sekmesi KX'teki aktif at kuponunu okur (Aşama 3 genişletecek).
+- Takip: `bx-at-fav` (at adları dizisi, değişmedi) + `bx-at-takip` `{v:1,jokey:[],antrenor:[]}`.
