@@ -1085,7 +1085,7 @@ def main():
         # aynı tarif: ölçüm güncel tutulur (aynı tarifin bu geceki walk-forward sonucu), yayın katsayıları korunur
         mj = eski
         mj["degerlendirme"] = sonuc
-        jyaz(IZ_DOSYA, dict(eski_iz, iz=iz), sikisik=True)
+        jyaz(IZ_DOSYA, dict(eski_iz or {"surum": (eski or {}).get("surum"), "tarif": trf}, iz=iz), sikisik=True)   # iz arşivden inemediyse yeniden kurulur
         m_uretim = model_yukle(mj["uretim_modeli"])
     else:
         mj = eski

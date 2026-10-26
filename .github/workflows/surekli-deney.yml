@@ -1,7 +1,7 @@
 name: OXXai sürekli deney
 # 3 saatte bir: robotlar gece beklemeden kendini sınar (lab/surekli_deney.py).
 #  • deney (matris, paralel en çok 4 iş): futbol / basket / at → OXXai deney kuyruğu (lab/oxx_ogren.py: sinyal → aday → ileriye dönük
-#    sanal oynatma; kapı = zaman sıralı seçim/sınama + gün bootstrap'ı + Bonferroni α + Altın/güçlü koruması). at hafif modda
+#    sanal oynatma; kapı = zaman sıralı seçim/sınama + gün bootstrap'ı + alfa yatırımı α_t + Altın/güçlü koruması). at hafif modda
 #    (yalnız data/at/replay_kosular.json; ayna ve eğitim yok). autolab → lab/auto_lab.py dönen lig alt kümesiyle (yalnız ölçüm).
 #    Her iş sonucunu data/deney/<iş>/<zaman>.json'a yazar, commit atmaz; dosya yapıt olarak karar işine geçer.
 #  • karar: kapıyı geçen adayı önce GÖLGEYE alır (data/deney/golge.json), sonraki çalışmalar onu yeni veriyle paralel ölçer;
@@ -37,6 +37,11 @@ jobs:
       - uses: actions/setup-python@v5
         with: { python-version: "3.12" }
       - run: pip install -q numpy==2.1.3
+      - name: 🗃️ Önbellekleri arşivden al (basket ve at sanal oynatması için)
+        if: matrix.is == 'basket' || matrix.is == 'at'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 lab/adim.py arsiv-indir --onem bilgi -- python3 lab/arsiv.py indir data/bk_games.json data/at/replay_kosular.json
       - name: Laboratuvar bağımlılıkları (yalnız autolab; penaltyblog, MIT lisans)
         if: matrix.is == 'autolab'
         run: |

@@ -6,7 +6,7 @@
                data/deney/<iş>/<zaman>.json'a yazar (commit atmaz; karar işine yapıt olarak geçer).
                  futbol / basket / at : OXXai deney kuyruğu (lab/oxx_ogren.py: sinyal → aday → ileriye dönük sanal oynatma).
                    Kapı lab/oxx_ogren.sina'nın kendisidir (kopya yok): zaman sıralı seçim/sınama dilimi, eşleştirilmiş gün
-                   bootstrap'ı, deneme sayısıyla katılaşan α (Bonferroni), Altın/güçlü isabet koruması.
+                   bootstrap'ı, alfa yatırımı (Foster–Stine; mFDR ≤ 0,05), Altın/güçlü isabet koruması.
                    Ayrıca gölgedeki adaylar en güncel veriyle yeniden ölçülür (tam veri + yalnız gölge başladıktan sonraki günler).
                    at işi hafif moddadır: yalnız data/at/replay_kosular.json (ayna/eğitim gerekmez).
                  autolab : lab/auto_lab.py, dönen lig alt kümesiyle (her çalışmada farklı 4 lig) ve kısa bütçeyle; yalnız ölçüm.
@@ -120,13 +120,17 @@ def deney_oxx(alan):
     V = O.Veri(bugun)
     m = GL.get("sayac", {}).get(f"{alan}-{bugun.year}", 0)
     denenen = []
+    alan_k = f"{alan}-{bugun.year}"
     for c in adaylar[:ADAY_N]:
         if kalan() < 60: break
         m += 1; t1 = time.time()
+        a_t = O.yatirim_alfa(GL, alan_k, c)          # alfa yatırımı (servet karar işinde kalıcı güncellenir)
         try:
-            rap = O.sina(c, V, J, A, m)
+            rap = O.sina(c, V, J, A, m, alfa=a_t)
         except Exception as e:
             rap = {"karar": "hata", "neden": repr(e)[:300]}
+        if rap.get("test_yapildi"):                  # aynı çalışmada ikinci aday güncel servetle sınansın (yalnız bellekte)
+            O.yatirim_guncelle(GL, alan_k, rap["alfa_ham"], rap["istatistik_gecti"])
         denenen.append({"aday": c, "m": m, "rap": rap, "sure_sn": round(time.time() - t1, 1)})
         print(f"[{alan}] {c['anahtar']} → {rap.get('karar')} ({rap.get('neden')})", flush=True)
     olcum = []
@@ -134,11 +138,12 @@ def deney_oxx(alan):
         if g["aday"].get("alan") != alan: continue
         if kalan() < 45: break
         try:
-            c1 = copy.deepcopy(g["aday"]); tam = O.sina(c1, V, J, A, g.get("m", 1))
+            ga = g.get("alfa")                     # gölge doğrulaması yeni harcama yapmaz: girişteki α ile ölçülür
+            c1 = copy.deepcopy(g["aday"]); tam = O.sina(c1, V, J, A, g.get("m", 1), alfa=ga)
             yeni_g = {d for d in _gunler(V, alan) if d >= g["baslangic_gun"]}
             yeni = None
             if yeni_g:
-                c2 = copy.deepcopy(g["aday"]); yeni = O.sina(c2, V, J, A, g.get("m", 1), gunler_filtre=yeni_g)
+                c2 = copy.deepcopy(g["aday"]); yeni = O.sina(c2, V, J, A, g.get("m", 1), gunler_filtre=yeni_g, alfa=ga)
             o = {"anahtar": k, "tam": _sina_ozet(tam, c1), "yeni_gun_sayisi": len(yeni_g)}
             if yeni:
                 s = yeni.get("sinama") or {}
@@ -282,6 +287,8 @@ def karar(kaynak, kuru=False):
             kar = rap.get("karar"); sayim[kar] += 1
             alan_k = f"{c['alan']}-{tarih[:4]}"
             if kar in ("kabul", "ret"): GL["sayac"][alan_k] = max(GL["sayac"].get(alan_k, 0), d.get("m", 0))
+            if rap.get("test_yapildi"):                       # alfa yatırımı servetini kalıcı güncelle (dosya sırasıyla)
+                rap["servet_sonra"] = O.yatirim_guncelle(GL, alan_k, rap["alfa_ham"], rap["istatistik_gecti"])["servet"]
             ek = {k: v for k, v in rap.items() if k not in ("karar", "neden")}
             ek["sure_sn"] = d.get("sure_sn")
             if kar == "kabul":
@@ -289,7 +296,7 @@ def karar(kaynak, kuru=False):
                     kayit(c, "dondurulmus", "koruyucu geri alma aktif (data/rollback.json); gölgeye alınmadı", ek, tarih); continue
                 if c["anahtar"] in donmus:
                     kayit(c, "dondurulmus", "bu anahtar OXXai geri alma süresinde", ek, tarih); continue
-                G["adaylar"][c["anahtar"]] = {"aday": c, "m": d.get("m", 1), "baslangic": D.get("zaman"), "baslangic_gun": tarih,
+                G["adaylar"][c["anahtar"]] = {"aday": c, "m": d.get("m", 1), "alfa": rap.get("alfa_ham"), "baslangic": D.get("zaman"), "baslangic_gun": tarih,
                                              "ilk": _sina_ozet(rap, c), "olcumler": []}
                 kayit(c, "golge", "kapı geçildi → gölge ölçüme alındı (henüz uygulanmadı)", ek, tarih)
                 s = rap.get("sinama") or {}
@@ -364,7 +371,7 @@ def karar(kaynak, kuru=False):
     GL["guncelleme"] = simdi
     Q["adaylar"] = sorted(var.values(), key=lambda a: (a.get("durum") != "bekliyor", -a.get("oncelik", 0)))[-200:]
     G["guncelleme"] = simdi
-    G["kurallar"] = {"giris": "lab/oxx_ogren.sina kapısı (zaman sıralı seçim/sınama, gün bootstrap'ı, Bonferroni α, Altın/güçlü koruması)",
+    G["kurallar"] = {"giris": "lab/oxx_ogren.sina kapısı (zaman sıralı seçim/sınama, gün bootstrap'ı, alfa yatırımı α_t, Altın/güçlü koruması)",
                      "golge": f"en az {GOLGE_GUN} gün ve {GOLGE_OLCUM} ölçüm; tam veride ret ya da gölge sonrası günlerde fark < 0 (n ≥ 10) → geri çekilir",
                      "uygulama": "lab/oxx_ogren.uygula → data/oxx_ayar.json izlenen; 14 gün sonra yeniden sınama + canlı gölge kupon, kötüleşirse oxx_rollback",
                      "dondurma": "data/rollback.json aktif ya da anahtar oxx_rollback donmus listesinde ise uygulanmaz"}
