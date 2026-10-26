@@ -33,7 +33,7 @@ const summary = (h, a) => ({ header: { competitions: [{ competitors: [{ homeAway
 async function run(vw, vh, tag) {
   const b = await chromium.launch();
   const ctx = await b.newContext({ viewport: { width: vw, height: vh }, deviceScaleFactor: 2, locale: "tr-TR", timezoneId: "Europe/Istanbul" });
-  await ctx.addInitScript(() => { localStorage.setItem("bx-terms", JSON.stringify({ v: "2.0", at: Date.now(), kvkk: true, inst: Date.now() })); localStorage.setItem("bx-coach", "1"); });
+  await ctx.addInitScript(() => { localStorage.setItem("bx-terms", JSON.stringify({ v: "2.0", at: Date.now(), kvkk: true, inst: Date.now() })); localStorage.setItem("bx-oxxai-hos", "1"); localStorage.setItem("bx-oxxai-ikon", "1"); localStorage.setItem("bx-coach", "1"); });
   const p = await ctx.newPage(); const errs = [];
   p.on("pageerror", e => errs.push(e.message));
   p.on("console", m => { if (/canli-gt/.test(m.text())) console.log("   [konsol]", m.text()); });
@@ -160,7 +160,7 @@ async function run(vw, vh, tag) {
 async function same(vw, vh) {
   const bh = process.env.BASE_HTML; if (!bh || !fs.existsSync(path.join(ROOT, bh))) { console.log("  (BASE_HTML yok: karşılaştırma atlandı)"); return; }
   const grab = async (file) => { const b = await chromium.launch(); const ctx = await b.newContext({ viewport: { width: vw, height: vh }, locale: "tr-TR", timezoneId: "Europe/Istanbul" });
-    await ctx.addInitScript(() => { localStorage.setItem("bx-terms", JSON.stringify({ v: "2.0", at: Date.now(), kvkk: true, inst: Date.now() })); localStorage.setItem("bx-coach", "1"); });
+    await ctx.addInitScript(() => { localStorage.setItem("bx-terms", JSON.stringify({ v: "2.0", at: Date.now(), kvkk: true, inst: Date.now() })); localStorage.setItem("bx-oxxai-hos", "1"); localStorage.setItem("bx-oxxai-ikon", "1"); localStorage.setItem("bx-coach", "1"); });
     const p = await ctx.newPage(); await p.clock.setFixedTime(new Date(T0)); await p.route(/iddaa\.com|espn|jsdelivr|googleapis|gstatic|web3forms|api\./, r => r.fulfill({ status: 404, body: "" }));
     await p.goto(BASE + "/" + file);
     for (let i = 0; i < 60; i++) { const r = await p.evaluate(() => { try { try { PL_RESET(); } catch (e) {} return FIXTURES.length > 0 && Pick.list().length > 0; } catch (e) { return false; } }); if (r) break; await p.waitForTimeout(500); }

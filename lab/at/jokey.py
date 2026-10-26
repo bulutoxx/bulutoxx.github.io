@@ -1,4 +1,4 @@
-# BULUTOXX at yarışı laboratuvarı — 🏇 jokey ve ahır uzmanı.
+# OXXai at yarışı laboratuvarı — 🏇 jokey ve ahır uzmanı.
 #
 # 1) ATIN GÜCÜNDEN ARINDIRILMIŞ BECERİ: koşu içi Plackett-Luce (ilk JK_KADEME sıra) ile at + jokey + antrenör güçleri
 #    ORTAK tahmin edilir: θ_i = μ_at + μ_jokey + μ_antrenör. Her varlığın güç tahmini Gauss (ortalama μ, varyans σ²):

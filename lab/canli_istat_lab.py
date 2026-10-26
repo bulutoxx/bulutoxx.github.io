@@ -1,4 +1,4 @@
-"""BULUTOXX v107 · Canlı istatistik ayarı değerlendiricisi (ileriye dönük sınama + kapı).
+"""OXXai v107 · Canlı istatistik ayarı değerlendiricisi (ileriye dönük sınama + kapı).
 
 data/archive/live_stats/*.json kayıtları (toplayıcı 15 dk'da bir yazar; maç bitince fh/fa eklenir) biriktikçe
 istatistik ağırlığı κ'yı zaman sıralı olarak sınar:

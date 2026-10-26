@@ -1,4 +1,4 @@
-# BULUTOXX at yarışı laboratuvarı — GÜN İÇİ (canlı) robot.
+# OXXai at yarışı laboratuvarı — GÜN İÇİ (canlı) robot.
 # Yarış günü her 30 dakikada bir çalışır (at-canli.yml):
 #  1) Aynayı (yalnız github.com/cenkozgur/tjk-data) sığ günceller; tjk.org'a / atyarisi.com'a istek YOK.
 #  2) Kayıtlı yayın modelini yükler (yeniden eğitim YOK) ve bugünün (varsa yarının) koşuları için yalnız koşu

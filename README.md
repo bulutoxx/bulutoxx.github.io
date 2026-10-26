@@ -1,4 +1,4 @@
-# BULUTOXX
+# OXXai
 
 İlk yarı, ikinci yarı ve maç sonu net skor tahmini yapan, her gün kendini yeniden eğiten futbol ve basketbol tahmin uygulaması. Telefona uygulama gibi kurulur, ücretsiz GitHub Pages üzerinde çalışır ve hiçbir yapay zekâ servisine bağlı değildir.
 
@@ -31,9 +31,9 @@ Bu kurallar 2022-23'ten 2026-27'ye 53.000+ futbol ve 26.000+ basketbol maçıyla
 2. Yeni bir **public** depo oluştur, adı `KULLANICIADIN.github.io` olsun (böylece adres kısa olur).
 3. Bu klasördeki her şeyi depoya yükle. Gizli `.github` klasörü de yüklenmeli.
 4. Depoda **Settings → Pages → Build and deployment → Source: GitHub Actions** seç.
-5. **Actions** sekmesinde "BULUTOXX güncelle ve yayınla" iş akışını aç ve **Run workflow** ile ilk çalıştırmayı başlat.
+5. **Actions** sekmesinde "OXXai güncelle ve yayınla" iş akışını aç ve **Run workflow** ile ilk çalıştırmayı başlat.
 
-Birkaç dakika sonra uygulama `https://KULLANICIADIN.github.io` adresinde yayında olur. BULUTOXX'in adresi: **https://bulutoxx.github.io**
+Birkaç dakika sonra uygulama `https://KULLANICIADIN.github.io` adresinde yayında olur. OXXai'nin adresi: **https://bulutoxx.github.io**
 
 ## Telefona kurma
 

@@ -1,4 +1,4 @@
-# BULUTOXX at yarışı laboratuvarı — veri katmanı.
+# OXXai at yarışı laboratuvarı — veri katmanı.
 # Herkese açık aynayı (github.com/cenkozgur/tjk-data) yalnız OKUR. tjk.org'a hiçbir istek atmaz.
 # Ham veri depoya kopyalanmaz: ayna çalışma anında ./_tjk-data altına sığ klonlanır (gitignore'da).
 import json, os, re, unicodedata

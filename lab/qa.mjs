@@ -8,7 +8,7 @@ const out = { zaman: new Date().toISOString(), url: URL, hatalar: [], sayfalar: 
 fs.mkdirSync("data/qa", { recursive: true });
 const b = await chromium.launch();
 const ctx = await b.newContext({ ...devices["iPhone 13"], deviceScaleFactor: 1, serviceWorkers: "block" });
-await ctx.addInitScript(() => { localStorage.setItem("bx-terms", JSON.stringify({ v: "1.0", at: Date.now() })); navigator.share = undefined; window.open = () => null; });
+await ctx.addInitScript(() => { localStorage.setItem("bx-terms", JSON.stringify({ v: "1.0", at: Date.now() })); localStorage.setItem("bx-oxxai-hos", "1"); localStorage.setItem("bx-oxxai-ikon", "1"); navigator.share = undefined; window.open = () => null; });
 const p = await ctx.newPage();
 const errs = []; p.on("pageerror", e => errs.push(String(e.message).slice(0, 300)));
 p.on("dialog", d => d.dismiss());
