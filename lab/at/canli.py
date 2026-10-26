@@ -92,9 +92,13 @@ def gun_sonuclari(tarih, kaynak):
         if not kos or int(kos[0]["position"]) != 1:
             continue
         kaz = kos[0]
+        poz = [int(h["position"]) for h in kos[:4]]
         out[(r["venue"], int(r.get("raceNo") or 0))] = {
             "sira": [str(h.get("no") or "") for h in kos[:4]], "kazanan": str(kaz.get("no") or ""),
-            "kazanan_ad": veri.ad(kaz.get("name")), "ganyan": _sayi(kaz.get("odds"))}
+            "kazanan_ad": veri.ad(kaz.get("name")), "ganyan": _sayi(kaz.get("odds")),
+            # kupon puanlaması için: koşan at sayısı (plase/ikili alt sınırları) ve eşit derece (dead heat) bilgisi
+            "kosan": sum(1 for h in r.get("horses") or [] if not h.get("nonRunner")) + len(r.get("unplaced") or []),
+            "derece": poz, "esit": len(set(poz)) < len(poz)}
     return out
 
 
@@ -106,7 +110,7 @@ def _ilk3(p, g, d):
     return M.sirali_olasiliklar(p, g, d)["ilk3"]
 
 
-def kosu_canli(m, kosu, gecmis, yayin_modu, sonuc):
+def kosu_canli(m, kosu, gecmis, yayin_modu, sonuc, ekuri=None):
     atlar = kosu["atlar"]
     n = len(atlar)
     X = gecmis.durum.ozellik(kosu, m.adlar)
@@ -148,6 +152,13 @@ def kosu_canli(m, kosu, gecmis, yayin_modu, sonuc):
         ilk = max(range(n), key=lambda i: p_s[i])
         s = {"sira": sonuc["sira"], "kazanan": sonuc["kazanan"], "kazanan_ad": sonuc["kazanan_ad"],
              "ganyan": sonuc["ganyan"], "model_ilk": atlar[ilk]["no"], "tuttu": atlar[ilk]["ad"] == sonuc["kazanan_ad"]}
+        # ek (geriye uyumlu) alanlar — arayüzün at kuponu puanlaması: sira = [1., 2., 3., 4. at no] (bilinen kadarı),
+        # derece = sira'daki atların resmî dereceleri (eşit derece = dead heat), ekuri = koşan ekürili at grupları
+        kos_no = {str(a["no"]) for a in atlar}
+        s["ekuri"] = [g for g in ([str(x) for x in grp if str(x) in kos_no] for grp in (ekuri or [])) if len(g) > 1]
+        for a_ in ("kosan", "derece", "esit"):
+            if a_ in sonuc:
+                s[a_] = sonuc[a_]
         if oran_var:   # rapor için (dosyaya yazılmaz): harmanın ve piyasa favorisinin ilk seçimi
             ek["oran_tuttu"] = atlar[int(idx[int(np.argmax(p_o))])]["ad"] == sonuc["kazanan_ad"]
             ek["fav_tuttu"] = atlar[int(idx[int(np.argmax(q))])]["ad"] == sonuc["kazanan_ad"]
@@ -202,9 +213,14 @@ def main():
     for t in sorted(progs):
         gecmis.ilerlet(t)     # yalnız t gününden ÖNCEKİ sonuçlar
         sonuclar = gun_sonuclari(t, kaynak)
+        try:
+            gprog = altili.gun_programi(t, kaynak)   # (hipodrom, koşu) -> (isGanyanStart, ekürili gruplar)
+        except Exception:
+            gprog = {}
         ks, ekler = [], []
         for k in progs[t]:
-            kc, ek = kosu_canli(m, k, gecmis, yayin_modu, sonuclar.get((k["hipodrom"], k["kosu"])))
+            kc, ek = kosu_canli(m, k, gecmis, yayin_modu, sonuclar.get((k["hipodrom"], k["kosu"])),
+                                (gprog.get((k["hipodrom"], k["kosu"])) or (None, []))[1])
             ks.append(kc); ekler.append(ek)
         ks.sort(key=lambda k: (k.get("saat") or "99:99", k["hipodrom"], k["kosu"]))
         out = {"tarih": t, "guncelleme_tsi": simdi.strftime("%Y-%m-%d %H:%M"), "model_surumu": mj.get("surum", "?"),
