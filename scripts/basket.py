@@ -32,7 +32,7 @@ LEAGUES = {
 HIST_DAYS = 560          # yaklaşık iki sezon
 FIX_DAYS = 8
 KS = {}
-ENGINE_V = "2026-10-24.5"
+ENGINE_V = "2026-10-26.1"
 STORE_V = 2              # veri biçimi sürümü             # kaç gün sonrasına kadar fikstür
 
 def fetch(url, tries=3):
@@ -188,18 +188,36 @@ def download(lg, store, today, log):
 def days(g, ref):
     return (ref - datetime.fromisoformat(g["dt"].replace("Z", "+00:00")).date()).days
 
-def fit(games, ref, P):
+# Ev avantajı takım güçleriyle birlikte kestirilen ligler. Kolejde güçlü takımlar zayıflarını evde ağırlar;
+# ham "ev sahibi ortalama farkı" bu yüzden ev avantajını şişirir. İleriye dönük testte (lab/bk_gelistir.py,
+# data/bk_gelistir.json) log-loss ve Brier iki zaman diliminde de belirgin düştü, isabet arttı. Profesyonel
+# liglerde etki yoktu, oralarda eski yol kalır. Geri almak için kümeyi boşaltmak yeter.
+HCA_JOINT = {"ncaa", "ncaaw"}
+
+def fit(games, ref, P, joint=None):
     """Ağırlıklı ridge: ev sayısı = mu + hca + hücum(ev) + savunma(dep), dep sayısı = mu + hücum(dep) + savunma(ev)."""
     if len(games) < 20: return None
+    if joint is None: joint = games[0].get("lg") in HCA_JOINT
     teams = sorted({g["h"] for g in games} | {g["a"] for g in games}); ix = {t: i for i, t in enumerate(teams)}; n = len(teams)
     w = np.array([math.exp(-P["decay"] * max(0, days(g, ref))) for g in games])
     hs = np.array([g["hs"] for g in games], float); as_ = np.array([g["as_"] for g in games], float)
     neu = np.array([g.get("neutral", False) for g in games])
-    hca = float(np.sum(w[~neu] * (hs - as_)[~neu]) / max(1e-9, np.sum(w[~neu]))) if (~neu).any() else 0.0
     mu = float(np.sum(w * (hs + as_)) / (2 * np.sum(w)))
+    hi = np.array([ix[g["h"]] for g in games]); ai = np.array([ix[g["a"]] for g in games])
+    if joint:   # bilinmeyenler: hücum(n), savunma(n), ev avantajı(1); ev avantajına yok denecek kadar küçük ceza
+        K = 2 * n + 1; M = np.zeros((K, K)); b = np.zeros(K); c = np.where(neu, 0.0, 0.5)
+        for (o, d, y, s) in ((hi, ai, hs - mu, c), (ai, hi, as_ - mu, -c)):
+            oi, di = o, n + d; hh = np.full(len(o), 2 * n)
+            for (r1, r2, v) in ((oi, oi, w), (di, di, w), (oi, di, w), (di, oi, w),
+                                (oi, hh, w * s), (hh, oi, w * s), (di, hh, w * s), (hh, di, w * s), (hh, hh, w * s * s)):
+                np.add.at(M, (r1, r2), v)
+            np.add.at(b, oi, w * y); np.add.at(b, di, w * y); np.add.at(b, hh, w * s * y)
+        M[np.diag_indices(2 * n)] += P["lam"]; M[2 * n, 2 * n] += 1e-3
+        x = np.linalg.solve(M, b)
+        return {"teams": teams, "ix": ix, "off": x[:n], "def": x[n:2 * n], "mu": mu, "hca": float(x[2 * n])}
+    hca = float(np.sum(w[~neu] * (hs - as_)[~neu]) / max(1e-9, np.sum(w[~neu]))) if (~neu).any() else 0.0
     hcaH = np.where(neu, 0, hca / 2); hcaA = np.where(neu, 0, -hca / 2)
     yh = hs - mu - hcaH; ya = as_ - mu - hcaA
-    hi = np.array([ix[g["h"]] for g in games]); ai = np.array([ix[g["a"]] for g in games])
     M = np.zeros((2 * n, 2 * n)); b = np.zeros(2 * n)
     # ev denklemi: off[h] + def[a]
     for (o, d, y) in ((hi, ai, yh), (ai, hi, ya)):
