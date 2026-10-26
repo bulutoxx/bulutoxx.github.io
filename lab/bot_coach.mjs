@@ -110,6 +110,13 @@ async function openPage(browser, port, kb, coach) {
 
 // sayfadan günün "dünyası": botun gerçekten gördüğü maçlar, takımlar, ligler
 async function world(p) {
+  // veri yüklemesi bitene kadar bekle: maç havuzu iki ölçümde aynı kalınca (en çok ~15 sn). Yükleme süresi oynak olduğundan
+  // erken toplanan "dünya" eksik lig etiketi verip lig sorularını haksız yere düşürüyordu.
+  let prev = -1;
+  for (let i = 0; i < 15; i++) {
+    const n = await p.evaluate(() => { try { const now = Date.now(); return botPre({ from: now, to: now + 3 * 864e5 }).length; } catch (e) { return -1; } });
+    if (n > 0 && n === prev) break; prev = n; await p.waitForTimeout(1000);
+  }
   return p.evaluate(() => {
     const now = Date.now(), out = { today: istDay(new Date()), m: [], teams: [], lgs: {}, gold: false, v70: !!window.BOT70 };
     try { out.gold = goldCalc().size > 0; } catch (e) { }
