@@ -148,7 +148,7 @@ const sozluk = [
   { k: "brier", re: "brier", q: "brier skoru ne demek", kw: /0'a/i,
     html: "<b>Brier skoru</b>: olasılık tahminlerinin isabet ölçüsü; 0'a ne kadar yakınsa o kadar iyi. Koruyucu bot, otomatik bir değişiklikten sonra Brier skoru belirgin kötüleşirse (+0,01) değişikliği 14 gün geri alır." },
   { k: "mbs", re: "\\bmbs\\b|minimum bahis", q: "mbs ne demek", kw: /minimum (bahis|seçim) sayısı/i,
-    html: "<b>MBS</b> (minimum bahis sayısı): iddaa'da bir maçın kuponda en az kaç maçla birlikte oynanabileceği. OXXai bir bahis aracı olmadığı için MBS göstermez; yalnız tutma olasılığını gösterir." },
+    html: "<b>MBS</b> (minimum seçim sayısı): iddaa'da bir maçın en az kaç maçla birlikte oynanabileceği. OXXai bir şans oyunu aracı olmadığı için MBS göstermez; yalnız tutma olasılığını gösterir." },
   { k: "powernow", re: "power ?now", q: "power now nedir", kw: /canlı/i, kw2: /%\s?80/,
     html: "<b>Power Now</b>: canlı maçlarda tutma olasılığı %80 ve üstü olan anlık seçimlerin ekranı (alt menü). Canlı oranlar saniyeler içinde değişir; seçimler maç içinde kilitlenip sonradan puanlanır." },
   { k: "favori", re: "\\bfavori\\w*", q: "favori ne demek", kw: /olasılığı en yüksek/i,
