@@ -5658,7 +5658,7 @@ if((location.hash||"")==="#sonuclar") setTimeout(()=>$("navRes").click(),200);
 // =====================================================================
 // BULUTOXX v35: Otomatik sürüm güncelleme — yeni sürüm yayınlanınca uygulama kendini yeniler
 // =====================================================================
-const APP_V="2026-10-26.92";
+const APP_V="2026-10-26.93";
 (function autoUpdate(){
   let shown=false;
   async function check(auto){
@@ -8170,6 +8170,60 @@ setTimeout(()=>{ try{ renderTP(); }catch(e){} },1500);
   function hero(){ const L=$("botLog"); if(L&&!$("bbHero")){ const im=document.createElement("img"); im.id="bbHero"; im.className="bb-hero"; im.src="icons/bulut-bot-full.jpg"; im.alt="BULUTOXX OXX"; im.loading="lazy"; L.prepend(im); } }
   const _o=botOpen; botOpen=function(){ const r=_o.apply(this,arguments); try{ hero(); }catch(e){} return r; };
   hdr(); setTimeout(hdr,1500); setTimeout(hdr,4500);
+})();
+</script>
+<style id="kupon-v93s">
+.tvar{display:inline-block;margin-left:4px;padding:1px 6px;border-radius:6px;font:800 10px/1.4 var(--round,system-ui);letter-spacing:.03em;vertical-align:1px;background:rgba(34,211,255,.16);color:var(--cyan,#22D3FF);border:1px solid rgba(34,211,255,.35)}
+.tvar.k{background:rgba(255,105,180,.15);color:#FF8DC7;border-color:rgba(255,141,199,.4)}
+</style>
+<script id="kupon-v93">
+// v93: (1) Tahmin listem'e eski kupondaki "Toplam oran" ve "Değerlendirme" satırları geri geldi (kullanıcı kararı)
+//      (2) takım adı eşleştirme koruması: U17–U23, B/II, rezerv, akademi, kadın (K) takımları ana takımla eşleşmez
+//      (3) "Günün en olası tahminlerini getir": bültenle aynı oranla harmanlı ve kalibre olasılığı kullanır (yalnız-model değil)
+(function(){
+  const VAR=s=>{ const t=String(s||"").toLowerCase().replace(/ı/g,"i").replace(/[()\[\].,_-]/g," ").replace(/\s+/g," ").trim(), w=t.split(" "), m=new Set();
+    for(const x of w){ if(/^u ?(1[5-9]|2[0-3])$/.test(x)) m.add(x);
+      else if(/^(reserves?|res)$/.test(x)) m.add("res"); else if(/^(academy|akademi|youth)$/.test(x)) m.add("y");
+      else if(/^(women|womens|kadın|kadin|femenino|feminino|frauen|dames|ladies)$/.test(x)) m.add("k"); }
+    const last=w[w.length-1]||"", prev=w[w.length-2]||"";   // tek harfli işaretler yalnız sonda: "Real Madrid B", "Jong Ajax II", "Cruzeiro (K)"
+    for(const z of [last, /^u ?\d\d$/.test(last)?prev:""]){ if(z==="b"||z==="ii") m.add("b"); else if(z==="k"||z==="w") m.add("k"); }
+    return [...m].sort().join(","); };
+  try{ const _b=bestTeamName; bestTeamName=function(n){ const r=_b.apply(this,arguments); try{ if(r&&r!==n&&VAR(n)!==VAR(r)) return n; }catch(e){} return r; }; }catch(e){}
+  try{ if(typeof BT!=="undefined"&&BT.cache) BT.cache.clear(); }catch(e){}
+  // ekranda ayrıca belirt: "Arsenal FC U21" → Arsenal FC [U21], "Cruzeiro EC (K)" → Cruzeiro EC [Kadın]
+  const RX=/\s*(\(K\)|\bU ?(?:1[5-9]|2[0-3])\b)/g, SKIP=/^(SCRIPT|STYLE|TEXTAREA|INPUT|OPTION|TITLE)$/;
+  function tagNode(tn){ const v=tn.nodeValue; RX.lastIndex=0; if(!RX.test(v)) return; RX.lastIndex=0;
+    const fr=document.createDocumentFragment(); let i=0, m;
+    while((m=RX.exec(v))){ fr.appendChild(document.createTextNode(v.slice(i,m.index)+" ")); const b=document.createElement("span");
+      const k=/\(K\)/.test(m[1]); b.className="tvar"+(k?" k":""); b.textContent=k?"Kadın":m[1].replace(/\s/g,"").toUpperCase(); fr.appendChild(b); i=m.index+m[0].length; }
+    fr.appendChild(document.createTextNode(v.slice(i))); tn.parentNode.replaceChild(fr,tn); }
+  function tagAll(root){ try{ const w=document.createTreeWalker(root||document.body,NodeFilter.SHOW_TEXT,{acceptNode:n=>{ const p=n.parentNode; if(!p||SKIP.test(p.nodeName)||p.closest(".tvar,[contenteditable],#botQ,.bt-in")) return 2; return /\(K\)|U ?(1[5-9]|2[0-3])|Women|Kadın/.test(n.nodeValue)?1:2; }});
+      const L=[]; while(w.nextNode()) L.push(w.currentNode); L.forEach(tagNode); }catch(e){} }
+  let tq=0; const tsched=()=>{ if(tq) return; tq=1; requestAnimationFrame(()=>{ tq=0; tagAll(document.querySelector("main")||document.body); const bl=document.getElementById("botLog"); if(bl) tagAll(bl); const sh=document.getElementById("sheet"); if(sh) tagAll(sh); }); };
+  try{ new MutationObserver(tsched).observe(document.body,{childList:true,subtree:true,characterData:true}); }catch(e){} tsched();
+  // öneri düğmesi: önümüzdeki 36 saatte oranı ≥1,20 olan, bülten/Power Now ile aynı (harmanlı + kalibre) olasılığı en yüksek 3 seçim, farklı maçlardan
+  suggestCoupon=function(){ window.QP_FORCE=true;
+    try{ const now=Date.now(), picks=[];
+      for(const m of Pick.list()){ if(m.live||m.dt.getTime()<now||m.dt.getTime()>now+36*3600e3) continue;
+        const f=FIXTURES.find(x=>x.lg===m.lg&&x.h===m.h&&x.a===m.a); if(!f||!f.odds) continue;
+        let p=null; try{ p=quickPred(m,f); }catch(e){} if(!p||!p.pm) continue;
+        const R=recOf({H:p.pm[0],D:p.pm[1],A:p.pm[2],o25:p.o25m},f); if(!R||!R.o||R.o<1.2||!(R.cp>0)) continue;
+        picks.push({m,R}); }
+      picks.sort((a,b)=>b.R.cp-a.R.cp); const used=new Set(); CP.items=[];
+      for(const x of picks){ const k=cpKey(x.m); if(used.has(k)) continue; used.add(k); cpToggle(x.m,x.R.k,+x.R.o,x.R.cp); if(used.size>=3) break; }
+      if(!CP.items.length) toast("Şu an öneri için yeterli oranlı maç yok");
+    }finally{ window.QP_FORCE=false; }
+    renderKupon(); };
+  // Toplam oran + Değerlendirme (v63'teki gibi)
+  function patch(){ try{ const box=$("cpBox"); const L=box&&box.querySelector(".cpsum .list"); if(!L||L.querySelector(".kp-odd")) return; const st=cpStats(); if(!st.n) return;
+      const rating=st.ev>=1.05?["Değerli görünüyor","g"]:st.ev>=.92?["Adil","m"]:["Oran olasılığa göre düşük","x"];
+      const rows=[...L.children]; const first=rows[0];
+      const o=document.createElement("div"); o.className="kp-odd"; o.innerHTML=`<span>Toplam oran</span><span><b>${st.odd.toFixed(2)}</b></span>`;
+      if(first) first.after(o); else L.appendChild(o);
+      const d=document.createElement("div"); d.className="kp-ev"; d.innerHTML=`<span>Değerlendirme</span><span class="pill ${rating[1]}">${rating[0]}</span>`; L.appendChild(d);
+    }catch(e){} }
+  try{ const _r=renderKupon; renderKupon=function(){ const r=_r.apply(this,arguments); patch(); return r; }; }catch(e){}
+  try{ const _k=kuponTab; kuponTab=function(){ const r=_k.apply(this,arguments); patch(); return r; }; }catch(e){}
 })();
 </script>
 </body>
