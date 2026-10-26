@@ -1,0 +1,2413 @@
+{
+ "guncelleme": "2026-10-26T00:19:08+00:00",
+ "donem": [
+  "2026-07-26",
+  "2026-10-23"
+ ],
+ "aciklama": "katki: attan ve ahırdan arındırılmış jokey becerisi — son 365 günün koşularında at + jokey + antrenör + jokey×antrenör güçlerinin koşu içi Plackett-Luce ile ortak, Bayes küçültmeli (ridge) tahmini; son 90 günün binişlerine göre ortalanmış. Değer: 10 atlı bir koşuda ortalama ata bu jokey binerse kazanma olasılığının ortalama jokeye göre farkı (puan). katki_z = katkı / std. hata. Jokeyin iyi atları seçebilmesi (seçim etkisi) tamamen ayrılamaz. İkililerde katki: jokey + antrenör + ikili uyumunun toplamı (aynı ölçek); uyum: tek tek becerilerin ÖTESİNDEKİ ikili etkisi (çoğu küçük ve gürültülü; uyum_z'ye bakın). form_trend: son 30 gün kalıntısı 365 güne göre (z > 1 yükseliyor, < −1 düşüyor). bugun_binis.p_kazanma: sabah kilidi (yalnız model). Yalnız türetilmiş istatistik; ham koşu satırı yok. Hobi amaçlıdır · 18+.",
+ "kaynak": "github.com/cenkozgur/tjk-data (herkese açık ayna; tjk.org'a istek yok)",
+ "ilk5": [
+  {
+   "ad": "GÖKHAN KOCAKAYA",
+   "binis_90g": 208,
+   "kazanma_90g": 0.226,
+   "katki": 14.88,
+   "katki_z": 9.71,
+   "form_trend": "sabit"
+  },
+  {
+   "ad": "VEDAT ABİŞ",
+   "binis_90g": 292,
+   "kazanma_90g": 0.2432,
+   "katki": 13.85,
+   "katki_z": 12.24,
+   "form_trend": "sabit"
+  },
+  {
+   "ad": "HALİS KARATAŞ",
+   "binis_90g": 122,
+   "kazanma_90g": 0.2049,
+   "katki": 12.65,
+   "katki_z": 6.92,
+   "form_trend": "sabit"
+  },
+  {
+   "ad": "AHMET ÇELİK",
+   "binis_90g": 59,
+   "kazanma_90g": 0.1695,
+   "katki": 10.88,
+   "katki_z": 7.14,
+   "form_trend": "yukseliyor"
+  },
+  {
+   "ad": "SELİM KAYA",
+   "binis_90g": 51,
+   "kazanma_90g": 0.2157,
+   "katki": 9.61,
+   "katki_z": 4.17,
+   "form_trend": "sabit"
+  }
+ ],
+ "jokeyler": [
+  {
+   "ad": "GÖKHAN KOCAKAYA",
+   "binis_90g": 208,
+   "kazanma_90g": 0.226,
+   "ilk3_90g": 0.5337,
+   "katki": 14.88,
+   "katki_logit": 1.092,
+   "katki_z": 9.71,
+   "form_trend": "sabit",
+   "uzmanlik": {
+    "pist": "Sentetik",
+    "mesafe": "kısa",
+    "hipodrom": "İstanbul"
+   },
+   "bugun_binis": []
+  },
+  {
+   "ad": "VEDAT ABİŞ",
+   "binis_90g": 292,
+   "kazanma_90g": 0.2432,
+   "ilk3_90g": 0.5925,
+   "katki": 13.85,
+   "katki_logit": 1.0365,
+   "katki_z": 12.24,
+   "form_trend": "sabit",
+   "uzmanlik": {
+    "pist": "Kum",
+    "mesafe": "orta",
+    "hipodrom": "Adana"
+   },
+   "bugun_binis": []
+  },
+  {
+   "ad": "HALİS KARATAŞ",
+   "binis_90g": 122,
+   "kazanma_90g": 0.2049,
+   "ilk3_90g": 0.5328,
+   "katki": 12.65,
+   "katki_logit": 0.969,
+   "katki_z": 6.92,
+   "form_trend": "sabit",
+   "uzmanlik": {
+    "pist": "Kum",
+    "mesafe": "kısa",
+    "hipodrom": "Ankara"
+   },
+   "bugun_binis": []
+  },
+  {
+   "ad": "AHMET ÇELİK",
+   "binis_90g": 59,
+   "kazanma_90g": 0.1695,
+   "ilk3_90g": 0.5254,
+   "katki": 10.88,
+   "katki_logit": 0.8651,
+   "katki_z": 7.14,
+   "form_trend": "yukseliyor",
+   "uzmanlik": {
+    "pist": "Çim",
+    "mesafe": "kısa",
+    "hipodrom": "Adana"
+   },
+   "bugun_binis": []
+  },
+  {
+   "ad": "SELİM KAYA",
+   "binis_90g": 51,
+   "kazanma_90g": 0.2157,
+   "ilk3_90g": 0.4902,
+   "katki": 9.61,
+   "katki_logit": 0.7866,
+   "katki_z": 4.17,
+   "form_trend": "sabit",
+   "uzmanlik": {
+    "pist": "Kum",
+    "mesafe": "orta",
+    "hipodrom": "Adana"
+   },
+   "bugun_binis": []
+  },
+  {
+   "ad": "AYHAN KURŞUN",
+   "binis_90g": 207,
+   "kazanma_90g": 0.2126,
+   "ilk3_90g": 0.4444,
+   "katki": 9.56,
+   "katki_logit": 0.7832,
+   "katki_z": 8.12,
+   "form_trend": "sabit",
+   "uzmanlik": {
+    "pist": "Sentetik",
+    "mesafe": "orta",
+    "hipodrom": "Antalya"
+   },
+   "bugun_binis": []
+  },
+  {
+   "ad": "MEHMET SALİH ÇELİK",
+   "binis_90g": 172,
+   "kazanma_90g": 0.157,
+   "ilk3_90g": 0.436,
+   "katki": 8.06,
+   "katki_logit": 0.685,
+   "katki_z": 6.59,
+   "form_trend": "dusuyor",
+   "uzmanlik": {
+    "pist": "Sentetik",
+    "mesafe": "kısa",
+    "hipodrom": "Antalya"
+   },
+   "bugun_binis": []
+  },
+  {
+   "ad": "MUHAMMED MİR BİLGİN",
+   "binis_90g": 264,
+   "kazanma_90g": 0.2045,
+   "ilk3_90g": 0.5341,
+   "katki": 7.91,
+   "katki_logit": 0.6747,
+   "katki_z": 8.0,
+   "form_trend": "sabit",
+   "uzmanlik": {
+    "pist": "Kum",
+    "mesafe": "kısa",
+    "hipodrom": "Kocaeli"
+   },
+   "bugun_binis": []
+  },
+  {
+   "ad": "NEVZAT AVCİ",
+   "binis_90g": 191,
+   "kazanma_90g": 0.1571,
+   "ilk3_90g": 0.4607,
+   "katki": 7.84,
+   "katki_logit": 0.6701,
+   "katki_z": 7.27,
+   "form_trend": "sabit",
+   "uzmanlik": {
+    "pist": "Kum",
+    "mesafe": "kısa",
+    "hipodrom": "İzmir"
+   },
+   "bugun_binis": []
+  },
+  {
+   "ad": "HIŞMAN ÇİZİK",
+   "binis_90g": 183,
+   "kazanma_90g": 0.1311,
+   "ilk3_90g": 0.3934,
+   "katki": 7.33,
+   "katki_logit": 0.6346,
+   "katki_z": 5.73,
+   "form_trend": "sabit",
+   "uzmanlik": {
+    "pist": "Çim",
+    "mesafe": "kısa",
+    "hipodrom": "Bursa"
+   },
+   "bugun_binis": []
+  },
+  {
+   "ad": "MEHMET KAYA",
+   "binis_90g": 173,
+   "kazanma_90g": 0.1387,
+   "ilk3_90g": 0.4509,
+   "katki": 7.14,
+   "katki_logit": 0.6217,
+   "katki_z": 5.85,
+   "form_trend": "dusuyor",
+   "uzmanlik": {
+    "pist": "Kum",
+    "mesafe": "orta",
+    "hipodrom": "İzmir"
+   },
+   "bugun_binis": []
+  },
+  {
+   "ad": "İSA AKYAVUZ",
+   "binis_90g": 142,
+   "kazanma_90g": 0.1479,
+   "ilk3_90g": 0.4507,
+   "katki": 6.4,
+   "katki_logit": 0.5684,
+   "katki_z": 5.22,
+   "form_trend": "sabit",
+   "uzmanlik": {
+    "pist": "Kum",
+    "mesafe": "kısa",
+    "hipodrom": "Şanlıurfa"
+   },
+   "bugun_binis": []
+  },
+  {
+   "ad": "ÖZCAN YILDIRIM",
+   "binis_90g": 96,
+   "kazanma_90g": 0.0833,
+   "ilk3_90g": 0.3854,
+   "katki": 6.25,
+   "katki_logit": 0.5573,
+   "katki_z": 3.86,
+   "form_trend": "sabit",
+   "uzmanlik": {
+    "pist": "Sentetik",
+    "mesafe": "uzun",
+    "hipodrom": "Antalya"
+   },
+   "bugun_binis": []
+  },
+  {
+   "ad": "FERİT YARDIMCI",
+   "binis_90g": 132,
+   "kazanma_90g": 0.1212,
+   "ilk3_90g": 0.3712,
+   "katki": 5.07,
+   "katki_logit": 0.4683,
+   "katki_z": 3.64,
+   "form_trend": "sabit",
+   "uzmanlik": {
+    "pist": "Kum",
+    "mesafe": "kısa",
+    "hipodrom": "Şanlıurfa"
+   },
+   "bugun_binis": []
+  },
+  {
+   "ad": "MUSTAFA ÇİÇEK",
+   "binis_90g": 194,
+   "kazanma_90g": 0.1546,
+   "ilk3_90g": 0.4433,
+   "katki": 5.06,
+   "katki_logit": 0.4674,
+   "katki_z": 4.13,
+   "form_trend": "sabit",
+   "uzmanlik": {
+    "pist": "Kum",
+    "mesafe": "kısa",
+    "hipodrom": "İzmir"
+   },
+   "bugun_binis": []
+  },
+  {
+   "ad": "AKIN SÖZEN",
+   "binis_90g": 197,
+   "kazanma_90g": 0.0761,
+   "ilk3_90g": 0.335,
+   "katki": 4.35,
+   "katki_logit": 0.4104,
+   "katki_z": 3.29,
+   "form_trend": "sabit",
+   "uzmanlik": {
+    "pist": "Kum",
+    "mesafe": "kısa",
+    "hipodrom": "Kocaeli"
+   },
+   "bugun_binis": []
+  },
+  {
+   "ad": "MÜSLÜM ÇELİK",
+   "binis_90g": 151,
+   "kazanma_90g": 0.1325,
+   "ilk3_90g": 0.3841,
+   "katki": 4.11,
+   "katki_logit": 0.3912,
+   "katki_z": 3.46,
+   "form_trend": "sabit",
+   "uzmanlik": {
+    "pist": "Sentetik",
+    "mesafe": "kısa",
+    "hipodrom": "İstanbul"
+   },
+   "bugun_binis": []
+  },
+  {
+   "ad": "ERTUĞRUL CANKILIÇ",
+   "binis_90g": 104,
+   "kazanma_90g": 0.1442,
+   "ilk3_90g": 0.3654,
+   "katki": 3.89,
+   "katki_logit": 0.3724,
+   "katki_z": 2.7,
+   "form_trend": "sabit",
+   "uzmanlik": {
+    "pist": "Kum",
+    "mesafe": "orta",
+    "hipodrom": "Bursa"
+   },
+   "bugun_binis": []
+  },
+  {
+   "ad": "ERAY ÇİZİK",
+   "binis_90g": 115,
+   "kazanma_90g": 0.1217,
+   "ilk3_90g": 0.3304,
+   "katki": 3.76,
+   "katki_logit": 0.3622,
+   "katki_z": 2.69,
+   "form_trend": "sabit",
+   "uzmanlik": {
+    "pist": "Kum",
+    "mesafe": "orta",
+    "hipodrom": "Adana"
+   },
+   "bugun_binis": []
+  },
+  {
+   "ad": "ALİ KAÇMAZ",
+   "binis_90g": 86,
+   "kazanma_90g": 0.093,
+   "ilk3_90g": 0.2907,
+   "katki": 3.73,
+   "katki_logit": 0.3591,
+   "katki_z": 1.91,
+   "form_trend": "yukseliyor",
+   "uzmanlik": {
+    "pist": "Sentetik",
+    "mesafe": "uzun",
+    "hipodrom": "İstanbul"
+   },
+   "bugun_binis": []
+  },
+  {
+   "ad": "ERCAN ÇANKAYA",
+   "binis_90g": 172,
+   "kazanma_90g": 0.0988,
+   "ilk3_90g": 0.3837,
+   "katki": 3.37,
+   "katki_logit": 0.3287,
+   "katki_z": 2.83,
+   "form_trend": "sabit",
+   "uzmanlik": {
+    "pist": "Kum",
+    "mesafe": "uzun",
+    "hipodrom": "Adana"
+   },
+   "bugun_binis": []
+  },
+  {
+   "ad": "ONUR YILDIZ",
+   "binis_90g": 82,
+   "kazanma_90g": 0.1341,
+   "ilk3_90g": 0.3049,
+   "katki": 3.3,
+   "katki_logit": 0.3229,
+   "katki_z": 2.04,
+   "form_trend": "sabit",
+   "uzmanlik": {
+    "pist": "Çim",
+    "mesafe": "uzun",
+    "hipodrom": "Bursa"
+   },
+   "bugun_binis": []
+  },
+  {
+   "ad": "ALİ YILDIZ",
+   "binis_90g": 220,
+   "kazanma_90g": 0.0773,
+   "ilk3_90g": 0.3318,
+   "katki": 2.96,
+   "katki_logit": 0.2928,
+   "katki_z": 2.81,
+   "form_trend": "sabit",
+   "uzmanlik": {
+    "pist": "Kum",
+    "mesafe": "kısa",
+    "hipodrom": "Bursa"
+   },
+   "bugun_binis": []
+  },
+  {
+   "ad": "MEHMET AKYAVUZ",
+   "binis_90g": 146,
+   "kazanma_90g": 0.089,
+   "ilk3_90g": 0.3699,
+   "katki": 2.95,
+   "katki_logit": 0.292,
+   "katki_z": 2.05,
+   "form_trend": "dusuyor",
+   "uzmanlik": {
+    "pist": "Sentetik",
+    "mesafe": "kısa",
+    "hipodrom": "İstanbul"
+   },
+   "bugun_binis": []
+  },
+  {
+   "ad": "NECMİ ALTIN",
+   "binis_90g": 145,
+   "kazanma_90g": 0.1517,
+   "ilk3_90g": 0.4276,
+   "katki": 2.41,
+   "katki_logit": 0.2431,
+   "katki_z": 1.93,
+   "form_trend": "yukseliyor",
+   "uzmanlik": {
+    "pist": "Kum",
+    "mesafe": "orta",
+    "hipodrom": "Elazığ"
+   },
+   "bugun_binis": []
+  },
+  {
+   "ad": "MÜCAHİT BAYIR",
+   "binis_90g": 32,
+   "kazanma_90g": 0.1562,
+   "ilk3_90g": 0.4688,
+   "katki": 2.32,
+   "katki_logit": 0.2352,
+   "katki_z": 1.03,
+   "form_trend": "sabit",
+   "uzmanlik": {
+    "pist": "Kum",
+    "mesafe": "uzun",
+    "hipodrom": "Ankara"
+   },
+   "bugun_binis": []
+  },
+  {
+   "ad": "MAHSUN TURAN",
+   "binis_90g": 52,
+   "kazanma_90g": 0.0962,
+   "ilk3_90g": 0.3077,
+   "katki": 1.57,
+   "katki_logit": 0.1635,
+   "katki_z": 0.76,
+   "form_trend": "sabit",
+   "uzmanlik": {
+    "pist": "Sentetik",
+    "mesafe": "kısa",
+    "hipodrom": "Ankara"
+   },
+   "bugun_binis": []
+  },
+  {
+   "ad": "MEHMET TAŞKAYA",
+   "binis_90g": 43,
+   "kazanma_90g": 0.1163,
+   "ilk3_90g": 0.2791,
+   "katki": 1.57,
+   "katki_logit": 0.1633,
+   "katki_z": 0.66,
+   "form_trend": "yukseliyor",
+   "uzmanlik": {
+    "pist": "Kum",
+    "mesafe": "orta",
+    "hipodrom": "Elazığ"
+   },
+   "bugun_binis": []
+  },
+  {
+   "ad": "ÖMER FARUK ÖZEN",
+   "binis_90g": 147,
+   "kazanma_90g": 0.1156,
+   "ilk3_90g": 0.2925,
+   "katki": 1.52,
+   "katki_logit": 0.1588,
+   "katki_z": 1.32,
+   "form_trend": "dusuyor",
+   "uzmanlik": {
+    "pist": "Kum",
+    "mesafe": "uzun",
+    "hipodrom": "İstanbul"
+   },
+   "bugun_binis": []
+  },
+  {
+   "ad": "MERTCAN ÇELİK",
+   "binis_90g": 73,
+   "kazanma_90g": 0.1096,
+   "ilk3_90g": 0.3288,
+   "katki": 1.43,
+   "katki_logit": 0.1492,
+   "katki_z": 0.57,
+   "form_trend": "sabit",
+   "uzmanlik": {
+    "pist": "Kum",
+    "mesafe": "orta",
+    "hipodrom": "İzmir"
+   },
+   "bugun_binis": []
+  },
+  {
+   "ad": "BERKAY BÜLBÜL",
+   "binis_90g": 105,
+   "kazanma_90g": 0.1429,
+   "ilk3_90g": 0.3619,
+   "katki": 1.13,
+   "katki_logit": 0.1197,
+   "katki_z": 0.66,
+   "form_trend": "sabit",
+   "uzmanlik": {
+    "pist": "Kum",
+    "mesafe": "uzun",
+    "hipodrom": "İstanbul"
+   },
+   "bugun_binis": []
+  },
+  {
+   "ad": "GÖKHAN GÖKÇE",
+   "binis_90g": 43,
+   "kazanma_90g": 0.186,
+   "ilk3_90g": 0.3953,
+   "katki": 1.12,
+   "katki_logit": 0.1191,
+   "katki_z": 0.57,
+   "form_trend": "sabit",
+   "uzmanlik": {
+    "pist": "Kum",
+    "mesafe": "orta",
+    "hipodrom": "İzmir"
+   },
+   "bugun_binis": []
+  },
+  {
+   "ad": "KADİR TOKAÇOĞLU",
+   "binis_90g": 84,
+   "kazanma_90g": 0.131,
+   "ilk3_90g": 0.3571,
+   "katki": 1.03,
+   "katki_logit": 0.1097,
+   "katki_z": 0.66,
+   "form_trend": "dusuyor",
+   "uzmanlik": {
+    "pist": "Kum",
+    "mesafe": "orta",
+    "hipodrom": "Bursa"
+   },
+   "bugun_binis": []
+  },
+  {
+   "ad": "SALİH ÇELİK",
+   "binis_90g": 175,
+   "kazanma_90g": 0.0971,
+   "ilk3_90g": 0.3029,
+   "katki": 0.72,
+   "katki_logit": 0.0771,
+   "katki_z": 0.6,
+   "form_trend": "sabit",
+   "uzmanlik": {
+    "pist": "Kum",
+    "mesafe": "kısa",
+    "hipodrom": "Bursa"
+   },
+   "bugun_binis": []
+  },
+  {
+   "ad": "ERHAN AKTUĞ",
+   "binis_90g": 178,
+   "kazanma_90g": 0.0843,
+   "ilk3_90g": 0.2191,
+   "katki": 0.49,
+   "katki_logit": 0.0533,
+   "katki_z": 0.38,
+   "form_trend": "sabit",
+   "uzmanlik": {
+    "pist": "Kum",
+    "mesafe": "orta",
+    "hipodrom": "Antalya"
+   },
+   "bugun_binis": []
+  },
+  {
+   "ad": "GÖRKEM ÖZÇELİK",
+   "binis_90g": 153,
+   "kazanma_90g": 0.098,
+   "ilk3_90g": 0.2876,
+   "katki": 0.45,
+   "katki_logit": 0.0491,
+   "katki_z": 0.36,
+   "form_trend": "yukseliyor",
+   "uzmanlik": {
+    "pist": "Kum",
+    "mesafe": "orta",
+    "hipodrom": "Bursa"
+   },
+   "bugun_binis": []
+  },
+  {
+   "ad": "BEKİR MERT MIRIK",
+   "binis_90g": 91,
+   "kazanma_90g": 0.033,
+   "ilk3_90g": 0.2088,
+   "katki": 0.07,
+   "katki_logit": 0.0079,
+   "katki_z": 0.05,
+   "form_trend": "sabit",
+   "uzmanlik": {
+    "pist": "Kum",
+    "mesafe": "kısa",
+    "hipodrom": "Kocaeli"
+   },
+   "bugun_binis": []
+  },
+  {
+   "ad": "MERT ALİ SOLMAZ",
+   "binis_90g": 82,
+   "kazanma_90g": 0.0976,
+   "ilk3_90g": 0.4268,
+   "katki": -0.0,
+   "katki_logit": -0.0003,
+   "katki_z": -0.0,
+   "form_trend": "sabit",
+   "uzmanlik": {
+    "pist": "Sentetik",
+    "mesafe": "uzun",
+    "hipodrom": "Ankara"
+   },
+   "bugun_binis": []
+  },
+  {
+   "ad": "FESİH ÇETİNBAŞ",
+   "binis_90g": 67,
+   "kazanma_90g": 0.1343,
+   "ilk3_90g": 0.3582,
+   "katki": -0.14,
+   "katki_logit": -0.0151,
+   "katki_z": -0.07,
+   "form_trend": "yukseliyor",
+   "uzmanlik": {
+    "pist": "Sentetik",
+    "mesafe": "kısa",
+    "hipodrom": "İstanbul"
+   },
+   "bugun_binis": []
+  },
+  {
+   "ad": "MEHMET ALİ AKTÜRK",
+   "binis_90g": 57,
+   "kazanma_90g": 0.1754,
+   "ilk3_90g": 0.3509,
+   "katki": -0.14,
+   "katki_logit": -0.016,
+   "katki_z": -0.07,
+   "form_trend": "sabit",
+   "uzmanlik": {
+    "pist": "Kum",
+    "mesafe": "kısa",
+    "hipodrom": "Elazığ"
+   },
+   "bugun_binis": []
+  }
+ ],
+ "antrenorler": [
+  {
+   "ad": "İBRAHİM BEKİROĞULLARI",
+   "kazanma_90g": 0.1831,
+   "ilk3_90g": 0.5352,
+   "katki": 3.17,
+   "katki_logit": 0.3115,
+   "katki_z": 2.12,
+   "form_trend": "sabit",
+   "uzmanlik": {
+    "pist": "Çim",
+    "mesafe": "orta",
+    "hipodrom": "İstanbul"
+   },
+   "kosu_90g": 71
+  },
+  {
+   "ad": "MEHMET ALİ CANPOLATLI",
+   "kazanma_90g": 0.1,
+   "ilk3_90g": 0.44,
+   "katki": 2.67,
+   "katki_logit": 0.267,
+   "katki_z": 1.61,
+   "form_trend": "sabit",
+   "uzmanlik": {
+    "pist": "Kum",
+    "mesafe": "uzun",
+    "hipodrom": "Ankara"
+   },
+   "kosu_90g": 50
+  },
+  {
+   "ad": "HAKAN YÜZBAŞI",
+   "kazanma_90g": 0.1579,
+   "ilk3_90g": 0.3684,
+   "katki": 2.44,
+   "katki_logit": 0.2459,
+   "katki_z": 1.52,
+   "form_trend": "sabit",
+   "uzmanlik": {
+    "pist": "Kum",
+    "mesafe": "kısa",
+    "hipodrom": "İstanbul"
+   },
+   "kosu_90g": 57
+  },
+  {
+   "ad": "ÜMİT ARSLAN",
+   "kazanma_90g": 0.3226,
+   "ilk3_90g": 0.5806,
+   "katki": 2.44,
+   "katki_logit": 0.2461,
+   "katki_z": 1.3,
+   "form_trend": "sabit",
+   "uzmanlik": {
+    "pist": "Çim",
+    "mesafe": "orta",
+    "hipodrom": "İstanbul"
+   },
+   "kosu_90g": 31
+  },
+  {
+   "ad": "MEHMET ALİ SUBAY",
+   "kazanma_90g": 0.1373,
+   "ilk3_90g": 0.3333,
+   "katki": 2.35,
+   "katki_logit": 0.2371,
+   "katki_z": 1.66,
+   "form_trend": "dusuyor",
+   "uzmanlik": {
+    "pist": "Kum",
+    "mesafe": "uzun",
+    "hipodrom": "Şanlıurfa"
+   },
+   "kosu_90g": 102
+  },
+  {
+   "ad": "KEMAL YILMAZ",
+   "kazanma_90g": 0.1176,
+   "ilk3_90g": 0.4559,
+   "katki": 2.31,
+   "katki_logit": 0.2335,
+   "katki_z": 1.4,
+   "form_trend": "yukseliyor",
+   "uzmanlik": {
+    "pist": "Sentetik",
+    "mesafe": "kısa",
+    "hipodrom": "İstanbul"
+   },
+   "kosu_90g": 68
+  },
+  {
+   "ad": "OKTAY DEMİR",
+   "kazanma_90g": 0.1463,
+   "ilk3_90g": 0.3659,
+   "katki": 2.23,
+   "katki_logit": 0.2267,
+   "katki_z": 1.23,
+   "form_trend": "sabit",
+   "uzmanlik": {
+    "pist": "Kum",
+    "mesafe": "orta",
+    "hipodrom": "Bursa"
+   },
+   "kosu_90g": 41
+  },
+  {
+   "ad": "ALPER TEPEBAŞI",
+   "kazanma_90g": 0.2424,
+   "ilk3_90g": 0.4242,
+   "katki": 2.11,
+   "katki_logit": 0.2148,
+   "katki_z": 1.17,
+   "form_trend": "sabit",
+   "uzmanlik": {
+    "pist": "Sentetik",
+    "mesafe": "orta",
+    "hipodrom": "İstanbul"
+   },
+   "kosu_90g": 33
+  },
+  {
+   "ad": "UĞUR KULAK",
+   "kazanma_90g": 0.3438,
+   "ilk3_90g": 0.5938,
+   "katki": 1.9,
+   "katki_logit": 0.1955,
+   "katki_z": 1.14,
+   "form_trend": "sabit",
+   "uzmanlik": {
+    "pist": "Kum",
+    "mesafe": "uzun",
+    "hipodrom": "Ankara"
+   },
+   "kosu_90g": 32
+  },
+  {
+   "ad": "ZEKERİYA AKDEMİR",
+   "kazanma_90g": 0.1429,
+   "ilk3_90g": 0.3175,
+   "katki": 1.65,
+   "katki_logit": 0.1714,
+   "katki_z": 1.18,
+   "form_trend": "sabit",
+   "uzmanlik": {
+    "pist": "Kum",
+    "mesafe": "kısa",
+    "hipodrom": "Şanlıurfa"
+   },
+   "kosu_90g": 63
+  },
+  {
+   "ad": "İLKER KÖROĞLU",
+   "kazanma_90g": 0.2051,
+   "ilk3_90g": 0.4103,
+   "katki": 1.59,
+   "katki_logit": 0.1654,
+   "katki_z": 0.97,
+   "form_trend": "sabit",
+   "uzmanlik": {
+    "pist": "Çim",
+    "mesafe": "kısa",
+    "hipodrom": "Adana"
+   },
+   "kosu_90g": 39
+  },
+  {
+   "ad": "MEHMET ŞEFİK KILINÇ",
+   "kazanma_90g": 0.1212,
+   "ilk3_90g": 0.3636,
+   "katki": 1.53,
+   "katki_logit": 0.1594,
+   "katki_z": 0.79,
+   "form_trend": "sabit",
+   "uzmanlik": {
+    "pist": "Çim",
+    "mesafe": "kısa",
+    "hipodrom": "Ankara"
+   },
+   "kosu_90g": 33
+  },
+  {
+   "ad": "MEHMET EMİN AVCI",
+   "kazanma_90g": 0.1026,
+   "ilk3_90g": 0.4359,
+   "katki": 1.41,
+   "katki_logit": 0.1477,
+   "katki_z": 0.79,
+   "form_trend": "sabit",
+   "uzmanlik": {
+    "pist": "Sentetik",
+    "mesafe": "orta",
+    "hipodrom": "İstanbul"
+   },
+   "kosu_90g": 39
+  },
+  {
+   "ad": "VEDAT YILDIRIM",
+   "kazanma_90g": 0.1566,
+   "ilk3_90g": 0.4458,
+   "katki": 1.25,
+   "katki_logit": 0.1315,
+   "katki_z": 0.74,
+   "form_trend": "dusuyor",
+   "uzmanlik": {
+    "pist": "Kum",
+    "mesafe": "uzun",
+    "hipodrom": "Ankara"
+   },
+   "kosu_90g": 83
+  },
+  {
+   "ad": "YUSUF AKBULUT",
+   "kazanma_90g": 0.1733,
+   "ilk3_90g": 0.4133,
+   "katki": 1.15,
+   "katki_logit": 0.1216,
+   "katki_z": 0.73,
+   "form_trend": "sabit",
+   "uzmanlik": {
+    "pist": "Çim",
+    "mesafe": "uzun",
+    "hipodrom": "Bursa"
+   },
+   "kosu_90g": 75
+  },
+  {
+   "ad": "RANA SUNA",
+   "kazanma_90g": 0.1143,
+   "ilk3_90g": 0.2857,
+   "katki": 1.11,
+   "katki_logit": 0.1176,
+   "katki_z": 0.61,
+   "form_trend": "sabit",
+   "uzmanlik": {
+    "pist": "Sentetik",
+    "mesafe": "orta",
+    "hipodrom": "Kocaeli"
+   },
+   "kosu_90g": 35
+  },
+  {
+   "ad": "AHMET MANTAŞ",
+   "kazanma_90g": 0.2029,
+   "ilk3_90g": 0.4928,
+   "katki": 0.89,
+   "katki_logit": 0.0949,
+   "katki_z": 0.55,
+   "form_trend": "sabit",
+   "uzmanlik": {
+    "pist": "Çim",
+    "mesafe": "orta",
+    "hipodrom": "Bursa"
+   },
+   "kosu_90g": 69
+  },
+  {
+   "ad": "MAHMUT DOĞAN",
+   "kazanma_90g": 0.1316,
+   "ilk3_90g": 0.2895,
+   "katki": 0.88,
+   "katki_logit": 0.0944,
+   "katki_z": 0.57,
+   "form_trend": "sabit",
+   "uzmanlik": {
+    "pist": "Kum",
+    "mesafe": "uzun",
+    "hipodrom": "Elazığ"
+   },
+   "kosu_90g": 76
+  },
+  {
+   "ad": "YASİN DEMİRKIRAN",
+   "kazanma_90g": 0.0962,
+   "ilk3_90g": 0.2115,
+   "katki": 0.86,
+   "katki_logit": 0.0922,
+   "katki_z": 0.54,
+   "form_trend": "dusuyor",
+   "uzmanlik": {
+    "pist": "Çim",
+    "mesafe": "uzun",
+    "hipodrom": "İstanbul"
+   },
+   "kosu_90g": 52
+  },
+  {
+   "ad": "SİNAN ŞAHYAZICI",
+   "kazanma_90g": 0.2222,
+   "ilk3_90g": 0.4,
+   "katki": 0.84,
+   "katki_logit": 0.0896,
+   "katki_z": 0.5,
+   "form_trend": "sabit",
+   "uzmanlik": {
+    "pist": "Kum",
+    "mesafe": "kısa",
+    "hipodrom": "İzmir"
+   },
+   "kosu_90g": 45
+  },
+  {
+   "ad": "ESER YILDIRIM",
+   "kazanma_90g": 0.1176,
+   "ilk3_90g": 0.2745,
+   "katki": 0.81,
+   "katki_logit": 0.0867,
+   "katki_z": 0.46,
+   "form_trend": "yukseliyor",
+   "uzmanlik": {
+    "pist": "Kum",
+    "mesafe": "orta",
+    "hipodrom": "Adana"
+   },
+   "kosu_90g": 51
+  },
+  {
+   "ad": "HÜSEYİN TEKİNALP",
+   "kazanma_90g": 0.1591,
+   "ilk3_90g": 0.4545,
+   "katki": 0.78,
+   "katki_logit": 0.0843,
+   "katki_z": 0.48,
+   "form_trend": "sabit",
+   "uzmanlik": {
+    "pist": "Çim",
+    "mesafe": "kısa",
+    "hipodrom": "Ankara"
+   },
+   "kosu_90g": 44
+  },
+  {
+   "ad": "SEÇKİN YANIK",
+   "kazanma_90g": 0.0968,
+   "ilk3_90g": 0.3871,
+   "katki": 0.73,
+   "katki_logit": 0.0786,
+   "katki_z": 0.39,
+   "form_trend": "sabit",
+   "uzmanlik": {
+    "pist": "Kum",
+    "mesafe": "kısa",
+    "hipodrom": "İzmir"
+   },
+   "kosu_90g": 31
+  },
+  {
+   "ad": "FERDİ KIRAN",
+   "kazanma_90g": 0.1154,
+   "ilk3_90g": 0.2885,
+   "katki": 0.71,
+   "katki_logit": 0.0761,
+   "katki_z": 0.4,
+   "form_trend": "sabit",
+   "uzmanlik": {
+    "pist": "Çim",
+    "mesafe": "orta",
+    "hipodrom": "Bursa"
+   },
+   "kosu_90g": 52
+  },
+  {
+   "ad": "OSMAN ALTUNTAŞ",
+   "kazanma_90g": 0.1333,
+   "ilk3_90g": 0.3333,
+   "katki": 0.68,
+   "katki_logit": 0.0737,
+   "katki_z": 0.36,
+   "form_trend": "yukseliyor",
+   "uzmanlik": {
+    "pist": "Çim",
+    "mesafe": "orta",
+    "hipodrom": "İstanbul"
+   },
+   "kosu_90g": 30
+  }
+ ],
+ "ikililer": [
+  {
+   "jokey": "HALİS KARATAŞ",
+   "antrenor": "MEHMET EMİN AVCI",
+   "binis": 15,
+   "kazanma": 0.0667,
+   "katki": 16.14,
+   "uyum": 0.38,
+   "uyum_z": 0.21
+  },
+  {
+   "jokey": "AYHAN KURŞUN",
+   "antrenor": "İBRAHİM BEKİROĞULLARI",
+   "binis": 19,
+   "kazanma": 0.2105,
+   "katki": 15.55,
+   "uyum": 0.3,
+   "uyum_z": 0.17
+  },
+  {
+   "jokey": "GÖKHAN KOCAKAYA",
+   "antrenor": "ERGÜN USLU",
+   "binis": 15,
+   "kazanma": 0.3333,
+   "katki": 13.91,
+   "uyum": 0.39,
+   "uyum_z": 0.21
+  },
+  {
+   "jokey": "NEVZAT AVCİ",
+   "antrenor": "HAKAN YÜZBAŞI",
+   "binis": 18,
+   "kazanma": 0.1111,
+   "katki": 13.6,
+   "uyum": 1.0,
+   "uyum_z": 0.52
+  },
+  {
+   "jokey": "MEHMET KAYA",
+   "antrenor": "VELAT KARAKUŞ",
+   "binis": 32,
+   "kazanma": 0.125,
+   "katki": 8.03,
+   "uyum": 0.35,
+   "uyum_z": 0.21
+  },
+  {
+   "jokey": "HIŞMAN ÇİZİK",
+   "antrenor": "MÜSLÜM DOLAK",
+   "binis": 15,
+   "kazanma": 0.0667,
+   "katki": 7.69,
+   "uyum": 0.05,
+   "uyum_z": 0.03
+  },
+  {
+   "jokey": "FERİT YARDIMCI",
+   "antrenor": "EYYÜP YARDIMCI",
+   "binis": 21,
+   "kazanma": 0.0476,
+   "katki": 4.43,
+   "uyum": -0.12,
+   "uyum_z": -0.07
+  },
+  {
+   "jokey": "GÖKHAN GÖKÇE",
+   "antrenor": "SEYİT GÖKÇE",
+   "binis": 26,
+   "kazanma": 0.1923,
+   "katki": 2.36,
+   "uyum": 0.55,
+   "uyum_z": 0.34
+  },
+  {
+   "jokey": "MERT ALİ SOLMAZ",
+   "antrenor": "VEDAT YILDIRIM",
+   "binis": 36,
+   "kazanma": 0.1111,
+   "katki": 2.16,
+   "uyum": 0.83,
+   "uyum_z": 0.46
+  },
+  {
+   "jokey": "AZİZ AKDEMİR",
+   "antrenor": "ZEKERİYA AKDEMİR",
+   "binis": 15,
+   "kazanma": 0.1333,
+   "katki": 1.14,
+   "uyum": 0.2,
+   "uyum_z": 0.11
+  },
+  {
+   "jokey": "İSA KATAR",
+   "antrenor": "MEHMET ALİ SUBAY",
+   "binis": 20,
+   "kazanma": 0.15,
+   "katki": 0.72,
+   "uyum": 0.27,
+   "uyum_z": 0.15
+  },
+  {
+   "jokey": "FESİH ÇETİNBAŞ",
+   "antrenor": "HÜSEYİN SUNKAR",
+   "binis": 15,
+   "kazanma": 0.2,
+   "katki": 0.7,
+   "uyum": 0.79,
+   "uyum_z": 0.39
+  },
+  {
+   "jokey": "MEHMET DOĞAN",
+   "antrenor": "MUHAMMED BULUÇ",
+   "binis": 35,
+   "kazanma": 0.1714,
+   "katki": -0.08,
+   "uyum": 1.23,
+   "uyum_z": 0.67
+  },
+  {
+   "jokey": "CEM ALTUN",
+   "antrenor": "AHMET MANTAŞ",
+   "binis": 19,
+   "kazanma": 0.1579,
+   "katki": -0.76,
+   "uyum": 0.62,
+   "uyum_z": 0.32
+  },
+  {
+   "jokey": "NİZAMETTİN DEMİR",
+   "antrenor": "YUNUS TUNCAY",
+   "binis": 17,
+   "kazanma": 0.0588,
+   "katki": -1.5,
+   "uyum": 0.63,
+   "uyum_z": 0.33
+  }
+ ],
+ "deney": {
+  "olusturma": "2026-10-26T03:18:27",
+  "katlar": {
+   "A": [
+    "2025-11-01",
+    "2026-03-15"
+   ],
+   "B": [
+    "2026-03-16",
+    "2026-10-23"
+   ]
+  },
+  "kapi": "deney4 iki katlı kapı",
+  "adimlar": [
+   {
+    "no": 0,
+    "deney": "v4 taban (yayındaki tarif)",
+    "gecti": null,
+    "model": {
+     "ll": 1.8842,
+     "ilk": 0.3175
+    },
+    "harman": {
+     "ll": 1.796,
+     "ilk": 0.3533
+    },
+    "piyasa": {
+     "ll": 1.8149,
+     "ilk": 0.3558
+    },
+    "katlar": {
+     "A": {
+      "kosu": 2153,
+      "model": {
+       "ll": 1.8591,
+       "ilk": 0.3307
+      },
+      "harman": {
+       "ll": 1.7789,
+       "ilk": 0.3623
+      },
+      "piyasa": {
+       "ll": 1.8021,
+       "ilk": 0.3576
+      }
+     },
+     "B": {
+      "kosu": 3282,
+      "model": {
+       "ll": 1.9094,
+       "ilk": 0.3044
+      },
+      "harman": {
+       "ll": 1.8132,
+       "ilk": 0.3443
+      },
+      "piyasa": {
+       "ll": 1.8277,
+       "ilk": 0.3541
+      }
+     }
+    }
+   },
+   {
+    "no": 1,
+    "deney": "jk_beceri — beceri: attan arındırılmış jokey/antrenör/at gücü (ortak Bayes Plackett-Luce), jokey z, alan içi ortak güç",
+    "gecti": false,
+    "fark_model": {
+     "dll": -0.011,
+     "ga95": [
+      -0.0149,
+      -0.0071
+     ],
+     "d_ilk": -0.0026,
+     "A": {
+      "dll": -0.0136,
+      "ga95": [
+       -0.019,
+       -0.0082
+      ],
+      "d_ilk": 0.0014
+     },
+     "B": {
+      "dll": -0.0094,
+      "ga95": [
+       -0.015,
+       -0.0037
+      ],
+      "d_ilk": -0.0052
+     }
+    },
+    "fark_harman": {
+     "dll": -0.002,
+     "ga95": [
+      -0.0035,
+      -0.0005
+     ],
+     "d_ilk": -0.0009,
+     "A": {
+      "dll": -0.0034,
+      "ga95": [
+       -0.0055,
+       -0.0013
+      ],
+      "d_ilk": -0.0005
+     },
+     "B": {
+      "dll": -0.0011,
+      "ga95": [
+       -0.0032,
+       0.0011
+      ],
+      "d_ilk": -0.0012
+     }
+    },
+    "model": {
+     "ll": 1.8727,
+     "ilk": 0.3156
+    },
+    "harman": {
+     "ll": 1.7938,
+     "ilk": 0.3525
+    },
+    "piyasa": {
+     "ll": 1.8149,
+     "ilk": 0.3558
+    },
+    "katlar": {
+     "A": {
+      "kosu": 2153,
+      "model": {
+       "ll": 1.8455,
+       "ilk": 0.3321
+      },
+      "harman": {
+       "ll": 1.7755,
+       "ilk": 0.3618
+      },
+      "piyasa": {
+       "ll": 1.8021,
+       "ilk": 0.3576
+      }
+     },
+     "B": {
+      "kosu": 3282,
+      "model": {
+       "ll": 1.9,
+       "ilk": 0.2992
+      },
+      "harman": {
+       "ll": 1.8122,
+       "ilk": 0.3431
+      },
+      "piyasa": {
+       "ll": 1.8277,
+       "ilk": 0.3541
+      }
+     }
+    }
+   },
+   {
+    "no": 2,
+    "deney": "jk_ikili — ikili uyum: jokey–antrenör ve jokey–at birlikteliği (jokeysiz beklentiye göre kalıntı, küçültmeli)",
+    "gecti": false,
+    "fark_model": {
+     "dll": -0.0002,
+     "ga95": [
+      -0.0018,
+      0.0014
+     ],
+     "d_ilk": -0.0013,
+     "A": {
+      "dll": -0.0009,
+      "ga95": [
+       -0.0035,
+       0.0016
+      ],
+      "d_ilk": -0.0033
+     },
+     "B": {
+      "dll": 0.0002,
+      "ga95": [
+       -0.002,
+       0.0023
+      ],
+      "d_ilk": 0.0
+     }
+    },
+    "fark_harman": {
+     "dll": -0.0002,
+     "ga95": [
+      -0.0008,
+      0.0004
+     ],
+     "d_ilk": 0.0015,
+     "A": {
+      "dll": -0.0005,
+      "ga95": [
+       -0.0015,
+       0.0004
+      ],
+      "d_ilk": 0.0009
+     },
+     "B": {
+      "dll": 0.0,
+      "ga95": [
+       -0.0008,
+       0.0008
+      ],
+      "d_ilk": 0.0018
+     }
+    },
+    "model": {
+     "ll": 1.8839,
+     "ilk": 0.316
+    },
+    "harman": {
+     "ll": 1.7958,
+     "ilk": 0.3547
+    },
+    "piyasa": {
+     "ll": 1.8149,
+     "ilk": 0.3558
+    },
+    "katlar": {
+     "A": {
+      "kosu": 2153,
+      "model": {
+       "ll": 1.8582,
+       "ilk": 0.3275
+      },
+      "harman": {
+       "ll": 1.7784,
+       "ilk": 0.3632
+      },
+      "piyasa": {
+       "ll": 1.8021,
+       "ilk": 0.3576
+      }
+     },
+     "B": {
+      "kosu": 3282,
+      "model": {
+       "ll": 1.9096,
+       "ilk": 0.3044
+      },
+      "harman": {
+       "ll": 1.8132,
+       "ilk": 0.3461
+      },
+      "piyasa": {
+       "ll": 1.8277,
+       "ilk": 0.3541
+      }
+     }
+    }
+   },
+   {
+    "no": 3,
+    "deney": "jk_degisim — jokey değişimi: önceki jokeye göre beceri farkı, yükseltme/düşürme, ilk kez bu ikili",
+    "gecti": false,
+    "fark_model": {
+     "dll": 0.0004,
+     "ga95": [
+      -0.0009,
+      0.0019
+     ],
+     "d_ilk": 0.0007,
+     "A": {
+      "dll": 0.0009,
+      "ga95": [
+       -0.0012,
+       0.0031
+      ],
+      "d_ilk": 0.0005
+     },
+     "B": {
+      "dll": 0.0001,
+      "ga95": [
+       -0.0017,
+       0.0018
+      ],
+      "d_ilk": 0.0009
+     }
+    },
+    "fark_harman": {
+     "dll": -0.0,
+     "ga95": [
+      -0.0005,
+      0.0005
+     ],
+     "d_ilk": -0.0002,
+     "A": {
+      "dll": 0.0001,
+      "ga95": [
+       -0.0007,
+       0.001
+      ],
+      "d_ilk": 0.0005
+     },
+     "B": {
+      "dll": -0.0001,
+      "ga95": [
+       -0.0008,
+       0.0005
+      ],
+      "d_ilk": -0.0006
+     }
+    },
+    "model": {
+     "ll": 1.8847,
+     "ilk": 0.3183
+    },
+    "harman": {
+     "ll": 1.796,
+     "ilk": 0.3532
+    },
+    "piyasa": {
+     "ll": 1.8149,
+     "ilk": 0.3558
+    },
+    "katlar": {
+     "A": {
+      "kosu": 2153,
+      "model": {
+       "ll": 1.8599,
+       "ilk": 0.3312
+      },
+      "harman": {
+       "ll": 1.779,
+       "ilk": 0.3627
+      },
+      "piyasa": {
+       "ll": 1.8021,
+       "ilk": 0.3576
+      }
+     },
+     "B": {
+      "kosu": 3282,
+      "model": {
+       "ll": 1.9095,
+       "ilk": 0.3053
+      },
+      "harman": {
+       "ll": 1.8131,
+       "ilk": 0.3437
+      },
+      "piyasa": {
+       "ll": 1.8277,
+       "ilk": 0.3541
+      }
+     }
+    }
+   },
+   {
+    "no": 4,
+    "deney": "jk_form — form momentumu: jokey kalıntısı son 14/30 gün, 30 gün − 365 gün z, ahır 30 gün",
+    "gecti": false,
+    "fark_model": {
+     "dll": 0.0015,
+     "ga95": [
+      -0.0002,
+      0.0032
+     ],
+     "d_ilk": -0.0035,
+     "A": {
+      "dll": 0.0014,
+      "ga95": [
+       -0.0014,
+       0.0047
+      ],
+      "d_ilk": -0.0056
+     },
+     "B": {
+      "dll": 0.0015,
+      "ga95": [
+       -0.0002,
+       0.0033
+      ],
+      "d_ilk": -0.0021
+     }
+    },
+    "fark_harman": {
+     "dll": 0.0003,
+     "ga95": [
+      -0.0003,
+      0.0009
+     ],
+     "d_ilk": 0.0006,
+     "A": {
+      "dll": 0.0003,
+      "ga95": [
+       -0.0007,
+       0.0015
+      ],
+      "d_ilk": 0.0023
+     },
+     "B": {
+      "dll": 0.0003,
+      "ga95": [
+       -0.0003,
+       0.001
+      ],
+      "d_ilk": -0.0006
+     }
+    },
+    "model": {
+     "ll": 1.8857,
+     "ilk": 0.3137
+    },
+    "harman": {
+     "ll": 1.7964,
+     "ilk": 0.3541
+    },
+    "piyasa": {
+     "ll": 1.8149,
+     "ilk": 0.3558
+    },
+    "katlar": {
+     "A": {
+      "kosu": 2153,
+      "model": {
+       "ll": 1.8605,
+       "ilk": 0.3251
+      },
+      "harman": {
+       "ll": 1.7792,
+       "ilk": 0.3646
+      },
+      "piyasa": {
+       "ll": 1.8021,
+       "ilk": 0.3576
+      }
+     },
+     "B": {
+      "kosu": 3282,
+      "model": {
+       "ll": 1.9109,
+       "ilk": 0.3023
+      },
+      "harman": {
+       "ll": 1.8136,
+       "ilk": 0.3437
+      },
+      "piyasa": {
+       "ll": 1.8277,
+       "ilk": 0.3541
+      }
+     }
+    }
+   },
+   {
+    "no": 5,
+    "deney": "jk_yuk — günlük iş yükü: o gün kaç biniş (programdan), tek binişlik gün",
+    "gecti": false,
+    "fark_model": {
+     "dll": 0.0,
+     "ga95": [
+      -0.0012,
+      0.0012
+     ],
+     "d_ilk": 0.0,
+     "A": {
+      "dll": 0.0008,
+      "ga95": [
+       -0.001,
+       0.0025
+      ],
+      "d_ilk": -0.0009
+     },
+     "B": {
+      "dll": -0.0005,
+      "ga95": [
+       -0.0021,
+       0.0011
+      ],
+      "d_ilk": 0.0006
+     }
+    },
+    "fark_harman": {
+     "dll": -0.0001,
+     "ga95": [
+      -0.0006,
+      0.0003
+     ],
+     "d_ilk": 0.002,
+     "A": {
+      "dll": 0.0001,
+      "ga95": [
+       -0.0005,
+       0.0008
+      ],
+      "d_ilk": 0.0
+     },
+     "B": {
+      "dll": -0.0003,
+      "ga95": [
+       -0.0009,
+       0.0003
+      ],
+      "d_ilk": 0.0034
+     }
+    },
+    "model": {
+     "ll": 1.8843,
+     "ilk": 0.3174
+    },
+    "harman": {
+     "ll": 1.7959,
+     "ilk": 0.355
+    },
+    "piyasa": {
+     "ll": 1.8149,
+     "ilk": 0.3558
+    },
+    "katlar": {
+     "A": {
+      "kosu": 2153,
+      "model": {
+       "ll": 1.8598,
+       "ilk": 0.3298
+      },
+      "harman": {
+       "ll": 1.779,
+       "ilk": 0.3623
+      },
+      "piyasa": {
+       "ll": 1.8021,
+       "ilk": 0.3576
+      }
+     },
+     "B": {
+      "kosu": 3282,
+      "model": {
+       "ll": 1.9089,
+       "ilk": 0.305
+      },
+      "harman": {
+       "ll": 1.8129,
+       "ilk": 0.3477
+      },
+      "piyasa": {
+       "ll": 1.8277,
+       "ilk": 0.3541
+      }
+     }
+    }
+   },
+   {
+    "no": 6,
+    "deney": "jk_uzman — uzmanlık: jokeyin pist / mesafe kovası / hipodrom kalıntısı − genel",
+    "gecti": true,
+    "fark_model": {
+     "dll": -0.0007,
+     "ga95": [
+      -0.0022,
+      0.0009
+     ],
+     "d_ilk": 0.0007,
+     "A": {
+      "dll": -0.0004,
+      "ga95": [
+       -0.0029,
+       0.002
+      ],
+      "d_ilk": -0.0033
+     },
+     "B": {
+      "dll": -0.0009,
+      "ga95": [
+       -0.003,
+       0.0012
+      ],
+      "d_ilk": 0.0034
+     }
+    },
+    "fark_harman": {
+     "dll": -0.0003,
+     "ga95": [
+      -0.0008,
+      0.0003
+     ],
+     "d_ilk": -0.0002,
+     "A": {
+      "dll": -0.0001,
+      "ga95": [
+       -0.001,
+       0.0008
+      ],
+      "d_ilk": -0.0033
+     },
+     "B": {
+      "dll": -0.0004,
+      "ga95": [
+       -0.0012,
+       0.0004
+      ],
+      "d_ilk": 0.0018
+     }
+    },
+    "model": {
+     "ll": 1.8836,
+     "ilk": 0.3176
+    },
+    "harman": {
+     "ll": 1.7958,
+     "ilk": 0.3526
+    },
+    "piyasa": {
+     "ll": 1.8149,
+     "ilk": 0.3558
+    },
+    "katlar": {
+     "A": {
+      "kosu": 2153,
+      "model": {
+       "ll": 1.8587,
+       "ilk": 0.3275
+      },
+      "harman": {
+       "ll": 1.7788,
+       "ilk": 0.359
+      },
+      "piyasa": {
+       "ll": 1.8021,
+       "ilk": 0.3576
+      }
+     },
+     "B": {
+      "kosu": 3282,
+      "model": {
+       "ll": 1.9085,
+       "ilk": 0.3077
+      },
+      "harman": {
+       "ll": 1.8128,
+       "ilk": 0.3461
+      },
+      "piyasa": {
+       "ll": 1.8277,
+       "ilk": 0.3541
+      }
+     }
+    }
+   },
+   {
+    "no": 7,
+    "deney": "jk_apr — apranti vekili: az biniş / yeni lisans, × kilo farkı, tecrübe",
+    "gecti": true,
+    "fark_model": {
+     "dll": -0.0005,
+     "ga95": [
+      -0.0019,
+      0.001
+     ],
+     "d_ilk": 0.0007,
+     "A": {
+      "dll": -0.0005,
+      "ga95": [
+       -0.003,
+       0.002
+      ],
+      "d_ilk": 0.0009
+     },
+     "B": {
+      "dll": -0.0006,
+      "ga95": [
+       -0.0024,
+       0.0013
+      ],
+      "d_ilk": 0.0006
+     }
+    },
+    "fark_harman": {
+     "dll": -0.0001,
+     "ga95": [
+      -0.0006,
+      0.0004
+     ],
+     "d_ilk": 0.0015,
+     "A": {
+      "dll": -0.0,
+      "ga95": [
+       -0.0009,
+       0.0009
+      ],
+      "d_ilk": 0.0033
+     },
+     "B": {
+      "dll": -0.0002,
+      "ga95": [
+       -0.0009,
+       0.0004
+      ],
+      "d_ilk": 0.0003
+     }
+    },
+    "model": {
+     "ll": 1.883,
+     "ilk": 0.3184
+    },
+    "harman": {
+     "ll": 1.7957,
+     "ilk": 0.3543
+    },
+    "piyasa": {
+     "ll": 1.8149,
+     "ilk": 0.3558
+    },
+    "katlar": {
+     "A": {
+      "kosu": 2153,
+      "model": {
+       "ll": 1.8582,
+       "ilk": 0.3284
+      },
+      "harman": {
+       "ll": 1.7788,
+       "ilk": 0.3623
+      },
+      "piyasa": {
+       "ll": 1.8021,
+       "ilk": 0.3576
+      }
+     },
+     "B": {
+      "kosu": 3282,
+      "model": {
+       "ll": 1.9079,
+       "ilk": 0.3083
+      },
+      "harman": {
+       "ll": 1.8126,
+       "ilk": 0.3464
+      },
+      "piyasa": {
+       "ll": 1.8277,
+       "ilk": 0.3541
+      }
+     }
+    }
+   },
+   {
+    "no": 8,
+    "deney": "jk_secim — üst jokey seçimi: düzenli ahırlarının atları varken bu ata binmesi (× beceri), ahırın ana jokeyi başka atta (terk), ana jokey",
+    "gecti": false,
+    "fark_model": {
+     "dll": -0.0001,
+     "ga95": [
+      -0.0015,
+      0.0013
+     ],
+     "d_ilk": 0.0007,
+     "A": {
+      "dll": 0.0003,
+      "ga95": [
+       -0.0018,
+       0.0024
+      ],
+      "d_ilk": 0.0028
+     },
+     "B": {
+      "dll": -0.0004,
+      "ga95": [
+       -0.0022,
+       0.0014
+      ],
+      "d_ilk": -0.0006
+     }
+    },
+    "fark_harman": {
+     "dll": -0.0001,
+     "ga95": [
+      -0.0005,
+      0.0005
+     ],
+     "d_ilk": -0.0011,
+     "A": {
+      "dll": 0.0001,
+      "ga95": [
+       -0.0007,
+       0.0008
+      ],
+      "d_ilk": 0.0005
+     },
+     "B": {
+      "dll": -0.0001,
+      "ga95": [
+       -0.0008,
+       0.0005
+      ],
+      "d_ilk": -0.0021
+     }
+    },
+    "model": {
+     "ll": 1.883,
+     "ilk": 0.3195
+    },
+    "harman": {
+     "ll": 1.7957,
+     "ilk": 0.3535
+    },
+    "piyasa": {
+     "ll": 1.8149,
+     "ilk": 0.3558
+    },
+    "katlar": {
+     "A": {
+      "kosu": 2153,
+      "model": {
+       "ll": 1.8586,
+       "ilk": 0.3312
+      },
+      "harman": {
+       "ll": 1.7789,
+       "ilk": 0.3627
+      },
+      "piyasa": {
+       "ll": 1.8021,
+       "ilk": 0.3576
+      }
+     },
+     "B": {
+      "kosu": 3282,
+      "model": {
+       "ll": 1.9075,
+       "ilk": 0.3077
+      },
+      "harman": {
+       "ll": 1.8125,
+       "ilk": 0.3443
+      },
+      "piyasa": {
+       "ll": 1.8277,
+       "ilk": 0.3541
+      }
+     }
+    }
+   },
+   {
+    "no": 9,
+    "deney": "yeniden (yeni tabanda): jk_beceri",
+    "gecti": true,
+    "fark_model": {
+     "dll": -0.0102,
+     "ga95": [
+      -0.0141,
+      -0.0065
+     ],
+     "d_ilk": -0.0011,
+     "A": {
+      "dll": -0.0134,
+      "ga95": [
+       -0.0189,
+       -0.008
+      ],
+      "d_ilk": 0.006
+     },
+     "B": {
+      "dll": -0.0082,
+      "ga95": [
+       -0.0135,
+       -0.0025
+      ],
+      "d_ilk": -0.0058
+     }
+    },
+    "fark_harman": {
+     "dll": -0.0018,
+     "ga95": [
+      -0.0034,
+      -0.0004
+     ],
+     "d_ilk": -0.0022,
+     "A": {
+      "dll": -0.0036,
+      "ga95": [
+       -0.0057,
+       -0.0015
+      ],
+      "d_ilk": -0.0014
+     },
+     "B": {
+      "dll": -0.0007,
+      "ga95": [
+       -0.0028,
+       0.0015
+      ],
+      "d_ilk": -0.0027
+     }
+    },
+    "model": {
+     "ll": 1.8722,
+     "ilk": 0.3185
+    },
+    "harman": {
+     "ll": 1.7936,
+     "ilk": 0.3523
+    },
+    "piyasa": {
+     "ll": 1.8149,
+     "ilk": 0.3558
+    },
+    "katlar": {
+     "A": {
+      "kosu": 2153,
+      "model": {
+       "ll": 1.8448,
+       "ilk": 0.3344
+      },
+      "harman": {
+       "ll": 1.7753,
+       "ilk": 0.3609
+      },
+      "piyasa": {
+       "ll": 1.8021,
+       "ilk": 0.3576
+      }
+     },
+     "B": {
+      "kosu": 3282,
+      "model": {
+       "ll": 1.8997,
+       "ilk": 0.3026
+      },
+      "harman": {
+       "ll": 1.8119,
+       "ilk": 0.3437
+      },
+      "piyasa": {
+       "ll": 1.8277,
+       "ilk": 0.3541
+      }
+     }
+    }
+   },
+   {
+    "no": 10,
+    "deney": "yeniden (yeni tabanda): jk_ikili",
+    "gecti": false,
+    "fark_model": {
+     "dll": 0.001,
+     "ga95": [
+      -0.0006,
+      0.0026
+     ],
+     "d_ilk": 0.0024,
+     "A": {
+      "dll": -0.0004,
+      "ga95": [
+       -0.003,
+       0.0022
+      ],
+      "d_ilk": 0.0014
+     },
+     "B": {
+      "dll": 0.0019,
+      "ga95": [
+       0.0,
+       0.0039
+      ],
+      "d_ilk": 0.003
+     }
+    },
+    "fark_harman": {
+     "dll": 0.0003,
+     "ga95": [
+      -0.0003,
+      0.001
+     ],
+     "d_ilk": -0.0007,
+     "A": {
+      "dll": -0.0002,
+      "ga95": [
+       -0.0012,
+       0.0008
+      ],
+      "d_ilk": 0.0009
+     },
+     "B": {
+      "dll": 0.0007,
+      "ga95": [
+       -0.0,
+       0.0015
+      ],
+      "d_ilk": -0.0018
+     }
+    },
+    "model": {
+     "ll": 1.8731,
+     "ilk": 0.3207
+    },
+    "harman": {
+     "ll": 1.7938,
+     "ilk": 0.3518
+    },
+    "piyasa": {
+     "ll": 1.8149,
+     "ilk": 0.3558
+    },
+    "katlar": {
+     "A": {
+      "kosu": 2153,
+      "model": {
+       "ll": 1.8444,
+       "ilk": 0.3358
+      },
+      "harman": {
+       "ll": 1.775,
+       "ilk": 0.3618
+      },
+      "piyasa": {
+       "ll": 1.8021,
+       "ilk": 0.3576
+      }
+     },
+     "B": {
+      "kosu": 3282,
+      "model": {
+       "ll": 1.9017,
+       "ilk": 0.3056
+      },
+      "harman": {
+       "ll": 1.8126,
+       "ilk": 0.3419
+      },
+      "piyasa": {
+       "ll": 1.8277,
+       "ilk": 0.3541
+      }
+     }
+    }
+   },
+   {
+    "no": 11,
+    "deney": "yeniden (yeni tabanda): jk_secim",
+    "gecti": false,
+    "fark_model": {
+     "dll": 0.0009,
+     "ga95": [
+      -0.0005,
+      0.0023
+     ],
+     "d_ilk": -0.0015,
+     "A": {
+      "dll": 0.0003,
+      "ga95": [
+       -0.0018,
+       0.0024
+      ],
+      "d_ilk": -0.0028
+     },
+     "B": {
+      "dll": 0.0013,
+      "ga95": [
+       -0.0003,
+       0.003
+      ],
+      "d_ilk": -0.0006
+     }
+    },
+    "fark_harman": {
+     "dll": 0.0003,
+     "ga95": [
+      -0.0003,
+      0.0008
+     ],
+     "d_ilk": 0.0015,
+     "A": {
+      "dll": 0.0001,
+      "ga95": [
+       -0.0007,
+       0.0009
+      ],
+      "d_ilk": 0.0014
+     },
+     "B": {
+      "dll": 0.0004,
+      "ga95": [
+       -0.0002,
+       0.0011
+      ],
+      "d_ilk": 0.0015
+     }
+    },
+    "model": {
+     "ll": 1.8731,
+     "ilk": 0.3168
+    },
+    "harman": {
+     "ll": 1.7938,
+     "ilk": 0.3538
+    },
+    "piyasa": {
+     "ll": 1.8149,
+     "ilk": 0.3558
+    },
+    "katlar": {
+     "A": {
+      "kosu": 2153,
+      "model": {
+       "ll": 1.8452,
+       "ilk": 0.3316
+      },
+      "harman": {
+       "ll": 1.7754,
+       "ilk": 0.3623
+      },
+      "piyasa": {
+       "ll": 1.8021,
+       "ilk": 0.3576
+      }
+     },
+     "B": {
+      "kosu": 3282,
+      "model": {
+       "ll": 1.901,
+       "ilk": 0.302
+      },
+      "harman": {
+       "ll": 1.8123,
+       "ilk": 0.3452
+      },
+      "piyasa": {
+       "ll": 1.8277,
+       "ilk": 0.3541
+      }
+     }
+    }
+   }
+  ],
+  "ayar": {
+   "onsel": {
+    "at": 0.8,
+    "jokey": 0.3,
+    "antrenor": 0.06
+   },
+   "surukle_gun": {
+    "at": 0.8,
+    "jokey": 0.2,
+    "antrenor": 0.04
+   },
+   "kademe": [
+    1.0,
+    0.5,
+    0.25
+   ]
+  },
+  "secim": [
+   "jk_uzman",
+   "jk_apr",
+   "jk_beceri"
+  ],
+  "toplam": {
+   "model": {
+    "dll": -0.0114,
+    "ga95": [
+     -0.0157,
+     -0.0074
+    ],
+    "d_ilk": 0.0004,
+    "A": {
+     "dll": -0.0142,
+     "ga95": [
+      -0.0207,
+      -0.0082
+     ],
+     "d_ilk": 0.0037
+    },
+    "B": {
+     "dll": -0.0096,
+     "ga95": [
+      -0.0157,
+      -0.0038
+     ],
+     "d_ilk": -0.0018
+    }
+   },
+   "harman": {
+    "dll": -0.0022,
+    "ga95": [
+     -0.0038,
+     -0.0007
+    ],
+    "d_ilk": -0.0009,
+    "A": {
+     "dll": -0.0036,
+     "ga95": [
+      -0.0061,
+      -0.0013
+     ],
+     "d_ilk": -0.0014
+    },
+    "B": {
+     "dll": -0.0013,
+     "ga95": [
+      -0.0037,
+      0.0009
+     ],
+     "d_ilk": -0.0006
+    }
+   }
+  },
+  "sure_sn": 1243,
+  "devam_notu": "ilk koşu 6. adımdan sonra süre sınırında durdu; --devam ile kayıtlı adımlar atlanarak tamamlandı (sure_sn yalnız devam koşusu)"
+ }
+}

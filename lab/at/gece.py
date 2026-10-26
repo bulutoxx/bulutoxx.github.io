@@ -18,6 +18,7 @@ sys.path.insert(0, BURA)
 os.environ.setdefault("AT_KAYNAK", os.path.join(KOK, "_tjk-data"))
 
 import veri, ozellik, model as M  # noqa: E402
+import jokey  # noqa: E402  (🏇 jokey/ahır uzmanı: data/at/jokeyler.json + jk_* özellik grupları)
 
 CIKTI = os.path.join(KOK, "data", "at")
 TAHMIN = os.path.join(CIKTI, "tahmin")
@@ -25,6 +26,7 @@ RAPOR = os.path.join(BURA, "RAPOR.md")
 GBM_DOSYA = os.path.join(CIKTI, "gbm_uretim.txt")      # yayın modelinin ağaçları (uygulama okumaz)
 IZ_DOSYA = os.path.join(CIKTI, "sinama_izi.json")     # kapı için koşu başına sınama izi
 DENEY_DOSYA = os.path.join(CIKTI, "deneyler.json")
+JOKEY_DOSYA = os.path.join(CIKTI, "jokeyler.json")    # arayüz: attan arındırılmış jokey/antrenör istatistikleri
 YENILEME_GUN = 7   # aynı tarifte yayın katsayılarının yenilenme aralığı (gün)
 TAKIP = [("2026-10-25", "İstanbul", 5)]   # raporda kalıcı izlenen örnek koşu(lar)
 KAYNAKLAR = ["github.com/cenkozgur/tjk-data (herkese açık ayna; tjk.org'a istek yok)"]
@@ -116,6 +118,7 @@ IFADE = {  # özellik -> (değeri koşu ortalamasından YÜKSEKSE, DÜŞÜKSE) �
     "donus_2": ("uzun aradan sonraki ikinci koşusu", ""), "yas2_mesafe": ("", ""),
     "sinif_dus": ("belirgin sınıf düşüşü", ""), "sinif_cik": ("belirgin sınıf yükselişi", ""),
 }
+IFADE.update(jokey.IFADE)   # jk_* özellikleri (yalnız seçilmişse gerekçede görünür)
 
 
 def jyaz(yol, veri_, sikisik=False):
@@ -436,6 +439,54 @@ def _v4_ozet(a, mj):
     a("")
 
 
+def _jokey_bolum(a):
+    """🏇 Jokey ve ahır uzmanı: kapılı jk_* deneyleri + jokeyler.json'dan ilk 5 (deney4 kapısı, lab/at/deney_jokey.py)."""
+    jj = joku(JOKEY_DOSYA)
+    if not jj:
+        return
+    dj = jj.get("deney") or {}
+    a("## Jokey ve ahır (attan arındırılmış beceri)")
+    a("")
+    a("Jokey, antrenör ve at güçleri koşu içi Plackett-Luce ile **ortak** ve Bayes küçültmeli tahmin edilir (her varlık için "
+      "ortalama + belirsizlik; zamanla belirsizlik geri açılır). Jokeyin \"katkısı\" aynı at ve ahırla ortalama jokeye göre "
+      "güç farkıdır; ek sinyaller jokeysiz beklentiye göre kalıntılardan: jokey–antrenör / jokey–at birlikteliği, jokey "
+      "değişimi, son 14/30 gün formu, günlük iş yükü (programdan), pist/mesafe/hipodrom uzmanlığı, apranti vekili, "
+      "\"üst jokey seçimi\". Hepsi yalnız koşu gününden önceki veriyle (sızıntı testi: `python lab/at/deney_jokey.py --sizinti`).")
+    a("")
+    ad = dj.get("adimlar") or []
+    if ad:
+        a("Kapılı deneyler (v4 iki katlı kapı; ΔLL = yeni − önceki kabul, yalnız model, koşu-bootstrap %95 GA):")
+        a("")
+        a("| # | grup | sonuç | ort. LL / ilk seçim | B: LL / ilk | ΔLL birleşik [%95 GA] | ΔLL A | ΔLL B | harman ort. |")
+        a("|---|---|---|---|---|---|---|---|---|")
+        for s_ in ad:
+            sonuc = "taban" if s_["gecti"] is None else ("✅ kaldı" if s_["gecti"] else "❌ elendi")
+            fm = s_.get("fark_model")
+            B_ = s_["katlar"]["B"]["model"]
+            a(f"| {s_['no']} | {s_['deney']} | {sonuc} | {s_['model']['ll']:.4f} / {_y(s_['model']['ilk'])} | "
+              f"{B_['ll']:.4f} / {_y(B_['ilk'])} | {_ga(fm) if fm else '–'} | {_ga(fm['A']) if fm else '–'} | "
+              f"{_ga(fm['B']) if fm else '–'} | {s_['harman']['ll']:.4f} |")
+        a("")
+        sec = dj.get("secim") or []
+        a(f"- Yayına giren jk grupları: **{', '.join(sec) if sec else 'yok'}** (yayındaki: {', '.join(jokey.JK_SECILI) or 'yok'}). "
+          f"Deney kaydı: `data/at/jokeyler.json` → `deney` ({dj.get('olusturma', '')}; süre {dj.get('sure_sn', '?')} sn).")
+        if dj.get("toplam"):
+            tp = dj["toplam"]
+            a(f"- Toplam (seçilenler − v4 taban): yalnız model {_ga(tp['model'])}; harman {_ga(tp['harman'])}.")
+    jk = jj.get("jokeyler") or []
+    if jk:
+        a(f"- Dönem {jj['donem'][0]} → {jj['donem'][1]} (son 90 gün, en az 30 biniş). Katkı = 10 atlı koşuda ortalama ata binince "
+          "kazanma olasılığının ortalama jokeye göre farkı (puan). İlk 5:")
+        a("")
+        a("| jokey | biniş (90 g) | kazanma | ilk 3 | katkı (puan) | z | form | uzmanlık |")
+        a("|---|---|---|---|---|---|---|---|")
+        for d in jk[:5]:
+            u = d.get("uzmanlik") or {}
+            a(f"| {d['ad']} | {d['binis_90g']} | {_y(d['kazanma_90g'])} | {_y(d['ilk3_90g'])} | {d['katki']:+.1f} | "
+              f"{d.get('katki_z', 0):.1f} | {d['form_trend']} | {u.get('pist') or '–'} / {u.get('mesafe') or '–'} / {u.get('hipodrom') or '–'} |")
+    a("")
+
+
 def _v3_ozet(a, mj):
     """v3 turu (25.10.2026 akşam): atyarisi.com kararı + kapılı deneyler (deneyler_v3.json'dan)."""
     dj = joku(DENEY3_DOSYA)
@@ -518,6 +569,7 @@ def rapor_yaz(mj, karne, bugun, ayna_durumu):
     dj = joku(DENEY_DOSYA) or {}
     v1 = (dj.get("adimlar") or [{}])[0]
     _v4_ozet(a, mj)
+    _jokey_bolum(a)
     _v3_ozet(a, mj)
     a("## Özet: v2 güncellemesi (25.10.2026)")
     a("")
@@ -757,7 +809,10 @@ def tarif():
             "gbm_tohum": list(M.GBM_TOHUM), "kat_bas": M.KAT_BAS, "hp_k": ozellik.HP_K,
             "kal_gun": M.KAL_GUN, "yari_omur": M.YARI_OMUR, "pl_hiz": ozellik.PL_HIZ, "pl_kademe": ozellik.PL_KADEME,
             "pm_hiz": ozellik.PM_HIZ, "ewma": ozellik.EWMA_A, "sonum_gun": ozellik.SONUM_GUN,
-            "hz_yontem": ozellik.HZ_YONTEM, "henery_model": M.HENERY_MODEL}
+            "hz_yontem": ozellik.HZ_YONTEM, "henery_model": M.HENERY_MODEL,
+            # jokey turu: Bayes PL ayarları yalnız jk_* grubu yayındaysa tarife girer (yoksa tarif değişmesin)
+            **({"jk": {"gruplar": list(jokey.JK_SECILI), "onsel": jokey.JK_ONSEL, "surukle": jokey.JK_SURUKLE,
+                       "kademe": list(jokey.JK_KADEME)}} if jokey.JK_SECILI else {})}
 
 
 def kapi_karari(yeni, iz, trf, eski, eski_iz, b_bas=None):
@@ -895,6 +950,13 @@ def main():
     print("kilitlenen:", kilit)
     karne, puanlanan = puanla(kosular)
     print("puanlanan:", puanlanan)
+    try:   # jokey/antrenör özetleri (arayüz) — durum tüm sonuçlarla ilerletilmiş; bugünkü binişler sabah kilidinden
+        jj = jokey.jokeyler_json(kosular, durum.jk, bugun, os.path.join(TAHMIN, bugun + ".json"),
+                                 deney=(joku(JOKEY_DOSYA) or {}).get("deney"))
+        jyaz(JOKEY_DOSYA, jj)
+        print("jokeyler:", len(jj["jokeyler"]), "jokey,", len(jj["antrenorler"]), "antrenör,", len(jj["ikililer"]), "ikili")
+    except Exception as e:   # arayüz özeti yayın modelini asla durdurmaz
+        print("jokeyler.json üretilemedi:", type(e).__name__, e)
     jyaz(os.path.join(CIKTI, "model.json"), mj)
     rapor_yaz(mj, karne, bugun, ayna)
     print("tamam")

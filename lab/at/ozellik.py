@@ -18,6 +18,7 @@ from datetime import date
 import numpy as np
 
 from veri import piyasa_q, zemin_sira
+import jokey as _jk   # 🏇 jokey ve ahır uzmanı (lab/at/jokey.py): attan arındırılmış jokey/antrenör özellikleri
 
 TUM_OZELLIKLER = [
     ("yeni", "form"), ("n_kosu", "form"), ("skor_son", "form"), ("skor3", "form"), ("skor5", "form"),
@@ -59,7 +60,7 @@ TUM_OZELLIKLER = [
     ("mesafe_deg_y", "degisim"), ("pist_degisti", "degisim"), ("pist_ilk", "degisim"), ("jokey_r_fark", "degisim"),
     ("ara_10", "degisim"), ("ara_60_120", "degisim"), ("ara_120_240", "degisim"), ("ara_240p", "degisim"),
     ("donus_2", "degisim"), ("yas2_mesafe", "degisim"), ("sinif_dus", "degisim"), ("sinif_cik", "degisim"),
-]
+] + _jk.JK_OZELLIKLER   # jokey/ahır adayları (jk_* grupları) — mevcut sütunların sırası değişmez
 TUM_ADLAR = [o[0] for o in TUM_OZELLIKLER]
 GRUP = dict(TUM_OZELLIKLER)
 
@@ -69,6 +70,7 @@ V1_GRUPLAR = ["form", "fark", "piyasa_gecmisi", "dinlenme", "pist_mesafe_hipodro
               "jokey", "antrenor", "jokey_at", "alan"]
 # v3: hiz3 kapıdan geçti; zemin elendi. v4 (iki katlı kapı, lab/at/deney4.py): degisim ve hp geçti.
 SECILI_GRUPLAR = V1_GRUPLAR + ["piyasa_hafiza", "reyting", "sinif2", "fark2", "hiz3", "degisim", "hp"]
+SECILI_GRUPLAR = SECILI_GRUPLAR + [g for g in _jk.JK_SECILI if g not in SECILI_GRUPLAR]   # jokey turu (deney_jokey.py)
 OZELLIKLER = [o for o in TUM_OZELLIKLER if o[1] in SECILI_GRUPLAR]
 ADLAR = [o[0] for o in OZELLIKLER]
 GRUPLAR = sorted({o[1] for o in OZELLIKLER})
@@ -195,6 +197,7 @@ class Durum:
         self.hp_sinif = defaultdict(lambda: [0, 0.0])      # handikap sınıf anahtarı -> [n, Σ düzey gözlemi]
         self.hp_jokey = defaultdict(lambda: deque(maxlen=40))  # jokey -> kilo indirimi kalıntıları
         self.hp_bekleyen = []                              # günün handikap koşuları (gün sonunda işlenir)
+        self.jk = _jk.JokeyDurum()                         # jokey/ahır: Bayes PL becerisi + kalıntı istatistikleri
 
     # --- sınıf düzeyi: o sınıfta koşan atların geçmiş galibiyet sayısının (log) kayan ortalaması
     def sinif_duzeyi(self, k):
@@ -289,6 +292,7 @@ class Durum:
                     kl_sira[id(a)] = (lo + hi) / 2.0 / (len(ss) - 1)
         kl_min = min(kl) if kl else 0.0
         kl_med = float(np.median(kl)) if kl else 0.0
+        jk_sat = self.jk.satirlar(kosu) if any(x in _jk.JK_ADLAR for x in adlar) else None
         satirlar = []
         for ai, a in enumerate(kosu["atlar"]):
             g = self.at.get(a["ad"], [])
@@ -468,6 +472,8 @@ class Durum:
                 f["sinif_cik"] = 1.0 if sd > 0.15 else 0.0
             if (a["yas"] or 0) == 2 and kosu["mesafe"]:
                 f["yas2_mesafe"] = math.log(kosu["mesafe"] / 1200.0)
+            if jk_sat is not None:
+                f.update(jk_sat[ai])
             satirlar.append([f[k] for k in adlar])
         return np.asarray(satirlar, dtype=np.float64)
 
@@ -643,6 +649,7 @@ class Durum:
             self.std[(kosu["hipodrom"], kosu["pist"], kosu["mesafe"])].append(kaz_sure / km)
         if std is not None and kaz_sure and km:
             self.gun_bekleyen.append((kosu, std - kaz_sure / km))
+        self.jk.guncelle(kosu)
         # v4 handikap vekili: gün sonunda (aynı günün başka koşusuna sızmasın diye)
         if self._handikap_mi(kosu):
             self.hp_bekleyen.append(kosu)
@@ -677,6 +684,7 @@ class Durum:
         self.gun_bekleyen = []
         self._hz_gun_sonu()
         self._hp_gun_sonu()
+        self.jk.gun_sonu()
 
     def _hp_gun_sonu(self):
         """Günün handikap koşularından: sınıf düzeyi, jokey indirimi ve atların örtük HP değerleri güncellenir.
