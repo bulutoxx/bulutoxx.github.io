@@ -39,6 +39,8 @@ jobs:
         env:
           APISPORTS_KEY: ${{ secrets.APISPORTS_KEY }}
           ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
+      - name: 🎟️ OXX kupon robotu (maçtan önce kilit, sonuç puanı, karne)
+        run: timeout 300 python scripts/oxx_kupon.py || echo "OXX kupon robotu bu sefer atlandı"
       - name: Değişiklikleri kaydet
         run: |
           git config user.name "bulutoxx-bot"
