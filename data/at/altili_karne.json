@@ -1,0 +1,1934 @@
+{
+ "guncelleme": "2026-10-26T00:09:30+00:00",
+ "uyari": "Hobi amaçlı olasılıklardır; garanti değildir. Para tutarı gösterilmez · 18+",
+ "geriye_donuk": {
+  "olusturma": "2026-10-26T00:09:30+00:00",
+  "aciklama": "Geriye dönük test: data/at/replay_kosular.json (gün gün yeniden oynatma, sızıntısız) üzerinden her geçmiş 6'lı 'hiç oynanmamış gibi' yalnız sabah olasılığıyla (p_sabah, oransız) seçildi; sonuç yalnız puanlamada kullanıldı. Kalibrasyon üssü τ ve altın eşikleri yalnız seçim diliminde (ilk 2/3 gün) seçildi.",
+  "donem": [
+   "2026-03-16",
+   "2026-10-23"
+  ],
+  "bolum": {
+   "secim": [
+    "2026-03-16",
+    "2026-07-26"
+   ],
+   "sinama": [
+    "2026-07-27",
+    "2026-10-23"
+   ]
+  },
+  "altili": 655,
+  "altili_bayrakli": 592,
+  "altili_varsayim": 63,
+  "eksik_ayakli_atlanan": 1,
+  "varsayim_dogrulama": {
+   "gun_hip": 333,
+   "son6_gercek": 311,
+   "not": "bayraklı gün-hipodromlarda son 6 koşunun gerçek bir 6'lı başlangıcı olma oranı; bayraksız (2026-04 öncesi) günlerde 'son 6 koşu' varsayımının dayanağı"
+  },
+  "butce": {
+   "dar": 64,
+   "orta": 192,
+   "genis": 576
+  },
+  "tau": 0.95,
+  "tau_tablo": [
+   [
+    0.8,
+    1.89574
+   ],
+   [
+    0.85,
+    1.89242
+   ],
+   [
+    0.9,
+    1.89071
+   ],
+   [
+    0.95,
+    1.89055
+   ],
+   [
+    1.0,
+    1.89188
+   ],
+   [
+    1.05,
+    1.89461
+   ],
+   [
+    1.1,
+    1.8987
+   ],
+   [
+    1.2,
+    1.91067
+   ]
+  ],
+  "altin_kural": {
+   "p_min": 0.5,
+   "fark_min": 0.1,
+   "zorla": false,
+   "kaynak": "geri test seçim dilimi"
+  },
+  "zorlama_karari": {
+   "zorlamasiz_isabet_toplam": 59,
+   "zorlamasiz_beklenen_toplam": 67.6,
+   "zorlali_isabet_toplam": 59,
+   "zorlali_beklenen_toplam": 65.34,
+   "kazanc": 0,
+   "esik": 16.4,
+   "zorla": false,
+   "en_iyi_zorlali_aday": {
+    "p_min": 0.35,
+    "fark_min": 0.2,
+    "altin_ayak": 393,
+    "altin_altili_basina": 0.908,
+    "altin_isabet": 0.4733,
+    "zorla_isabet_toplam": 62,
+    "zorla_ayak_toplam": 4638,
+    "zorla_beklenen_toplam": 61.8,
+    "uygun": true
+   }
+  },
+  "seviyeler": {
+   "dar": {
+    "n": 655,
+    "isabet": 14,
+    "isabet_orani": 0.0214,
+    "beklenen": 13.17,
+    "beklenen_oran": 0.0201,
+    "z": 0.23,
+    "bes_ayak": 66,
+    "ort_ayak_tutan": 3.145,
+    "ort_kombinasyon": 63.3,
+    "ort_p": 0.0201,
+    "ayak_isabet": 0.5242,
+    "ayak_isabet_sira": [
+     0.5359,
+     0.5084,
+     0.5725,
+     0.5221,
+     0.5267,
+     0.4794
+    ],
+    "ayak_beklenen": 0.5248,
+    "altin_ayak": {
+     "tanim": "kurala uyan ayaklarda en güçlü atın (tek at) kazanma isabeti",
+     "n": 129,
+     "kuponda_tek_at": 113,
+     "isabet": 0.5504,
+     "beklenen": 0.5794,
+     "altili_basina": 0.197
+    },
+    "diger_ayak": {
+     "n": 3801,
+     "isabet": 0.5217,
+     "beklenen": 0.5216
+    },
+    "kalibrasyon": [
+     {
+      "aralik": [
+       0,
+       0.01
+      ],
+      "n": 201,
+      "tahmin_ort": 0.0068,
+      "gerceklesen": 0.0
+     },
+     {
+      "aralik": [
+       0.01,
+       0.02
+      ],
+      "n": 232,
+      "tahmin_ort": 0.0143,
+      "gerceklesen": 0.0172
+     },
+     {
+      "aralik": [
+       0.02,
+       0.05
+      ],
+      "n": 188,
+      "tahmin_ort": 0.0305,
+      "gerceklesen": 0.0372
+     },
+     {
+      "aralik": [
+       0.05,
+       0.1
+      ],
+      "n": 30,
+      "tahmin_ort": 0.0687,
+      "gerceklesen": 0.1
+     },
+     {
+      "aralik": [
+       0.1,
+       0.2
+      ],
+      "n": 3,
+      "tahmin_ort": 0.1177,
+      "gerceklesen": 0.0
+     },
+     {
+      "aralik": [
+       0.2,
+       0.4
+      ],
+      "n": 1,
+      "tahmin_ort": 0.3583,
+      "gerceklesen": 0.0
+     }
+    ]
+   },
+   "orta": {
+    "n": 655,
+    "isabet": 20,
+    "isabet_orani": 0.0305,
+    "beklenen": 27.0,
+    "beklenen_oran": 0.0412,
+    "z": -1.4,
+    "bes_ayak": 105,
+    "ort_ayak_tutan": 3.518,
+    "ort_kombinasyon": 191.3,
+    "ort_p": 0.0412,
+    "ayak_isabet": 0.5863,
+    "ayak_isabet_sira": [
+     0.5969,
+     0.5756,
+     0.6321,
+     0.5908,
+     0.5893,
+     0.5328
+    ],
+    "ayak_beklenen": 0.5903,
+    "altin_ayak": {
+     "tanim": "kurala uyan ayaklarda en güçlü atın (tek at) kazanma isabeti",
+     "n": 129,
+     "kuponda_tek_at": 103,
+     "isabet": 0.5504,
+     "beklenen": 0.5794,
+     "altili_basina": 0.197
+    },
+    "diger_ayak": {
+     "n": 3801,
+     "isabet": 0.5859,
+     "beklenen": 0.5886
+    },
+    "kalibrasyon": [
+     {
+      "aralik": [
+       0,
+       0.01
+      ],
+      "n": 33,
+      "tahmin_ort": 0.0078,
+      "gerceklesen": 0.0
+     },
+     {
+      "aralik": [
+       0.01,
+       0.02
+      ],
+      "n": 128,
+      "tahmin_ort": 0.0157,
+      "gerceklesen": 0.0
+     },
+     {
+      "aralik": [
+       0.02,
+       0.05
+      ],
+      "n": 324,
+      "tahmin_ort": 0.0323,
+      "gerceklesen": 0.0216
+     },
+     {
+      "aralik": [
+       0.05,
+       0.1
+      ],
+      "n": 137,
+      "tahmin_ort": 0.0678,
+      "gerceklesen": 0.073
+     },
+     {
+      "aralik": [
+       0.1,
+       0.2
+      ],
+      "n": 30,
+      "tahmin_ort": 0.1289,
+      "gerceklesen": 0.0667
+     },
+     {
+      "aralik": [
+       0.2,
+       0.4
+      ],
+      "n": 2,
+      "tahmin_ort": 0.2215,
+      "gerceklesen": 0.0
+     },
+     {
+      "aralik": [
+       0.4,
+       1.0
+      ],
+      "n": 1,
+      "tahmin_ort": 0.6713,
+      "gerceklesen": 1.0
+     }
+    ]
+   },
+   "genis": {
+    "n": 655,
+    "isabet": 46,
+    "isabet_orani": 0.0702,
+    "beklenen": 51.2,
+    "beklenen_oran": 0.0782,
+    "z": -0.78,
+    "bes_ayak": 163,
+    "ort_ayak_tutan": 3.889,
+    "ort_kombinasyon": 574.1,
+    "ort_p": 0.0782,
+    "ayak_isabet": 0.6481,
+    "ayak_isabet_sira": [
+     0.655,
+     0.6504,
+     0.6885,
+     0.6473,
+     0.6397,
+     0.6076
+    ],
+    "ayak_beklenen": 0.6561,
+    "altin_ayak": {
+     "tanim": "kurala uyan ayaklarda en güçlü atın (tek at) kazanma isabeti",
+     "n": 129,
+     "kuponda_tek_at": 94,
+     "isabet": 0.5504,
+     "beklenen": 0.5794,
+     "altili_basina": 0.197
+    },
+    "diger_ayak": {
+     "n": 3801,
+     "isabet": 0.6493,
+     "beklenen": 0.6558
+    },
+    "kalibrasyon": [
+     {
+      "aralik": [
+       0,
+       0.01
+      ],
+      "n": 2,
+      "tahmin_ort": 0.0095,
+      "gerceklesen": 0.0
+     },
+     {
+      "aralik": [
+       0.01,
+       0.02
+      ],
+      "n": 23,
+      "tahmin_ort": 0.0169,
+      "gerceklesen": 0.0
+     },
+     {
+      "aralik": [
+       0.02,
+       0.05
+      ],
+      "n": 206,
+      "tahmin_ort": 0.0375,
+      "gerceklesen": 0.0146
+     },
+     {
+      "aralik": [
+       0.05,
+       0.1
+      ],
+      "n": 269,
+      "tahmin_ort": 0.0715,
+      "gerceklesen": 0.0595
+     },
+     {
+      "aralik": [
+       0.1,
+       0.2
+      ],
+      "n": 134,
+      "tahmin_ort": 0.1341,
+      "gerceklesen": 0.1567
+     },
+     {
+      "aralik": [
+       0.2,
+       0.4
+      ],
+      "n": 19,
+      "tahmin_ort": 0.2387,
+      "gerceklesen": 0.2632
+     },
+     {
+      "aralik": [
+       0.4,
+       1.0
+      ],
+      "n": 2,
+      "tahmin_ort": 0.6639,
+      "gerceklesen": 0.5
+     }
+    ]
+   }
+  },
+  "secim": {
+   "altili": 433,
+   "seviyeler": {
+    "dar": {
+     "n": 433,
+     "isabet": 10,
+     "isabet_orani": 0.0231,
+     "beklenen": 10.01,
+     "beklenen_oran": 0.0231,
+     "z": -0.0,
+     "bes_ayak": 44,
+     "ort_ayak_tutan": 3.215,
+     "ort_kombinasyon": 63.3,
+     "ort_p": 0.0231,
+     "ayak_isabet": 0.5358,
+     "ayak_isabet_sira": [
+      0.5242,
+      0.5543,
+      0.5543,
+      0.5497,
+      0.5335,
+      0.4988
+     ],
+     "ayak_beklenen": 0.5354,
+     "altin_ayak": {
+      "tanim": "kurala uyan ayaklarda en güçlü atın (tek at) kazanma isabeti",
+      "n": 117,
+      "kuponda_tek_at": 103,
+      "isabet": 0.5641,
+      "beklenen": 0.5791,
+      "altili_basina": 0.27
+     },
+     "diger_ayak": {
+      "n": 2481,
+      "isabet": 0.5328,
+      "beklenen": 0.5316
+     },
+     "kalibrasyon": [
+      {
+       "aralik": [
+        0,
+        0.01
+       ],
+       "n": 111,
+       "tahmin_ort": 0.0067,
+       "gerceklesen": 0.0
+      },
+      {
+       "aralik": [
+        0.01,
+        0.02
+       ],
+       "n": 141,
+       "tahmin_ort": 0.0146,
+       "gerceklesen": 0.0213
+      },
+      {
+       "aralik": [
+        0.02,
+        0.05
+       ],
+       "n": 151,
+       "tahmin_ort": 0.0315,
+       "gerceklesen": 0.0265
+      },
+      {
+       "aralik": [
+        0.05,
+        0.1
+       ],
+       "n": 27,
+       "tahmin_ort": 0.0689,
+       "gerceklesen": 0.1111
+      },
+      {
+       "aralik": [
+        0.1,
+        0.2
+       ],
+       "n": 2,
+       "tahmin_ort": 0.1231,
+       "gerceklesen": 0.0
+      },
+      {
+       "aralik": [
+        0.2,
+        0.4
+       ],
+       "n": 1,
+       "tahmin_ort": 0.3583,
+       "gerceklesen": 0.0
+      }
+     ]
+    },
+    "orta": {
+     "n": 433,
+     "isabet": 15,
+     "isabet_orani": 0.0346,
+     "beklenen": 20.15,
+     "beklenen_oran": 0.0465,
+     "z": -1.2,
+     "bes_ayak": 73,
+     "ort_ayak_tutan": 3.566,
+     "ort_kombinasyon": 191.3,
+     "ort_p": 0.0465,
+     "ayak_isabet": 0.5943,
+     "ayak_isabet_sira": [
+      0.5889,
+      0.5982,
+      0.6143,
+      0.6189,
+      0.5958,
+      0.5497
+     ],
+     "ayak_beklenen": 0.5998,
+     "altin_ayak": {
+      "tanim": "kurala uyan ayaklarda en güçlü atın (tek at) kazanma isabeti",
+      "n": 117,
+      "kuponda_tek_at": 94,
+      "isabet": 0.5641,
+      "beklenen": 0.5791,
+      "altili_basina": 0.27
+     },
+     "diger_ayak": {
+      "n": 2481,
+      "isabet": 0.5941,
+      "beklenen": 0.598
+     },
+     "kalibrasyon": [
+      {
+       "aralik": [
+        0,
+        0.01
+       ],
+       "n": 22,
+       "tahmin_ort": 0.0076,
+       "gerceklesen": 0.0
+      },
+      {
+       "aralik": [
+        0.01,
+        0.02
+       ],
+       "n": 69,
+       "tahmin_ort": 0.0159,
+       "gerceklesen": 0.0
+      },
+      {
+       "aralik": [
+        0.02,
+        0.05
+       ],
+       "n": 199,
+       "tahmin_ort": 0.0333,
+       "gerceklesen": 0.0201
+      },
+      {
+       "aralik": [
+        0.05,
+        0.1
+       ],
+       "n": 114,
+       "tahmin_ort": 0.0692,
+       "gerceklesen": 0.0702
+      },
+      {
+       "aralik": [
+        0.1,
+        0.2
+       ],
+       "n": 27,
+       "tahmin_ort": 0.1287,
+       "gerceklesen": 0.0741
+      },
+      {
+       "aralik": [
+        0.2,
+        0.4
+       ],
+       "n": 1,
+       "tahmin_ort": 0.2158,
+       "gerceklesen": 0.0
+      },
+      {
+       "aralik": [
+        0.4,
+        1.0
+       ],
+       "n": 1,
+       "tahmin_ort": 0.6713,
+       "gerceklesen": 1.0
+      }
+     ]
+    },
+    "genis": {
+     "n": 433,
+     "isabet": 34,
+     "isabet_orani": 0.0785,
+     "beklenen": 37.44,
+     "beklenen_oran": 0.0865,
+     "z": -0.61,
+     "bes_ayak": 108,
+     "ort_ayak_tutan": 3.94,
+     "ort_kombinasyon": 573.9,
+     "ort_p": 0.0865,
+     "ayak_isabet": 0.6567,
+     "ayak_isabet_sira": [
+      0.6536,
+      0.6721,
+      0.6813,
+      0.6674,
+      0.6443,
+      0.6212
+     ],
+     "ayak_beklenen": 0.6656,
+     "altin_ayak": {
+      "tanim": "kurala uyan ayaklarda en güçlü atın (tek at) kazanma isabeti",
+      "n": 117,
+      "kuponda_tek_at": 85,
+      "isabet": 0.5641,
+      "beklenen": 0.5791,
+      "altili_basina": 0.27
+     },
+     "diger_ayak": {
+      "n": 2481,
+      "isabet": 0.6586,
+      "beklenen": 0.6658
+     },
+     "kalibrasyon": [
+      {
+       "aralik": [
+        0,
+        0.01
+       ],
+       "n": 2,
+       "tahmin_ort": 0.0095,
+       "gerceklesen": 0.0
+      },
+      {
+       "aralik": [
+        0.01,
+        0.02
+       ],
+       "n": 12,
+       "tahmin_ort": 0.0159,
+       "gerceklesen": 0.0
+      },
+      {
+       "aralik": [
+        0.02,
+        0.05
+       ],
+       "n": 114,
+       "tahmin_ort": 0.0374,
+       "gerceklesen": 0.0175
+      },
+      {
+       "aralik": [
+        0.05,
+        0.1
+       ],
+       "n": 175,
+       "tahmin_ort": 0.0727,
+       "gerceklesen": 0.0571
+      },
+      {
+       "aralik": [
+        0.1,
+        0.2
+       ],
+       "n": 112,
+       "tahmin_ort": 0.1364,
+       "gerceklesen": 0.1429
+      },
+      {
+       "aralik": [
+        0.2,
+        0.4
+       ],
+       "n": 17,
+       "tahmin_ort": 0.2382,
+       "gerceklesen": 0.2941
+      },
+      {
+       "aralik": [
+        0.4,
+        1.0
+       ],
+       "n": 1,
+       "tahmin_ort": 0.9255,
+       "gerceklesen": 1.0
+      }
+     ]
+    }
+   }
+  },
+  "sinama": {
+   "altili": 222,
+   "seviyeler": {
+    "dar": {
+     "n": 222,
+     "isabet": 4,
+     "isabet_orani": 0.018,
+     "beklenen": 3.16,
+     "beklenen_oran": 0.0142,
+     "z": 0.48,
+     "bes_ayak": 22,
+     "ort_ayak_tutan": 3.009,
+     "ort_kombinasyon": 63.4,
+     "ort_p": 0.0142,
+     "ayak_isabet": 0.5015,
+     "ayak_isabet_sira": [
+      0.5586,
+      0.4189,
+      0.6081,
+      0.4685,
+      0.5135,
+      0.4414
+     ],
+     "ayak_beklenen": 0.5041,
+     "altin_ayak": {
+      "tanim": "kurala uyan ayaklarda en güçlü atın (tek at) kazanma isabeti",
+      "n": 12,
+      "kuponda_tek_at": 10,
+      "isabet": 0.4167,
+      "beklenen": 0.5815,
+      "altili_basina": 0.054
+     },
+     "diger_ayak": {
+      "n": 1320,
+      "isabet": 0.5008,
+      "beklenen": 0.5028
+     },
+     "kalibrasyon": [
+      {
+       "aralik": [
+        0,
+        0.01
+       ],
+       "n": 90,
+       "tahmin_ort": 0.0069,
+       "gerceklesen": 0.0
+      },
+      {
+       "aralik": [
+        0.01,
+        0.02
+       ],
+       "n": 91,
+       "tahmin_ort": 0.0138,
+       "gerceklesen": 0.011
+      },
+      {
+       "aralik": [
+        0.02,
+        0.05
+       ],
+       "n": 37,
+       "tahmin_ort": 0.0265,
+       "gerceklesen": 0.0811
+      },
+      {
+       "aralik": [
+        0.05,
+        0.1
+       ],
+       "n": 3,
+       "tahmin_ort": 0.0668,
+       "gerceklesen": 0.0
+      },
+      {
+       "aralik": [
+        0.1,
+        0.2
+       ],
+       "n": 1,
+       "tahmin_ort": 0.1068,
+       "gerceklesen": 0.0
+      }
+     ]
+    },
+    "orta": {
+     "n": 222,
+     "isabet": 5,
+     "isabet_orani": 0.0225,
+     "beklenen": 6.86,
+     "beklenen_oran": 0.0309,
+     "z": -0.73,
+     "bes_ayak": 32,
+     "ort_ayak_tutan": 3.423,
+     "ort_kombinasyon": 191.4,
+     "ort_p": 0.0309,
+     "ayak_isabet": 0.5706,
+     "ayak_isabet_sira": [
+      0.6126,
+      0.5315,
+      0.6667,
+      0.536,
+      0.5766,
+      0.5
+     ],
+     "ayak_beklenen": 0.5718,
+     "altin_ayak": {
+      "tanim": "kurala uyan ayaklarda en güçlü atın (tek at) kazanma isabeti",
+      "n": 12,
+      "kuponda_tek_at": 9,
+      "isabet": 0.4167,
+      "beklenen": 0.5815,
+      "altili_basina": 0.054
+     },
+     "diger_ayak": {
+      "n": 1320,
+      "isabet": 0.5705,
+      "beklenen": 0.5708
+     },
+     "kalibrasyon": [
+      {
+       "aralik": [
+        0,
+        0.01
+       ],
+       "n": 11,
+       "tahmin_ort": 0.0083,
+       "gerceklesen": 0.0
+      },
+      {
+       "aralik": [
+        0.01,
+        0.02
+       ],
+       "n": 59,
+       "tahmin_ort": 0.0155,
+       "gerceklesen": 0.0
+      },
+      {
+       "aralik": [
+        0.02,
+        0.05
+       ],
+       "n": 125,
+       "tahmin_ort": 0.0307,
+       "gerceklesen": 0.024
+      },
+      {
+       "aralik": [
+        0.05,
+        0.1
+       ],
+       "n": 23,
+       "tahmin_ort": 0.0609,
+       "gerceklesen": 0.087
+      },
+      {
+       "aralik": [
+        0.1,
+        0.2
+       ],
+       "n": 3,
+       "tahmin_ort": 0.1302,
+       "gerceklesen": 0.0
+      },
+      {
+       "aralik": [
+        0.2,
+        0.4
+       ],
+       "n": 1,
+       "tahmin_ort": 0.2273,
+       "gerceklesen": 0.0
+      }
+     ]
+    },
+    "genis": {
+     "n": 222,
+     "isabet": 12,
+     "isabet_orani": 0.0541,
+     "beklenen": 13.76,
+     "beklenen_oran": 0.062,
+     "z": -0.5,
+     "bes_ayak": 55,
+     "ort_ayak_tutan": 3.788,
+     "ort_kombinasyon": 574.5,
+     "ort_p": 0.062,
+     "ayak_isabet": 0.6314,
+     "ayak_isabet_sira": [
+      0.6577,
+      0.6081,
+      0.7027,
+      0.6081,
+      0.6306,
+      0.5811
+     ],
+     "ayak_beklenen": 0.6375,
+     "altin_ayak": {
+      "tanim": "kurala uyan ayaklarda en güçlü atın (tek at) kazanma isabeti",
+      "n": 12,
+      "kuponda_tek_at": 9,
+      "isabet": 0.4167,
+      "beklenen": 0.5815,
+      "altili_basina": 0.054
+     },
+     "diger_ayak": {
+      "n": 1320,
+      "isabet": 0.6318,
+      "beklenen": 0.6371
+     },
+     "kalibrasyon": [
+      {
+       "aralik": [
+        0.01,
+        0.02
+       ],
+       "n": 11,
+       "tahmin_ort": 0.018,
+       "gerceklesen": 0.0
+      },
+      {
+       "aralik": [
+        0.02,
+        0.05
+       ],
+       "n": 92,
+       "tahmin_ort": 0.0377,
+       "gerceklesen": 0.0109
+      },
+      {
+       "aralik": [
+        0.05,
+        0.1
+       ],
+       "n": 94,
+       "tahmin_ort": 0.0693,
+       "gerceklesen": 0.0638
+      },
+      {
+       "aralik": [
+        0.1,
+        0.2
+       ],
+       "n": 22,
+       "tahmin_ort": 0.1221,
+       "gerceklesen": 0.2273
+      },
+      {
+       "aralik": [
+        0.2,
+        0.4
+       ],
+       "n": 2,
+       "tahmin_ort": 0.2432,
+       "gerceklesen": 0.0
+      },
+      {
+       "aralik": [
+        0.4,
+        1.0
+       ],
+       "n": 1,
+       "tahmin_ort": 0.4024,
+       "gerceklesen": 0.0
+      }
+     ]
+    }
+   }
+  },
+  "yalniz_bayrakli": {
+   "altili": 592,
+   "seviyeler": {
+    "dar": {
+     "n": 592,
+     "isabet": 13,
+     "isabet_orani": 0.022,
+     "beklenen": 11.53,
+     "beklenen_oran": 0.0195,
+     "z": 0.44,
+     "bes_ayak": 59,
+     "ort_ayak_tutan": 3.118,
+     "ort_kombinasyon": 63.3,
+     "ort_p": 0.0195,
+     "ayak_isabet": 0.5197,
+     "ayak_isabet_sira": [
+      0.5304,
+      0.4983,
+      0.5726,
+      0.5084,
+      0.527,
+      0.4814
+     ],
+     "ayak_beklenen": 0.5223,
+     "altin_ayak": {
+      "tanim": "kurala uyan ayaklarda en güçlü atın (tek at) kazanma isabeti",
+      "n": 108,
+      "kuponda_tek_at": 93,
+      "isabet": 0.5185,
+      "beklenen": 0.5711,
+      "altili_basina": 0.182
+     },
+     "diger_ayak": {
+      "n": 3444,
+      "isabet": 0.518,
+      "beklenen": 0.5194
+     },
+     "kalibrasyon": [
+      {
+       "aralik": [
+        0,
+        0.01
+       ],
+       "n": 188,
+       "tahmin_ort": 0.0067,
+       "gerceklesen": 0.0
+      },
+      {
+       "aralik": [
+        0.01,
+        0.02
+       ],
+       "n": 214,
+       "tahmin_ort": 0.0143,
+       "gerceklesen": 0.0187
+      },
+      {
+       "aralik": [
+        0.02,
+        0.05
+       ],
+       "n": 164,
+       "tahmin_ort": 0.0303,
+       "gerceklesen": 0.0427
+      },
+      {
+       "aralik": [
+        0.05,
+        0.1
+       ],
+       "n": 22,
+       "tahmin_ort": 0.0698,
+       "gerceklesen": 0.0909
+      },
+      {
+       "aralik": [
+        0.1,
+        0.2
+       ],
+       "n": 3,
+       "tahmin_ort": 0.1177,
+       "gerceklesen": 0.0
+      },
+      {
+       "aralik": [
+        0.2,
+        0.4
+       ],
+       "n": 1,
+       "tahmin_ort": 0.3583,
+       "gerceklesen": 0.0
+      }
+     ]
+    },
+    "orta": {
+     "n": 592,
+     "isabet": 19,
+     "isabet_orani": 0.0321,
+     "beklenen": 23.7,
+     "beklenen_oran": 0.04,
+     "z": -1.0,
+     "bes_ayak": 91,
+     "ort_ayak_tutan": 3.492,
+     "ort_kombinasyon": 191.3,
+     "ort_p": 0.04,
+     "ayak_isabet": 0.5819,
+     "ayak_isabet_sira": [
+      0.5912,
+      0.5676,
+      0.6368,
+      0.5709,
+      0.5845,
+      0.5405
+     ],
+     "ayak_beklenen": 0.5877,
+     "altin_ayak": {
+      "tanim": "kurala uyan ayaklarda en güçlü atın (tek at) kazanma isabeti",
+      "n": 108,
+      "kuponda_tek_at": 84,
+      "isabet": 0.5185,
+      "beklenen": 0.5711,
+      "altili_basina": 0.182
+     },
+     "diger_ayak": {
+      "n": 3444,
+      "isabet": 0.5822,
+      "beklenen": 0.5861
+     },
+     "kalibrasyon": [
+      {
+       "aralik": [
+        0,
+        0.01
+       ],
+       "n": 33,
+       "tahmin_ort": 0.0078,
+       "gerceklesen": 0.0
+      },
+      {
+       "aralik": [
+        0.01,
+        0.02
+       ],
+       "n": 117,
+       "tahmin_ort": 0.0156,
+       "gerceklesen": 0.0
+      },
+      {
+       "aralik": [
+        0.02,
+        0.05
+       ],
+       "n": 300,
+       "tahmin_ort": 0.0323,
+       "gerceklesen": 0.0233
+      },
+      {
+       "aralik": [
+        0.05,
+        0.1
+       ],
+       "n": 117,
+       "tahmin_ort": 0.0676,
+       "gerceklesen": 0.0855
+      },
+      {
+       "aralik": [
+        0.1,
+        0.2
+       ],
+       "n": 22,
+       "tahmin_ort": 0.1312,
+       "gerceklesen": 0.0455
+      },
+      {
+       "aralik": [
+        0.2,
+        0.4
+       ],
+       "n": 2,
+       "tahmin_ort": 0.2215,
+       "gerceklesen": 0.0
+      },
+      {
+       "aralik": [
+        0.4,
+        1.0
+       ],
+       "n": 1,
+       "tahmin_ort": 0.6713,
+       "gerceklesen": 1.0
+      }
+     ]
+    },
+    "genis": {
+     "n": 592,
+     "isabet": 41,
+     "isabet_orani": 0.0693,
+     "beklenen": 44.96,
+     "beklenen_oran": 0.076,
+     "z": -0.63,
+     "bes_ayak": 141,
+     "ort_ayak_tutan": 3.86,
+     "ort_kombinasyon": 574.0,
+     "ort_p": 0.076,
+     "ayak_isabet": 0.6433,
+     "ayak_isabet_sira": [
+      0.6436,
+      0.6402,
+      0.6959,
+      0.6334,
+      0.6351,
+      0.6115
+     ],
+     "ayak_beklenen": 0.6536,
+     "altin_ayak": {
+      "tanim": "kurala uyan ayaklarda en güçlü atın (tek at) kazanma isabeti",
+      "n": 108,
+      "kuponda_tek_at": 76,
+      "isabet": 0.5185,
+      "beklenen": 0.5711,
+      "altili_basina": 0.182
+     },
+     "diger_ayak": {
+      "n": 3444,
+      "isabet": 0.6449,
+      "beklenen": 0.6533
+     },
+     "kalibrasyon": [
+      {
+       "aralik": [
+        0,
+        0.01
+       ],
+       "n": 2,
+       "tahmin_ort": 0.0095,
+       "gerceklesen": 0.0
+      },
+      {
+       "aralik": [
+        0.01,
+        0.02
+       ],
+       "n": 23,
+       "tahmin_ort": 0.0169,
+       "gerceklesen": 0.0
+      },
+      {
+       "aralik": [
+        0.02,
+        0.05
+       ],
+       "n": 187,
+       "tahmin_ort": 0.0373,
+       "gerceklesen": 0.016
+      },
+      {
+       "aralik": [
+        0.05,
+        0.1
+       ],
+       "n": 252,
+       "tahmin_ort": 0.0714,
+       "gerceklesen": 0.0556
+      },
+      {
+       "aralik": [
+        0.1,
+        0.2
+       ],
+       "n": 112,
+       "tahmin_ort": 0.1327,
+       "gerceklesen": 0.1786
+      },
+      {
+       "aralik": [
+        0.2,
+        0.4
+       ],
+       "n": 14,
+       "tahmin_ort": 0.2415,
+       "gerceklesen": 0.2143
+      },
+      {
+       "aralik": [
+        0.4,
+        1.0
+       ],
+       "n": 2,
+       "tahmin_ort": 0.6639,
+       "gerceklesen": 0.5
+      }
+     ]
+    }
+   }
+  },
+  "karsi_politika": {
+   "zorla": true,
+   "seviyeler": {
+    "dar": {
+     "n": 655,
+     "isabet": 14,
+     "beklenen": 12.99,
+     "bes_ayak": 65,
+     "ayak_isabet": 0.5234
+    },
+    "orta": {
+     "n": 655,
+     "isabet": 21,
+     "beklenen": 26.23,
+     "bes_ayak": 105,
+     "ayak_isabet": 0.5863
+    },
+    "genis": {
+     "n": 655,
+     "isabet": 45,
+     "beklenen": 49.59,
+     "bes_ayak": 164,
+     "ayak_isabet": 0.6481
+    }
+   },
+   "sinama": {
+    "dar": {
+     "n": 222,
+     "isabet": 4,
+     "beklenen": 3.14,
+     "bes_ayak": 22,
+     "ayak_isabet": 0.5
+    },
+    "orta": {
+     "n": 222,
+     "isabet": 5,
+     "beklenen": 6.77,
+     "bes_ayak": 32,
+     "ayak_isabet": 0.5691
+    },
+    "genis": {
+     "n": 222,
+     "isabet": 12,
+     "beklenen": 13.56,
+     "bes_ayak": 55,
+     "ayak_isabet": 0.6314
+    }
+   }
+  },
+  "acgozlu_karsilastirma": {
+   "dar": {
+    "dp_beklenen": 13.17,
+    "acgozlu_beklenen": 12.86,
+    "dp_isabet": 14,
+    "acgozlu_isabet": 14
+   },
+   "orta": {
+    "dp_beklenen": 27.0,
+    "acgozlu_beklenen": 26.45,
+    "dp_isabet": 20,
+    "acgozlu_isabet": 23
+   },
+   "genis": {
+    "dp_beklenen": 51.2,
+    "acgozlu_beklenen": 50.33,
+    "dp_isabet": 46,
+    "acgozlu_isabet": 42
+   }
+  },
+  "butce_izgarasi": [
+   {
+    "kombinasyon": 16,
+    "n": 655,
+    "isabet": 5,
+    "isabet_orani": 0.0076,
+    "beklenen": 5.11,
+    "beklenen_oran": 0.0078,
+    "ort_kombinasyon": 16.0,
+    "sinama": {
+     "n": 222,
+     "isabet": 3,
+     "beklenen": 1.13
+    }
+   },
+   {
+    "kombinasyon": 32,
+    "n": 655,
+    "isabet": 9,
+    "isabet_orani": 0.0137,
+    "beklenen": 8.29,
+    "beklenen_oran": 0.0127,
+    "ort_kombinasyon": 31.9,
+    "sinama": {
+     "n": 222,
+     "isabet": 4,
+     "beklenen": 1.91
+    }
+   },
+   {
+    "kombinasyon": 64,
+    "n": 655,
+    "isabet": 14,
+    "isabet_orani": 0.0214,
+    "beklenen": 13.17,
+    "beklenen_oran": 0.0201,
+    "ort_kombinasyon": 63.3,
+    "sinama": {
+     "n": 222,
+     "isabet": 4,
+     "beklenen": 3.16
+    }
+   },
+   {
+    "kombinasyon": 96,
+    "n": 655,
+    "isabet": 15,
+    "isabet_orani": 0.0229,
+    "beklenen": 17.54,
+    "beklenen_oran": 0.0268,
+    "ort_kombinasyon": 95.9,
+    "sinama": {
+     "n": 222,
+     "isabet": 4,
+     "beklenen": 4.3
+    }
+   },
+   {
+    "kombinasyon": 192,
+    "n": 655,
+    "isabet": 20,
+    "isabet_orani": 0.0305,
+    "beklenen": 27.0,
+    "beklenen_oran": 0.0412,
+    "ort_kombinasyon": 191.3,
+    "sinama": {
+     "n": 222,
+     "isabet": 5,
+     "beklenen": 6.86
+    }
+   },
+   {
+    "kombinasyon": 384,
+    "n": 655,
+    "isabet": 32,
+    "isabet_orani": 0.0489,
+    "beklenen": 40.49,
+    "beklenen_oran": 0.0618,
+    "ort_kombinasyon": 380.9,
+    "sinama": {
+     "n": 222,
+     "isabet": 10,
+     "beklenen": 10.66
+    }
+   },
+   {
+    "kombinasyon": 576,
+    "n": 655,
+    "isabet": 46,
+    "isabet_orani": 0.0702,
+    "beklenen": 51.2,
+    "beklenen_oran": 0.0782,
+    "ort_kombinasyon": 574.1,
+    "sinama": {
+     "n": 222,
+     "isabet": 12,
+     "beklenen": 13.76
+    }
+   },
+   {
+    "kombinasyon": 1000,
+    "n": 655,
+    "isabet": 61,
+    "isabet_orani": 0.0931,
+    "beklenen": 67.56,
+    "beklenen_oran": 0.1031,
+    "ort_kombinasyon": 969.7,
+    "sinama": {
+     "n": 222,
+     "isabet": 20,
+     "beklenen": 18.61
+    }
+   }
+  ],
+  "altin_tarama": [
+   {
+    "p_min": 0.5,
+    "fark_min": 0.1,
+    "altin_ayak": 117,
+    "altin_altili_basina": 0.27,
+    "altin_isabet": 0.5641,
+    "zorla_isabet_toplam": 59,
+    "zorla_ayak_toplam": 4643,
+    "zorla_beklenen_toplam": 65.34,
+    "uygun": true
+   },
+   {
+    "p_min": 0.5,
+    "fark_min": 0.2,
+    "altin_ayak": 111,
+    "altin_altili_basina": 0.256,
+    "altin_isabet": 0.5495,
+    "zorla_isabet_toplam": 59,
+    "zorla_ayak_toplam": 4640,
+    "zorla_beklenen_toplam": 65.53,
+    "uygun": true
+   },
+   {
+    "p_min": 0.5,
+    "fark_min": 0.15,
+    "altin_ayak": 113,
+    "altin_altili_basina": 0.261,
+    "altin_isabet": 0.5487,
+    "zorla_isabet_toplam": 59,
+    "zorla_ayak_toplam": 4640,
+    "zorla_beklenen_toplam": 65.5,
+    "uygun": true
+   },
+   {
+    "p_min": 0.45,
+    "fark_min": 0.1,
+    "altin_ayak": 206,
+    "altin_altili_basina": 0.476,
+    "altin_isabet": 0.5485,
+    "zorla_isabet_toplam": 61,
+    "zorla_ayak_toplam": 4641,
+    "zorla_beklenen_toplam": 64.09,
+    "uygun": true
+   },
+   {
+    "p_min": 0.45,
+    "fark_min": 0.15,
+    "altin_ayak": 198,
+    "altin_altili_basina": 0.457,
+    "altin_isabet": 0.5404,
+    "zorla_isabet_toplam": 60,
+    "zorla_ayak_toplam": 4641,
+    "zorla_beklenen_toplam": 64.44,
+    "uygun": true
+   },
+   {
+    "p_min": 0.45,
+    "fark_min": 0.2,
+    "altin_ayak": 188,
+    "altin_altili_basina": 0.434,
+    "altin_isabet": 0.5372,
+    "zorla_isabet_toplam": 60,
+    "zorla_ayak_toplam": 4647,
+    "zorla_beklenen_toplam": 64.72,
+    "uygun": true
+   },
+   {
+    "p_min": 0.45,
+    "fark_min": 0.3,
+    "altin_ayak": 135,
+    "altin_altili_basina": 0.312,
+    "altin_isabet": 0.5185,
+    "zorla_isabet_toplam": 58,
+    "zorla_ayak_toplam": 4635,
+    "zorla_beklenen_toplam": 65.61,
+    "uygun": true
+   },
+   {
+    "p_min": 0.45,
+    "fark_min": 0.25,
+    "altin_ayak": 164,
+    "altin_altili_basina": 0.379,
+    "altin_isabet": 0.5183,
+    "zorla_isabet_toplam": 60,
+    "zorla_ayak_toplam": 4637,
+    "zorla_beklenen_toplam": 65.26,
+    "uygun": true
+   },
+   {
+    "p_min": 0.35,
+    "fark_min": 0.3,
+    "altin_ayak": 151,
+    "altin_altili_basina": 0.349,
+    "altin_isabet": 0.5033,
+    "zorla_isabet_toplam": 58,
+    "zorla_ayak_toplam": 4635,
+    "zorla_beklenen_toplam": 65.4,
+    "uygun": true
+   },
+   {
+    "p_min": 0.4,
+    "fark_min": 0.3,
+    "altin_ayak": 151,
+    "altin_altili_basina": 0.349,
+    "altin_isabet": 0.5033,
+    "zorla_isabet_toplam": 58,
+    "zorla_ayak_toplam": 4635,
+    "zorla_beklenen_toplam": 65.4,
+    "uygun": true
+   },
+   {
+    "p_min": 0.4,
+    "fark_min": 0.2,
+    "altin_ayak": 303,
+    "altin_altili_basina": 0.7,
+    "altin_isabet": 0.495,
+    "zorla_isabet_toplam": 60,
+    "zorla_ayak_toplam": 4637,
+    "zorla_beklenen_toplam": 63.08,
+    "uygun": true
+   },
+   {
+    "p_min": 0.4,
+    "fark_min": 0.25,
+    "altin_ayak": 224,
+    "altin_altili_basina": 0.517,
+    "altin_isabet": 0.4821,
+    "zorla_isabet_toplam": 58,
+    "zorla_ayak_toplam": 4631,
+    "zorla_beklenen_toplam": 64.85,
+    "uygun": true
+   },
+   {
+    "p_min": 0.4,
+    "fark_min": 0.15,
+    "altin_ayak": 356,
+    "altin_altili_basina": 0.822,
+    "altin_isabet": 0.4803,
+    "zorla_isabet_toplam": 54,
+    "zorla_ayak_toplam": 4632,
+    "zorla_beklenen_toplam": 61.27,
+    "uygun": true
+   },
+   {
+    "p_min": 0.4,
+    "fark_min": 0.1,
+    "altin_ayak": 390,
+    "altin_altili_basina": 0.901,
+    "altin_isabet": 0.4769,
+    "zorla_isabet_toplam": 56,
+    "zorla_ayak_toplam": 4636,
+    "zorla_beklenen_toplam": 59.62,
+    "uygun": true
+   },
+   {
+    "p_min": 0.35,
+    "fark_min": 0.2,
+    "altin_ayak": 393,
+    "altin_altili_basina": 0.908,
+    "altin_isabet": 0.4733,
+    "zorla_isabet_toplam": 62,
+    "zorla_ayak_toplam": 4638,
+    "zorla_beklenen_toplam": 61.8,
+    "uygun": true
+   },
+   {
+    "p_min": 0.35,
+    "fark_min": 0.25,
+    "altin_ayak": 241,
+    "altin_altili_basina": 0.557,
+    "altin_isabet": 0.4689,
+    "zorla_isabet_toplam": 57,
+    "zorla_ayak_toplam": 4630,
+    "zorla_beklenen_toplam": 64.82,
+    "uygun": true
+   },
+   {
+    "p_min": 0.35,
+    "fark_min": 0.1,
+    "altin_ayak": 631,
+    "altin_altili_basina": 1.457,
+    "altin_isabet": 0.4501,
+    "zorla_isabet_toplam": 45,
+    "zorla_ayak_toplam": 4592,
+    "zorla_beklenen_toplam": 52.88,
+    "uygun": true
+   },
+   {
+    "p_min": 0.35,
+    "fark_min": 0.15,
+    "altin_ayak": 538,
+    "altin_altili_basina": 1.242,
+    "altin_isabet": 0.4498,
+    "zorla_isabet_toplam": 47,
+    "zorla_ayak_toplam": 4612,
+    "zorla_beklenen_toplam": 57.22,
+    "uygun": true
+   },
+   {
+    "p_min": 0.65,
+    "fark_min": 0.1,
+    "altin_ayak": 18,
+    "altin_altili_basina": 0.042,
+    "altin_isabet": 0.6667,
+    "zorla_isabet_toplam": 57,
+    "zorla_ayak_toplam": 4639,
+    "zorla_beklenen_toplam": 67.26,
+    "uygun": false
+   },
+   {
+    "p_min": 0.65,
+    "fark_min": 0.15,
+    "altin_ayak": 18,
+    "altin_altili_basina": 0.042,
+    "altin_isabet": 0.6667,
+    "zorla_isabet_toplam": 57,
+    "zorla_ayak_toplam": 4639,
+    "zorla_beklenen_toplam": 67.26,
+    "uygun": false
+   },
+   {
+    "p_min": 0.65,
+    "fark_min": 0.2,
+    "altin_ayak": 18,
+    "altin_altili_basina": 0.042,
+    "altin_isabet": 0.6667,
+    "zorla_isabet_toplam": 57,
+    "zorla_ayak_toplam": 4639,
+    "zorla_beklenen_toplam": 67.26,
+    "uygun": false
+   },
+   {
+    "p_min": 0.65,
+    "fark_min": 0.25,
+    "altin_ayak": 18,
+    "altin_altili_basina": 0.042,
+    "altin_isabet": 0.6667,
+    "zorla_isabet_toplam": 57,
+    "zorla_ayak_toplam": 4639,
+    "zorla_beklenen_toplam": 67.26,
+    "uygun": false
+   },
+   {
+    "p_min": 0.65,
+    "fark_min": 0.3,
+    "altin_ayak": 18,
+    "altin_altili_basina": 0.042,
+    "altin_isabet": 0.6667,
+    "zorla_isabet_toplam": 57,
+    "zorla_ayak_toplam": 4639,
+    "zorla_beklenen_toplam": 67.26,
+    "uygun": false
+   },
+   {
+    "p_min": 0.65,
+    "fark_min": 0.4,
+    "altin_ayak": 18,
+    "altin_altili_basina": 0.042,
+    "altin_isabet": 0.6667,
+    "zorla_isabet_toplam": 57,
+    "zorla_ayak_toplam": 4639,
+    "zorla_beklenen_toplam": 67.26,
+    "uygun": false
+   },
+   {
+    "p_min": 0.6,
+    "fark_min": 0.1,
+    "altin_ayak": 35,
+    "altin_altili_basina": 0.081,
+    "altin_isabet": 0.6571,
+    "zorla_isabet_toplam": 57,
+    "zorla_ayak_toplam": 4641,
+    "zorla_beklenen_toplam": 66.83,
+    "uygun": false
+   },
+   {
+    "p_min": 0.6,
+    "fark_min": 0.15,
+    "altin_ayak": 35,
+    "altin_altili_basina": 0.081,
+    "altin_isabet": 0.6571,
+    "zorla_isabet_toplam": 57,
+    "zorla_ayak_toplam": 4641,
+    "zorla_beklenen_toplam": 66.83,
+    "uygun": false
+   },
+   {
+    "p_min": 0.6,
+    "fark_min": 0.2,
+    "altin_ayak": 35,
+    "altin_altili_basina": 0.081,
+    "altin_isabet": 0.6571,
+    "zorla_isabet_toplam": 57,
+    "zorla_ayak_toplam": 4641,
+    "zorla_beklenen_toplam": 66.83,
+    "uygun": false
+   },
+   {
+    "p_min": 0.6,
+    "fark_min": 0.25,
+    "altin_ayak": 35,
+    "altin_altili_basina": 0.081,
+    "altin_isabet": 0.6571,
+    "zorla_isabet_toplam": 57,
+    "zorla_ayak_toplam": 4641,
+    "zorla_beklenen_toplam": 66.83,
+    "uygun": false
+   },
+   {
+    "p_min": 0.6,
+    "fark_min": 0.3,
+    "altin_ayak": 35,
+    "altin_altili_basina": 0.081,
+    "altin_isabet": 0.6571,
+    "zorla_isabet_toplam": 57,
+    "zorla_ayak_toplam": 4641,
+    "zorla_beklenen_toplam": 66.83,
+    "uygun": false
+   },
+   {
+    "p_min": 0.6,
+    "fark_min": 0.4,
+    "altin_ayak": 34,
+    "altin_altili_basina": 0.079,
+    "altin_isabet": 0.6471,
+    "zorla_isabet_toplam": 57,
+    "zorla_ayak_toplam": 4641,
+    "zorla_beklenen_toplam": 66.84,
+    "uygun": false
+   },
+   {
+    "p_min": 0.55,
+    "fark_min": 0.1,
+    "altin_ayak": 63,
+    "altin_altili_basina": 0.145,
+    "altin_isabet": 0.619,
+    "zorla_isabet_toplam": 60,
+    "zorla_ayak_toplam": 4641,
+    "zorla_beklenen_toplam": 66.09,
+    "uygun": false
+   },
+   {
+    "p_min": 0.55,
+    "fark_min": 0.15,
+    "altin_ayak": 62,
+    "altin_altili_basina": 0.143,
+    "altin_isabet": 0.6129,
+    "zorla_isabet_toplam": 60,
+    "zorla_ayak_toplam": 4640,
+    "zorla_beklenen_toplam": 66.12,
+    "uygun": false
+   },
+   {
+    "p_min": 0.55,
+    "fark_min": 0.2,
+    "altin_ayak": 62,
+    "altin_altili_basina": 0.143,
+    "altin_isabet": 0.6129,
+    "zorla_isabet_toplam": 60,
+    "zorla_ayak_toplam": 4640,
+    "zorla_beklenen_toplam": 66.12,
+    "uygun": false
+   },
+   {
+    "p_min": 0.55,
+    "fark_min": 0.25,
+    "altin_ayak": 62,
+    "altin_altili_basina": 0.143,
+    "altin_isabet": 0.6129,
+    "zorla_isabet_toplam": 60,
+    "zorla_ayak_toplam": 4640,
+    "zorla_beklenen_toplam": 66.12,
+    "uygun": false
+   },
+   {
+    "p_min": 0.55,
+    "fark_min": 0.3,
+    "altin_ayak": 62,
+    "altin_altili_basina": 0.143,
+    "altin_isabet": 0.6129,
+    "zorla_isabet_toplam": 60,
+    "zorla_ayak_toplam": 4640,
+    "zorla_beklenen_toplam": 66.12,
+    "uygun": false
+   },
+   {
+    "p_min": 0.55,
+    "fark_min": 0.4,
+    "altin_ayak": 52,
+    "altin_altili_basina": 0.12,
+    "altin_isabet": 0.5769,
+    "zorla_isabet_toplam": 58,
+    "zorla_ayak_toplam": 4641,
+    "zorla_beklenen_toplam": 66.78,
+    "uygun": false
+   },
+   {
+    "p_min": 0.35,
+    "fark_min": 0.4,
+    "altin_ayak": 63,
+    "altin_altili_basina": 0.145,
+    "altin_isabet": 0.5397,
+    "zorla_isabet_toplam": 57,
+    "zorla_ayak_toplam": 4640,
+    "zorla_beklenen_toplam": 66.72,
+    "uygun": false
+   },
+   {
+    "p_min": 0.4,
+    "fark_min": 0.4,
+    "altin_ayak": 63,
+    "altin_altili_basina": 0.145,
+    "altin_isabet": 0.5397,
+    "zorla_isabet_toplam": 57,
+    "zorla_ayak_toplam": 4640,
+    "zorla_beklenen_toplam": 66.72,
+    "uygun": false
+   },
+   {
+    "p_min": 0.45,
+    "fark_min": 0.4,
+    "altin_ayak": 63,
+    "altin_altili_basina": 0.145,
+    "altin_isabet": 0.5397,
+    "zorla_isabet_toplam": 57,
+    "zorla_ayak_toplam": 4640,
+    "zorla_beklenen_toplam": 66.72,
+    "uygun": false
+   },
+   {
+    "p_min": 0.5,
+    "fark_min": 0.4,
+    "altin_ayak": 63,
+    "altin_altili_basina": 0.145,
+    "altin_isabet": 0.5397,
+    "zorla_isabet_toplam": 57,
+    "zorla_ayak_toplam": 4640,
+    "zorla_beklenen_toplam": 66.72,
+    "uygun": false
+   },
+   {
+    "p_min": 0.5,
+    "fark_min": 0.3,
+    "altin_ayak": 101,
+    "altin_altili_basina": 0.233,
+    "altin_isabet": 0.5347,
+    "zorla_isabet_toplam": 58,
+    "zorla_ayak_toplam": 4638,
+    "zorla_beklenen_toplam": 65.81,
+    "uygun": false
+   },
+   {
+    "p_min": 0.5,
+    "fark_min": 0.25,
+    "altin_ayak": 107,
+    "altin_altili_basina": 0.247,
+    "altin_isabet": 0.5327,
+    "zorla_isabet_toplam": 59,
+    "zorla_ayak_toplam": 4638,
+    "zorla_beklenen_toplam": 65.71,
+    "uygun": false
+   }
+  ]
+ },
+ "canli": {
+  "gun": 0,
+  "seviyeler": {
+   "dar": {
+    "n": 0,
+    "isabet": 0,
+    "beklenen": 0.0,
+    "bes_ayak": 0,
+    "ort_kombinasyon": 0,
+    "altin_n": 0,
+    "altin_isabet": null,
+    "ayak_isabet": null
+   },
+   "orta": {
+    "n": 0,
+    "isabet": 0,
+    "beklenen": 0.0,
+    "bes_ayak": 0,
+    "ort_kombinasyon": 0,
+    "altin_n": 0,
+    "altin_isabet": null,
+    "ayak_isabet": null
+   },
+   "genis": {
+    "n": 0,
+    "isabet": 0,
+    "beklenen": 0.0,
+    "bes_ayak": 0,
+    "ort_kombinasyon": 0,
+    "altin_n": 0,
+    "altin_isabet": null,
+    "ayak_isabet": null
+   }
+  },
+  "not": "Yalnız ilk ayaktan önce kurulmuş (kosudan_once) ve 6 ayağı biten 6'lılar."
+ }
+}
