@@ -2,6 +2,7 @@ name: OXXai at yarisi laboratuvari (gece)
 # Yalnız data/at ve lab/at/RAPOR.md yazar; futbol sistemine, index.html'e ve data/*.json'a dokunmaz.
 # Veri: github.com/cenkozgur/tjk-data aynası çalışma anında sığ klonlanır (_tjk-data, gitignore'da); tjk.org'a istek YOK.
 # Her gün 05:23 ve 12:23 (TSİ): ayna gece 04:30 civarı güncellenir; öğlen çalışması geç gelen programı da kilitler.
+# Adım çıkış kodları data/saglik/at-lab.json'a yazılır (lab/adim.py); kaydetme lab/gonder.py (veri kaybetmeyen birleştirme).
 on:
   schedule:
     - cron: "23 2,9 * * *"
@@ -18,6 +19,8 @@ jobs:
   gece:
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    env:
+      AT_KAYNAK: ./_tjk-data
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -25,23 +28,15 @@ jobs:
       # lightgbm: modelin ağaç katmanı (kurulamazsa model doğrusal yedeğe düşer)
       - run: pip install -q numpy lightgbm || pip install -q numpy
       - name: Aynayı sığ klonla (yalnız okunur, depoya yazılmaz)
-        run: git clone -q --depth 1 https://github.com/cenkozgur/tjk-data _tjk-data || echo "ayna klonlanamadı"
+        run: python3 lab/adim.py ayna -- git clone -q --depth 1 https://github.com/cenkozgur/tjk-data _tjk-data
       - name: Gece boru hattı (eğitim, kapı, kilit, karne, rapor)
-        env:
-          AT_KAYNAK: ./_tjk-data
-        run: python lab/at/gece.py || echo "gece.py başarısız; önceki çıktılar korunuyor"
+        run: python3 lab/adim.py gece -- python lab/at/gece.py
       - name: Sızıntı testi (kapalı-sol pencere, gün içi sıra; bilgi amaçlı)
-        env:
-          AT_KAYNAK: ./_tjk-data
-        run: timeout 300 python lab/at/test_sizinti.py || echo "sızıntı testi başarısız ya da zaman aşımı (bkz. log)"
+        run: python3 lab/adim.py sizinti-testi --onem bilgi -- timeout 300 python lab/at/test_sizinti.py
       - name: Araştırmacı (yalnız GitHub arama API'si)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: python lab/at/arastirma.py || echo "arastirma.py başarısız"
+        run: python3 lab/adim.py arastirmaci --onem bilgi -- python lab/at/arastirma.py
       - name: Yalnız türetilmiş çıktıları kaydet
         run: |
-          git config user.name "bulutoxx-bot"; git config user.email "bulutoxx-bot@users.noreply.github.com"
-          git add data/at lab/at/RAPOR.md
-          git diff --cached --quiet && { echo "değişiklik yok"; exit 0; }
-          git commit -qm "At lab: gece eğitimi, kilit ve karne [skip ci]"
-          for i in 1 2 3; do git pull -q --rebase -X theirs origin main && git push -q origin HEAD:main && break; sleep 8; done
+          python3 lab/gonder.py -m "At lab: gece eğitimi, kilit ve karne [skip ci]" data/at lab/at/RAPOR.md data/saglik
