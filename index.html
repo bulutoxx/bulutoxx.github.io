@@ -5660,7 +5660,7 @@ if((location.hash||"")==="#sonuclar") setTimeout(()=>$("navRes").click(),200);
 // =====================================================================
 // BULUTOXX v35: Otomatik sürüm güncelleme — yeni sürüm yayınlanınca uygulama kendini yeniler
 // =====================================================================
-const APP_V="2026-10-26.103";
+const APP_V="2026-10-26.104";
 (function autoUpdate(){
   let shown=false;
   async function check(auto){
@@ -9962,8 +9962,8 @@ small>.tvar.d:first-child{margin-left:0;margin-right:2px}
 <script id="canli-sirada-v103">
 // v103 · Canlı sekmesinde "Sıradaki maçlar": canlı listenin altında başlamamış tüm maçlar (saat aralığı, lig seçimi, aynı arama kutusu)
 (function(){
-  const NX={win:"3s", lg:"", lim:40};
-  const WIN=[["1s","1 saat",3600e3],["3s","3 saat",3*3600e3],["bug","Bugün",0],["yar","Yarın",0],["7g","7 gün",7*864e5]];
+  const NX={win:"bug", lg:"", lim:300};
+  const WIN=[["bug","Bugün (24:00'e kadar)",0],["1s","1 saat",3600e3],["3s","3 saat",3*3600e3],["yar","Yarın",0],["7g","7 gün",7*864e5]];
   const fold=x=>String(x||"").toLocaleLowerCase("tr").normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/ı/g,"i");
   function lgN(m){ try{ const f=FIXTURES.find(x=>x.lg===m.lg&&x.h===m.h&&x.a===m.a); return (f&&(f.cn||f.ln))||botLgName(m.lg); }catch(e){ return m.lg||""; } }
   function range(){ const now=Date.now(), d0=Date.parse(istDay(new Date())+"T00:00:00+03:00");
@@ -9999,7 +9999,7 @@ small>.tvar.d:first-child{margin-left:0;margin-right:2px}
       if(idl&&box.previousElementSibling!==idl) idl.after(box); else if(!idl&&!box.parentNode) cw.appendChild(box);
       box.innerHTML=html(); try{ kxPaint(); }catch(e){} }catch(e){} }
   document.addEventListener("click",e=>{ const b=e.target.closest("#nxBox [data-nxw],#nxBox [data-nxl],#nxBox [data-nxm]"); if(!b) return;
-    if(b.dataset.nxw!=null){ NX.win=b.dataset.nxw; NX.lim=40; } else if(b.dataset.nxl!=null){ NX.lg=b.dataset.nxl; NX.lim=40; } else NX.lim+=40;
+    if(b.dataset.nxw!=null){ NX.win=b.dataset.nxw; NX.lim=300; } else if(b.dataset.nxl!=null){ NX.lg=b.dataset.nxl; NX.lim=300; } else NX.lim+=300;
     try{ buzz(6); }catch(_){} paint(); });
   try{ const _r=idlRenderAll; idlRenderAll=function(){ const r=_r.apply(this,arguments); paint(); return r; }; }catch(e){}
   document.addEventListener("click",e=>{ if(e.target.closest('nav.tabs button[data-v="canli"]')) setTimeout(paint,60); },true);
