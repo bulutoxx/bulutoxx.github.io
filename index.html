@@ -5660,7 +5660,7 @@ if((location.hash||"")==="#sonuclar") setTimeout(()=>$("navRes").click(),200);
 // =====================================================================
 // BULUTOXX v35: Otomatik sürüm güncelleme — yeni sürüm yayınlanınca uygulama kendini yeniler
 // =====================================================================
-const APP_V="2026-10-26.100";
+const APP_V="2026-10-26.101";
 (function autoUpdate(){
   let shown=false;
   async function check(auto){
@@ -8910,10 +8910,13 @@ small>.tvar.d:first-child{margin-left:0;margin-right:2px}
   // ---------- pazar seçenekleri + OXX önerisi ----------
   function optsFor(m){ if(!m) return null;
     try{ if(m.sp===1){ const P=idlPred(m), K=idlPick(m,P); if(!K) return null; const mm={lg:"i"+m.ci,h:m.h,a:m.a,dt:new Date(m.ts)};
-        const fx=x=>({k:(x.k==="U"||x.k==="A")?x.k+String(P.line):x.k,n:x.n,o:x.o||null,p:x.p});
+        const lc=v=>{ try{ return typeof liveCal==="function"?Math.min(.99,liveCal(v).p):v; }catch(e){ return v; } };
+        const fx=x=>({k:(x.k==="U"||x.k==="A")?x.k+String(P.line):x.k,n:x.n,o:x.o||null,p:lc(x.p)});
         return {mm,ex:{live:1,s0:`${m.hs}-${m.as}`,iid:m.id},opts:K.all.filter(x=>x.o&&x.p>0).map(fx),rec:fx(K.best)}; } }catch(e){ return null; }
     if(m.sp) return null;
     if(m.bk) return bkOpts(m.bk);
+    try{ const t0=tms(m.dt); if(m.live||(t0&&t0<NOW()-5*60e3&&t0>NOW()-150*60e3)){ const lv=(typeof IDL!=="undefined"&&IDL.live&&IDL.live[1]||[]).find(x=>tmEq(x.h,m.h)&&tmEq(x.a,m.a));
+        if(lv) return optsFor(lv); } }catch(e){}
     const qf=window.QP_FORCE; window.QP_FORCE=true;
     try{ const f=m.src==="fx"?FIXTURES.find(x=>x.lg===m.lg&&x.h===m.h&&x.a===m.a):fxOdds(m); const p=quickPred(m,f); if(!p) return null;
       const pq=p.pm?{H:p.pm[0],D:p.pm[1],A:p.pm[2],o25:p.o25m!=null?p.o25m:p.o25}:{H:p.p[0],D:p.p[1],A:p.p[2],o25:p.o25};
@@ -9184,8 +9187,19 @@ small>.tvar.d:first-child{margin-left:0;margin-right:2px}
   function kxRefresh(){ try{ hdrPaint(); kxPaint(); if(UI.edit) return; const v=$("v-kupon"); if(v&&!v.hidden){ if(KP.tab==="eski") renderOld(); else kxRenderCp(); } }catch(e){} }
   window.kxRefresh=kxRefresh;
   window.addEventListener("storage",e=>{ if(e.key===LSK||e.key===LSA||e.key==="bx-kuponlar-sil"){ try{ if(e.key==="bx-kuponlar-sil"){ JSON.parse(e.newValue||"[]").forEach(x=>DEL.add(x)); } load(); kxRefresh(); }catch(_){} } });
-  try{ const _ct=cpToggle; cpToggle=function(m,mk){ try{ const k=cpKey(m), I=CP.items, had=I.find(x=>x.k===k&&x.mk===mk);
-        if(!had){ const t=tms(m.dt); if(!m.live&&t&&t<NOW()-5*60e3){ toast("Bu maç başladı; maç öncesi tahmini kupona eklenemez"); return; }
+  try{ const _ct=cpToggle; cpToggle=function(m,mk,odd,p){ try{ const k=cpKey(m), I=CP.items, had=I.find(x=>x.k===k&&x.mk===mk);
+        if(!had){ const t=tms(m.dt);
+          if(!m.live&&m.sp!==1&&t&&t<NOW()-5*60e3){
+            // başlamış maç: canlı eşi varsa aynı seçim canlı oran + canlı OXX olasılığıyla eklenir
+            const lv=(typeof IDL!=="undefined"&&IDL.live&&IDL.live[1]||[]).find(x=>tmEq(x.h,m.h)&&tmEq(x.a,m.a));
+            if(!lv){ toast(t<NOW()-150*60e3?"Bu maç bitmiş; kupona eklenemez":"Bu maç başladı: canlı tahmini Canlı sekmesinden ya da ＋ Kupon ile ekleyebilirsin"); return; }
+            try{ const P=idlPred(lv), K=idlPick(lv,P), base=/^[UA][\d.]+$/.test(String(mk))?String(mk).charAt(0):String(mk), c=K&&K.all.find(z=>z.k===base);
+              if(!c||!c.o){ toast("Bu seçimin canlı oranı şu an kapalı"); return; }
+              const lk=(base==="U"||base==="A")&&P.line!==2.5?base+String(P.line):mk, pp=typeof liveCal==="function"?Math.min(.99,liveCal(c.p).p):c.p;
+              const mm={lg:"i"+lv.ci,h:lv.h,a:lv.a,dt:new Date(lv.ts)}, k2=cpKey(mm);
+              const d=I.findIndex(x=>x.k!==k2&&tmEq(x.h,mm.h)&&tmEq(x.a,mm.a)); if(d>=0) I.splice(d,1);
+              const r=_ct.call(this,mm,lk,+c.o,pp); const it=CP.items.find(x=>x.k===k2); if(it){ it.live=1; it.s0=`${lv.hs}-${lv.as}`; it.iid=lv.id; cpSave(); }
+              toast(`Canlı eklendi · ${mkName(lk)} %${Math.round(pp*100)} · oran ${(+c.o).toFixed(2)}`); return r; }catch(e){ toast("Canlı tahmin şu an hesaplanamadı"); return; } }
           const d=I.findIndex(x=>x.k!==k&&tmEq(x.h,m.h)&&tmEq(x.a,m.a)); if(d>=0) I.splice(d,1); } }catch(e){}
       return _ct.apply(this,arguments); }; }catch(e){}
   // ---------- adlar: Menü, sekme, Power Now, Kayıtlı ----------
@@ -9263,6 +9277,64 @@ small>.tvar.d:first-child{margin-left:0;margin-right:2px}
     c.innerHTML=`<span class="ic" style="background:linear-gradient(135deg,#3A4A63,#24324A)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.4-.6-.6-2.4z"/></svg></span><span class="tx"><b>Uygulamayı onar</b><small>Sürüm ${APP_V.split(".").pop()} · takılırsa en yeni sürümü baştan yükler; kuponların ve ayarların silinmez</small></span><span class="ar">›</span>`;
     c.onclick=()=>{ try{ toast("🛠️ Onarılıyor…"); }catch(e){} bxRepair(null,true); }; ml.appendChild(c); }
   menu(); setTimeout(menu,1600); setTimeout(menu,5200);
+})();
+</script>
+<style id="kupo-canli-v101">
+.kx-lv{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:6px;font:600 12.5px/1.3 var(--font,system-ui);color:var(--ink2)}
+.kx-lv .d{display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border-radius:99px;background:rgba(255,77,94,.14);color:#FF8A95;font-weight:800;font-variant-numeric:tabular-nums}
+.kx-lv .d::before{content:"";width:6px;height:6px;border-radius:50%;background:#FF4D5E;animation:kxLvP 1.6s ease-in-out infinite}
+.kx-lv .n{color:var(--ink,#E8EEF8);font-variant-numeric:tabular-nums}.kx-lv .n b{color:#7CF0A8}.kx-lv .n b.dn{color:#FF8A95}
+@keyframes kxLvP{50%{opacity:.35}}@media (prefers-reduced-motion:reduce){.kx-lv .d::before{animation:none}}
+</style>
+<script id="kupo-canli-v101">
+// v101 · KUPO'da canlı maç: başlamış maç canlı tahminle eklenebilir; kupondaki canlı maçlarda dakika, skor ve OXX'un o anki olasılığı
+(function(){
+  const LV=()=>(typeof IDL!=="undefined"&&IDL.live&&IDL.live[1])||[];
+  function liveFor(x){ return LV().find(m=>(x.iid&&String(m.id)===String(x.iid))||(tmEq(m.h,x.h)&&tmEq(m.a,x.a)))||null; }
+  function nowP(m,mk){ try{ const P=idlPred(m), K=idlPick(m,P); if(!K) return null; const key=k=>(k==="U"||k==="A")?k+String(P.line):k;
+      const c=K.all.find(z=>key(z.k)===mk||z.k===mk); if(!c) return null; return typeof liveCal==="function"?Math.min(.99,liveCal(c.p).p):c.p; }catch(e){ return null; } }
+  function deco(){ try{ const box=document.getElementById("cpBox"); if(!box) return; const I=CP.items||[];
+      box.querySelectorAll(".cprow[data-cpi]").forEach(r=>{ const x=I[+r.dataset.cpi]; const old=r.querySelector(".kx-lv"); if(old) old.remove(); if(!x||x.ok!=null) return;
+        const m=liveFor(x); if(!m) return; const pn=nowP(m,x.mk), l=r.querySelector(".l")||r;
+        const d=document.createElement("div"); d.className="kx-lv";
+        const ck=(()=>{ try{ return idlClockTxt(m); }catch(e){ return "canlı"; } })();
+        d.innerHTML=`<span class="d">${esc(ck)} · ${m.hs}-${m.as}</span>`+(pn!=null?`<span class="n">OXX şimdi <b class="${pn<(x.p||0)-.03?"dn":""}">%${Math.round(pn*100)}</b>${x.p?` · eklerken %${Math.round(x.p*100)}`:""}</span>`:`<span class="n">canlı tahmin bekleniyor</span>`);
+        l.appendChild(d); }); }catch(e){} }
+  window.kxLiveDeco=deco;
+  try{ const _r=renderKupon; renderKupon=function(){ const r=_r.apply(this,arguments); deco(); return r; }; }catch(e){}
+  try{ const _k=window.kxRefresh; if(_k) window.kxRefresh=function(){ const r=_k.apply(this,arguments); deco(); return r; }; }catch(e){}
+  try{ new MutationObserver(()=>{ const b=document.getElementById("cpBox"); if(b&&!b.querySelector(".kx-lv")&&(CP.items||[]).some(x=>x.ok==null&&liveFor(x))) deco(); }).observe(document.getElementById("cpBox")||document.body,{childList:true,subtree:false}); }catch(e){}
+  setInterval(()=>{ try{ const v=document.getElementById("v-kupon"); if(!v||v.hidden||document.hidden) return; if(!(CP.items||[]).some(x=>x.ok==null)) return;
+      if(typeof IDL!=="undefined"&&IDL.load) IDL.load(1).then(deco).catch(()=>{}); }catch(e){} },20000);
+})();
+</script>
+<style id="ust-ikon-v101">
+/* v101 · Üst çubuk dörtlüsü (KUPO · OXX · Ses · Yenile): aynı boy, aynı altın cam zemin, altın simgeler */
+.topbar .iconbtn#modeBtn,.topbar .iconbtn#hdrRefresh{width:54px;height:48px;border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:0;
+  background:linear-gradient(160deg,rgba(233,199,102,.12),rgba(80,60,10,.08))!important;border:1px solid rgba(233,199,102,.34)!important;box-shadow:none!important;color:#F3DC8A!important}
+.topbar .iconbtn#modeBtn svg,.topbar .iconbtn#hdrRefresh svg{width:24px!important;height:24px!important;fill:none;stroke:url(#bxGoldS)!important;stroke-width:1.9!important;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 2px 4px rgba(212,175,55,.22))}
+.topbar .iconbtn#modeBtn svg .f{fill:url(#bxGoldF);stroke:none}
+.topbar .iconbtn#modeBtn[data-m="mute"] svg{opacity:.62}
+.topbar .iconbtn#modeBtn .tbl,.topbar .iconbtn#hdrRefresh .tbl,.topbar .iconbtn#hdrBot .tbl{font:600 11px/1 var(--font,system-ui)!important;letter-spacing:0;color:#F3DC8A!important}
+.topbar .iconbtn#modeBtn:active,.topbar .iconbtn#hdrRefresh:active,.topbar .iconbtn#hdrKup:active,.topbar .iconbtn#hdrBot:active{transform:scale(.96);background:linear-gradient(160deg,rgba(233,199,102,.2),rgba(80,60,10,.14))!important}
+.topbar .iconbtn#hdrRefresh.ok svg{stroke:#7CF0A8!important}
+@media (max-width:430px){.topbar .iconbtn#hdrKup,.topbar .iconbtn#hdrBot,.topbar .iconbtn#modeBtn,.topbar .iconbtn#hdrRefresh{width:47px!important;min-width:0}
+  .topbar .iconbtn#hdrKup .tbl,.topbar .iconbtn#hdrBot .tbl,.topbar .iconbtn#modeBtn .tbl,.topbar .iconbtn#hdrRefresh .tbl{font-size:10px!important;letter-spacing:-.01em}}
+</style>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
+<linearGradient id="bxGoldS" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFF3C4"/><stop offset=".45" stop-color="#EDCB68"/><stop offset="1" stop-color="#B8892B"/></linearGradient>
+<linearGradient id="bxGoldF" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFF0BC"/><stop offset=".5" stop-color="#E6C35C"/><stop offset="1" stop-color="#A97E24"/></linearGradient></defs></svg>
+<script id="ust-ikon-v101">
+(function(){
+  try{
+    MODES.full.ic='<path class="f" d="M4 9.5h3.2L12 5.6v12.8l-4.8-3.9H4a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1z"/><path d="M15.6 9.2a4 4 0 0 1 0 5.6M18.4 6.6a7.6 7.6 0 0 1 0 10.8"/>';
+    MODES.vib.ic='<rect x="8.2" y="3.6" width="7.6" height="16.8" rx="2.2"/><path d="M11 17.2h2M4.6 9v6M2.6 10.6v2.8M19.4 9v6M21.4 10.6v2.8"/>';
+    MODES.mute.ic='<path class="f" d="M4 9.5h3.2L12 5.6v12.8l-4.8-3.9H4a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1z"/><path d="M16 9.6l4.8 4.8M20.8 9.6 16 14.4"/>';
+    if(typeof paintMode==="function") paintMode();
+  }catch(e){}
+  const RF='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.2 9.6A7.6 7.6 0 0 0 5.4 7.8M4.8 14.4a7.6 7.6 0 0 0 13.8 1.8"/><path d="M5 4.2v3.8h3.8M19 19.8V16h-3.8"/></svg>';
+  function paint(){ const rf=document.getElementById("hdrRefresh"); if(!rf||rf.dataset.ic101) return; const sv=rf.querySelector("svg"); if(sv){ sv.outerHTML=RF; rf.dataset.ic101="1"; } }
+  paint(); setTimeout(paint,800); setTimeout(paint,2500); setTimeout(paint,6000);
 })();
 </script>
 </body>
