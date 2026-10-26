@@ -1,4 +1,6 @@
 name: OXXai güncelle ve yayınla
+# Her adımın çıkış kodu ve süresi data/saglik/update.json'a yazılır (lab/adim.py; hata iş akışını durdurmaz ama kaydedilir,
+# kurtarıcı görür). Kaydetme lab/gonder.py: aynı dosyalara yazan diğer işlerle anahtar düzeyinde, veri kaybetmeden birleştirir.
 
 on:
   schedule:
@@ -28,29 +30,23 @@ jobs:
           python-version: "3.12"
       - run: pip install numpy==2.1.3
       - name: Verileri indir ve modeli eğit
-        run: python scripts/update.py || echo "::warning::Futbol motoru hata verdi (data/engine_error.txt)"
+        run: python3 lab/adim.py motor -- python scripts/update.py   # hata → data/engine_error.txt ve sağlık kaydı
         env:
           APISPORTS_KEY: ${{ secrets.APISPORTS_KEY }}   # API-Football / API-Basketball (ücretsiz üyelik, günde 100 istek)
           ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}     # The Odds API (ücretsiz üyelik, ayda 500 kredi)
       - name: Açık veri (Club Elo → kupa güçleri; bayrak data/acik/elo_kupa.json, geri alınabilir)
-        run: timeout 120 python scripts/acik_veri.py || true
+        run: python3 lab/adim.py acik-veri --onem bilgi -- timeout 120 python scripts/acik_veri.py
       - name: Veri toplayıcı (öneri arşivi, sonuç puanlama, günlük özet)
-        run: python scripts/collector.py || echo "Toplayıcı bu sefer atlandı"
+        run: python3 lab/adim.py toplayici -- python scripts/collector.py
       - name: Basketbol verilerini indir ve modeli eğit
-        run: python scripts/basket.py || echo "Basketbol güncellemesi bu sefer atlandı"
+        run: python3 lab/adim.py basket -- python scripts/basket.py
         env:
           APISPORTS_KEY: ${{ secrets.APISPORTS_KEY }}
           ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
       - name: 🎟️ OXXai kupon robotu (maçtan önce kilit, sonuç puanı, karne)
-        run: timeout 300 python scripts/oxx_kupon.py || echo "OXXai kupon robotu bu sefer atlandı"
+        run: python3 lab/adim.py oxx-kupon -- timeout 300 python scripts/oxx_kupon.py
       - name: Değişiklikleri kaydet
-        run: |
-          git config user.name "bulutoxx-bot"
-          git config user.email "bulutoxx-bot@users.noreply.github.com"
-          git add data
-          git diff --cached --quiet || git commit -m "Veri ve model güncellemesi $(date -u +%F)"
-          git pull --rebase -X theirs origin main || true
-          git push || (git pull --rebase -X theirs origin main && git push)
+        run: python3 lab/gonder.py -m "Veri ve model güncellemesi $(date -u +%F)" data
 
   deploy:
     needs: [update]

@@ -1,5 +1,6 @@
 name: OXXai kurtarıcı bekçi
 # 20 dakikada bir: yarım kalan, hata veren ya da hiç çalışmayan otomatik işleri fark eder ve devam ettirir (lab/kurtarici.py).
+# Ayrıca data/saglik/*.json (adım çıkış kodları), ana dosyaların tazeliği ve kalite alarmlarını okur; özet data/saglik.json.
 # Issue, mail, bildirim açmaz. Ücretsiz: yalnız GitHub'ın kendi gh aracı.
 on:
   schedule:
@@ -21,10 +22,6 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
-        run: python3 lab/kurtarici.py || true
-      - run: |
-          git config user.name "bulutoxx-bot"; git config user.email "bulutoxx-bot@users.noreply.github.com"
-          git add data/bekci.json 2>/dev/null || true
-          git diff --cached --quiet && exit 0
-          git commit -qm "Kurtarıcı bekçi kaydı $(date -u +%FT%H:%M) [skip ci]"
-          for i in 1 2 3; do git pull -q --rebase -X theirs origin main && git push -q origin HEAD:main && break; sleep 8; done
+        run: python3 lab/adim.py kurtarici -- python3 lab/kurtarici.py
+      - name: Kaydet (yalnız durum değiştiyse)
+        run: python3 lab/gonder.py -m "Kurtarıcı bekçi kaydı $(date -u +%FT%H:%M) [skip ci]" data/bekci.json data/saglik.json data/saglik

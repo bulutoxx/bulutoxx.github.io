@@ -12,6 +12,7 @@ sys.path.insert(0, os.path.join(ROOT, "scripts"))
 import update as U
 LEAGUES = [l for l in (os.environ.get("LAB_LEAGUES") or "en,es,it,de,fr,tr1,pt,nl,en2,de2").split(",")]
 BUDGET = float(os.environ.get("LAB_BUDGET", "2400"))
+CIKTI = os.environ.get("LAB_CIKTI") or os.path.join(ROOT, "data", "auto_lab.json")   # sürekli deney kendi dosyasına yazar
 T0 = time.time()
 
 def power_devig(o):
@@ -69,7 +70,7 @@ def main():
                     try: p_pb = np.array(pbm.predict(m["h"], m["a"]).home_draw_away, float)
                     except Exception: p_pb = None
                 r = 0 if m["ft"][0] > m["ft"][1] else 1 if m["ft"][0] == m["ft"][1] else 2
-                rows.append((m["season"], r, power_devig(m["odds"]), p_our[0], p_pb))
+                rows.append((m["season"], r, power_devig(m["odds"]), p_our[0], p_pb, cut))
         print(f"{lg}: toplam {len(rows)} satır, {time.time()-T0:.0f} sn", flush=True)
     if not rows: return
     seasons = sorted({r[0] for r in rows})
@@ -90,6 +91,18 @@ def main():
             ps = [fn(r) for r in sub]; rs = [r[1] for r in sub]
             res[str(s)] = {"n": len(sub), "logloss": round(ll(ps, rs), 5), "isabet": round(float(np.mean([np.argmax(p) == r for p, r in zip(ps, rs)])), 4)}
         out["sonuc"][name] = res
+        if name != "piyasa (mevcut)":   # hafta-blok bootstrap: piyasaya göre log-loss kazancı (+ = aday iyi), tek yanlı %5 alt sınır
+            for s in seasons:
+                sub = [r for r in rows if r[0] == s]
+                hf = collections.defaultdict(list)
+                for r in sub:
+                    hf[r[5]].append(-math.log(max(r[2][r[1]], 1e-9)) + math.log(max(fn(r)[r[1]], 1e-9)))
+                toplam = np.array([sum(v) for v in hf.values()]); adet = np.array([len(v) for v in hf.values()], float)
+                if len(toplam) >= 5:
+                    rng = np.random.default_rng(20261027); ix = rng.integers(0, len(toplam), size=(1000, len(toplam)))
+                    ort = toplam[ix].sum(1) / adet[ix].sum(1)
+                    res[str(s)]["kazanc"] = round(float(toplam.sum() / adet.sum()), 5)
+                    res[str(s)]["kazanc_alt95"] = round(float(np.quantile(ort, 0.05)), 5)
         if name == "piyasa (mevcut)": base = res
     best = None
     for name, res in out["sonuc"].items():
@@ -98,7 +111,8 @@ def main():
         if all(g > 0.0005 for g in gains) and (best is None or sum(gains) > best[1]): best = (name, sum(gains))
     out["karar"] = {"kabul": best[0] if best else None, "aciklama": (f"'{best[0]}' iki sezonda da piyasayı geçti (toplam log-loss kazancı {best[1]:.4f})." if best
                     else "Hiçbir aday iki sezonun ikisinde de mevcut sistemi (piyasa olasılığı) geçemedi; mevcut sistem korunur.")}
-    json.dump(out, open(os.path.join(ROOT, "data", "auto_lab.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+    os.makedirs(os.path.dirname(CIKTI), exist_ok=True)
+    json.dump(out, open(CIKTI, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     print(json.dumps(out, ensure_ascii=False, indent=1))
 
 if __name__ == "__main__":
