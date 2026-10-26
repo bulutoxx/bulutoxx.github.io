@@ -1,4 +1,6 @@
-# BULUTOXX 🐎 At Yarışı — Açık Kaynak Taraması (derin tur, 26.10.2026)
+# OXXai 🐎 At Yarışı — Açık Kaynak Taraması (derin tur, 26–27.10.2026)
+
+(OXXai'nin eski adları: BULUTOXX, BULUTO.)
 
 Amaç: modele TJK yasağını çiğnemeden, ücretsiz ve lisansı uygun **yeni bilgi** bulmak. Kırmızı çizgiler:
 tjk.org, medya-cdn.tjk.org, vhs*.tjk.org, atyarisi.com ve tüm alt alanları (tjkbulten, tjkgw, help, content) —
@@ -11,9 +13,9 @@ sayfa okuma (WebSearch/WebFetch) ile tarandı; GitHub aday listesi gece araştı
 GitHub arama API'si, Actions'ta) `data/at/arastirma.json` birikiminden alındı ve 20 aday deposu **sığ klonlanıp**
 dosya/kaynak/lisans envanteri çıkarıldı (ham veri depoya alınmadı).
 
-## Tarama tablosu (46 aday)
+## Tarama tablosu (54 aday)
 
-Karar: **BAĞLI** = üretimde · **DENEY** = ölçüldü (sonuç aşağıda) · **YOL** = yasal, üretim yolu hazır · **RED** = elendi.
+Karar: **BAĞLI** = üretimde · **DENEY** = ölçüldü (sonuç aşağıda) · **YOL** = yasal, üretim yolu hazır · **RED** = elendi · **BİLGİ** = yöntem/dayanak, veri değil.
 
 | # | aday | içerik | kapsam / güncellik | erişim | lisans / şart | TJK yasağıyla ilişki | karar | gerekçe |
 |---|---|---|---|---|---|---|---|---|
@@ -22,10 +24,10 @@ Karar: **BAĞLI** = üretimde · **DENEY** = ölçüldü (sonuç aşağıda) · 
 | 3 | aynanın `data/odds-snapshots` + `odds-steam-counterfactual` | 6–30 dk'lık oran izi, "steam" deneyi | 57 gün (2026-04-13 → 06-12), DURMUŞ | ayna | aynı (1) | aynı (1) | DENEY → RED | (2) ile birlikte ölçüldü; 2026-06'da durduğu için üretimde zaten yok |
 | 4 | aynanın `memory/predictions` (üçüncü taraf tahmin günlüğü; git'te ilk sürüm sabah 00–04) | at başına olasılık (ilk 6 at), "odds" alanı sabit 5 | 2026-06-13 → bugün | ayna git geçmişi | aynı (1) | aynı (1) | DENEY → RED | kendi LL'si 2,144 (bizim sabah 1,932); yığmada ΔLL −0,0019 [−0,0055; +0,0015] anlamsız; ezilmiş dönem sonuç içeriyor (sızıntı) |
 | 5 | aynanın `memory/horses|jockeys|trainers|tracks.json` | sonuçlardan türetilmiş özetler | bugünkü durum | ayna | aynı (1) | aynı (1) | RED | geleceği içerir (sızıntı); pedigri/sahip/orijin alanı YOK |
-| 6 | aynada kullanılmayan alanlar: `nonRunners`, `unplaced` ("Derecesiz"), `ganyanSixPrizes`, `isGanyanStart`, `ekuriGroups`, `form` dizisi, `time` | koşmaz/derecesiz, 6'lı ikramiyesi, ekuri, eski form | 169 koşmaz + 43 derecesiz (tüm dönem); form/saat yalnız 2026-04+ | ayna | aynı (1) | aynı (1) | RED | olay sayısı çok az / geçmiş çok kısa; ekuri v2'de elendi. Start/kulvar, HP, sahip, yetiştirici, baba/anne, galop, AGF alanı aynada YOK |
-| 7 | **Open-Meteo** arşiv + tahmin API'si | günlük yağış, sıcaklık (ERA5 tabanlı), 1–2 gün tahmin | 1940 → bugün, her koordinat | HTTPS, anahtarsız (Actions'tan erişilir; bu oturumdan engelli) | **CC BY 4.0**, ücretsiz katman ticari olmayan kullanım; atıf + lisans bağlantısı | TJK ile ilgisi yok | YOL (+ DENEY) | `lab/at/hava.py` üretim çekicisi; deney (8) üzerinden ölçüldü |
-| 8 | github.com/dogankorkmaz-tjk/tjk-sistem — `data/hava/gunluk.csv` | (7)'nin 10 hipodrom için günlük kopyası (`tjk/hava_cek.py` Open-Meteo arşivinden çekiyor) | 2023-01-01 → 2026-10-12 | git clone | depo lisanssız; **veri Open-Meteo'nun (CC BY 4.0)** | TJK ile ilgisi yok | DENEY (yalnız çevrimdışı ölçüm) | bu oturum Open-Meteo'ya erişemediği için ölçüm bu kopyayla yapıldı; üretim veriyi (7)'den kendisi çeker, bu depo üretime bağlanmaz |
-| 9 | aynı depo — `data/galop`, `idman.csv.gz`, `agf`, `agf_zaman`, `canli_oran`, `kosmaz`, `jokey_degisiklik` | idman/galop, AGF, canlı oran | 2026 | git clone | lisanssız | **tjkbulten.atyarisi.com API + tjk.org'dan kazınmış** (kodda açıkça) + agftablosu.com | RED | yasaklı alanların dolaylı kopyası; açılmadı, okunmadı |
+| 6 | aynada kullanılmayan alanlar (27.10'da tüm 635 sonuç + 175 program dosyası yeniden sayıldı: sonuç atı alanları yalnız `position, no, name, jockey, trainer, weight, odds, finishTime, age, nonRunner` — **ara derece, start/kulvar, baba/anne YOK**; kilo ondalıklı (55,5 = aprantı indirimi, `jk_apr` zaten kullanıyor)): `nonRunners`, `unplaced` ("Derecesiz"), `ganyanSixPrizes`, `isGanyanStart`, `ekuriGroups`, `form` dizisi, `time` | koşmaz/derecesiz, 6'lı ikramiyesi, ekuri, eski form | 169 koşmaz + 43 derecesiz (tüm dönem); form/saat yalnız 2026-04+ | ayna | aynı (1) | aynı (1) | RED | olay sayısı çok az / geçmiş çok kısa; ekuri v2'de elendi. Start/kulvar, HP, sahip, yetiştirici, baba/anne, galop, AGF alanı aynada YOK |
+| 7 | **Open-Meteo** arşiv + tahmin API'si | günlük yağış, sıcaklık (ERA5 tabanlı), 1–2 gün tahmin | 1940 → bugün, her koordinat | HTTPS, anahtarsız (Actions'tan erişilir; bu oturumdan **engelli**: vekil 403, WebFetch izin listesinde değil) | **CC BY 4.0**, ücretsiz katman ticari olmayan kullanım; atıf + lisans bağlantısı | TJK ile ilgisi yok | YOL (ölçüm bekliyor) | `lab/at/hava.py` üretim çekicisi hazır; `a6_hava` yalnız bu çekicinin dosyasıyla ölçülür (`AT_HAVA=_hava/gunluk.csv python lab/at/deney6.py`, Actions'ta). Bu turda ölçülemedi |
+| 8 | github.com/dogankorkmaz-tjk/tjk-sistem — `data/hava/gunluk.csv` | (7)'nin 10 hipodrom için günlük kopyası (`tjk/hava_cek.py` Open-Meteo arşivinden çekiyor) | 2023-01-01 → 2026-10-12 | git clone | depo **lisanssız**; veri Open-Meteo'dan türediği söyleniyor ama atıf/lisans yok | aynı depo yasak alanları kazıyor (9) | RED (27.10 kararı) | önceki ekip çevrimdışı ölçüm için kullanmayı düşünmüştü; lisansı belirsiz ve yasak alan kazıyan bir depodan geldiği için **kullanılmadı**, ölçüm sonuçlarına girmedi. Hava ancak Open-Meteo'nun kendisinden (7) gelir |
+| 9 | aynı depo — `data/galop`, `idman.csv.gz`, `agf`, `agf_zaman`, `canli_oran`, `kosmaz`, `jokey_degisiklik` | idman/galop, AGF, canlı oran | 2026 | git clone | lisanssız | **tjkbulten.atyarisi.com API + tjk.org'dan kazınmış** (kodda açıkça)+ üçüncü taraf AGF sitesi | RED | yasaklı alanların dolaylı kopyası; açılmadı, okunmadı |
 | 10 | npm `tjk-api` (bilaleren/tjk-api) | Node paketi: program, sonuç, AGF, muhtemeller | 2026-01 | npm | MIT (kod) | **tjk.org / vhs.tjk.org / medya-cdn'e istek atar** | RED | yasak alan |
 | 11 | SezerFidanci/TJK-API | TJK API sarmalayıcı | 2021 | git | yok | ebayi.tjk.org | RED | yasak alan |
 | 12 | ZehraK/TJK---Horse-Race-Scraping-Results | tjk.org kazıyıcı | 2021 | git | yok | tjk.org | RED | yasak alan, veri yok |
@@ -45,7 +47,7 @@ Karar: **BAĞLI** = üretimde · **DENEY** = ölçüldü (sonuç aşağıda) · 
 | 26 | cnszr71/tjk-racing-agent | ajan çerçevesi | 2026-10 | git | yok | – | RED | veri yok |
 | 27 | uruzgar/AtYarisi | "geçmiş yarışlar veri tabanı" | 2026-02 | git | yok | – | RED | depoda veri dosyası yok |
 | 28 | huseyinhim20-prog/TRAKUS96 | analiz | 2026-09 | git | yok | – | RED | boş |
-| 29 | dogankorkmaz-tjk/tjk-sistem — agftablosu.com, liderform, ganyancanavari, nalsesleri yoklamaları | üçüncü taraf AGF/form siteleri | – | erişilemedi | şartlar doğrulanamadı | içerik TJK'dan türemiş | RED | şart belirsiz; AGF ancak lisanslı kaynakla düşünülebilir |
+| 29 | dogankorkmaz-tjk/tjk-sistem — üçüncü taraf AGF/form sitelerinin yoklamaları (adları bilerek verilmedi) | üçüncü taraf AGF/form siteleri | – | erişilemedi | şartlar doğrulanamadı | içerik TJK'dan türemiş | RED | şart belirsiz; AGF ancak lisanslı kaynakla düşünülebilir |
 | 30 | sporx.com `at-yarisi-agf`, `muhtemeller`, `sonuclar` | AGF yüzdeleri, muhtemel oranlar ("TJK tarafından") | güncel | HTML | "Yasal Uyarı" sayfası; veri lisansı yok | TJK verisinin yeniden yayını | RED | kazıma izni yok/belirsiz; sabah AGF'si değerli olurdu ama yasal yol yok |
 | 31 | Kaggle "sanlian / Turkiye Horse Racing January 2024 Race Results" (baselight aynası) | 1 aylık sonuç | 2024-01 | Kaggle | doğrulanamadı | büyük olasılıkla tjk.org kazıması | RED | dönem aynanın dışında, tek ay, lisans belirsiz |
 | 32 | Kaggle/baselight Hong Kong (gdaley/hkracing, jeffreymuller 2013–2020) | HK sonuç + oran | 1997–2020 | Kaggle | çeşitli | – | RED | Türkiye değil (yalnız yöntem kıyası) |
@@ -63,6 +65,14 @@ Karar: **BAĞLI** = üretimde · **DENEY** = ölçüldü (sonuç aşağıda) · 
 | 44 | YÖK tez: "Devlet haraları orijinli safkan Arap atlarının yarış performansı" | pist (çim/kum) ve mevsim anlamlı | 1960–1988 | acikbilim.yok.gov.tr | açık erişim | – | BİLGİ | mevsim/pist etkisi; veri yok |
 | 45 | Türk Arap atı pedigri analizi (Uludağ Üni., akrabalı yetiştirme) | popülasyon yapısı | akademik | avesis | – | – | BİLGİ | açık veri yok |
 | 46 | arXiv 2503.16470 (Ornstein–Uhlenbeck: sürü ve bilgili bahisçi), 2207.04981 ("What AI can do for horse racing"), 2410.21484 (spor bahsi ML derlemesi); Maynooth "Weather and racing" (2001) | oran hareketi, hava–piyasa etkinliği | akademik | açık | – | – | BİLGİ | (2) ve (7)'nin yöntem dayanağı |
+| 47 | **aynanın günlük programlarındaki hava alanları** (`weatherCondition`, `humidity`, `temperature`) + önceki yarış günlerinin `trackCondition`'ı | sabah programında yazılan hava (yağmurlu/sağanak), nem, sıcaklık; pist durumu (normal/biraz/yumuşak/ıslak/ağır/sulu) | 2026-04 → bugün (3.120 koşu), 10 hipodrom | ayna (1) | aynı (1) | aynı (1) | DENEY (`a6_pist`) | TJK'ya istek atmadan sabah bilinen pist vekili; v3'te elenen "zemin"den farkı yarış günü pist durumunu kullanmaması |
+| 48 | **kendi oran izimiz** (`canli.py` → `data/at/oran_izi/<gün>.json`, main'de 27.10'dan beri) | 30 dk'da bir koşu öncesi oran, nokta yalnız değişince | birikiyor (2 gün çalışma ağacında, eskisi git geçmişinde) | kendi depomuz | kendi verimiz (türetilmiş) | aynadan türetilmiş | DENEY (birikince) | `lab/at/oran_izi.py --depo` ile aynı yapıda okunur (3 kaynak tek "erken" sözlüğü); sentetik sınamada çalıştı |
+| 49 | Wikidata — hipodrom öğeleri (Veliefendi, Şirinyer, Osmangazi, Yeşiloba, 75. Yıl …) | koordinat, açılış, pist türü | güncel | SPARQL/HTML | **CC0** | – | YOL (meta) | `hava.py` koordinatları için doğrulama kaynağı; tahmin sinyali değil |
+| 50 | Vikipedi "Jockey Club of Turkey", "Şirinyer Racecourse" sayfaları | hipodrom pist uzunlukları/türleri | güncel | HTML | CC BY-SA 4.0 | – | BİLGİ | meta bilgi; model sinyali değil |
+| 51 | Kore Halk Verisi Portalı (data.go.kr) KRA açık API'si | Kore yarış sonuçları, pist nemi (%) | güncel | API (anahtar gerekir) | Kore kamu lisansı | – | RED | Türkiye değil + hesap gerekir; yalnız "pist nemi" sinyalinin başka ülkede resmî veri olarak yayınlandığına dayanak |
+| 52 | Haber siteleri (habergazetesi.com.tr, fanatik.com.tr, ntv.com.tr) yarış sonucu/program haberleri | sonuçlar, koşu adları, kazananlar | güncel | HTML | telif hakkı saklı, veri lisansı yok | TJK verisinin yeniden yayını | RED | kazıma izni yok; aynada zaten olan bilgi |
+| 53 | TİGEM (tigem.gov.tr) satış/ihale katalogları (PDF) | devlet harası doğumlu safkan Arap/İngiliz tayların baba/anne adları | yıllık | PDF | kamu duyurusu; yeniden kullanım lisansı belirtilmemiş | – | RED (yalnız rapor) | pedigri için tek resmî açık belge türü; ama yalnız TİGEM tayları (alanın küçük kısmı), ad eşleştirme belirsiz ve lisans belirsiz → kullanılmadı |
+| 54 | Lisansüstü tez depoları (Bilecik, Hitit, BTÜ, Sakarya açık erişim; OKÜ FBED 2023 YZ tez derlemesi, CC BY 4.0) | yapay zekâ tezleri | 2017–2026 | açık PDF | CC BY / CC BY-NC-ND | – | RED | incelenen tezlerin hiçbiri at yarışı değil; YÖK Tez Merkezi'nde at yarışı tahmini üzerine açık veri setli tez bulunamadı |
 
 Ayrıca bakılıp sonuç vermeyenler: Meteostat toplu veri (CC BY-NC 4.0, istasyon tabanlı — Open-Meteo yedeği olabilir),
 NASA POWER (kamu malı, 0,5° — yedek), NOAA GHCN-Daily (kamu malı, istasyon) — üçü de bu oturumdan erişilemedi;
@@ -78,8 +88,8 @@ yarışı tahmin yapay sinir ağı safkan arap performans` · `github tjk scrape
 zeka github` · `huggingface datasets horse racing turkey tjk` · `horse racing pedigree open dataset arabian thoroughbred sire
 dam csv` · `horse racing pedigree database turkey "tjk" sire dam open data arabian` · `tjk api github npm "tjk" at yarışı
 paket` · `site:github.com tjk at yarışı` · `site:github.com ganyan` · `site:github.com "horse racing" turkey OR turkish OR
-tjk` · `site:github.com hipodrom OR veliefendi` · `yenibeygir.com at yarışı istatistik` · `agftablosu.com AGF tablosu` ·
-`liderform at yarışı form analiz` · `"AGF" at yarışı nedir altılı ganyan favorileri yüzde tahmin başarısı` · `sporx.com
+tjk` · `site:github.com hipodrom OR veliefendi` · `yenibeygir.com at yarışı istatistik` · `AGF tablosu sitesi` ·
+`at yarışı form analiz sitesi` · `"AGF" at yarışı nedir altılı ganyan favorileri yüzde tahmin başarısı` · `sporx.com
 yasal uyarı içerik izinsiz kopyalanamaz` · `zenodo OR figshare horse racing dataset results odds` · `"tjk" csv veri indir at
 yarışı sonuçları excel github` · `reddit turkish horse racing data tjk betting model` · `arxiv horse racing prediction
 learning to rank plackett-luce neural 2024 2025` · `horse racing track condition weather rainfall effect prediction model

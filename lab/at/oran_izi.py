@@ -1,11 +1,53 @@
-# BULUTOXX at lab — v6: oran izi (erken oran → nihai) harmana bilgi katıyor mu? Walk-forward (aylık), koşu-bootstrap GA.
-# python lab/at/oran_izi.py <ayna> iz.json data/at/replay_kosular.json [eşik_dk]
-# Oran izi (erken oran -> nihai oran hareketi) harmana bilgi katıyor mu? replay_kosular.json (sızıntısız p_sabah, p_oran)
-# + aynanın odds-snapshots (2026-04..06) + git geçmişi oran izi (2026-06..10). Walk-forward (aylık yeniden uydurma).
-import json, os, sys, glob, math, collections, datetime as dt
+# OXXai at lab — v6: oran izi (erken oran → nihai) harmana bilgi katıyor mu? Walk-forward (aylık), koşu-bootstrap GA.
+# TEK YAPI: üç kaynağın izi aynı "erken" sözlüğüne çevrilir —
+#   (1) aynanın data/odds-snapshots (2026-04..06, durmuş), (2) aynanın git geçmişinden çıkarılmış iz.json
+#   (lab/at/oran_izi_cikar.py; 2026-06..10), (3) KENDİ topladığımız iz: canli.py'nin data/at/oran_izi/<gün>.json
+#   dosyaları (biçim: kosular["<hipodrom>/<koşu>"] = {"t": ["HH:MM", …], "o": {"<at no>": [oran|null, …]}}); canli.py
+#   yalnız son 2 günü çalışma ağacında tutar, eski günler bu deponun git geçmişinden okunur (--depo).
+# python lab/at/oran_izi.py <ayna> <iz.json | -> data/at/replay_kosular.json [eşik_dk] [--depo <OXXai deposu>]
+import json, os, sys, glob, math, collections, subprocess, datetime as dt
 import numpy as np
-AYNA, IZ, REPLAY = sys.argv[1], sys.argv[2], sys.argv[3]
-ESIK_DK = float(sys.argv[4]) if len(sys.argv) > 4 else 30
+_arg = [a for a in sys.argv[1:] if not a.startswith("--")]
+DEPO = sys.argv[sys.argv.index("--depo") + 1] if "--depo" in sys.argv else None
+if DEPO in _arg:
+    _arg.remove(DEPO)
+AYNA, IZ, REPLAY = _arg[0], _arg[1], _arg[2]
+ESIK_DK = float(_arg[3]) if len(_arg) > 3 else 30
+
+
+def depo_izleri(depo):
+    """Kendi oran izimiz: data/at/oran_izi/<gün>.json'un çalışma ağacı + git geçmişindeki EN SON sürümü (gün başına).
+    -> {"<tarih>|<hipodrom>|<koşu>": {"saat_t": ["HH:MM", …], "o": {at no: [oran|None, …]}}}"""
+    surum = {}
+    try:
+        cik = subprocess.check_output(["git", "-C", depo, "log", "--format=C %H", "--name-only", "--", "data/at/oran_izi/"],
+                                      text=True)
+    except (OSError, subprocess.CalledProcessError):
+        cik = ""
+    h = None
+    for ln in cik.splitlines():
+        if ln.startswith("C "):
+            h = ln[2:]
+        elif ln.endswith(".json") and h and ln not in surum:
+            surum[ln] = h            # git log yeniden eskiye: ilk görülen = en son sürüm
+    out = {}
+    for yol in set(surum) | {os.path.relpath(f, depo) for f in glob.glob(os.path.join(depo, "data/at/oran_izi/*.json"))}:
+        js = None
+        if os.path.exists(os.path.join(depo, yol)):
+            js = json.load(open(os.path.join(depo, yol), encoding="utf-8"))
+        elif yol in surum:
+            try:
+                js = json.loads(subprocess.check_output(["git", "-C", depo, "show", f"{surum[yol]}:{yol}"]))
+            except (subprocess.CalledProcessError, ValueError):
+                js = None
+        if not js:
+            continue
+        for anah, z in (js.get("kosular") or {}).items():
+            hip, no = anah.rsplit("/", 1)
+            out[f"{js['tarih']}|{hip}|{no}"] = {"saat_t": z.get("t") or [], "o": z.get("o") or {}}
+    return out
+
+
 def post_ts(t, saat):
     return dt.datetime.fromisoformat(f"{t}T{saat}:00+03:00").timestamp()
 # erken oranlar: anahtar -> (ad -> oran) ; ilk görüntü ve post'tan >= ESIK_DK önceki en son görüntü
@@ -24,7 +66,7 @@ for f in sorted(glob.glob(os.path.join(AYNA, "data/odds-snapshots/*.jsonl"))):
         on = [t for t in s if t <= p - ESIK_DK * 60]
         if on:
             erken[k] = ("jsonl", min(on), max(on), s[min(on)], s[max(on)], p)
-iz = json.load(open(IZ))
+iz = json.load(open(IZ)) if IZ != "-" else {}
 for k, d in iz.items():
     if k in erken or not d.get("saat") or not d.get("t"): continue
     p = post_ts(k.split("|")[0], d["saat"])
@@ -39,6 +81,29 @@ for f in glob.glob(os.path.join(AYNA, "data/results/2026-*.json")):
     for r in json.load(open(f)):
         k = f"{r['date']}|{r['venue']}|{r['raceNo']}"
         sonuc[k] = {str(h["no"]): (h["name"], h.get("odds")) for h in r["horses"] if not h.get("nonRunner")}
+if DEPO:   # (3) kendi izimiz: at no -> ad, aynanın sonuç dosyasıyla
+    kendi = depo_izleri(DEPO)
+    for k, z in kendi.items():
+        if k in erken or k not in sonuc:
+            continue
+        t, saat = k.split("|")[0], None
+        p = None
+        T = z["saat_t"]
+        # koşu saati: aynanın günlük programından
+        try:
+            for r in json.load(open(os.path.join(AYNA, "data/daily", t + ".json"), encoding="utf-8")):
+                if f"{r['date']}|{r['venue']}|{r['raceNo']}" == k:
+                    saat = r.get("time")
+        except (OSError, ValueError):
+            pass
+        if not saat or not T:
+            continue
+        p = post_ts(t, saat)
+        ix = [i for i, c in enumerate(T) if post_ts(t, c) <= p - ESIK_DK * 60]
+        if not ix:
+            continue
+        ad_ = lambda i: {sonuc[k][n][0]: v[i] for n, v in z["o"].items() if n in sonuc[k] and v[i]}
+        erken[k] = ("kendi", post_ts(t, T[ix[0]]), post_ts(t, T[ix[-1]]), ad_(ix[0]), ad_(ix[-1]), p)
 R = json.load(open(REPLAY))["kosular"]
 satir = []
 for kr in R:

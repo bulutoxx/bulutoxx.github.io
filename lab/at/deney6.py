@@ -1,14 +1,16 @@
-# BULUTOXX at yarışı laboratuvarı — v6 deney masası (derin tarama turu; elle çalıştırılır, gece akışının parçası değil).
+# OXXai at yarışı laboratuvarı — v6 deney masası (derin tarama turu; elle çalıştırılır, gece akışının parçası değil).
 # Kalıp: lab/at/deney5.py. Kapı: lab/at/deney4.py iki katlı kapı (Masa, gecer) aynen:
 #   katların ORTALAMA yalnız-model log-loss'u düşmeli (> 0,0001), ortalama ilk-seçim isabeti düşmemeli, en güncel kat (B)
 #   kötüleşmemeli, harman 0,001'den fazla bozulmamalı. Her adımda önceki kabule göre koşu başına eşleştirilmiş ΔLL ve
 #   koşu-bootstrap %95 GA (birleşik + kat kat). Walk-forward: her ay yalnız o aydan önceki veriyle eğitim → "hiç
 #   oynanmamış gibi" sanal oynatma.
 # Taban: yayındaki tarif (v4 + jk_uzman, jk_apr, jk_beceri + a5_sinif). Adaylar (en fazla 5):
-#   a6_hava, a6_kalman, a6_mesafe, a6_gelisim (lab/at/at6.py) — özellik grupları, tek tek eklenir; geçen sonrakinin tabanı.
+#   a6_pist, a6_kalman, a6_mesafe, a6_gelisim (lab/at/at6.py) — özellik grupları, tek tek eklenir; geçen sonrakinin tabanı.
+#   a6_hava (Open-Meteo) yalnız AT_HAVA ile lisanslı bir hava dosyası verildiyse denenir (Open-Meteo'dan lab/at/hava.py ile
+#   çekilmiş _hava/gunluk.csv; lisansı belirsiz üçüncü taraf kopyaları KULLANILMAZ). Dosya yoksa "ölçülemedi" yazılır.
 #   m6_rank — model yöntemi: GBM katmanının amacı koşu içi softmax yerine LightGBM LambdaRank (ilk 3 kademeli alaka:
 #             1.=3, 2.=2, 3.=1, diğer 0); doğrusal+GBM yığma katsayıları kalibrasyon penceresinde aynı yolla öğrenilir.
-# a6_hava kapıyı geçerse sağlamlık satırı: yarış günü yağışı bilinmiyor sayılarak (yalnız önceki 3 gün) yeniden ölçülür
+# a6_pist (ya da a6_hava) kapıyı geçerse sağlamlık satırı: yarış günü değerleri bilinmiyor sayılarak (yalnız önceki günler) yeniden ölçülür
 #   (üretimde yarış günü değeri tahmindir; deneyde arşiv değeri). Bu satır seçimi değiştirmez, yalnız raporlanır.
 # Yalnız ilk-seçim kuralına takılan özellik grupları (ΔLL < 0) yeni tabanda bir kez daha denenir.
 # Çıktı: data/at/deneyler_v6.json (yalnız türetilmiş metrikler).
@@ -29,6 +31,8 @@ CIKTI = os.path.join(BURA, "..", "..", "data", "at", "deneyler_v6.json")
 # --devam önbelleği (depoya girmez): taban ve güncel kabulün koşu başına vektörleri; yeniden başlatmada pahalı eğitimi atlar
 ONBELLEK = os.environ.get("AT_DENEY6_ONBELLEK") or os.path.join(BURA, "..", "..", "_deney6_onbellek")
 ADLAR_GRUP = {
+    "a6_pist": "ayna programından sabah bilinen pist/hava vekili: yağış bayrağı, nem, sıcaklık, aynı hipodrom+pistte önceki "
+               "yarış gününün pist durumu (sönümlü); beklenen ıslaklık × (ıslak pist uyumu, kilo, reyting)",
     "a6_hava": "hava (Open-Meteo): ıslaklık endeksi (yarış günü + önceki 3 gün), sıcaklık, atın ıslak pist uyumu, "
                "ıslaklık × (uyum, alan içi reyting, kilo, çim)",
     "a6_kalman": "Kalman hız figürü: at başına durum-uzay yetenek (gün başına süreç varyansı) − alan, belirsizlik, z, "
@@ -162,7 +166,12 @@ def main(devam=False):
         return adim(ad, r, v)
 
     yakin = []
+    hava_var = os.path.exists(A6.hava_yolu())
+    kayit["hava_durumu"] = ("ölçüldü: " + os.path.basename(A6.hava_yolu())) if hava_var else \
+        "ölçülemedi: Open-Meteo bu ortamdan erişilemedi; lisanslı hava dosyası yok (üretim çekicisi lab/at/hava.py hazır)"
     for g in A6.A6_GRUPLAR:
+        if g == "a6_hava" and not hava_var:
+            continue
         ok, d = dene(f"{g} — {ADLAR_GRUP[g]}", gr + [g], rank[0])
         if ok and g not in gr:
             gr = gr + [g]
@@ -174,14 +183,18 @@ def main(devam=False):
         ok, _ = dene(f"yeniden (yeni tabanda): {g}", gr + [g], rank[0])
         if ok and g not in gr:
             gr = gr + [g]
-    # sağlamlık: a6_hava seçildiyse yarış günü yağışı bilinmiyor sayılarak (yalnız önceki günler)
-    ad_s = "sağlamlık: a6_hava yarış günü yağışı olmadan (yalnız önceki 3 gün; sıcaklık önceki gün)"
-    if "a6_hava" in gr and ad_s not in yapilan:
-        A6.HAVA_BUGUN = False
+    # sağlamlık: a6_pist / a6_hava seçildiyse yarış günü değerleri bilinmiyor sayılarak (yalnız önceki günler)
+    for g_s, bayrak, ad_s in (("a6_pist", "PIST_BUGUN", "sağlamlık: a6_pist yarış günü programı havası olmadan (yalnız önceki "
+                                                      "yarış günlerinin pist durumu)"),
+                              ("a6_hava", "HAVA_BUGUN", "sağlamlık: a6_hava yarış günü yağışı olmadan (yalnız önceki 3 gün; "
+                                                      "sıcaklık önceki gün)")):
+        if g_s not in gr or ad_s in yapilan:
+            continue
+        setattr(A6, bayrak, False)
         try:
             T2, _ = O.tablo_kur(kosular, adlar=O.TUM_ADLAR)
         finally:
-            A6.HAVA_BUGUN = True
+            setattr(A6, bayrak, True)
         masa_asil = masa
         masa = Masa(kosular, T2)
         try:
@@ -229,6 +242,8 @@ def sizinti():
         Xr = [durum.ozellik(k, A6.A6_ADLAR) for k in reversed(bugun)]
         ok3 = np.allclose(Xd, np.vstack(list(reversed(Xr))), atol=1e-12)
         dolu = float((np.abs(Xd) > 0).mean())
+        if ok1 and not ok2:
+            print("  değişen sütunlar:", [A6.A6_ADLAR[j] for j in range(len(sut)) if not np.allclose(Xd[:, j], Xk[:, j])])
         print(f"{D}: {len(Xd)} satır · dolu %{100 * dolu:.0f} · kesme {'AYNI' if ok1 else 'FARKLI'} · sonuç karıştırma "
               f"{'AYNI' if ok2 else 'FARKLI'} · ters sıra {'AYNI' if ok3 else 'FARKLI'}", flush=True)
         if not (ok1 and ok2 and ok3):

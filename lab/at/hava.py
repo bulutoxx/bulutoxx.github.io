@@ -1,4 +1,4 @@
-# BULUTOXX at yarışı laboratuvarı — hipodrom havası (Open-Meteo; veri lisansı CC BY 4.0, atıf: https://open-meteo.com/).
+# OXXai at yarışı laboratuvarı — hipodrom havası (Open-Meteo; veri lisansı CC BY 4.0, atıf: https://open-meteo.com/).
 # Anahtarsız, ücretsiz (ticari olmayan kullanım) API; tjk.org / atyarisi.com ile hiçbir ilgisi yok.
 # Çıktı: _hava/gunluk.csv (gitignore'da; ham indirilen veri depoya YAZILMAZ). Sütunlar: hipodrom,tarih,yagis_mm,
 # yagmur_mm,sicaklik (lab/at/at6.py okur). Geçmiş günler arşivden (ERA5 tabanlı, ~5 gün gecikmeli), son 14 gün +

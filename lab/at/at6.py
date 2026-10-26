@@ -1,4 +1,4 @@
-# BULUTOXX at yarışı laboratuvarı — v6 at özellikleri (derin tarama turu, 26.10.2026).
+# OXXai (eski adı BULUTOXX) at yarışı laboratuvarı — v6 at özellikleri (derin tarama turu, 26.10.2026).
 #
 # Açık kaynak taraması (lab/at/KAYNAKLAR.md) sonunda TJK dışından yasal + ücretsiz + ölçülebilir tek yeni sinyal
 # hava oldu (Open-Meteo arşivi, CC BY 4.0). Diğer adaylar aynanın HENÜZ KULLANILMAYAN boyutlarından türetildi.
@@ -8,6 +8,11 @@
 #                pistteki kişisel uyumu (küçültmeli), ıslaklık × (uyum, alan içi reyting, kilo, çim). Pist durumu
 #                (trackCondition) aynada yalnız 2026-04'ten beri ve çoğu gün yarış saatine yakın yazılıyor; hava ise
 #                2023'ten beri her gün için var → sabah kilidinde bilinen bir pist durumu vekili.
+#   a6_pist    : AYNADAN sabah bilinen pist/hava vekili (TJK dışı istek yok; yalnız cenkozgur/tjk-data günlük programları,
+#                2026-04'ten beri): yarış günü programındaki hava (yağmur/sağanak bayrağı), nem, sıcaklık; aynı hipodrom
+#                ve aynı pist türünde ÖNCEKİ yarış gününün pist durumu (ıslaklık sırası, gün aralığıyla sönümlü). Atın
+#                ıslak pist uyumu × beklenen ıslaklık, × kilo, × reyting. v3'te elenen "zemin" grubundan farkı: yarış
+#                günü pist durumunu (çoğu gün 14:00'te yazılıyor) KULLANMAZ → sabah kilidinde de aynı değer.
 #   a6_kalman  : at başına durum-uzay (Kalman) hız figürü: yetenek zamanla rastgele yürür (gün başına süreç varyansı),
 #                her figür gürültülü bir gözlem. Ortalama − alan ortalaması, belirsizlik, z, alan içi sıra; figür
 #                tutarlılığı (son 6 figürün std'si, küçültmeli).
@@ -27,6 +32,8 @@ KOK = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "
 A6_OZELLIKLER = [
     ("a6_h_islak", "a6_hava"), ("a6_h_yok", "a6_hava"), ("a6_h_sicak", "a6_hava"), ("a6_h_uyum", "a6_hava"),
     ("a6_h_x_uyum", "a6_hava"), ("a6_h_x_r", "a6_hava"), ("a6_h_x_kilo", "a6_hava"), ("a6_h_x_cim", "a6_hava"),
+    ("a6_p_yagmur", "a6_pist"), ("a6_p_nem", "a6_pist"), ("a6_p_sicak", "a6_pist"), ("a6_p_dun", "a6_pist"),
+    ("a6_p_yok", "a6_pist"), ("a6_p_x_uyum", "a6_pist"), ("a6_p_x_kilo", "a6_pist"), ("a6_p_x_r", "a6_pist"),
     ("a6_k_m", "a6_kalman"), ("a6_k_sd", "a6_kalman"), ("a6_k_z", "a6_kalman"), ("a6_k_sira", "a6_kalman"),
     ("a6_k_tutarli", "a6_kalman"),
     ("a6_m_yakin", "a6_mesafe"), ("a6_m_egim", "a6_mesafe"), ("a6_m_uzak", "a6_mesafe"),
@@ -41,6 +48,7 @@ IFADE = {
     "a6_h_uyum": ("ıslak pistte formu iyi", "ıslak pistte formu zayıf"),
     "a6_k_m": ("hız figürü eğilimi (Kalman) alanın üstünde", "hız figürü eğilimi (Kalman) alanın altında"),
     "a6_m_yakin": ("bu mesafede en iyi derecelerini yapıyor", "en iyi dereceleri başka mesafede"),
+    "a6_p_x_uyum": ("ağır/ıslak pist beklentisinde formu iyi", "ağır/ıslak pist beklentisinde formu zayıf"),
 }
 
 # --- hava (Open-Meteo, CC BY 4.0): hipodrom adı (ascii) -> aynadaki ad
@@ -61,6 +69,62 @@ HAVA_BUGUN = os.environ.get("AT_HAVA_BUGUN", "1") != "0"
 
 
 _HAVA_ONBELLEK = {}
+# a6_pist: yarış günü programındaki hava/nem/sıcaklık kullanılsın mı (sağlamlık sınaması için False: yalnız önceki günler)
+PIST_BUGUN = os.environ.get("AT_PIST_BUGUN", "1") != "0"
+_YAGIS = ("YAĞMUR", "SAĞANAK", "FIRTINA", "KAR", "DOLU")
+_PROGRAM_ONBELLEK = {}
+
+
+def program_havasi(kaynak=None):
+    """Aynanın günlük programlarından (data/daily) (tarih, hipodrom) -> (yağış bayrağı, nem, sıcaklık) ve
+    (tarih, hipodrom, pist) -> o günün en ağır pist durumu sırası. Yalnız ayna okunur; ham veri depoya yazılmaz."""
+    import json, re
+    import veri
+    d = os.path.join(kaynak or veri.KAYNAK, "data", "daily")
+    try:
+        imza = (d, tuple(sorted(os.listdir(d)))[-1:], len(os.listdir(d)))
+    except OSError:
+        return {}, {}
+    if imza in _PROGRAM_ONBELLEK:
+        return _PROGRAM_ONBELLEK[imza]
+    hv, zm = {}, {}
+    for f in sorted(os.listdir(d)):
+        if not re.match(r"\d{4}-\d{2}-\d{2}\.json$", f):
+            continue
+        try:
+            js = json.load(open(os.path.join(d, f), encoding="utf-8"))
+        except Exception:
+            continue
+        for r in js:
+            h, t = r.get("venue"), r.get("date") or f[:10]
+            if h not in veri.YERLI:
+                continue
+            w = veri.ad(r.get("weatherCondition"))
+            nem = r.get("humidity")
+            m = re.search(r"NEM%(\d+)", w)
+            if nem in (None, "") and m:
+                nem = int(m.group(1))
+            if "PDF" in w or "PROGRAM" in w:
+                w = ""
+            try:
+                nem = float(nem) if nem not in (None, "") else None
+            except (TypeError, ValueError):
+                nem = None
+            try:
+                sc = float(r.get("temperature")) if r.get("temperature") not in (None, "") else None
+            except (TypeError, ValueError):
+                sc = None
+            yb = (1.0 if any(x in w for x in _YAGIS) else 0.0) if w else None
+            eski = hv.get((t, h))
+            if eski is None or (eski[0] is None and yb is not None):
+                hv[(t, h)] = (yb, nem, sc)
+            z = veri.zemin_sira(veri.zemin_norm(r.get("trackCondition")))
+            if z is not None:
+                k = (t, h, r.get("surface") or "")
+                zm[k] = max(zm.get(k, 0), z)
+    _PROGRAM_ONBELLEK.clear()
+    _PROGRAM_ONBELLEK[imza] = (hv, zm)
+    return hv, zm
 
 
 def hava_yolu():
@@ -108,6 +172,33 @@ class A6Durum:
         self.kal = {}                                   # at -> [m, v, son gün]
         self.gel = defaultdict(lambda: [0, 0.0])        # (yaş, ara kovası) -> [n, Σ Δfigür]
         self.bekleyen = []                              # (at, yaş) bugün koşanlar
+        self._prog = None                               # a6_pist: aynanın program havası/pist tablosu (tembel)
+
+    def _pist_tablolari(self):
+        if self._prog is None:
+            hv, zm = program_havasi()
+            son = defaultdict(list)                     # (hipodrom, pist) -> [(gün, sıra)] zaman sıralı
+            for (t, h, p), z in sorted(zm.items()):
+                son[(h, p)].append((date.fromisoformat(t).toordinal(), z))
+            self._prog = (hv, son)
+        return self._prog
+
+    def pist_vekili(self, kosu, bugun):
+        """(yağış bayrağı, nem, sıcaklık, önceki gün ıslaklığı, beklenen ıslaklık e∈[0,1]); bilinmeyen None.
+        Önceki gün: aynı hipodrom + pist türünde bugünden ÖNCEKİ en son yarış gününün en ağır pist durumu, aralıkla sönümlü."""
+        hv, son = self._pist_tablolari()
+        yb, nem, sc = hv.get((kosu["tarih"], kosu["hipodrom"]), (None, None, None)) if PIST_BUGUN else (None, None, None)
+        dun = None
+        L = son.get((kosu["hipodrom"], kosu["pist"]))
+        if L:
+            import bisect
+            i = bisect.bisect_left(L, (bugun, -1)) - 1
+            if i >= 0 and bugun - L[i][0] <= 10:
+                dun = L[i][1] / 3.0 * 0.5 ** ((bugun - L[i][0] - 1) / 3.0)
+        if yb is None and dun is None:
+            return None
+        e = max(yb or 0.0, dun or 0.0)
+        return yb, nem, sc, dun, e
 
     # ---------------------------------------------------------------- hava
     def islak(self, hipodrom, gun):
@@ -128,6 +219,8 @@ class A6Durum:
         return v
 
     # ---------------------------------------------------------------- özellikler
+    _pist_lazim = True
+
     def satirlar(self, kosu, durum, r_alan, kilo_ort, bugun, r_at_list):
         out = []
         N = len(kosu["atlar"])
@@ -137,6 +230,7 @@ class A6Durum:
         sicak = ((t[1] - 15.0) / 10.0) if (t and t[1] is not None) else 0.0
         cim = 1.0 if kosu["pist"] == "Çim" else 0.0
         mes = kosu["mesafe"] or 1400
+        pv = self.pist_vekili(kosu, bugun) if self._pist_lazim else None
         # Kalman durumları (bugüne taşınmış)
         km = []
         for a in kosu["atlar"]:
@@ -181,6 +275,22 @@ class A6Durum:
                     f["a6_h_uyum"] = (sum(s) + K_UYUM * ort) / (len(s) + K_UYUM) - ort
                     if isl is not None:
                         f["a6_h_x_uyum"] = isl * f["a6_h_uyum"]
+            # --- pist/hava vekili (ayna programı, sabah bilinen)
+            if pv is None:
+                f["a6_p_yok"] = 1.0
+            else:
+                yb, nem, sc, dun, e = pv
+                f["a6_p_yagmur"] = yb or 0.0
+                f["a6_p_nem"] = ((nem - 60.0) / 20.0) if nem is not None else 0.0
+                f["a6_p_sicak"] = ((sc - 15.0) / 10.0) if sc is not None else 0.0
+                f["a6_p_dun"] = dun or 0.0
+                f["a6_p_x_kilo"] = e * kf
+                f["a6_p_x_r"] = e * (r_at_list[ai] - r_alan)
+                if g:
+                    s_ = [h["skor"] for h in g if (h.get("zemin_s") or 0) >= 1]
+                    if s_:
+                        ort = (sum(h["skor"] for h in g) + K_UYUM * 0.5) / (len(g) + K_UYUM)
+                        f["a6_p_x_uyum"] = e * ((sum(s_) + K_UYUM * ort) / (len(s_) + K_UYUM) - ort)
             # --- Kalman
             m = kms[ai]
             v = km[ai][1] if km[ai] else K_ONSEL_V

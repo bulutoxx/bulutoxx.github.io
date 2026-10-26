@@ -495,16 +495,15 @@ def _v6_bolum(a):
     dj = joku(V6_DOSYA)
     if not dj or not dj.get("adimlar"):
         return
-    a("## v6 turu: derin açık kaynak taraması (hava, Kalman figür, mesafe profili, gelişim, LambdaRank)")
+    a("## v6 turu: derin açık kaynak taraması (pist vekili, Kalman figür, mesafe profili, gelişim, LambdaRank)")
     a("")
-    a("46 aday tarandı (tablo, sorgular ve yasal notlar: `lab/at/KAYNAKLAR.md`). TJK yasağına uyan, ücretsiz ve lisansı "
-      "uygun tek yeni dış sinyal **hava** (Open-Meteo, CC BY 4.0) çıktı; start/kulvar, HP, pedigri, idman/galop ve AGF "
-      "için yasal açık kaynak yok (bulunan depoların hepsi tjk.org/atyarisi kazıması). Diğer adaylar aynanın kullanılmayan "
-      "boyutlarından ve aynanın git geçmişinden kuruldu. Kapı: deney4 iki katlı kapı; walk-forward (her ay yalnız "
-      "geçmişle eğitim) = hiç oynanmamış gibi sanal oynatma. Sızıntı testi: `python lab/at/deney6.py --sizinti`.")
-    hv = dj.get("hava") or {}
-    if hv:
-        a(f"Hava kapsamı: {hv.get('hava_var', '?'):,} / {hv.get('kosu', '?'):,} koşu (son gün {hv.get('son_tarih')}).")
+    a("54 aday tarandı (tablo, sorgular ve yasal notlar: `lab/at/KAYNAKLAR.md`). TJK yasağına uyan, ücretsiz ve lisansı "
+      "uygun dış sinyal yalnız **hava** (Open-Meteo, CC BY 4.0); start/kulvar, ara derece, pedigri, idman/galop ve AGF için "
+      "yasal açık kaynak yok. Adaylar aynanın kullanılmayan boyutlarından (program havası, önceki günlerin pist durumu, "
+      "figür geçmişi) kuruldu. Kapı: deney4 iki katlı kapı; walk-forward (her ay yalnız geçmişle eğitim). Sızıntı testi: "
+      "`python lab/at/deney6.py --sizinti`.")
+    if dj.get("hava_durumu"):
+        a(f"Open-Meteo hava (a6_hava): {dj['hava_durumu']}.")
     a("")
     a("| # | deney | sonuç | ort. LL / ilk seçim | B: LL / ilk | ΔLL birleşik [%95 GA] | ΔLL A | ΔLL B | harman ort. LL / ilk | ΔLL harman |")
     a("|---|---|---|---|---|---|---|---|---|---|")
@@ -527,8 +526,8 @@ def _v6_bolum(a):
     pj = joku(V6_PIYASA) or {}
     if pj.get("deneyler"):
         a("")
-        a("Harman/yığma katmanı (aynanın git geçmişi; `lab/at/oran_izi.py`, `lab/at/ucuncu_taraf.py`; taban "
-          "`replay_kosular.json` sızıntısız olasılıkları, aylık walk-forward):")
+        a("Harman/yığma katmanı (aynanın git geçmişi + kendi oran izimiz `data/at/oran_izi/`; `lab/at/oran_izi.py`, "
+          "`lab/at/ucuncu_taraf.py`; taban `replay_kosular.json` sızıntısız olasılıkları, aylık walk-forward):")
         a("")
         a("| deney | koşu | ΔLL [%95 GA] | sonuç |")
         a("|---|---|---|---|")
@@ -536,7 +535,7 @@ def _v6_bolum(a):
             a(f"| {d['ad']} | {d['kosu']:,} | {d['dll']:+.4f} [{d['ga95'][0]:+.4f}, {d['ga95'][1]:+.4f}] | "
               f"{'✅' if d['gecti'] else '❌ elendi'} |")
         a("")
-        a("- Oran hareketi nihai orana bilgi katmıyor: nihai ganyan oranı erken parayı zaten içeriyor (erken oranın kendi "
+        a("- Oran hareketi nihai piyasa oranına bilgi katmıyor: nihai oran erken parayı zaten içeriyor (erken oranın kendi "
           "LL'si çok daha kötü). Aynadaki üçüncü taraf tahminleri bizim sabah modelimizden belirgin zayıf.")
     a("")
 

@@ -1,4 +1,4 @@
-# BULUTOXX at lab — v6: aynanın git geçmişinden oran izi çıkarıcı (yalnız türetilmiş özet yazar; depoya girmez).
+# OXXai at lab — v6: aynanın git geçmişinden oran izi çıkarıcı (yalnız türetilmiş özet yazar; depoya girmez).
 # Kullanım: git clone --filter=blob:none --no-checkout https://github.com/cenkozgur/tjk-data T; git -C T log --format='C %H %ct' --raw --no-abbrev -- data/daily/ > raw.txt
 #   (eksik blob'lar: awk ile oid listesi → git fetch origin <oid...>); python lab/at/oran_izi_cikar.py T raw.txt iz.json
 # Aynanın git geçmişinden (data/daily sürümleri) at başına oran izi çıkarır. Yalnız türetilmiş özet yazar.

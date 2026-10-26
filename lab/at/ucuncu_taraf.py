@@ -1,4 +1,4 @@
-# BULUTOXX at lab — v6: aynadaki üçüncü taraf tahmin günlüğü (memory/predictions, git'te ilk sabah sürümü) yığma testi.
+# OXXai at lab — v6: aynadaki üçüncü taraf tahmin günlüğü (memory/predictions, git'te ilk sabah sürümü) yığma testi.
 # python lab/at/ucuncu_taraf.py <blobless ayna klonu> pred_ilk.txt data/at/replay_kosular.json
 # Aynadaki üçüncü taraf tahmin günlüğü (memory/predictions, git'te İLK sürüm, sabah) sabah modelimize bilgi katıyor mu?
 import json, sys, subprocess, math, collections, datetime as dt
