@@ -1,7 +1,8 @@
 {
  "v": 1,
  "sayac": {
-  "futbol-2026": 5
+  "futbol-2026": 5,
+  "basket-2026": 1
  },
  "kayitlar": [
   {
@@ -541,9 +542,86 @@
    },
    "karar": "ret",
    "neden": "sınama alt sınırı ≤ 0 (α=0.0100)"
+  },
+  {
+   "tarih": "2026-10-27",
+   "anahtar": "esik:bk_en_olasi:p_min:0.62",
+   "tur": "esik",
+   "alan": "basket",
+   "aciklama": "keşif: bk_en_olasi p_min 0.6 → 0.62",
+   "sinyal": {
+    "kaynak": "keşif (sinyal yok)"
+   },
+   "deger": 0.62,
+   "uygulandi": false,
+   "sure_sn": 2.7,
+   "olcut": "kupon isabet oranı farkı",
+   "alfa": 0.05,
+   "deneme_no": 1,
+   "secim": {
+    "gun": [
+     "2026-01-01",
+     "2026-07-04"
+    ],
+    "fark": 0.0243,
+    "taban": {
+     "n": 151,
+     "tutan": 114,
+     "isabet": 0.755,
+     "beklenen": 110.75,
+     "brier": 0.1473
+    },
+    "aday": {
+     "n": 145,
+     "tutan": 113,
+     "isabet": 0.7793,
+     "beklenen": 108.08,
+     "brier": 0.1437
+    }
+   },
+   "sinama": {
+    "gun": [
+     "2026-07-05",
+     "2026-10-26"
+    ],
+    "fark": 0.006,
+    "alt_sinir": -0.0269,
+    "bootstrap_B": 2000,
+    "taban": {
+     "n": 56,
+     "tutan": 37,
+     "isabet": 0.6607,
+     "beklenen": 28.06,
+     "brier": 0.2412
+    },
+    "aday": {
+     "n": 51,
+     "tutan": 34,
+     "isabet": 0.6667,
+     "beklenen": 25.81,
+     "brier": 0.2381
+    },
+    "bacak_taban": {
+     "n": 123,
+     "tutan": 99,
+     "isabet": 0.8049,
+     "beklenen": 89.74,
+     "brier": 0.1652
+    },
+    "bacak_aday": {
+     "n": 113,
+     "tutan": 92,
+     "isabet": 0.8142,
+     "beklenen": 83.01,
+     "brier": 0.1598
+    }
+   },
+   "koruma": {},
+   "karar": "ret",
+   "neden": "sınama alt sınırı ≤ 0 (α=0.0500)"
   }
  ],
- "guncelleme": "2026-10-26T21:17Z",
+ "guncelleme": "2026-10-26T22:24Z",
  "kurallar": {
   "gecelik_aday": 3,
   "secim_sinama": "günler 2/3 seçim, 1/3 sınama (ileriye dönük sanal oynatma, bu yılın maçları)",
@@ -555,11 +633,11 @@
  },
  "ozet": {
   "bu_gece": {
-   "ret": 2
+   "ret": 1
   },
   "kuyruk_bekleyen": 0,
   "ayar_surum": "varsayilan",
   "izlenen": [],
-  "sure_sn": 7.0
+  "sure_sn": 2.8
  }
 }
