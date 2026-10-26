@@ -38,6 +38,7 @@ import oxx_kupon as K  # noqa: E402
 KUYRUK = os.path.join(DATA, "deney_kuyrugu.json")
 GUNLUK = os.path.join(DATA, "ogrenme_gunlugu.json")
 OXX_RB = os.path.join(DATA, "oxx_rollback.json")
+GOLGE = os.path.join(DATA, "deney", "golge.json")   # sürekli deney (lab/surekli_deney.py): gölge ölçümdeki adaylar burada sınanmaz
 N_GECE = int(os.environ.get("OXX_N", "3"))
 BUDGET = float(os.environ.get("OXX_BUDGET", "300"))
 ALFA, B_BOOT, Z_SINYAL, BEKLEME, IZLEME = 0.05, 2000, 1.5, 14, 14
@@ -525,6 +526,7 @@ def main():
     rb["donmus"] = {k: v for k, v in (rb.get("donmus") or {}).items() if v >= bugun.isoformat()}
     grb = K.jl(os.path.join(DATA, "rollback.json"), {}) or {}
     donuk = bool(grb.get("aktif"))
+    golge = set(((K.jl(GOLGE, {}) or {}).get("adaylar") or {}).keys())
     V = Veri(bugun)
     kayitlar = []
     # 5) yeniden sınama (öncelikli)
@@ -546,17 +548,18 @@ def main():
     yeni = 0
     for c in sinyaller(bugun, A):
         r = son_ret.get(c["anahtar"]); o = var.get(c["anahtar"])
+        if c["anahtar"] in golge: continue
         if (o and o["durum"] == "bekliyor") or (r and (bugun - date.fromisoformat(r)).days < BEKLEME): continue
         if o and o.get("sonuc") == "kabul" and al((J.get("params") or {}), c["yol"]) == c.get("deger"): continue
         c.update({"eklenme": bugun.isoformat(), "durum": "bekliyor", "oncelik": round(abs(c["sinyal"].get("z") or 0), 2)})
         var[c["anahtar"]] = c; yeni += 1
     bek = [a for a in var.values() if a["durum"] == "bekliyor"]
     if len(bek) < N_GECE:
-        k_ = kesif(bugun, A, {k for k, a in var.items() if a["durum"] == "bekliyor"} | {k for k, t in son_ret.items() if (bugun - date.fromisoformat(t)).days < BEKLEME})
+        k_ = kesif(bugun, A, {k for k, a in var.items() if a["durum"] == "bekliyor"} | {k for k, t in son_ret.items() if (bugun - date.fromisoformat(t)).days < BEKLEME} | golge)
         if k_:
             k_.update({"eklenme": bugun.isoformat(), "durum": "bekliyor", "oncelik": 0.0}); var[k_["anahtar"]] = k_; yeni += 1
     # 2–3) gecelik sınama: en fazla N aday, öncelik sırasıyla
-    sira = sorted([a for a in var.values() if a["durum"] == "bekliyor"], key=lambda a: (-a["oncelik"], a["eklenme"]))
+    sira = sorted([a for a in var.values() if a["durum"] == "bekliyor" and a["anahtar"] not in golge], key=lambda a: (-a["oncelik"], a["eklenme"]))
     # gecelik sınır: iş akışı günde iki kez çalışsa da aynı gün en fazla N aday sınanır (aynı veriyle sınırsız deneme yok)
     hak = N_GECE - sum(1 for k in GL.get("kayitlar", []) if k.get("tarih") == bugun.isoformat() and k.get("tur") != "yeniden_sinama"
                        and k.get("karar") in ("kabul", "ret", "dondurulmus", "veri_yetersiz"))
@@ -607,3 +610,4 @@ if __name__ == "__main__":
         main()
     except Exception:
         import traceback; traceback.print_exc(); print("OXXai öğrenme döngüsü bu gece atlandı")
+        sys.exit(1)   # adım kaydı (lab/adim.py) hatayı görsün; iş akışı yine durmaz

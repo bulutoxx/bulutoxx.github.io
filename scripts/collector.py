@@ -539,8 +539,8 @@ def main():
 if __name__ == "__main__":
     if len(sys.argv) > 1 and sys.argv[1] == "live":      # 15 dakikada bir: yalnız canlı seçim kaydı
         try: live_snapshot()
-        except Exception as e: print("canlı kayıt hata:", e)
+        except Exception as e: print("canlı kayıt hata:", e); sys.exit(1)   # adım kaydı (lab/adim.py) görsün
         sys.exit(0)
     try: main()
     except Exception as e:
-        import traceback; traceback.print_exc(); print("toplayıcı hata verdi, sonraki saatte tekrar denenecek")
+        import traceback; traceback.print_exc(); print("toplayıcı hata verdi, sonraki saatte tekrar denenecek"); sys.exit(1)

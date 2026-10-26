@@ -10,7 +10,7 @@ Hiçbir yapay zekâ servisine (Claude vb.) bağlı değildir; tüm botlar GitHub
  ───────────────────────────────            ───────────────────────────                 ─────────────────────          ────────────────────────
  football-data.co.uk  ─┐                    🧠 Motor          her saat :17               season, model, fixtures        Bülten · Canlı · Power Now
  ESPN (lig + kupa)     ├──────────────────▶ 🗂️ Toplayıcı      her saat (motordan sonra)   archive/*, daily               Sonuçlar · Kupon · Motor
- iddaa.com (bülten,    │                    ⏱️ Canlı kayıt     15 dakikada bir             archive/live/*, health         (tarayıcı canlı skor ve
+ iddaa.com (bülten,    │                    ⏱️ Canlı kayıt     5 dakikada bir (iş içi döngü) archive/live/*, health       (tarayıcı canlı skor ve
    canlı, sonuçlar)    │                    🛡️ Bekçi           15 dakikada bir             health                          canlı oranları doğrudan
  EuroLeague            ┘                    🔬 Araştırmacı     her gece 03:07 UTC          research                        iddaa'dan okur)
  PyPI (penaltyblog)  ──────────────────────▶📊 Analist         her gece                    analyst
@@ -85,6 +85,25 @@ Futbolda tek maçın sonucu doğası gereği belirsizdir; hiçbir model her maç
 | oxx_kupon/GGGG-AA-GG.json, oxx_kupon/at/GGGG-AA-GG.json | OXXai kupon robotu (`scripts/oxx_kupon.py`; update.yml / at-canli.yml) | Uygulama, öğrenme döngüsü | OXXai'nin maçtan önce KİLİTLEDİĞİ kendi kuponları (Altın, %70+, 3'lü, değerli, güvenli; basket; at Altın/ikili/çifte/6'lı) + sonuçlar. Şema: `lab/OXX_KUPON.md` |
 | oxx_karne.json | OXXai kupon robotu | Uygulama, öğrenme döngüsü | Strateji başına kupon/bacak isabeti, beklenen, kalibrasyon, son 7/30 gün, seri (canlı ve geriye dönük ayrı) |
 | oxx_ayar.json, deney_kuyrugu.json, ogrenme_gunlugu.json, oxx_rollback.json | OXXai öğrenme döngüsü (`lab/oxx_ogren.py`, otonom-ekip) | OXXai kupon robotu, uygulama | Sinyal → deney adayı → ileriye dönük sanal oynatma + Bonferroni kapısı → yalnız OXXai strateji ayarı; 14 gün sonra yeniden sınama / geri alma |
+| saglik/<iş akışı>.json | Her iş akışı adımı (`lab/adim.py`) | Kurtarıcı | Adım çıkış kodu, süre, tur/hata sayısı (çalışma kimliğiyle); `imza` = durum özeti |
+| saglik.json | Kurtarıcı (`lab/kurtarici.py`) | Uygulama (isteğe bağlı), insan | Sağlık özeti: başarısız adımlar, ana dosyaların tazeliği (fixtures, model, daily, predlog, health, bugünkü at canlı), kalite alarmları (qa*.json), `sorunlar` |
+| deney/<iş>/<zaman>.json, deney/golge.json, deney/durum.json | Sürekli deney (`lab/surekli_deney.py`, surekli-deney.yml) | Sürekli deney karar işi, OXXai öğrenme döngüsü | Her 3 saatte bir deney sonuçları (son 7 gün), gölge ölçümdeki adaylar, işlenen dosyalar |
+
+## 🩺 Sağlık sinyali, sürekli döngü ve sürekli deney (2026-10-27)
+
+- **Sağlık:** iş akışı adımları hatayı yutmaz, kaydeder: `python3 lab/adim.py <ad> [--onem bilgi] -- komut` çıkış kodunu ve süreyi
+  `data/saglik/<iş akışı>.json`'a yazar ve 0 döner (hata sistemi durdurmaz). Kurtarıcı bu kayıtları, ana dosyaların tazeliğini ve
+  kalite alarmlarını okur (`data/saglik.json`); önemli adım başarısızsa ya da dosya bayatsa ilgili iş akışını bir kez yeniden tetikler
+  (aynı sorun için 6 saatte 1, iş başına 2 saatte en çok 1 elle tetikleme, çalışan varsa dokunmaz). Issue/mail/bildirim yok.
+- **Kaydetme:** tüm iş akışları `python3 lab/gonder.py -m "mesaj" yol...` kullanır. Uzak dal ilerlediyse `pull --rebase -X theirs` yerine
+  dosya dosya 3 yollu birleştirme: JSON'lar anahtar düzeyinde (kimlikli listeler kimlik kimlik), diğer metinler `git merge-file`;
+  aynı alanı iki iş de değiştirdiyse yerel kazanır. Gönderemezse 1 ile çıkar (iş başarısız görünür). Yalnız nabız değiştiyse commit atılmaz.
+- **Sıklık:** canlı kayıt tek işte ~25 dk boyunca 5 dk arayla (zamanlayıcı 20 dk'da bir), at canlı 3 tur × 15 dk (zamanlayıcı 30 dk'da bir);
+  concurrency kuyruğu üst üste binmeyi önler, turlar tek commit'te birleşir. Turlar arasında girdiler `gonder.py --tazele` ile uzak daldan alınır.
+- **Sürekli deney** (`surekli-deney.yml`, 3 saatte bir): matris (futbol, basket, at → `oxx_ogren` kuyruğu ve kapısı; autolab → dönen lig
+  alt kümesi, yalnız ölçüm) sonuçları `data/deney/<iş>/`'e yazar; karar işi kapıyı geçeni gölgeye alır (en az 3 gün / 3 ölçüm), kötüleşmezse
+  `oxx_ogren.uygula` ile `oxx_ayar.json`'a yazar (14 gün izleme, canlı gölge kupon, `oxx_rollback`). Koruyucu geri alması aktifken uygulama yok.
+  Gelişim günlüğüne kısa Türkçe satır (`guardian.gelisim_ekle`).
 
 ## 💬 OXXai'nin kendini geliştirmesi (v70)
 
