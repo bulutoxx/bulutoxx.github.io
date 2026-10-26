@@ -5661,7 +5661,7 @@ if((location.hash||"")==="#sonuclar") setTimeout(()=>$("navRes").click(),200);
 // =====================================================================
 // OXXai v35: Otomatik sürüm güncelleme — yeni sürüm yayınlanınca uygulama kendini yeniler
 // =====================================================================
-const APP_V="2026-10-27.115";
+const APP_V="2026-10-27.116";
 (function autoUpdate(){
   let shown=false;
   async function check(auto){
@@ -7719,7 +7719,7 @@ setTimeout(()=>{ try{ renderTP(); }catch(e){} },1500);
       .filter(x=>x.tarih===d).sort((a,b)=>a.hipodrom.localeCompare(b.hipodrom,"tr")||a.kosu-b.kosu); }
   function dLbl(d){ const t=dISO(0); return d===t?"Bugün":d===dISO(1)?"Yarın":d===dISO(-1)?"Dün":d.slice(8,10)+"."+d.slice(5,7); }
   function hero(){ const M=AT.model&&AT.model.degerlendirme, me=M&&M.metrik||{}, h=me.harman||{}, f=me.favori||{}, mo=me.model||{}, n=(M&&M.kosu_sayisi&&M.kosu_sayisi.sinama)||0;
-    const K=(AT.karne&&AT.karne.kosular||[]).filter(x=>x.kosudan_once!==false); const kn=K.length, kh=K.filter(x=>x.ilk_secim_tuttu).length;
+    const K=(AT.karne&&AT.karne.kosular||[]).filter(x=>x.kosudan_once!==false&&!x.mod_hatali); const kn=K.length, kh=K.filter(x=>x.ilk_secim_tuttu).length;
     return `<div class="at-hero"><div class="at-logo">${LOGO("h")}</div><div><h2>At Yarışı<span class="at-pill">DENEME</span></h2><p>OXXai at laboratuvarı: her gece geçmiş koşulardan yeniden öğrenir, yalnız isabeti artıran ayarı kabul eder.</p></div></div>
       <details class="sx" id="atOz"${(()=>{ try{ return localStorage.getItem("bx-at-oz")==="1"?" open":""; }catch(e){ return ""; } })()}><summary>Model ne kadar başarılı? <small>sınama ve karne</small></summary><div class="sx-in">
       <div class="at-km at-km4"><div><b>${pct(mo.ilk_secim_isabet)}</b><small>sabah tahmini<br>ilk seçim kazandı</small></div><div><b>${pct(h.ilk_secim_isabet)}</b><small>oranla harman<br>ilk seçim kazandı</small></div><div><b>${pct(f.ilk_secim_isabet)}</b><small>piyasa favorisi<br>aynı koşularda</small></div><div><b>${kn?"%"+Math.round(kh/kn*100):"–"}</b><small>kilitli karne<br>${kn?kn+" koşu":"birikiyor"}</small></div></div>
@@ -11144,7 +11144,7 @@ small>.tvar.d:first-child{margin-left:0;margin-right:2px}
     return h+foot(); }
   // ---------- 10) İSTATİSTİK (eski hero + "Model ne kadar başarılı?" + jokey sıralaması) ----------
   function istHtml(short){ const Mm=AT.model&&AT.model.degerlendirme, me=(Mm&&Mm.metrik)||{}, n=(Mm&&Mm.kosu_sayisi&&Mm.kosu_sayisi.sinama)||0;
-    const Kk=((AT.karne&&AT.karne.kosular)||[]).filter(x=>x.kosudan_once!==false), kn=Kk.length, kh=Kk.filter(x=>x.ilk_secim_tuttu).length;
+    const Kk=((AT.karne&&AT.karne.kosular)||[]).filter(x=>x.kosudan_once!==false&&!x.mod_hatali), kn=Kk.length, kh=Kk.filter(x=>x.ilk_secim_tuttu).length;
     let h=short?"":`<h1 class="a2-h2" style="margin-bottom:12px">İstatistik<span class="a2-dn">DENEME</span></h1>`;
     h+=`<div class="a2-card"><div class="a2-ch"><h2>Model ne kadar başarılı?</h2><small>${n?n.toLocaleString("tr-TR")+" koşu":""}</small></div>
       <div class="a2-kpis"><div><b>${P(me.model&&me.model.ilk_secim_isabet)}</b><small>sabah tahmini<br>ilk seçim</small></div><div><b style="color:var(--a2-gi)">${P(me.harman&&me.harman.ilk_secim_isabet)}</b><small>oranla harman<br>ilk seçim</small></div><div><b>${P(me.favori&&me.favori.ilk_secim_isabet)}</b><small>piyasa favorisi<br>aynı koşular</small></div><div><b>${kn?P(kh/kn):"–"}</b><small>kilitli karne<br>${kn?kn+" koşu":"birikiyor"}</small></div></div>
