@@ -18,6 +18,7 @@ sys.path.insert(0, BURA)
 os.environ.setdefault("AT_KAYNAK", os.path.join(KOK, "_tjk-data"))
 
 import veri, ozellik, model as M  # noqa: E402
+import at5  # noqa: E402  (v5 at özellikleri: a5_* grupları, lab/at/deney5.py)
 import jokey  # noqa: E402  (🏇 jokey/ahır uzmanı: data/at/jokeyler.json + jk_* özellik grupları)
 
 CIKTI = os.path.join(KOK, "data", "at")
@@ -40,6 +41,7 @@ def altin_kural(eski):
     if r.get("kural"):
         return dict(r["kural"], donem=(joku(REPLAY_DOSYA) or {}).get("donem"))
     return dict(ALTIN_VARSAYILAN)
+V5_DOSYA = os.path.join(CIKTI, "deneyler_v5.json")     # v5 deney kaydı (a5_* grupları, harman hm_alan)
 JOKEY_DOSYA = os.path.join(CIKTI, "jokeyler.json")    # arayüz: attan arındırılmış jokey/antrenör istatistikleri
 YENILEME_GUN = 7   # aynı tarifte yayın katsayılarının yenilenme aralığı (gün)
 TAKIP = [("2026-10-25", "İstanbul", 5)]   # raporda kalıcı izlenen örnek koşu(lar)
@@ -133,6 +135,7 @@ IFADE = {  # özellik -> (değeri koşu ortalamasından YÜKSEKSE, DÜŞÜKSE) �
     "sinif_dus": ("belirgin sınıf düşüşü", ""), "sinif_cik": ("belirgin sınıf yükselişi", ""),
 }
 IFADE.update(jokey.IFADE)   # jk_* özellikleri (yalnız seçilmişse gerekçede görünür)
+IFADE.update(at5.IFADE)     # a5_* özellikleri
 
 
 def jyaz(yol, veri_, sikisik=False):
@@ -453,6 +456,37 @@ def _v4_ozet(a, mj):
     a("")
 
 
+def _v5_bolum(a):
+    """v5 turu: sınıf-ayarlı form, göreli kilo, dinlenme eğrisi, alan büyüklüğüne duyarlı harman (lab/at/deney5.py)."""
+    dj = joku(V5_DOSYA)
+    if not dj or not dj.get("adimlar"):
+        return
+    a("## v5 turu: sınıf-ayarlı form, kilo, dinlenme, harman")
+    a("")
+    a("Aynada start/kulvar numarası ve koşu içi pozisyon (tempo) yok; kulvar yanlılığı ve koşu stili kurulamadı. Aynı gün pist "
+      "yanlılığı sabah kilidinde bilinemediği için denenmedi. Adaylar `lab/at/at5.py`; kapı deney4 iki katlı kapı (hm_alan "
+      "için harmanın kendi kapısı). Sızıntı testi: `python lab/at/deney5.py --sizinti`.")
+    a("")
+    a("| # | deney | sonuç | ort. LL / ilk seçim | B: LL / ilk | ΔLL birleşik [%95 GA] | ΔLL A | ΔLL B | harman ort. LL / ilk | ΔLL harman |")
+    a("|---|---|---|---|---|---|---|---|---|---|")
+    for s_ in dj["adimlar"]:
+        sonuc = "taban" if s_["gecti"] is None else ("✅ kaldı" if s_["gecti"] else "❌ elendi")
+        fm, fh = s_.get("fark_model"), s_.get("fark_harman")
+        B_ = s_["katlar"]["B"]["model"]
+        a(f"| {s_['no']} | {s_['deney']} | {sonuc} | {s_['model']['ll']:.4f} / {_y(s_['model']['ilk'])} | "
+          f"{B_['ll']:.4f} / {_y(B_['ilk'])} | {_ga(fm) if fm else '–'} | {_ga(fm['A']) if fm else '–'} | "
+          f"{_ga(fm['B']) if fm else '–'} | {s_['harman']['ll']:.4f} / {_y(s_['harman']['ilk'])} | {_ga(fh) if fh else '–'} |")
+    a("")
+    sec = (dj.get("secim") or {}).get("gruplar") or []
+    a(f"- Yayına giren a5 grupları: **{', '.join(sec) if sec else 'yok'}** (yayındaki: {', '.join(at5.A5_SECILI) or 'yok'}); "
+      f"alan büyüklüğüne duyarlı harman: {'evet' if (dj.get('secim') or {}).get('hm_alan') else 'hayır'}. "
+      f"Deney kaydı: `data/at/deneyler_v5.json` ({dj.get('olusturma', '')}; süre {dj.get('sure_sn', '?')} sn).")
+    if dj.get("toplam"):
+        tp = dj["toplam"]
+        a(f"- Toplam (seçilenler − taban): yalnız model {_ga(tp['model'])}; harman {_ga(tp['harman'])}.")
+    a("")
+
+
 def _jokey_bolum(a):
     """🏇 Jokey ve ahır uzmanı: kapılı jk_* deneyleri + jokeyler.json'dan ilk 5 (deney4 kapısı, lab/at/deney_jokey.py)."""
     jj = joku(JOKEY_DOSYA)
@@ -694,6 +728,7 @@ def rapor_yaz(mj, karne, bugun, ayna_durumu):
     _replay_ozet(a, mj)
     _v4_ozet(a, mj)
     _jokey_bolum(a)
+    _v5_bolum(a)
     _v3_ozet(a, mj)
     a("## Özet: v2 güncellemesi (25.10.2026)")
     a("")
@@ -936,7 +971,8 @@ def tarif():
             "hz_yontem": ozellik.HZ_YONTEM, "henery_model": M.HENERY_MODEL,
             # jokey turu: Bayes PL ayarları yalnız jk_* grubu yayındaysa tarife girer (yoksa tarif değişmesin)
             **({"jk": {"gruplar": list(jokey.JK_SECILI), "onsel": jokey.JK_ONSEL, "surukle": jokey.JK_SURUKLE,
-                       "kademe": list(jokey.JK_KADEME)}} if jokey.JK_SECILI else {})}
+                       "kademe": list(jokey.JK_KADEME)}} if jokey.JK_SECILI else {}),
+            **({"a5": {"gruplar": list(at5.A5_SECILI), "k_uyum": at5.K_UYUM, "ant_k": at5.ANT_K}} if at5.A5_SECILI else {})}
 
 
 def kapi_karari(yeni, iz, trf, eski, eski_iz, b_bas=None):
