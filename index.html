@@ -8226,5 +8226,177 @@ setTimeout(()=>{ try{ renderTP(); }catch(e){} },1500);
   try{ const _k=kuponTab; kuponTab=function(){ const r=_k.apply(this,arguments); patch(); return r; }; }catch(e){}
 })();
 </script>
+<style id="derbi-v95">
+/* v95: derbi maçları — ince sıcak kırmızı-turuncu şerit + "Derbi" rozeti (altın = en güvenli seçim, mavi = U21, pembe = kadın ile karışmaz) */
+:root{--dx:#FF6B4A;--dx-ink:#FF8E72;--dx-bg:rgba(255,107,74,.14);--dx-bd:rgba(255,107,74,.40)}
+.dx{position:relative}
+.dx::before{content:"";position:absolute;left:0;top:7px;bottom:7px;width:3px;border-radius:0 3px 3px 0;background:var(--dx);pointer-events:none}
+.dx.dx-g::before,.dx.dx-k::before{opacity:.6}
+.gold-row.dx::before{left:4px}
+.cprow.dx::before{left:-10px}
+.bt-card.dx::before{top:9px;bottom:9px}
+.tvar.d{background:var(--dx-bg);color:var(--dx-ink);border-color:var(--dx-bd);white-space:nowrap;flex:none;width:auto;align-self:center}
+.ib-top>.tvar.d{margin-left:2px}
+small>.tvar.d:first-child{margin-left:0;margin-right:2px}
+.ms-hd.dx::before,.bk-vs.dx::before{display:none}
+.ms-hd.dx .ms-when .tvar.d{vertical-align:1px}
+.dx-note{margin:8px 16px 0;padding:9px 12px 9px 14px;border-radius:12px;background:linear-gradient(90deg,rgba(255,107,74,.12),rgba(255,107,74,.03));border:1px solid rgba(255,107,74,.28);position:relative;font:500 12.5px/1.42 var(--round,system-ui);color:var(--ink2,#C9D3E3)}
+.dx-note::before{content:"";position:absolute;left:0;top:9px;bottom:9px;width:3px;border-radius:0 3px 3px 0;background:var(--dx)}
+.dx-note b{color:var(--dx-ink);font-weight:800}
+.dx-note small{display:block;margin-top:4px;opacity:.7;font-size:11px;line-height:1.4}
+.bkd .dx-note{margin:10px 0 0}
+.dx-li{position:relative;display:flex;align-items:center;gap:8px;padding:8px 10px 8px 13px;margin:6px 0;border-radius:12px;background:var(--surface,rgba(255,255,255,.04));border:1px solid var(--line2,rgba(255,255,255,.08));cursor:pointer}
+.dx-li::before{content:"";position:absolute;left:0;top:8px;bottom:8px;width:3px;border-radius:0 3px 3px 0;background:var(--dx)}
+.dx-li .dx-t{min-width:44px;font:800 12px/1.2 var(--round,system-ui);color:var(--ink2,#C9D3E3)}
+.dx-li .dx-m{flex:1;min-width:0}
+.dx-li .dx-m b{display:block;font-size:13.5px;line-height:1.3}
+.dx-li .dx-m small{display:block;opacity:.72;font-size:11.5px;margin-top:1px}
+</style>
+<script id="derbi-v95">
+// v95: Derbi tanıma ve gösterim
+//  • DERBI_DATA: takım çiftleri ve ad varyantları (Türkçe/İngilizce/yerel yazım). "=" ile başlayan ad yalnız birebir eşleşir,
+//    diğerleri ad başı eşleşmesidir ("Fenerbahçe Beko", "Olympiacos Piraeus" gibi sponsor/şehir ekleri kabul).
+//  • Ad normalleştirme: Türkçe karakter + aksan, FC/SK/AŞ/JK/AC/AS/SL/SV/Club ekleri atılır; "(URU)" gibi ülke etiketi farklı takım sayılır.
+//  • kupon-v93 VAR() ile aynı: U17–U23, B/II, rezerv, akademi, kadın (K/W/kadın ligi) ana takım DEĞİLDİR. İki taraf aynı genç/kadın
+//    varyantındaysa "Genç derbi"/"Kadın derbi", farklıysa derbi sayılmaz.
+//  • Ekran: bülten, canlı, Power Now, sonuçlar, Tahmin listem, OXX kartları, maç penceresi ve basket satırlarında şerit + rozet.
+//  • Ölçüm: lab/derbi_karne.py → data/derbi_karne.json (maç penceresindeki not gerçek rakamla yazılır).
+(function(){
+  const DERBI_DATA=/*DERBI_JSON*/{"v":1,"teams":{"gs":["Galatasaray","Cimbom"],"fb":["Fenerbahçe","Fenerbahce","Fener"],"bjk":["Beşiktaş","Besiktas","=BJK"],"ts":["Trabzonspor"],"goz":["Göztepe","Goztepe","=Goztep"],"ksk":["Karşıyaka","Karsiyaka"],"alt":["=Altay"],"bur":["Bursaspor"],"esk":["Eskişehirspor","Eskisehirspor"],"koc":["Kocaelispor"],"sak":["Sakaryaspor"],"ads":["Adana Demirspor"],"adn":["=Adanaspor"],"ank":["Ankaragücü","MKE Ankaragücü","Ankaragucu"],"gnc":["Gençlerbirliği","Genclerbirligi"],"sam":["Samsunspor"],"efes":["Anadolu Efes","=Efes"],"rm":["Real Madrid"],"fcb":["Barcelona","FC Barcelona","Barça","Barca"],"atm":["Atlético Madrid","Atletico de Madrid","Atl. Madrid","=Atleti"],"esp":["Espanyol","RCD Espanyol"],"sev":["=Sevilla","=Sevilla FC"],"bet":["Real Betis","=Betis"],"ath":["Athletic Bilbao","=Athletic Club"],"rso":["Real Sociedad"],"int":["=Inter","Inter Milan","Inter Milano","Internazionale"],"mil":["=Milan","=AC Milan","=Milan AC"],"rom":["=Roma","=AS Roma"],"laz":["=Lazio","=SS Lazio"],"juv":["=Juventus"],"tor":["=Torino"],"gen":["=Genoa","=Genoa CFC"],"smp":["Sampdoria"],"mu":["Manchester United","Man United","Man Utd","Manchester Utd","=UtdOfManch"],"mc":["Manchester City","Man City"],"liv":["=Liverpool"],"eve":["=Everton"],"ars":["=Arsenal"],"tot":["Tottenham","=Spurs"],"new":["Newcastle United","=Newcastle"],"sun":["=Sunderland","=Sunderland AFC"],"cel":["=Celtic","=Celtic Glasgow"],"ran":["=Rangers","=Glasgow Rangers"],"bay":["Bayern"],"bvb":["Borussia Dortmund","=Dortmund","=B. Dortmund","=BVB"],"s04":["Schalke"],"hsv":["=Hamburger SV","=Hamburg","=HSV"],"stp":["St. Pauli"],"kol":["=Köln","=1. FC Köln","=Cologne"],"bmg":["Borussia Mönchengladbach","Mönchengladbach","=Gladbach"],"psg":["Paris Saint-Germain","=PSG","=Paris SG"],"om":["=Marseille","Olympique de Marseille","Olympique Marseille"],"ol":["=Lyon","Olympique Lyonnais","=OL Lyonnes"],"ase":["=Saint-Étienne","=AS Saint-Étienne","=St Etienne"],"aja":["Ajax"],"fey":["Feyenoord"],"psv":["PSV"],"ben":["Benfica","SL Benfica"],"por":["=Porto","=FC Porto"],"scp":["=Sporting","Sporting CP","Sporting Lisbon","Sporting Lizbon","=Sp Lisbon","Sporting Clube de Portugal"],"oly":["Olympiakos","Olympiacos"],"pao":["Panathinaikos"],"ari":["=Aris","Aris Thessaloniki"],"paok":["PAOK"],"boc":["Boca Juniors"],"riv":["River Plate"],"rac":["=Racing Club","=Racing Club de Avellaneda"],"ind":["=Independiente","=CA Independiente"],"fla":["Flamengo"],"flu":["Fluminense"],"cor":["Corinthians"],"pal":["Palmeiras"],"gre":["Grêmio","Gremio"],"inr":["=Internacional","=SC Internacional"],"cam":["=Atletico-MG","=Atlético Mineiro","=Atletico Mineiro"],"cru":["=Cruzeiro","=Cruzeiro EC"],"nac":["=Nacional (URU)","=Nacional","=Club Nacional"],"pen":["Peñarol","Penarol"],"col":["Colo Colo","Colo-Colo"],"uch":["Universidad de Chile"],"ame":["=América","=Club América","=CF América"],"chv":["Guadalajara","=Chivas","=Chivas Guadalajara"],"ahl":["Al Ahly"],"zam":["Zamalek"],"par":["Partizan"],"czv":["Crvena Zvezda","Kızılyıldız","Kızıl Yıldız","Red Star Belgrade","=Red Star"],"dzg":["Dinamo Zagreb"],"haj":["Hajduk Split"],"spa":["Sparta Prague","Sparta Praha"],"sla":["Slavia Prague","Slavia Praha"],"aus":["Austria Wien","Austria Vienna"],"rap":["=Rapid","Rapid Wien","Rapid Vienna"],"and":["Anderlecht"],"std":["=Standard","Standard Liège","Standard Liege"],"cbr":["=Club Brugge"],"cer":["Cercle Brugge"],"dyk":["Dynamo Kyiv","Dinamo Kiev","Dynamo Kiev"],"shk":["Shakhtar Donetsk"],"spm":["Spartak Moscow","Spartak Moskova"],"csm":["CSKA Moscow","CSKA Moskova"],"lev":["Levski Sofia","Levski Sofya"],"css":["CSKA Sofia","CSKA Sofya"],"mta":["Maccabi Tel Aviv","Maccabi Rapyd Tel Aviv"],"hta":["Hapoel Tel Aviv","Hapoel IBI Tel Aviv"]},"pairs":[["gs","fb","Kıtalar arası derbi"],["gs","bjk","İstanbul derbisi"],["fb","bjk","İstanbul derbisi"],["gs","ts","Büyük derbi"],["fb","ts","Büyük derbi"],["bjk","ts","Büyük derbi"],["goz","ksk","İzmir derbisi"],["goz","alt","İzmir derbisi"],["alt","ksk","İzmir derbisi"],["bur","esk","Bursa–Eskişehir rekabeti"],["koc","sak","Doğu Marmara derbisi"],["ads","adn","Adana derbisi"],["ank","gnc","Ankara derbisi"],["sam","ts","Karadeniz derbisi"],["fb","efes","İstanbul basket derbisi"],["gs","efes","İstanbul basket derbisi"],["rm","fcb","El Clásico"],["rm","atm","Madrid derbisi"],["fcb","esp","Barcelona derbisi"],["sev","bet","Sevilla derbisi"],["ath","rso","Bask derbisi"],["int","mil","Derby della Madonnina"],["rom","laz","Derby della Capitale"],["juv","tor","Derby della Mole"],["juv","int","Derby d'Italia"],["gen","smp","Derby della Lanterna"],["mu","mc","Manchester derbisi"],["liv","eve","Merseyside derbisi"],["ars","tot","Kuzey Londra derbisi"],["liv","mu","Kuzeybatı derbisi"],["new","sun","Tyne-Wear derbisi"],["cel","ran","Old Firm"],["bay","bvb","Der Klassiker"],["bvb","s04","Revier derbisi"],["hsv","stp","Hamburg derbisi"],["kol","bmg","Ren derbisi"],["psg","om","Le Classique"],["ol","ase","Rhône derbisi"],["aja","fey","De Klassieker"],["aja","psv","Ajax–PSV"],["ben","por","O Clássico"],["ben","scp","Lizbon derbisi"],["por","scp","Clássico"],["oly","pao","Ezeli rakipler derbisi"],["ari","paok","Selanik derbisi"],["boc","riv","Superclásico"],["rac","ind","Avellaneda derbisi"],["fla","flu","Fla-Flu"],["cor","pal","Derby Paulista"],["gre","inr","Gre-Nal"],["cam","cru","Clássico Mineiro"],["nac","pen","Uruguay klasiği"],["col","uch","Şili Superclásico"],["ame","chv","Clásico Nacional"],["ahl","zam","Kahire derbisi"],["par","czv","Ebedi derbi"],["dzg","haj","Ebedi derbi"],["spa","sla","Prag derbisi"],["aus","rap","Viyana derbisi"],["and","std","Belçika klasiği"],["cbr","cer","Brugge derbisi"],["dyk","shk","Ukrayna klasiği"],["spm","csm","Moskova derbisi"],["lev","css","Ebedi derbi"],["mta","hta","Tel Aviv derbisi"]]}/*/DERBI_JSON*/;
+  // data/derbi_karne.json yüklenemezse kullanılacak son ölçüm (lab/derbi_karne.py çıktısı)
+  let DXK={"n_derbi":495,"n_derbi_olmayan":66136,"favori_kazanma_derbi":0.4606,"favori_kazanma_diger":0.5218,"favori_beklenen_derbi":0.4858,"beraberlik_derbi":0.2889,"beraberlik_diger":0.2611,"surpriz_derbi":0.2505,"surpriz_diger":0.2171,"model_isabet_derbi":0.4606,"model_isabet_diger":0.5211,"favori_beklenen_diger":0.5095,"favori_fark_oran":-0.0252,"favori_fark_z":-1.14,"oranlara_gore_anlamli":false,"az_veri":false,"uyari":"Derbi örneği orta büyüklükte; derbide favori diğer maçlardan daha az kazanıyor, ancak farkın çoğunu oranlar zaten fiyatlıyor (derbiler daha dengeli). Oranların beklentisine göre kalan fark istatistiksel olarak anlamlı değil. Kilitli arşivde (son günler) çok az derbi var; o satır yalnız bilgi amaçlıdır."};
+  const WOM_LG=new Set(["wsl","esw","frw","mxw","nlw","ausw","nwsl","ncaaw","wnba"]);
+  const WOM_TAG=/^(k|w|wsl|esw|frw|nlw|mxw|ausw|kadin|women|f)$/, NOISE=new Set(["fc","cf","sk","jk","fk","kk","bc","as","ac","afc","sl","rcd","ssc","ss","sv","club"]), DENY=new Set(["sc","cd","ec"]);
+  const base=s=>String(s||"").replace(/[İI]/g,"i").toLowerCase().replace(/ı/g,"i").normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+  function dxNz(name,lg){ let s=base(name); const v=new Set();
+    s=s.replace(/\(([^)]*)\)/g,(_,c)=>{ c=c.replace(/[^a-z0-9]+/g,""); if(WOM_TAG.test(c)){ v.add("k"); return " "; } return c?" @"+c+" ":" "; });
+    s=s.replace(/\ba\.s\.?/g," as ").replace(/\bu[\s-]+(1[5-9]|2[0-3])\b/g,"u$1");
+    const t=s.replace(/[^a-z0-9@]+/g," ").split(" ").filter(Boolean); let out=[];
+    t.forEach((x,i)=>{ if(/^u(1[5-9]|2[0-3])$/.test(x)) v.add(x);
+      else if(/^(reserves|reserve|res)$/.test(x)) v.add("res"); else if(/^(academy|akademi|youth|primavera)$/.test(x)) v.add("y");
+      else if(/^(women|womens|kadin|femenino|feminino|frauen|dames|ladies|feminine)$/.test(x)) v.add("k");
+      else if(/^(castilla|atletic)$/.test(x)&&i>0) v.add("b"); else if(x==="jong"&&i===0) v.add("b"); else out.push(x); });
+    while(out.length&&/^(b|ii|k|w|2)$/.test(out[out.length-1])){ const z=out.pop(); v.add(z==="k"||z==="w"?"k":"b"); }
+    if(lg&&WOM_LG.has(lg)) v.add("k");
+    if(out[0]==="1") out=out.slice(1);
+    out=out.filter(x=>!NOISE.has(x));
+    return {t:out, v:[...v].sort().join(",")}; }
+  const IDX=[]; for(const [k,al] of Object.entries(DERBI_DATA.teams)) for(const a of al){ const ex=a[0]==="="; const z=dxNz(ex?a.slice(1):a); if(z.t.length) IDX.push({k,t:z.t,ex}); }
+  const PAIRS=new Map(); for(const [a,b,n] of DERBI_DATA.pairs) PAIRS.set([a,b].sort().join("|"),n);
+  function dxTeam(name,lg){ const z=dxNz(name,lg); let best=null;
+    for(const e of IDX){ const a=e.t;
+      if(e.ex){ if(z.t.length!==a.length||a.some((x,i)=>z.t[i]!==x)) continue; }
+      else { if(z.t.length<a.length||a.some((x,i)=>z.t[i]!==x)) continue; if(z.t.slice(a.length).some(x=>x[0]==="@"||DENY.has(x))) continue; }
+      if(!best||a.length>best.t.length) best=e; }
+    return best?{k:best.k,v:z.v}:null; }
+  const CACHE=new Map();
+  function derbiOf(h,a,lg){ if(!h||!a) return null; const key=h+"\u0001"+a+"\u0001"+(lg||""); if(CACHE.has(key)) return CACHE.get(key);
+    let r=null; try{ const A=dxTeam(h,lg), B=dxTeam(a,lg);
+      if(A&&B&&A.k!==B.k){ const n=PAIRS.get([A.k,B.k].sort().join("|"));
+        if(n&&A.v===B.v){ const kind=!A.v?"ana":A.v.split(",").includes("k")?"kadin":"genc"; r={n,kind,label:kind==="ana"?"Derbi":kind==="kadin"?"Kadın derbi":"Genç derbi"}; } } }catch(e){}
+    if(CACHE.size>4000) CACHE.clear(); CACHE.set(key,r); return r; }
+  window.derbiOf=derbiOf; window.DERBI_DATA=DERBI_DATA;
+  try{ fetch("data/derbi_karne.json",{cache:"no-cache"}).then(r=>r.ok?r.json():null).then(j=>{ if(j&&j.ozet&&j.ozet.n_derbi) DXK=j.ozet; }).catch(()=>{}); }catch(e){}
+  const pc=x=>Math.round(x*100);
+  function noteHtml(d,bk){ const K=DXK;
+    if(bk) return `⚔️ <b>${esc(d.label)}</b> · ${esc(d.n)}<br>Rekabet maçı: favori her zamanki kadar rahat olmayabilir.<small>Derbi ölçümü (lab/derbi_karne) yalnız futbol maçlarıyla yapıldı; basket derbileri için ayrı istatistik yok. Garanti değildir.</small>`;
+    if(d.kind!=="ana") return `⚔️ <b>${esc(d.label)}</b> · ${esc(d.n)}<small>Genç/kadın takımları arasında; ana takım derbisi istatistiği bu maça uygulanmaz.</small>`;
+    if(!K||!K.n_derbi) return `⚔️ <b>Derbi</b> · ${esc(d.n)}<br>Derbi: favori bu maçlarda daha sık kaybeder; sürpriz olasılığı normalden yüksek.`;
+    const fd=pc(K.favori_kazanma_derbi), fo=pc(K.favori_kazanma_diger), sd=pc(K.surpriz_derbi), so=pc(K.surpriz_diger), bd=pc(K.beraberlik_derbi), bo=pc(K.beraberlik_diger);
+    const weaker=K.favori_kazanma_derbi<K.favori_kazanma_diger, upset=K.surpriz_derbi>K.surpriz_diger;
+    const lead=weaker&&upset?"favori bu maçlarda daha sık kaybeder; sürpriz olasılığı normalden yüksek."
+      :weaker?"favori bu maçlarda daha az kazanır; beraberlik daha sık."
+      :"favori derbilerde de diğer maçlar kadar kazanıyor; fark küçük.";
+    return `⚔️ <b>Derbi</b> · ${esc(d.n)}<br>${lead.charAt(0).toLocaleUpperCase("tr")+lead.slice(1)}`
+      +`<small>Geçmiş ${K.n_derbi} derbi: favori %${fd} kazandı (diğer maçlar %${fo}) · sürpriz %${sd} (%${so}) · beraberlik %${bd} (%${bo}).${K.az_veri?" Örnek küçük.":""} Farkın çoğu orana zaten yansıyor; garanti değildir.</small>`; }
+  // ---------- ekranda işaretle ----------
+  const clean=el=>{ if(!el) return ""; const c=el.cloneNode(true); c.querySelectorAll(".tvar.d,.lclk,.k70-tag,.note,.pill,img,svg").forEach(x=>x.remove()); return c.textContent.replace(/\s+/g," ").trim(); };
+  const split=s=>{ let m=/^(.+?)\s+\d+\s*-\s*\d+\s+(.+)$/.exec(s); if(m) return [m[1],m[2]]; m=/^(.+?)\s+[-–—]\s+(.+)$/.exec(s); return m?[m[1],m[2]]:null; };
+  // [satır seçici, ad taşıyıcı, kip]  kip "t" = "A - B" metni, "p" = iki ayrı öğe
+  const SPEC=[[".ib-r",".ib-tm","t"],[".rs-r",".ib-tm","t"],[".pw-r",".pw-m>b","t"],[".tp-r",".tp-m>b","t"],[".bt-card",".bt-cm>b","t"],[".cprow",".l>b","t"],
+    [".lv-c",".lv-tm>span","p"],[".bk-row",".bk-tm em","p"],[".br",".br-tm em","p"],["#msheet .ms-hd",".ms-t>b","p"],["#bkd .bk-vs",":scope>div>b","p"],[".match",".t","t"]];
+  const SEL=SPEC.map(x=>x[0]).join(",");
+  function lgOf(row){ try{ const om=row.getAttribute("data-om"); if(om&&typeof OMR!=="undefined"){ const m=OMR.get(om); if(m) return m.lg||null; }
+      if(row.classList.contains("ib-r")&&typeof IB!=="undefined"&&IB.rows){ const x=IB.rows[+row.dataset.i]; if(x&&x.m) return x.m.lg; }
+      if(row.dataset.ck) return row.dataset.ck.split("|")[0];
+      if(row.dataset.cpi!=null&&typeof CP!=="undefined"){ const x=CP.items[+row.dataset.cpi]; if(x) return x.lg; }
+      if(row.classList.contains("ms-hd")&&typeof MS!=="undefined"&&MS.m) return MS.m.lg||null;
+      if(row.classList.contains("bk-row")&&typeof BK!=="undefined"&&BK.rows){ const f=BK.rows[+row.dataset.i]; if(f) return f.lg; } }catch(e){} return null; }
+  function mark(row){ const sp=SPEC.find(s=>row.matches(s[0])); if(!sp) return;
+    const hosts=[...row.querySelectorAll(sp[1])]; if(!hosts.length) return;
+    const raw=hosts.map(h=>h.textContent).join("\u0001");
+    if(row.dataset.dxs===raw&&(!row.classList.contains("dx")||row.querySelector(".tvar.d"))) return;
+    let names=null; if(sp[2]==="t") names=split(clean(hosts[0])); else if(hosts.length>=2) names=[clean(hosts[0]),clean(hosts[1])];
+
+    const d=names?derbiOf(names[0],names[1],lgOf(row)):null;
+    row.classList.toggle("dx",!!d); row.classList.toggle("dx-g",!!d&&d.kind==="genc"); row.classList.toggle("dx-k",!!d&&d.kind==="kadin");
+    row.querySelectorAll(".tvar.d").forEach(x=>x.remove());
+    if(!d){ row.removeAttribute("data-dx"); row.dataset.dxs=raw; return; }
+    row.setAttribute("data-dx",d.n);
+    const b=document.createElement("span"); b.className="tvar d"; b.textContent=d.label; b.title=d.n;
+    if(row.classList.contains("ms-hd")){ const w=row.querySelector(".ms-when"); if(w){ w.appendChild(document.createTextNode(" ")); w.appendChild(b); } }
+    else if(row.matches("#bkd .bk-vs")){ const mid=row.querySelector(".mid"); (mid||hosts[0]).appendChild(document.createElement("br")); (mid||hosts[0]).appendChild(b); }
+    else { const h=hosts[0], nx=row.matches(".cprow")?row.querySelector(".l>small"):h.nextElementSibling;
+      if(row.matches(".cprow,.pw-r,.tp-r,.bt-card")&&nx&&nx.tagName==="SMALL"){ nx.prepend(b,document.createTextNode(" ")); }
+      else if(row.matches(".ib-r,.rs-r,.bk-row,.br")) h.after(b);
+      else h.appendChild(b); }
+    // maç penceresi notu
+    const box=row.matches("#msheet .ms-hd")?$("msheet"):row.matches("#bkd .bk-vs")?row.closest(".panel"):null;
+    if(box&&!box.querySelector(".dx-note")){ const n=document.createElement("div"); n.className="dx-note"; n.innerHTML=noteHtml(d,row.matches("#bkd .bk-vs"));
+      if(row.classList.contains("ms-hd")) row.after(n); else box.appendChild(n); }
+    row.dataset.dxs=hosts.map(h=>h.textContent).join("\u0001"); }
+  function scan(){ try{ document.querySelectorAll(SEL).forEach(mark); }catch(e){} }
+  let q=0; const sched=()=>{ if(q) return; q=1; setTimeout(()=>requestAnimationFrame(()=>{ q=0; scan(); }),60); };
+  try{ new MutationObserver(sched).observe(document.body,{childList:true,subtree:true}); }catch(e){} sched();
+  // ---------- OXX: "derbi var mı", "bugün derbi", "derbiler" ----------
+  const NZ=t=>String(t||"").toLocaleLowerCase("tr").replace(/ç/g,"c").replace(/ğ/g,"g").replace(/ı/g,"i").replace(/ö/g,"o").replace(/ş/g,"s").replace(/ü/g,"u").replace(/[^a-z0-9 ]/g," ").replace(/\s+/g," ").trim();
+  try{ ["derbi","derbisi","derbiler","derbileri","derbide","derby","derbiyi"].forEach(w=>NLU_STOP.add(w)); }catch(e){}
+  const DXQ=/\b(derbi\w*|derby)\b/, ANQ=/\b(ne olur|kim kazan\w*|kazanir\w*|kazanacak|skor\w*|analiz\w*|kac kac|kg|ust|alt|ilk yari\w*|iy|yorum\w*|tahmin\w*|biter|olur mu|favori\w*|oran\w*)\b/;
+  const BKX=[];
+  function derbiList(){ const now=Date.now(), d0=istDay(new Date()), d1=istDay(new Date(now+864e5)), out=[], seen=new Set();
+    let pool=[]; try{ pool=omPool(); }catch(e){}
+    for(const m of pool){ const dt=m.dt?m.dt:new Date(m.ts); if(!dt||isNaN(dt)) continue; const day=istDay(dt), live=!!(m.sp||m.live);
+      if(!live&&(day!==d0&&day!==d1||dt.getTime()<now-2.5*3600e3)) continue;
+      const d=derbiOf(m.h,m.a,m.lg); if(!d) continue; const k=(m.sp===2?"b":"f")+NZ(m.h)+"|"+NZ(m.a); if(seen.has(k)) continue; seen.add(k);
+      out.push({m,d,dt,day,live,bk:m.sp===2}); }
+    try{ for(const f of bkList()){ const day=istDay(f.t); if(day!==d0&&day!==d1) continue; const lv=bkLiveOf(f); if(lv&&lv.state==="post") continue;
+      const d=derbiOf(f.h,f.a,f.lg); if(!d) continue; const k="b"+NZ(f.h)+"|"+NZ(f.a); if(seen.has(k)) continue; seen.add(k);
+      out.push({f,m:f,d,dt:f.t,day,live:!!(lv&&lv.state==="in"),bk:true,lv}); } }catch(e){}
+    return out.sort((x,y)=>(y.live-x.live)||(x.dt-y.dt)); }
+  function line(x,d0){ const m=x.m, when=x.live?`<em style="color:#FF5A5A;font-style:normal">● ${esc(String(m.hs??(x.lv&&x.lv.hs)??0))}-${esc(String(m.as??(x.lv&&x.lv.as)??0))}</em>`:esc((x.day===d0?"":"Yarın ")+ist(x.dt,{hour:"2-digit",minute:"2-digit"}));
+    let attr=""; if(x.f){ BKX.push(x.f); attr=` data-dxbk="${BKX.length-1}"`; } else { try{ attr=omA(m); }catch(e){} }
+    const lgn=x.bk?"🏀 "+(m.comp||(typeof bkLg==="function"?bkLg(m.lg):"")||"Basketbol"):((m.comp)||(LEAGUES[m.lg]||{n:""}).n||"");
+    return `<div class="dx-li"${attr}><span class="dx-t">${when}</span><span class="dx-m"><b>${esc(m.h)} – ${esc(m.a)}</b><small>${esc(x.d.n)}${x.d.kind!=="ana"?" · "+esc(x.d.label):""}${lgn?" · "+esc(lgn):""}</small></span></div>`; }
+  document.addEventListener("click",e=>{ const r=e.target.closest(".dx-li[data-dxbk]"); if(!r) return; const f=BKX[+r.dataset.dxbk]; if(f){ try{ buzz(8); }catch(_){} try{ if($("botSheet")&&!$("botSheet").hidden&&typeof botThen==="function") botThen(()=>bkOpen(f)); else bkOpen(f); }catch(_){} } });
+  function answer(raw){ const n=" "+NZ(raw)+" "; if(!DXQ.test(n)||ANQ.test(n)) return null;
+    // takım adı geçiyorsa (ör. "galatasaray derbisi") eski analiz yolu çalışsın
+    try{ const tw=n.trim().split(" ").filter(w=>w.length>=4&&!DXQ.test(w)&&!/^(bugun|yarin|aksam|hangi|neler|maclari?|maclar|varmi|bugunku|yarinki|listele|goster)$/.test(w));
+      if(tw.length&&IDX.some(e=>e.t.some(t=>t.length>=4&&tw.some(w=>w.startsWith(t)||t.startsWith(w))))) return null; }catch(e){}
+    const L=derbiList(), d0=istDay(new Date()), wantT=/\byarin\w*\b/.test(n)&&!/\bbugun\w*\b/.test(n), wantB=/\bbugun\w*\b/.test(n)&&!/\byarin\w*\b/.test(n);
+    const S=L.filter(x=>wantT?x.day!==d0&&!x.live:wantB?(x.day===d0||x.live):true), K=DXK;
+    const stat=K&&K.n_derbi?`<small>📊 Geçmiş ${K.n_derbi} derbide favori %${pc(K.favori_kazanma_derbi)} kazandı (diğer maçlarda %${pc(K.favori_kazanma_diger)}); sürpriz olasılığı derbide daha yüksek. Garanti değildir.</small>`:"";
+    const when=wantT?"Yarın":wantB?"Bugün":"Bugün ve yarın";
+    if(!S.length) return {html:`⚔️ ${when} bültende derbi yok${botName()}. ${L.length&&!wantT?"Yarın "+L.filter(x=>x.day!==d0).length+" derbi var.":""}<br><small>Tanıdığım derbiler: Galatasaray–Fenerbahçe, El Clásico, Manchester, Milano, Old Firm, Superclásico gibi ${PAIRS.size} eşleşme; genç/kadın takımları ayrı sayılır.</small>`,chips:["Bugün hangi maçlar var","En güvenli 3 maç"]};
+    const h=`⚔️ ${when} <b>${S.length} derbi</b> var${botName()}:`+S.slice(0,8).map(x=>line(x,d0)).join("")+(S.length>8?`<small>+${S.length-8} derbi daha (bültende turuncu şeritle işaretli)</small><br>`:"")+stat;
+    const f=S.find(x=>!x.bk&&x.d.kind==="ana")||S[0];
+    return {html:h,chips:[`${f.m.h} ${f.m.a} ne olur`,"Bugün hangi maçlar var","En güvenli 3 maç"]}; }
+  // "derbi ne olur" / "derbide kim kazanır": takım adı yoksa sıradaki ANA derbiyi (genç/kadın değil) analiz et.
+  // Öncelik Türk büyükleri (GS/FB/BJK/TS), sonra canlı, sonra en yakın saat; 8 gün içinde.
+  const BIG4=new Set(["gs","fb","bjk","ts"]);
+  function nextDerbi(){ const now=Date.now(); let pool=[]; try{ pool=omPool(); }catch(e){}
+    const L=[]; for(const m of pool){ if(m.sp===2) continue; const dt=m.dt?m.dt:new Date(m.ts); if(!dt||isNaN(dt)) continue; const live=!!(m.sp||m.live);
+      if(!live&&(dt.getTime()<now-2*3600e3||dt.getTime()>now+8*864e5)) continue; const d=derbiOf(m.h,m.a,m.lg); if(!d||d.kind!=="ana") continue;
+      const A=dxTeam(m.h,m.lg), B=dxTeam(m.a,m.lg); L.push({m,dt,live,big:!!(A&&B&&BIG4.has(A.k)&&BIG4.has(B.k))}); }
+    L.sort((x,y)=>(y.big-x.big)||(y.live-x.live)||(x.dt-y.dt)); return L[0]||null; }
+  function rewrite(raw){ const n=" "+NZ(raw)+" "; if(!DXQ.test(n)||!ANQ.test(n)) return null;
+    try{ const tw=n.trim().split(" ").filter(w=>w.length>=4&&!DXQ.test(w)); if(tw.length&&IDX.some(e=>e.t.some(t=>t.length>=4&&tw.some(w=>w.startsWith(t)||t.startsWith(w))))) return null; }catch(e){}
+    const x=nextDerbi(); if(!x) return null;
+    return `${x.m.h} ${x.m.a} `+n.replace(/\b(derbi\w*|derby)\b/g," ").replace(/\s+/g," ").trim(); }
+  window.derbiAnswer=answer;
+  if(typeof botAnswer==="function"){ const _ba=botAnswer; botAnswer=async function(raw){ try{ const r=answer(raw); if(r) return r; }catch(e){}
+      try{ const q=rewrite(raw); if(q){ const args=[...arguments]; args[0]=q; return _ba.apply(this,args); } }catch(e){}
+      return _ba.apply(this,arguments); }; }
+})();
+</script>
 </body>
 </html>
