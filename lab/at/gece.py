@@ -1141,6 +1141,11 @@ def main():
         print("kariyer:", kariyer.yaz(kosular, [bugun, yarin]), "at")
     except Exception as e:   # arayüz özeti yayın modelini asla durdurmaz
         print("kariyer.json üretilemedi:", type(e).__name__, e)
+    try:   # 🔍 arama dizini (arayüz At › Ara, OXX "X bugün koşuyor mu"): ad → son koşu özeti, jokey/antrenör 90 gün
+        import dizin
+        print("dizin:", *dizin.yaz(kosular), "(at, bayt)")
+    except Exception as e:   # arayüz özeti yayın modelini asla durdurmaz
+        print("dizin.json üretilemedi:", type(e).__name__, e)
     jyaz(os.path.join(CIKTI, "model.json"), mj)
     rapor_yaz(mj, karne, bugun, ayna)
     print("tamam")
