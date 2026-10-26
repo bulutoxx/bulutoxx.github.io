@@ -423,12 +423,18 @@ def tune_market(bt):
     mll = -np.log(mk[np.arange(len(idx)), res]).mean()
     return round(best[1], 2), {"n": len(idx), "model_market_logloss": round(best[0], 4), "market_logloss": round(float(mll), 4)}
 
+GOLLU_T = 0.50   # 3,5 Üst olasılığı bu eşiği geçerse skor 4+ gollü seçilir
+
 def pick_scores(g, p, pO):
     """Tutarlı skor: tahmin edilen sonuç (1/X/2) ve 2.5 alt/üst yönüyle uyumlu en olası skor (düz mod hep 1-1 der)."""
     n, K = g.shape[0], g.shape[1]; ii, jj = np.meshgrid(np.arange(K), np.arange(K), indexing="ij")
     om = [(ii > jj), (ii == jj), (ii < jj)]; pr = p.argmax(1); out = []
     for t in range(n):
-        gg = g[t] * (om[pr[t]] & (((ii + jj) > 2) if pO[t] >= .5 else ((ii + jj) <= 2)))
+        # Gollü maç: 3,5 Üst olasılığı ≥ GOLLU_T ise 4+ gollü, sonuçla uyumlu en olası skor (25 bin maç testi:
+        # eşik .42'de bu maçların %51'inde gerçekten 4+ gol çıktı (genel %31), eşik .50'de %60; tam skor isabeti değişmedi)
+        o35 = float((g[t] * ((ii + jj) > 3)).sum()) / max(1e-12, float(g[t].sum()))
+        if o35 >= GOLLU_T: gg = g[t] * (om[pr[t]] & ((ii + jj) > 3))
+        else: gg = g[t] * (om[pr[t]] & (((ii + jj) > 2) if pO[t] >= .5 else ((ii + jj) <= 2)))
         if gg.sum() == 0: gg = g[t] * om[pr[t]]
         out.append(divmod(int(gg.argmax()), K))
     return out
