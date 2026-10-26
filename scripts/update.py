@@ -1253,6 +1253,15 @@ def merge_iddaa(fx, season, today):
         if mk.get("kg"): f["ikg"] = mk["kg"]
         if not f.get("odds"): f["odds"] = mk["ms"]
         if not f.get("ou") and mk.get("ou"): f["ou"] = mk["ou"]
+        # 🧮 pazar motoru: iddaa oranları pazar kodlarıyla (eski io/iou/ikg aynen kalır; po yalnız ek bilgi)
+        try:
+            po = {"1": mk["ms"][0], "X": mk["ms"][1], "2": mk["ms"][2]}
+            if mk.get("ou"): po.update({"U25": mk["ou"][0], "A25": mk["ou"][1]})
+            if mk.get("kg"): po.update({"KGV": mk["kg"][0], "KGY": mk["kg"][1]})
+            for k_, v_ in (mk.get("px") or {}).items():
+                if k_ not in po and isinstance(v_, (int, float)) and v_ > 1.01: po[k_] = round(float(v_), 2)
+            f["po"] = po
+        except Exception: pass
     for e in evs:
         if e["iid"] in matched:
             add_io(out_fx[matched[e["iid"]]], e); continue
@@ -1281,9 +1290,17 @@ def merge_iddaa(fx, season, today):
                "comp_lg": {str(k): v for k, v in cl.items()}},
               open(os.path.join(DATA, "iddaa.json"), "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
     print(f"iddaa bülteni: {len(evs)} maç · {len(matched)} bizdeki maçla eşleşti · {len(extra)} yeni maç eklendi", flush=True)
+    try:   # teşhis: bültendeki pazar adları ve hangi koda ayrıştırıldığı (oran değeri yazılmaz)
+        nm = ID.market_names(getattr(ID, "LAST_RAW", []) or [])
+        npx = collections.Counter(k for e in evs for k in (e["mk"].get("px") or {}))
+        json.dump({"guncelleme": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%MZ"), "pazar_tanimi": len(ID.market_config()),
+                   "pazarlar": nm, "ayristirilan_kod": dict(npx.most_common())},
+                  open(os.path.join(DATA, "iddaa_pazarlar.json"), "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
+        print(f"iddaa ek pazar: {sum(1 for e in evs if e['mk'].get('px'))} maçta, {len(npx)} kod", flush=True)
+    except Exception as ex: print("iddaa pazar teşhisi atlandı:", ex.__class__.__name__, flush=True)
     return out_fx
 
-def predict_fixtures(fx, all_ms, P, today):
+def predict_fixtures(fx, all_ms, P, today, pzmap=None):
     """Her yaklaşan maç için model ve piyasa tahminini önceden kaydet (gerçek ileriye dönük test için)."""
     fits = {}
     for lg, ms in all_ms.items():
@@ -1311,6 +1328,14 @@ def predict_fixtures(fx, all_ms, P, today):
              "p": [round(float(x), 4) for x in p[i]], "o": round(float(pO[i]), 4), "ft": f"{k // kk}-{k % kk}"}
         if f.get("odds"):
             inv = [1 / x for x in f["odds"]]; s_ = sum(inv); e["mp"] = [round(x / s_, 4) for x in inv]
+        try:   # 🧮 sunulan tüm pazar olasılıkları (binde, pazar.PZ_KAYIT sırası) + iddaa oranları; sonuçla puanlanır
+            z = (pzmap or {}).get((f["lg"], f["d"], f["h"], f["a"]))
+            if z:
+                import pazar as PZM
+                e["pz"] = PZM.pack(z); e["pzv"] = PZM.PAZAR_V
+                po_ = {k: v for k, v in (f.get("po") or {}).items() if k not in PZM.ESKI and z.get(k, 0) >= .70}   # Altın kapısı için yeter
+                if po_: e["po"] = po_
+        except Exception: pass
         out.append(e)
     return out
 
@@ -1323,9 +1348,12 @@ def grade_predlog(log, all_ms, today):
         cands = [m for m in idx.get((e["lg"], e["h"], e["a"]), []) if abs((date.fromisoformat(m["d"]) - date.fromisoformat(e["d"])).days) <= 3]
         if cands:
             m = cands[0]; e["r"] = m["ft"]
+            if m.get("ht") and len(m["ht"]) == 2 and m["ht"][0] is not None: e["rh"] = m["ht"]
         elif (today - date.fromisoformat(e["d"])).days > 10:
             e["r"] = False   # ertelendi / bulunamadı
     keep = [e for e in log if (today - date.fromisoformat(e["d"])).days <= 400]   # ml70: 120 → 400 gün (veritabanı büyür)
+    for e in keep:   # 🧮 pazar olasılıkları 180 gün tutulur (boyut sınırı); puanlanmış özet pazar_karne.json'da
+        if "pz" in e and (today - date.fromisoformat(e["d"])).days > 180: e.pop("pz", None); e.pop("po", None)
     return keep
 
 def live_report(log, today):
@@ -1553,6 +1581,26 @@ def main():
         nk = konsey.apply(fx, season, P, today)
         if nk: print(f"Konsey tahmini eklenen maç: {nk}", flush=True)
     except Exception as e: print("konsey atlandı:", e.__class__.__name__, e, flush=True)
+    # 🧮 Pazar motoru: tüm pazarlar tek skor ızgarasından (scripts/pazar.py). Karne tam öğrenmede (veya yoksa) yeniden kurulur.
+    pzmap, PK = {}, None
+    kp_ = os.path.join(DATA, "pazar_karne.json")
+    try:
+        import pazar as PZM
+        try: PK = json.load(open(kp_, encoding="utf-8"))
+        except Exception: PK = None
+        if not quick or not PK or PK.get("v") != PZM.PAZAR_V or PK.get("engine") != ENGINE_V or "--pazar-karne" in sys.argv:
+            PK = PZM.karne(season, P, sys.modules[__name__]) or PK
+            if PK: PK["engine"] = ENGINE_V; PK["guncelleme"] = now
+        need = {f["lg"] for f in fx if not f.get("odds") and f["lg"] in all_ms and len(all_ms[f["lg"]]) >= 40}
+        fits_ = {}
+        for lg_ in need:
+            try: fits_[lg_] = fit(all_ms[lg_], today, P)
+            except Exception: pass
+        pzmap = PZM.enrich(fx, season, P, PK, fits=fits_, today=today, U=sys.modules[__name__])
+        print(f"Pazar olasılığı eklenen maç: {len(pzmap)} / {len(fx)}", flush=True)
+    except Exception as e:
+        print("pazar motoru atlandı:", e.__class__.__name__, e, flush=True)
+        for f in fx: f.pop("pz", None); f.pop("pzy", None)
     json.dump([{k: v for k, v in f.items() if k != "xg"} for f in fx], open(fxp, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
     plog = json.load(open(plp, encoding="utf-8")) if os.path.exists(plp) else []
     have = {e["id"] for e in plog}
@@ -1566,13 +1614,23 @@ def main():
         except Exception:
             return datetime.fromisoformat(f["d"] + "T23:59:00+00:00")
     fx_lock = [f for f in fx if f.get("src") != "iddaa" and kickoff(f) > now_utc and (f["lg"], f["h"], f["a"], f["d"]) not in played]
-    for e in predict_fixtures(fx_lock, all_ms, P, today):
+    for e in predict_fixtures(fx_lock, all_ms, P, today, pzmap=pzmap):
         if e["id"] not in have:                           # maçtan önceki ilk tahmin kilitlenir, sonradan değiştirilmez
             e["v"] = ENGINE_V; e["ts"] = now_utc.strftime("%Y-%m-%dT%H:%MZ"); plog.append(e); have.add(e["id"])
     plog = grade_predlog(plog, all_ms, today)
     json.dump(plog, open(plp, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
     live = live_report(plog, today)
     print("Canlı karne:", json.dumps(live, ensure_ascii=False), flush=True)
+    if PK:
+        try:
+            import pazar as PZM
+            PK["canli"] = PZM.live_scores(plog, PK)
+            gate = PK["canli"].get("altin_kapisi", {})
+            for c_, v_ in PK.get("pazarlar", {}).items():
+                v_["altina_uygun"] = bool(c_ in PZM.ESKI or (v_.get("oneriye_uygun") and gate.get(c_, {}).get("acik")))
+            PK["boyut"] = {"fixtures_kb": round(os.path.getsize(fxp) / 1024, 1), "predlog_kb": round(os.path.getsize(plp) / 1024, 1)}
+            json.dump(clean_nan(PK), open(kp_, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"), allow_nan=False)
+        except Exception as e: print("pazar karnesi yazılamadı:", e.__class__.__name__, e, flush=True)
     try:
         oneri = pick_calib(season, P["rho"]) if not quick or not model.get("oneri") else model.get("oneri")
         print("Öneri kalibrasyonu:", json.dumps(oneri and oneri["dogrulama"], ensure_ascii=False)[:600], flush=True)
