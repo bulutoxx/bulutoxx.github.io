@@ -1664,6 +1664,16 @@ details.sx>.sx-in>.panel,details.sx>.sx-in>.pw-card{margin-top:0}
 .bt-msg.bot::before{content:"";position:absolute;left:-34px;bottom:0;width:26px;height:26px;border-radius:50%;background:#080604 url(icons/bulut-bot-96.png) center/cover no-repeat;box-shadow:0 0 0 1px rgba(233,199,102,.55)}
 .bb-hero{display:block;margin:2px auto 10px;width:min(260px,70%);border-radius:16px;box-shadow:0 12px 30px -14px rgba(212,175,55,.8)}
 </style>
+<style id="ui-v92">
+/* v92: görünümü değiştirmeden erişilebilirlik ince ayarı */
+/* parlak mavi/yeşil degrade üzerindeki beyaz yazılar: hafif gölge ile okunurluk (renkler aynı) */
+.sport-sw button[aria-pressed="true"],.bt-days button[aria-pressed="true"],.bt-days button[aria-pressed="true"] small,.pw-add,.rs-share,.bt-msg.me,.rk.rk-g.gold-odd u,.rk.rk-g.gold-odd b{text-shadow:0 1px 2px rgba(0,10,40,.38)}
+/* küçük 👍/👎 düğmeleri: görünür boyut aynı, dokunma alanı büyür */
+.v70-fb button{position:relative}
+.v70-fb button::after{content:"";position:absolute;inset:-8px -3px}
+/* role=button öğelerinde klavye odağı görünür olsun */
+[role="button"]:focus-visible{outline:2px solid var(--cyan);outline-offset:2px;border-radius:8px}
+</style>
 </head>
 <body>
 <div class="splash" id="splash" aria-hidden="true"><img src="icons/logo-full.png" alt=""></div>
@@ -1933,6 +1943,51 @@ details.sx>.sx-in>.panel,details.sx>.sx-in>.pw-card{margin-top:0}
 <div id="sheet" class="sheet" hidden></div>
 <div id="goal" class="goal" hidden></div>
 <div class="toast" id="toast" hidden></div>
+
+<script id="ui-v92">
+// v92: (1) aynı ESPN adresine aynı anda gelen istekleri tek ağ isteğinde birleştir (açılışta her lig 3 kez çekiliyordu)
+//      (2) erişilebilirlik: ekran okuyucu etiketleri, role=button öğelerine klavye erişimi, Esc ile sohbeti kapatma
+(function(){
+  try{
+    const _f=window.fetch.bind(window), IN=new Map(), TTL=3000;
+    window.fetch=function(input,init){
+      try{
+        const url=typeof input==="string"?input:(input&&input.url)||"";
+        const get=!init||((!init.method||String(init.method).toUpperCase()==="GET")&&!init.signal&&!init.body);
+        if(get&&typeof input==="string"&&/^https:\/\/site\.api\.espn\.com\//.test(url)){
+          const now=Date.now(), e=IN.get(url);
+          if(e&&now-e.t<TTL) return e.p.then(r=>r.clone());
+          const p=_f(input,init); IN.set(url,{t:now,p});
+          p.catch(()=>{}).finally(()=>setTimeout(()=>{ const x=IN.get(url); if(x&&x.p===p) IN.delete(url); },TTL));
+          return p.then(r=>r.clone());
+        }
+      }catch(e){}
+      return _f(input,init);
+    };
+  }catch(e){}
+  function a11y(){
+    try{
+      document.querySelectorAll(".pw-pre:not([aria-label])").forEach(b=>b.setAttribute("aria-label","Listeye ekle"));
+      document.querySelectorAll('[role="button"]:not([tabindex]):not(button):not(a)').forEach(b=>b.tabIndex=0);
+      const t=document.getElementById("toast"); if(t&&!t.hasAttribute("role")){ t.setAttribute("role","status"); t.setAttribute("aria-live","polite"); }
+      const g=document.getElementById("goal"); if(g&&!g.hasAttribute("role")){ g.setAttribute("role","status"); g.setAttribute("aria-live","polite"); }
+      const s=document.getElementById("sheet"); if(s&&!s.hasAttribute("role")){ s.setAttribute("role","dialog"); s.setAttribute("aria-modal","true"); }
+      const bs=document.getElementById("botSheet"); if(bs&&!bs.hasAttribute("role")){ bs.setAttribute("role","dialog"); bs.setAttribute("aria-modal","true"); bs.setAttribute("aria-label","OXX sohbet asistanı"); }
+    }catch(e){}
+  }
+  let q=0; const sched=()=>{ if(q) return; q=1; requestAnimationFrame(()=>{ q=0; a11y(); }); };
+  try{ new MutationObserver(sched).observe(document.documentElement,{childList:true,subtree:true}); }catch(e){}
+  sched();
+  // Enter / Boşluk: role=button öğelerini (div/span) düğme gibi çalıştır; Esc: açık sohbeti kapat
+  document.addEventListener("keydown",e=>{
+    try{
+      const el=e.target;
+      if((e.key==="Enter"||e.key===" ")&&el&&el.getAttribute&&el.getAttribute("role")==="button"&&!/^(BUTTON|A|INPUT|TEXTAREA|SELECT)$/.test(el.tagName)&&!el.isContentEditable){ e.preventDefault(); el.click(); return; }
+      if(e.key==="Escape"){ const bs=document.getElementById("botSheet"); if(bs&&!bs.hidden&&typeof botClose==="function"){ e.preventDefault(); botClose(); } }
+    }catch(x){}
+  });
+})();
+</script>
 
 <script>
 "use strict";
