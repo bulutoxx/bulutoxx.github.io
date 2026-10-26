@@ -1130,6 +1130,11 @@ def main():
         print("jokeyler:", len(jj["jokeyler"]), "jokey,", len(jj["antrenorler"]), "antrenör,", len(jj["ikililer"]), "ikili")
     except Exception as e:   # arayüz özeti yayın modelini asla durdurmaz
         print("jokeyler.json üretilemedi:", type(e).__name__, e)
+    try:   # 🐎 at kariyeri (arayüz At profili): yalnız bugün/yarın koşucuları, sonuç arşivinden türetilmiş kompakt özet
+        import kariyer
+        print("kariyer:", kariyer.yaz(kosular, [bugun, yarin]), "at")
+    except Exception as e:   # arayüz özeti yayın modelini asla durdurmaz
+        print("kariyer.json üretilemedi:", type(e).__name__, e)
     jyaz(os.path.join(CIKTI, "model.json"), mj)
     rapor_yaz(mj, karne, bugun, ayna)
     print("tamam")

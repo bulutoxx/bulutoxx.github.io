@@ -1,6 +1,6 @@
 name: BULUTOXX at yarisi canli (gun ici)
 # Yarış günü 11:00–00:30 TSİ arası her 30 dakikada: güncel ganyan oranlarıyla olasılıkları tazeler, aynı akşam
-# sonuçları puanlar. Yalnız data/at/canli/, data/at/karne.json, 6'lı (data/at/altili/, altili_karne.json) ve OXX at kuponlarını
+# sonuçları puanlar. Yalnız data/at/canli/, data/at/oran_izi/, data/at/karne.json, 6'lı (data/at/altili/, altili_karne.json) ve OXX at kuponlarını
 # (data/oxx_kupon/at/) yazar; futbol sistemine, index.html'e dokunmaz.
 # Veri: github.com/cenkozgur/tjk-data aynası sığ klonlanır (_tjk-data, gitignore'da); tjk.org'a istek YOK.
 # Yeniden eğitim yok: gece akışının (at-lab.yml) kaydettiği yayın modeli kullanılır.
@@ -36,6 +36,7 @@ jobs:
           git add data/at/canli data/at/karne.json 2>/dev/null || true
           git add data/at/altili data/at/altili_karne.json 2>/dev/null || true
           git add data/oxx_kupon/at 2>/dev/null || true
+          git add data/at/oran_izi 2>/dev/null || true   # gün içi oran izi (eski günlerin silinmesi de)
           git diff --cached --quiet && { echo "değişiklik yok"; exit 0; }
           git commit -qm "At canlı: $(TZ=Europe/Istanbul date '+%Y-%m-%d %H:%M') [skip ci]"
           for i in 1 2 3; do git pull -q --rebase -X theirs origin main && git push -q origin HEAD:main && break; sleep 8; done
