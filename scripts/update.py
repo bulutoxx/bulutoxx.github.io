@@ -1651,13 +1651,81 @@ def main():
                                "derin_dosya": dx.get("dosya", 0), "arsiv": arsiv.ozet(DATA)}
     except Exception as e: print("veritabanı özeti atlandı:", e, flush=True)
     json.dump(clean_nan(model), open(mp, "w", encoding="utf-8"), ensure_ascii=False, indent=1, allow_nan=False)
-    hp = os.path.join(DATA, "history.json")
+    try: write_ratings(season, clean_nan(model).get("params") or {})
+    except Exception as e: print("ratings.json atlandı:", e, flush=True)
+    hp =os.path.join(DATA, "history.json")
     hist = json.load(open(hp, encoding="utf-8")) if os.path.exists(hp) else []
     if mt and not quick:
         hist.append({"t": now, "n": mt["n"], "logloss": mt["logloss"], "brier": mt["brier"], "r1x2": mt["r1x2"]})
         hist = hist[-200:]
     json.dump(hist, open(hp, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
     print("Bitti:", json.dumps({k: v for k, v in mt.items() if k != "by_league"}, ensure_ascii=False), "params", P)
+
+def fit_league_js(ms, MP):
+    """index.html fitLeague()'in birebir karşılığı (v118): uygulama artık telefonda eğitmiyor, bu sonucu data/ratings.json'dan okuyor."""
+    use = ms
+    if len(use) < 12: return None
+    last = date.fromisoformat(max(m["d"] for m in use))
+    W = [math.exp(-MP("decay", 0.004) * (last - date.fromisoformat(m["d"])).days) for m in use]
+    names = list(dict.fromkeys(x for m in use for x in (m["h"], m["a"])))
+    att = {n: 1.0 for n in names}; dfn = {n: 1.0 for n in names}
+    MK = MP("mkt", 0)
+    T = [[(1 - MK) * m["ft"][0] + MK * m["xg"][0], (1 - MK) * m["ft"][1] + MK * m["xg"][1]] if isinstance(m.get("xg"), list) else m["ft"] for m in use]
+    sw = sum(W); sh = sum(w * t[0] for w, t in zip(W, T)); sa = sum(w * t[1] for w, t in zip(W, T))
+    cl = lambda x, a, b: max(a, min(b, x))
+    gamma = cl(sh / max(sa, 0.1), 1.0, 1.6); mu = sa / sw
+    K = MP("prior", 2.5)
+    for _ in range(40):
+        gs = dict.fromkeys(names, 0.0); es = dict.fromkeys(names, 0.0); gc = dict.fromkeys(names, 0.0); ec = dict.fromkeys(names, 0.0)
+        for m, w, t in zip(use, W, T):
+            h, a = m["h"], m["a"]
+            eh = mu * gamma * att[h] * dfn[a]; ea = mu * att[a] * dfn[h]
+            gs[h] += w * t[0]; es[h] += w * eh / att[h]; gc[a] += w * t[0]; ec[a] += w * eh / dfn[a]
+            gs[a] += w * t[1]; es[a] += w * ea / att[a]; gc[h] += w * t[1]; ec[h] += w * ea / dfn[h]
+        base = mu * math.sqrt(gamma)
+        for n in names:
+            att[n] = (gs[n] + K * base) / (es[n] + K * base); dfn[n] = (gc[n] + K * base) / (ec[n] + K * base)
+        ga = math.exp(sum(math.log(att[n]) for n in names) / len(names)); gd = math.exp(sum(math.log(dfn[n]) for n in names) / len(names))
+        for n in names: att[n] /= ga; dfn[n] /= gd
+        nh = dh = na = da = 0.0
+        for m, w, t in zip(use, W, T):
+            nh += w * t[0]; dh += w * att[m["h"]] * dfn[m["a"]]; na += w * t[1]; da += w * att[m["a"]] * dfn[m["h"]]
+        mu = na / da; gamma = cl((nh / dh) / mu, 1.0, 1.6)
+    g1 = g = 0
+    for m in use:
+        if isinstance(m.get("ht"), list): g1 += m["ht"][0] + m["ht"][1]; g += m["ft"][0] + m["ft"][1]
+    h1 = cl((g1 + MP("h1", 0.44) * 60) / (g + 60), 0.36, 0.52)
+    cnt = collections.Counter(x for m in use for x in (m["h"], m["a"]))
+    return {"mu": mu, "gamma": gamma, "h1": h1, "n": len(use), "t": {n: [round(att[n], 6), round(dfn[n], 6), cnt[n]] for n in names}}
+
+def write_ratings(season, params):
+    """⚡ v118: data/ratings.json — uygulamanın açılışta ihtiyaç duyduğu küçük özet: lig güçleri (fitLeague sonucu) ve
+    her takımın son 5 maçı. season.json (3,8 MB) artık yalnız puan durumu / aralarındaki maçlar gibi ekranlarda, gerekince yüklenir.
+    Biçim: tm = takım adları; m = [tarih, ev no, dep no, ev gol, dep gol, sezon]; fit.a/fit.d/fit.c = tm sırasıyla hücum/savunma/maç;
+    o = bu sezonun takımları (uygulamadaki sırayla)."""
+    MP = lambda k, d: params[k] if params.get(k) is not None else d
+    out = {"v": 1, "updated": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%MZ"),
+           "params": {k: params.get(k) for k in ("decay", "prior", "mkt", "h1")}, "leagues": {}}
+    for lg, d in season.items():
+        ms = sorted([m for m in d.get("matches", []) if m and isinstance(m.get("ft"), list) and len(m["ft"]) == 2], key=lambda m: m["d"])
+        tm = list(dict.fromkeys(x for m in ms for x in (m["h"], m["a"]))); ix = {n: i for i, n in enumerate(tm)}
+        last5 = collections.defaultdict(list)
+        for i, m in enumerate(ms): last5[m["h"]].append(i); last5[m["a"]].append(i)
+        keep = sorted({i for L in last5.values() for i in L[-5:]})
+        L = {k: d[k] for k in ("name", "cup", "espn", "asOf", "season", "src") if d.get(k) is not None}
+        L.update(n=len(ms), tm=tm, m=[[ms[i]["d"], ix[ms[i]["h"]], ix[ms[i]["a"]], ms[i]["ft"][0], ms[i]["ft"][1], ms[i].get("season")] for i in keep])
+        if not d.get("cup"):
+            f = fit_league_js(ms, MP)
+            if f:
+                last = max((m.get("season") or 0) for m in ms)
+                cur = [m for m in ms if not m.get("season") or m.get("season") == last]
+                L["o"] = [ix[n] for n in dict.fromkeys(x for m in cur for x in (m["h"], m["a"]))]   # uygulamanın takımları gezdiği sıra
+                t = f.pop("t")
+                f.update(avg=sum(m["ft"][0] + m["ft"][1] for m in cur) / len(cur) if cur else None,
+                         a=[t[n][0] for n in tm], d=[t[n][1] for n in tm], c=[t[n][2] for n in tm])
+                L["fit"] = f
+        out["leagues"][lg] = L
+    json.dump(clean_nan(out), open(os.path.join(DATA, "ratings.json"), "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
 
 def clean_nan(o):
     """JSON'a NaN/sonsuz yazılmasın (tarayıcı okuyamaz): None'a çevir."""

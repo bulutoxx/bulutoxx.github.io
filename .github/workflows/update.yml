@@ -43,6 +43,10 @@ jobs:
           ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
       - name: 🎟️ OXXai kupon robotu (maçtan önce kilit, sonuç puanı, karne)
         run: timeout 300 python scripts/oxx_kupon.py || echo "OXXai kupon robotu bu sefer atlandı"
+      - name: Sürüm dosyası (data/version.json ← index.html APP_V; uygulama sürüm kontrolünde bunu okur)
+        run: |
+          V=$(sed -nE 's/^const APP_V="([^"]+)";.*/\1/p' index.html | head -1)
+          if [ -n "$V" ]; then printf '{"v":"%s"}\n' "$V" > data/version.json; cat data/version.json; else echo "::warning::APP_V bulunamadı, version.json değişmedi"; fi
       - name: Değişiklikleri kaydet
         run: |
           git config user.name "bulutoxx-bot"
@@ -63,6 +67,10 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: main
+      - name: Sürüm dosyası (data/version.json ← index.html APP_V; uygulama sürüm kontrolünde bunu okur)
+        run: |
+          V=$(sed -nE 's/^const APP_V="([^"]+)";.*/\1/p' index.html | head -1)
+          if [ -n "$V" ]; then printf '{"v":"%s"}\n' "$V" > data/version.json; cat data/version.json; else echo "::warning::APP_V bulunamadı, version.json değişmedi"; fi
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
