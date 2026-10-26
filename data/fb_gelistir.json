@@ -1,0 +1,1109 @@
+{
+ "tarih": "2026-10-26",
+ "motor": "2026-10-25.ml80",
+ "yontem": "Sunulan olasılık (piyasa yolu, model.json ayarları). Adaylar yalnız sınama diliminden ÖNCEKİ veriyle öğrenilir; kapı: birincil log-kayıp Δ'sının eşleştirilmiş blok bootstrap %95 GA üst sınırı < 0, güçlü (≥%70) ve Altın isabeti ile öneri log-kaybı kötüleşmiyor; iki ayrı zaman diliminin ikisinde de.",
+ "zayif_arsiv": {
+  "pazar": {
+   "MS": {
+    "n": 1125,
+    "ll": 1.01029,
+    "isabet_argmax": 0.4933
+   },
+   "2,5 A/Ü": {
+    "n": 910,
+    "ll": 0.68632,
+    "isabet_argmax": 0.5626,
+    "beklenen_ust": 0.5494,
+    "gercek_ust": 0.5341
+   },
+   "KG": {
+    "n": 1093,
+    "ll": 0.67449,
+    "isabet_argmax": 0.5718,
+    "beklenen_var": 0.5473,
+    "gercek_var": 0.5563
+   },
+   "İY": {
+    "n": 903,
+    "ll": 1.05272,
+    "isabet_argmax": 0.443,
+    "beklenen_x": 0.4041,
+    "gercek_x": 0.3898
+   }
+  },
+  "olasilik_kalibrasyonu": {
+   "MS 1": {
+    "n": 1125,
+    "beklenen": 0.458,
+    "gercek": 0.432,
+    "fark": -0.026,
+    "brier": 0.21875,
+    "ll": 0.62567
+   },
+   "MS X": {
+    "n": 1125,
+    "beklenen": 0.2419,
+    "gercek": 0.2756,
+    "fark": 0.0336,
+    "brier": 0.19704,
+    "ll": 0.58276
+   },
+   "MS 2": {
+    "n": 1125,
+    "beklenen": 0.3001,
+    "gercek": 0.2924,
+    "fark": -0.0077,
+    "brier": 0.18929,
+    "ll": 0.56132
+   },
+   "2,5 Üst": {
+    "n": 910,
+    "beklenen": 0.5494,
+    "gercek": 0.5341,
+    "fark": -0.0153,
+    "brier": 0.24639,
+    "ll": 0.68632
+   },
+   "KG Var": {
+    "n": 1093,
+    "beklenen": 0.5473,
+    "gercek": 0.5563,
+    "fark": 0.0089,
+    "brier": 0.2406,
+    "ll": 0.67449
+   },
+   "İY 1": {
+    "n": 903,
+    "beklenen": 0.3497,
+    "gercek": 0.3533,
+    "fark": 0.0036,
+    "brier": 0.21706,
+    "ll": 0.62607
+   },
+   "İY X": {
+    "n": 903,
+    "beklenen": 0.4041,
+    "gercek": 0.3898,
+    "fark": -0.0143,
+    "brier": 0.23516,
+    "ll": 0.66327
+   },
+   "İY 2": {
+    "n": 903,
+    "beklenen": 0.2462,
+    "gercek": 0.2569,
+    "fark": 0.0107,
+    "brier": 0.18456,
+    "ll": 0.55147
+   }
+  },
+  "oneri": {
+   "genel": {
+    "n": 1125,
+    "beklenen": 0.6166,
+    "gercek": 0.5911,
+    "fark": -0.0255,
+    "brier": 0.23554,
+    "ll": 0.66379
+   }
+  },
+  "oneri_pazar": {
+   "MS 1": {
+    "n": 356,
+    "beklenen": 0.6531,
+    "gercek": 0.6208,
+    "fark": -0.0324,
+    "brier": 0.21641,
+    "ll": 0.62423
+   },
+   "MS X": {
+    "n": 6,
+    "beklenen": 0.3697,
+    "gercek": 0.5,
+    "fark": 0.1303,
+    "brier": 0.27039,
+    "ll": 0.73546
+   },
+   "MS 2": {
+    "n": 133,
+    "beklenen": 0.6117,
+    "gercek": 0.5489,
+    "fark": -0.0628,
+    "brier": 0.24751,
+    "ll": 0.68774
+   },
+   "2,5 Üst": {
+    "n": 393,
+    "beklenen": 0.6179,
+    "gercek": 0.5954,
+    "fark": -0.0225,
+    "brier": 0.24095,
+    "ll": 0.67546
+   },
+   "2,5 Alt": {
+    "n": 237,
+    "beklenen": 0.5685,
+    "gercek": 0.5654,
+    "fark": -0.0031,
+    "brier": 0.24771,
+    "ll": 0.68859
+   }
+  },
+  "oneri_kova": {
+   "0.50-0.55": {
+    "n": 224,
+    "beklenen": 0.5267,
+    "gercek": 0.5491,
+    "fark": 0.0224,
+    "brier": 0.24877,
+    "ll": 0.69068
+   },
+   "0.55-0.60": {
+    "n": 247,
+    "beklenen": 0.5739,
+    "gercek": 0.5385,
+    "fark": -0.0355,
+    "brier": 0.24985,
+    "ll": 0.69289
+   },
+   "0.60-0.65": {
+    "n": 219,
+    "beklenen": 0.6238,
+    "gercek": 0.5571,
+    "fark": -0.0667,
+    "brier": 0.25145,
+    "ll": 0.69648
+   },
+   "0.65-0.70": {
+    "n": 108,
+    "beklenen": 0.6738,
+    "gercek": 0.6852,
+    "fark": 0.0114,
+    "brier": 0.21582,
+    "ll": 0.62313
+   },
+   "0.70-0.75": {
+    "n": 98,
+    "beklenen": 0.7199,
+    "gercek": 0.6531,
+    "fark": -0.0668,
+    "brier": 0.23199,
+    "ll": 0.65856
+   },
+   "0.75-0.80": {
+    "n": 67,
+    "beklenen": 0.7731,
+    "gercek": 0.791,
+    "fark": 0.0179,
+    "brier": 0.16531,
+    "ll": 0.51246
+   },
+   "0.80-0.85": {
+    "n": 36,
+    "beklenen": 0.8257,
+    "gercek": 0.7222,
+    "fark": -0.1035,
+    "brier": 0.21009,
+    "ll": 0.61972
+   },
+   "0.85-1.01": {
+    "n": 40,
+    "beklenen": 0.8942,
+    "gercek": 0.8,
+    "fark": -0.0942,
+    "brier": 0.16469,
+    "ll": 0.52158
+   }
+  },
+  "oneri_oran": {
+   "<1,20": {
+    "n": 76,
+    "beklenen": 0.8618,
+    "gercek": 0.7632,
+    "fark": -0.0986,
+    "brier": 0.18619,
+    "ll": 0.56807
+   },
+   "1,20-1,50": {
+    "n": 494,
+    "beklenen": 0.6712,
+    "gercek": 0.6377,
+    "fark": -0.0335,
+    "brier": 0.22691,
+    "ll": 0.64546
+   },
+   "1,50-2,00": {
+    "n": 509,
+    "beklenen": 0.5471,
+    "gercek": 0.5324,
+    "fark": -0.0146,
+    "brier": 0.2502,
+    "ll": 0.69365
+   },
+   ">2,00": {
+    "n": 46,
+    "beklenen": 0.3945,
+    "gercek": 0.4565,
+    "fark": 0.062,
+    "brier": 0.24759,
+    "ll": 0.68826
+   }
+  },
+  "guclu": {
+   "n": 241,
+   "beklenen": 0.7794,
+   "gercek": 0.7261,
+   "fark": -0.0533,
+   "brier": 0.19901,
+   "ll": 0.58941
+  },
+  "altin": {
+   "n": 9,
+   "beklenen": 0.8367,
+   "gercek": 0.7778,
+   "fark": -0.0589,
+   "brier": 0.17962,
+   "ll": 0.55345
+  },
+  "grup_en_zayif": [
+   {
+    "n": 43,
+    "beklenen": 0.5804,
+    "gercek": 0.5349,
+    "fark": -0.0455,
+    "brier": 0.24265,
+    "ll": 0.67767,
+    "grup": "İspanya Segunda RFEF",
+    "ms_ll": 1.02204
+   },
+   {
+    "n": 35,
+    "beklenen": 0.6708,
+    "gercek": 0.7143,
+    "fark": 0.0435,
+    "brier": 0.20641,
+    "ll": 0.59217,
+    "grup": "İspanya Division de Honor Juvenil - Gr",
+    "ms_ll": 0.81222
+   },
+   {
+    "n": 27,
+    "beklenen": 0.5581,
+    "gercek": 0.6667,
+    "fark": 0.1086,
+    "brier": 0.21859,
+    "ll": 0.62639,
+    "grup": "İngiltere Amatör FA Trophy Kupası",
+    "ms_ll": 0.8644
+   }
+  ],
+  "grup_en_iyi": [
+   {
+    "n": 27,
+    "beklenen": 0.5581,
+    "gercek": 0.6667,
+    "fark": 0.1086,
+    "brier": 0.21859,
+    "ll": 0.62639,
+    "grup": "İngiltere Amatör FA Trophy Kupası",
+    "ms_ll": 0.8644
+   },
+   {
+    "n": 35,
+    "beklenen": 0.6708,
+    "gercek": 0.7143,
+    "fark": 0.0435,
+    "brier": 0.20641,
+    "ll": 0.59217,
+    "grup": "İspanya Division de Honor Juvenil - Gr",
+    "ms_ll": 0.81222
+   },
+   {
+    "n": 43,
+    "beklenen": 0.5804,
+    "gercek": 0.5349,
+    "fark": -0.0455,
+    "brier": 0.24265,
+    "ll": 0.67767,
+    "grup": "İspanya Segunda RFEF",
+    "ms_ll": 1.02204
+   }
+  ],
+  "grup_sayisi": 3
+ },
+ "zayif_gecmis": {
+  "pazar": {
+   "MS": {
+    "n": 27894,
+    "ll": 1.00306,
+    "isabet_argmax": 0.5026
+   },
+   "2,5 A/Ü": {
+    "n": 17106,
+    "ll": 0.67814,
+    "isabet_argmax": 0.5682,
+    "beklenen_ust": 0.531,
+    "gercek_ust": 0.5193
+   },
+   "KG": {
+    "n": 27894,
+    "ll": 0.68286,
+    "isabet_argmax": 0.5595,
+    "beklenen_var": 0.542,
+    "gercek_var": 0.541
+   },
+   "İY": {
+    "n": 9414,
+    "ll": 1.04299,
+    "isabet_argmax": 0.447,
+    "beklenen_x": 0.4205,
+    "gercek_x": 0.4057
+   }
+  },
+  "olasilik_kalibrasyonu": {
+   "MS 1": {
+    "n": 27894,
+    "beklenen": 0.4419,
+    "gercek": 0.4385,
+    "fark": -0.0034,
+    "brier": 0.21953,
+    "ll": 0.6281
+   },
+   "MS X": {
+    "n": 27894,
+    "beklenen": 0.2574,
+    "gercek": 0.262,
+    "fark": 0.0045,
+    "brier": 0.19133,
+    "ll": 0.5695
+   },
+   "MS 2": {
+    "n": 27894,
+    "beklenen": 0.3007,
+    "gercek": 0.2995,
+    "fark": -0.0012,
+    "brier": 0.18924,
+    "ll": 0.56019
+   },
+   "2,5 Üst": {
+    "n": 17106,
+    "beklenen": 0.531,
+    "gercek": 0.5193,
+    "fark": -0.0116,
+    "brier": 0.24265,
+    "ll": 0.67814
+   },
+   "KG Var": {
+    "n": 27894,
+    "beklenen": 0.542,
+    "gercek": 0.541,
+    "fark": -0.001,
+    "brier": 0.24487,
+    "ll": 0.68286
+   },
+   "İY 1": {
+    "n": 9414,
+    "beklenen": 0.3315,
+    "gercek": 0.3368,
+    "fark": 0.0053,
+    "brier": 0.20972,
+    "ll": 0.60797
+   },
+   "İY X": {
+    "n": 9414,
+    "beklenen": 0.4205,
+    "gercek": 0.4057,
+    "fark": -0.0148,
+    "brier": 0.23893,
+    "ll": 0.67067
+   },
+   "İY 2": {
+    "n": 9414,
+    "beklenen": 0.248,
+    "gercek": 0.2575,
+    "fark": 0.0095,
+    "brier": 0.18298,
+    "ll": 0.5486
+   }
+  },
+  "oneri": {
+   "genel": {
+    "n": 27894,
+    "beklenen": 0.5614,
+    "gercek": 0.5552,
+    "fark": -0.0062,
+    "brier": 0.23602,
+    "ll": 0.66404
+   }
+  },
+  "oneri_pazar": {
+   "MS 1": {
+    "n": 11430,
+    "beklenen": 0.571,
+    "gercek": 0.5663,
+    "fark": -0.0047,
+    "brier": 0.22899,
+    "ll": 0.64882
+   },
+   "MS X": {
+    "n": 93,
+    "beklenen": 0.3655,
+    "gercek": 0.3763,
+    "fark": 0.0108,
+    "brier": 0.24038,
+    "ll": 0.67402
+   },
+   "MS 2": {
+    "n": 4178,
+    "beklenen": 0.5186,
+    "gercek": 0.4969,
+    "fark": -0.0217,
+    "brier": 0.23198,
+    "ll": 0.65624
+   },
+   "2,5 Üst": {
+    "n": 6599,
+    "beklenen": 0.578,
+    "gercek": 0.5624,
+    "fark": -0.0157,
+    "brier": 0.2432,
+    "ll": 0.67934
+   },
+   "2,5 Alt": {
+    "n": 5594,
+    "beklenen": 0.5574,
+    "gercek": 0.5708,
+    "fark": 0.0134,
+    "brier": 0.24484,
+    "ll": 0.68277
+   }
+  },
+  "oneri_kova": {
+   "0.50-0.55": {
+    "n": 7312,
+    "beklenen": 0.5253,
+    "gercek": 0.5249,
+    "fark": -0.0005,
+    "brier": 0.24952,
+    "ll": 0.69219
+   },
+   "0.55-0.60": {
+    "n": 6314,
+    "beklenen": 0.5732,
+    "gercek": 0.5698,
+    "fark": -0.0033,
+    "brier": 0.24507,
+    "ll": 0.68326
+   },
+   "0.60-0.65": {
+    "n": 3787,
+    "beklenen": 0.6225,
+    "gercek": 0.6179,
+    "fark": -0.0046,
+    "brier": 0.23614,
+    "ll": 0.66517
+   },
+   "0.65-0.70": {
+    "n": 1913,
+    "beklenen": 0.6724,
+    "gercek": 0.6487,
+    "fark": -0.0237,
+    "brier": 0.22811,
+    "ll": 0.64874
+   },
+   "0.70-0.75": {
+    "n": 1225,
+    "beklenen": 0.7225,
+    "gercek": 0.7233,
+    "fark": 0.0008,
+    "brier": 0.20038,
+    "ll": 0.59043
+   },
+   "0.75-0.80": {
+    "n": 710,
+    "beklenen": 0.7718,
+    "gercek": 0.7592,
+    "fark": -0.0127,
+    "brier": 0.18308,
+    "ll": 0.55273
+   },
+   "0.80-0.85": {
+    "n": 452,
+    "beklenen": 0.8222,
+    "gercek": 0.8296,
+    "fark": 0.0075,
+    "brier": 0.14079,
+    "ll": 0.45445
+   },
+   "0.85-1.01": {
+    "n": 299,
+    "beklenen": 0.8843,
+    "gercek": 0.8696,
+    "fark": -0.0148,
+    "brier": 0.11331,
+    "ll": 0.38629
+   }
+  },
+  "oneri_oran": {
+   "<1,20": {
+    "n": 436,
+    "beklenen": 0.8702,
+    "gercek": 0.8761,
+    "fark": 0.0059,
+    "brier": 0.10912,
+    "ll": 0.37664
+   },
+   "1,20-1,50": {
+    "n": 4261,
+    "beklenen": 0.7118,
+    "gercek": 0.6984,
+    "fark": -0.0134,
+    "brier": 0.20781,
+    "ll": 0.60543
+   },
+   "1,50-2,00": {
+    "n": 18107,
+    "beklenen": 0.5604,
+    "gercek": 0.5593,
+    "fark": -0.0011,
+    "brier": 0.24525,
+    "ll": 0.68357
+   },
+   ">2,00": {
+    "n": 5090,
+    "beklenen": 0.4128,
+    "gercek": 0.3935,
+    "fark": -0.0192,
+    "brier": 0.23769,
+    "ll": 0.66825
+   }
+  },
+  "guclu": {
+   "n": 2686,
+   "beklenen": 0.7703,
+   "gercek": 0.7669,
+   "fark": -0.0034,
+   "brier": 0.17609,
+   "ll": 0.53486
+  },
+  "altin": {
+   "n": 621,
+   "beklenen": 0.8233,
+   "gercek": 0.8261,
+   "fark": 0.0028,
+   "brier": 0.14304,
+   "ll": 0.45985
+  },
+  "grup_en_zayif": [
+   {
+    "n": 830,
+    "beklenen": 0.6224,
+    "gercek": 0.5723,
+    "fark": -0.0501,
+    "brier": 0.23844,
+    "ll": 0.66856,
+    "grup": "en",
+    "ms_ll": 0.99357
+   },
+   {
+    "n": 420,
+    "beklenen": 0.5214,
+    "gercek": 0.4738,
+    "fark": -0.0476,
+    "brier": 0.23905,
+    "ll": 0.671,
+    "grup": "ie",
+    "ms_ll": 1.02817
+   },
+   {
+    "n": 693,
+    "beklenen": 0.6529,
+    "gercek": 0.6205,
+    "fark": -0.0325,
+    "brier": 0.22586,
+    "ll": 0.64327,
+    "grup": "nl",
+    "ms_ll": 0.96844
+   },
+   {
+    "n": 1268,
+    "beklenen": 0.4645,
+    "gercek": 0.4322,
+    "fark": -0.0324,
+    "brier": 0.23752,
+    "ll": 0.66797,
+    "grup": "ar",
+    "ms_ll": 1.05662
+   },
+   {
+    "n": 517,
+    "beklenen": 0.6352,
+    "gercek": 0.6074,
+    "fark": -0.0279,
+    "brier": 0.22795,
+    "ll": 0.6468,
+    "grup": "gr",
+    "ms_ll": 0.95973
+   },
+   {
+    "n": 438,
+    "beklenen": 0.5013,
+    "gercek": 0.4749,
+    "fark": -0.0264,
+    "brier": 0.23761,
+    "ll": 0.66819,
+    "grup": "at",
+    "ms_ll": 1.02545
+   },
+   {
+    "n": 709,
+    "beklenen": 0.4832,
+    "gercek": 0.4598,
+    "fark": -0.0234,
+    "brier": 0.23808,
+    "ll": 0.66894,
+    "grup": "pl",
+    "ms_ll": 1.03935
+   },
+   {
+    "n": 415,
+    "beklenen": 0.5673,
+    "gercek": 0.5446,
+    "fark": -0.0227,
+    "brier": 0.25054,
+    "ll": 0.69414,
+    "grup": "sc4",
+    "ms_ll": 1.05986
+   }
+  ],
+  "grup_en_iyi": [
+   {
+    "n": 675,
+    "beklenen": 0.6063,
+    "gercek": 0.6459,
+    "fark": 0.0396,
+    "brier": 0.224,
+    "ll": 0.63842,
+    "grup": "fr",
+    "ms_ll": 0.96657
+   },
+   {
+    "n": 1034,
+    "beklenen": 0.5839,
+    "gercek": 0.6141,
+    "fark": 0.0302,
+    "brier": 0.23831,
+    "ll": 0.66949,
+    "grup": "es2",
+    "ms_ll": 1.0208
+   },
+   {
+    "n": 1230,
+    "beklenen": 0.5659,
+    "gercek": 0.5821,
+    "fark": 0.0162,
+    "brier": 0.24062,
+    "ll": 0.67407,
+    "grup": "en3",
+    "ms_ll": 1.01874
+   },
+   {
+    "n": 692,
+    "beklenen": 0.565,
+    "gercek": 0.5795,
+    "fark": 0.0145,
+    "brier": 0.24127,
+    "ll": 0.67549,
+    "grup": "fr2",
+    "ms_ll": 1.04068
+   }
+  ],
+  "grup_sayisi": 38,
+  "kapsam": "2024-07-01 sonrası lig maçları (derin arşiv + sezon)"
+ },
+ "predlog": {
+  "n": 151,
+  "model_ms_ll": 0.95601,
+  "model_ms_isabet": 0.5762,
+  "model_ou_ll": 0.71095,
+  "model_ou_isabet": 0.5166,
+  "piyasa_ms_ll_ayni_maclar": 0.86869,
+  "model_ms_ll_ayni_maclar": 0.80744,
+  "ayni_mac_n": 1,
+  "lig_en_zayif": [
+   {
+    "lig": "ar2",
+    "n": 16,
+    "ms_ll": 1.1445,
+    "ms_isabet": 0.4375
+   },
+   {
+    "lig": "usl",
+    "n": 12,
+    "ms_ll": 0.843,
+    "ms_isabet": 0.6667
+   }
+  ]
+ },
+ "adaylar": {
+  "C1": {
+   "ad": "2,5 Alt/Üst için pazar bazlı Platt kalibrasyonu (tüm geçmiş, kimliğe L2)",
+   "dilimler": [
+    {
+     "n": 7681,
+     "ll_mevcut": 0.67876,
+     "ll_aday": 0.67828,
+     "dll": -0.00049,
+     "ga95": [
+      -0.00128,
+      0.00029
+     ],
+     "mevcut": {
+      "oneri_ll": 0.66329,
+      "oneri_isabet": 0.5589,
+      "guclu_n": 1174,
+      "guclu_hit": 0.7709,
+      "altin_n": 275,
+      "altin_hit": 0.8291
+     },
+     "aday": {
+      "oneri_ll": 0.66328,
+      "oneri_isabet": 0.5557,
+      "guclu_n": 1186,
+      "guclu_hit": 0.7648,
+      "altin_n": 275,
+      "altin_hit": 0.8255
+     },
+     "gecti": false,
+     "param": {
+      "b": 1.0634,
+      "a": -0.0669
+     },
+     "dilim": [
+      "2024-07-01",
+      "2025-07-01"
+     ],
+     "n_egitim": 38737
+    },
+    {
+     "n": 9425,
+     "ll_mevcut": 0.67764,
+     "ll_aday": 0.67775,
+     "dll": 0.00011,
+     "ga95": [
+      -0.00063,
+      0.00082
+     ],
+     "mevcut": {
+      "oneri_ll": 0.66465,
+      "oneri_isabet": 0.5523,
+      "guclu_n": 1512,
+      "guclu_hit": 0.7639,
+      "altin_n": 346,
+      "altin_hit": 0.8237
+     },
+     "aday": {
+      "oneri_ll": 0.66436,
+      "oneri_isabet": 0.5534,
+      "guclu_n": 1483,
+      "guclu_hit": 0.764,
+      "altin_n": 346,
+      "altin_hit": 0.8237
+     },
+     "gecti": false,
+     "param": {
+      "b": 1.0356,
+      "a": -0.0677
+     },
+     "dilim": [
+      "2025-07-01",
+      "9999"
+     ],
+     "n_egitim": 51142
+    }
+   ],
+   "kabul": false
+  },
+  "C3": {
+   "ad": "Lig bazlı MS ev/beraberlik kaydırması (son 3 yıl, büzülmeli L2, lig başına ≥150 maç)",
+   "dilimler": [
+    {
+     "n": 12405,
+     "ll_mevcut": 1.00282,
+     "ll_aday": 1.00326,
+     "dll": 0.00045,
+     "ga95": [
+      -0.00018,
+      0.0011
+     ],
+     "mevcut": {
+      "oneri_ll": 0.66329,
+      "oneri_isabet": 0.5589,
+      "guclu_n": 1174,
+      "guclu_hit": 0.7709,
+      "altin_n": 275,
+      "altin_hit": 0.8291
+     },
+     "aday": {
+      "oneri_ll": 0.66467,
+      "oneri_isabet": 0.56,
+      "guclu_n": 1144,
+      "guclu_hit": 0.7692,
+      "altin_n": 274,
+      "altin_hit": 0.8029
+     },
+     "gecti": false,
+     "param": {
+      "lig_sayisi": 38
+     },
+     "dilim": [
+      "2024-07-01",
+      "2025-07-01"
+     ],
+     "n_egitim": 38737
+    },
+    {
+     "n": 15489,
+     "ll_mevcut": 1.00326,
+     "ll_aday": 1.00392,
+     "dll": 0.00066,
+     "ga95": [
+      0.00013,
+      0.00122
+     ],
+     "mevcut": {
+      "oneri_ll": 0.66465,
+      "oneri_isabet": 0.5523,
+      "guclu_n": 1512,
+      "guclu_hit": 0.7639,
+      "altin_n": 346,
+      "altin_hit": 0.8237
+     },
+     "aday": {
+      "oneri_ll": 0.66536,
+      "oneri_isabet": 0.5543,
+      "guclu_n": 1474,
+      "guclu_hit": 0.7626,
+      "altin_n": 341,
+      "altin_hit": 0.8211
+     },
+     "gecti": false,
+     "param": {
+      "lig_sayisi": 38
+     },
+     "dilim": [
+      "2025-07-01",
+      "9999"
+     ],
+     "n_egitim": 51142
+    }
+   ],
+   "kabul": false
+  },
+  "C2": {
+   "ad": "Yüksek marjlı iddaa oranında MS sıcaklık+beraberlik ve 2,5 A/Ü Platt (yalnız kilitli arşivin önceki kayıtları)",
+   "dilimler": [
+    {
+     "n": 300,
+     "ll_mevcut": 0.98968,
+     "ll_aday": 0.99114,
+     "dll": 0.00145,
+     "ga95": [
+      -0.01162,
+      0.01456
+     ],
+     "mevcut": {
+      "oneri_ll": 0.66463,
+      "oneri_isabet": 0.6,
+      "guclu_n": 60,
+      "guclu_hit": 0.75,
+      "altin_n": 3,
+      "altin_hit": 1.0
+     },
+     "aday": {
+      "oneri_ll": 0.6741,
+      "oneri_isabet": 0.58,
+      "guclu_n": 41,
+      "guclu_hit": 0.7561,
+      "altin_n": 2,
+      "altin_hit": 0.5
+     },
+     "gecti": false,
+     "ou_birlikte": {
+      "n": 243,
+      "ll_mevcut": 0.69919,
+      "ll_aday": 0.6944,
+      "dll": -0.00479,
+      "ga95": [
+       -0.01639,
+       0.00381
+      ],
+      "aday": {
+       "oneri_ll": 0.66817,
+       "oneri_isabet": 0.5667,
+       "guclu_n": 23,
+       "guclu_hit": 0.7391,
+       "altin_n": 0,
+       "altin_hit": null
+      },
+      "gecti": false
+     },
+     "param": {
+      "MS": {
+       "T": 0.7701,
+       "dX": 0.0967
+      },
+      "AU": {
+       "b": 0.7901,
+       "a": -0.0679
+      }
+     },
+     "dilim": [
+      "ts≥1792875600"
+     ],
+     "n_egitim": 481
+    },
+    {
+     "n": 344,
+     "ll_mevcut": 0.99528,
+     "ll_aday": 0.99113,
+     "dll": -0.00414,
+     "ga95": [
+      -0.01552,
+      0.0061
+     ],
+     "mevcut": {
+      "oneri_ll": 0.64686,
+      "oneri_isabet": 0.5843,
+      "guclu_n": 80,
+      "guclu_hit": 0.7625,
+      "altin_n": 6,
+      "altin_hit": 0.8333
+     },
+     "aday": {
+      "oneri_ll": 0.65511,
+      "oneri_isabet": 0.5698,
+      "guclu_n": 57,
+      "guclu_hit": 0.8246,
+      "altin_n": 3,
+      "altin_hit": 1.0
+     },
+     "gecti": false,
+     "ou_birlikte": {
+      "n": 276,
+      "ll_mevcut": 0.66925,
+      "ll_aday": 0.6703,
+      "dll": 0.00105,
+      "ga95": [
+       -0.00594,
+       0.00913
+      ],
+      "aday": {
+       "oneri_ll": 0.65066,
+       "oneri_isabet": 0.5756,
+       "guclu_n": 34,
+       "guclu_hit": 0.8824,
+       "altin_n": 0,
+       "altin_hit": null
+      },
+      "gecti": false
+     },
+     "param": {
+      "MS": {
+       "T": 0.824,
+       "dX": 0.0938
+      },
+      "AU": {
+       "b": 0.681,
+       "a": -0.0205
+      }
+     },
+     "dilim": [
+      "ts≥1792933200"
+     ],
+     "n_egitim": 781
+    }
+   ],
+   "kabul": false
+  }
+ },
+ "baglanan": [],
+ "altin_varyant": {
+  "gecmis": [
+   {
+    "kural": "p≥0.78, oran 1.15–2,00, günde ≤3",
+    "n": 621,
+    "isabet": 0.8261,
+    "beklenen": 0.8233
+   },
+   {
+    "kural": "p≥0.80, oran 1.15–2,00, günde ≤3",
+    "n": 489,
+    "isabet": 0.8344,
+    "beklenen": 0.8323
+   },
+   {
+    "kural": "p≥0.75, oran 1.15–2,00, günde ≤3",
+    "n": 823,
+    "isabet": 0.8044,
+    "beklenen": 0.809
+   },
+   {
+    "kural": "p≥0.78, oran 1.20–2,00, günde ≤3",
+    "n": 481,
+    "isabet": 0.7879,
+    "beklenen": 0.8058
+   },
+   {
+    "kural": "p≥0.78, oran 1.10–2,00, günde ≤3",
+    "n": 688,
+    "isabet": 0.8372,
+    "beklenen": 0.8361
+   },
+   {
+    "kural": "p≥0.78, oran 1.15–2,00, günde ≤5",
+    "n": 742,
+    "isabet": 0.8181,
+    "beklenen": 0.8199
+   }
+  ],
+  "arsiv": [
+   {
+    "kural": "p≥0.78, oran 1.15–2,00, günde ≤3",
+    "n": 9,
+    "isabet": 0.7778,
+    "beklenen": 0.8367
+   },
+   {
+    "kural": "p≥0.80, oran 1.15–2,00, günde ≤3",
+    "n": 9,
+    "isabet": 0.7778,
+    "beklenen": 0.8367
+   },
+   {
+    "kural": "p≥0.75, oran 1.15–2,00, günde ≤3",
+    "n": 9,
+    "isabet": 0.7778,
+    "beklenen": 0.8367
+   },
+   {
+    "kural": "p≥0.78, oran 1.20–2,00, günde ≤3",
+    "n": 6,
+    "isabet": 1.0,
+    "beklenen": 0.7969
+   },
+   {
+    "kural": "p≥0.78, oran 1.10–2,00, günde ≤3",
+    "n": 9,
+    "isabet": 0.8889,
+    "beklenen": 0.8647
+   },
+   {
+    "kural": "p≥0.78, oran 1.15–2,00, günde ≤5",
+    "n": 13,
+    "isabet": 0.8462,
+    "beklenen": 0.8361
+   }
+  ]
+ }
+}
