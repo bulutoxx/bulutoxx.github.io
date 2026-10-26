@@ -5660,7 +5660,7 @@ if((location.hash||"")==="#sonuclar") setTimeout(()=>$("navRes").click(),200);
 // =====================================================================
 // BULUTOXX v35: Otomatik sürüm güncelleme — yeni sürüm yayınlanınca uygulama kendini yeniler
 // =====================================================================
-const APP_V="2026-10-26.102";
+const APP_V="2026-10-26.103";
 (function autoUpdate(){
   let shown=false;
   async function check(auto){
@@ -9940,6 +9940,74 @@ small>.tvar.d:first-child{margin-left:0;margin-right:2px}
   // ilk boyama + tek seferlik sonuç kontrolü (yüklenmemiş günler)
   karne(); setTimeout(()=>{ gradeAll(); fetchDays(); },6000);
   document.querySelector('nav.tabs button[data-v="kupon"]')&&document.querySelector('nav.tabs button[data-v="kupon"]').addEventListener("click",()=>setTimeout(()=>{ karne().then(decorate); fetchDays(); gradeAll(); },60));
+})();
+</script>
+<style id="canli-sirada-v103">
+#nxBox{margin:14px 0 8px}
+#nxBox .nx-h{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin:4px 2px 8px}
+#nxBox .nx-h b{font:700 18px/1.2 var(--font,system-ui);letter-spacing:-.01em}#nxBox .nx-h small{color:var(--ink2);font-size:12px}
+#nxBox .nx-ch{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 8px;scrollbar-width:none}#nxBox .nx-ch::-webkit-scrollbar{display:none}
+#nxBox .nx-ch button{flex:none;min-height:36px;padding:0 14px;border-radius:99px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);color:var(--ink2);font:600 13px var(--font,system-ui);white-space:nowrap}
+#nxBox .nx-ch button[aria-pressed="true"]{background:rgba(34,211,255,.14);border-color:rgba(34,211,255,.45);color:#BFF3FF}
+#nxBox .nx-t{margin:12px 2px 4px;font:700 12px/1 var(--font,system-ui);color:var(--ink3);letter-spacing:.04em;text-transform:uppercase}
+#nxBox .kx-fxw{display:flex;align-items:center;gap:8px;padding:10px 12px;margin:6px 0;border-radius:14px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.07)}
+#nxBox .fxrow{flex:1;min-width:0;display:flex;align-items:center;gap:10px;cursor:pointer}
+#nxBox .nx-tm{flex:none;width:44px;font:700 14px/1 var(--font,system-ui);font-variant-numeric:tabular-nums;color:var(--ink)}
+#nxBox .nx-m{flex:1;min-width:0}#nxBox .nx-m .tm{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;font:600 14.5px/1.3 var(--font,system-ui);overflow:hidden}
+#nxBox .nx-m .tm b{font-weight:600}#nxBox .nx-m small{display:block;color:var(--ink3);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#nxBox .nx-p{flex:none;text-align:right;font:700 12.5px/1.25 var(--font,system-ui);color:#7FE3FF}#nxBox .nx-p i{display:block;font-style:normal;font-weight:600;color:var(--ink3);font-size:11px}
+#nxBox .nx-more{display:block;width:100%;min-height:44px;margin-top:8px;border-radius:14px;border:1px dashed rgba(255,255,255,.16);background:none;color:var(--ink2);font:600 14px var(--font,system-ui)}
+#nxBox .nx-e{color:var(--ink3);font-size:13.5px;padding:10px 4px}
+</style>
+<script id="canli-sirada-v103">
+// v103 · Canlı sekmesinde "Sıradaki maçlar": canlı listenin altında başlamamış tüm maçlar (saat aralığı, lig seçimi, aynı arama kutusu)
+(function(){
+  const NX={win:"3s", lg:"", lim:40};
+  const WIN=[["1s","1 saat",3600e3],["3s","3 saat",3*3600e3],["bug","Bugün",0],["yar","Yarın",0],["7g","7 gün",7*864e5]];
+  const fold=x=>String(x||"").toLocaleLowerCase("tr").normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/ı/g,"i");
+  function lgN(m){ try{ const f=FIXTURES.find(x=>x.lg===m.lg&&x.h===m.h&&x.a===m.a); return (f&&(f.cn||f.ln))||botLgName(m.lg); }catch(e){ return m.lg||""; } }
+  function range(){ const now=Date.now(), d0=Date.parse(istDay(new Date())+"T00:00:00+03:00");
+    if(NX.win==="bug") return [now,d0+864e5]; if(NX.win==="yar") return [d0+864e5,d0+2*864e5];
+    const w=WIN.find(x=>x[0]===NX.win); return [now,now+(w?w[2]:3*3600e3)]; }
+  function list(){ const q=fold(IDLV&&IDLV.q||""), now=Date.now(); let [a,b]=range(); if(q){ a=now; b=now+7*864e5; }
+    let L=[]; try{ L=Pick.list().filter(m=>!m.live&&!m.started&&m.dt&&m.dt.getTime()>=a&&m.dt.getTime()<b); }catch(e){}
+    const lv=(typeof IDL!=="undefined"&&IDL.live&&IDL.live[1])||[]; L=L.filter(m=>!lv.some(x=>tmEq(x.h,m.h)&&tmEq(x.a,m.a)));
+    L=L.map(m=>({m,lg:lgN(m)}));
+    if(NX.lg) L=L.filter(x=>x.lg===NX.lg);
+    if(q) L=L.filter(x=>fold(x.m.h+" "+x.m.a+" "+x.lg).includes(q));
+    return L.sort((x,y)=>x.m.dt-y.m.dt); }
+  function pick(m){ try{ const f=FIXTURES.find(x=>x.lg===m.lg&&x.h===m.h&&x.a===m.a); const p=quickPred(m,f); if(!p||!p.pm) return null;
+      const R=recOf({H:p.pm[0],D:p.pm[1],A:p.pm[2],o25:p.o25m},f); return R?{n:R.n,p:R.cp,o:R.o}:null; }catch(e){ return null; } }
+  function html(){ const L=list(), q=IDLV&&IDLV.q;
+        const all=(()=>{ const s=NX.lg; NX.lg=""; const r=[...new Set(list().map(x=>x.lg))]; NX.lg=s; return r; })();
+    const cnt={}; (()=>{ const s=NX.lg; NX.lg=""; list().forEach(x=>cnt[x.lg]=(cnt[x.lg]||0)+1); NX.lg=s; })();
+    const topL=all.sort((x,y)=>(cnt[y]||0)-(cnt[x]||0)).slice(0,14);
+    let h=`<div class="nx-h"><b>Sıradaki maçlar</b><small>${q?`"${esc(q)}" için 7 gün`:`${L.length} maç`}</small></div>`;
+    if(!q) h+=`<div class="nx-ch" role="group" aria-label="Zaman">${WIN.map(([k,l])=>`<button type="button" data-nxw="${k}" aria-pressed="${NX.win===k}">${l}</button>`).join("")}</div>`;
+    if(topL.length>1) h+=`<div class="nx-ch" role="group" aria-label="Lig"><button type="button" data-nxl="" aria-pressed="${!NX.lg}">Tüm ligler</button>${(NX.lg&&!topL.includes(NX.lg)?[NX.lg].concat(topL):topL).map(l=>`<button type="button" data-nxl="${esc(l)}" aria-pressed="${NX.lg===l}">${esc(l)} <small>${cnt[l]||0}</small></button>`).join("")}</div>`;
+    if(!L.length) return h+`<p class="nx-e">${q?"Aramana uyan başlamamış maç yok.":"Bu aralıkta başlamamış maç yok. Daha geniş bir zaman seç."}</p>`;
+    let last="";
+    for(const x of L.slice(0,NX.lim)){ const m=x.m, t=ist(m.dt,{hour:"2-digit",minute:"2-digit"}), dy=istDay(m.dt), lab=dy===istDay(new Date())?"Bugün":ist(m.dt,{weekday:"long",day:"numeric",month:"long"});
+      if(lab!==last){ h+=`<div class="nx-t">${esc(lab)}</div>`; last=lab; }
+      const P=pick(m);
+      h+=`<div class="kx-fxw" data-kxr="fx"><div class="fxrow"${omA(m)} role="button" tabindex="0"><span class="nx-tm">${esc(t)}</span><span class="nx-m"><span class="tm"><b>${esc(m.h)}</b> – <b>${esc(m.a)}</b></span><small>${esc(x.lg)}</small></span>${P?`<span class="nx-p">${esc(P.n)} %${Math.round(P.p*100)}<i>${P.o?"oran "+(+P.o).toFixed(2):"OXX"}</i></span>`:""}</div><button type="button" class="kx-add" data-kxa="1" aria-pressed="false" aria-label="Aktif kupona ekle (basılı tut: hangi kupona)"><b>＋</b> Kupon</button></div>`; }
+    if(L.length>NX.lim) h+=`<button type="button" class="nx-more" data-nxm="1">${L.length-NX.lim} maç daha göster</button>`;
+    return h; }
+  function paint(){ try{ const cw=document.querySelector("#v-canli .wrap"); if(!cw) return; const v=$("v-canli"); if(!v||v.hidden) return;
+      let box=$("nxBox"); const idl=$("idlBox");
+      if(!box){ box=document.createElement("div"); box.id="nxBox"; }
+      if(idl&&box.previousElementSibling!==idl) idl.after(box); else if(!idl&&!box.parentNode) cw.appendChild(box);
+      box.innerHTML=html(); try{ kxPaint(); }catch(e){} }catch(e){} }
+  document.addEventListener("click",e=>{ const b=e.target.closest("#nxBox [data-nxw],#nxBox [data-nxl],#nxBox [data-nxm]"); if(!b) return;
+    if(b.dataset.nxw!=null){ NX.win=b.dataset.nxw; NX.lim=40; } else if(b.dataset.nxl!=null){ NX.lg=b.dataset.nxl; NX.lim=40; } else NX.lim+=40;
+    try{ buzz(6); }catch(_){} paint(); });
+  try{ const _r=idlRenderAll; idlRenderAll=function(){ const r=_r.apply(this,arguments); paint(); return r; }; }catch(e){}
+  document.addEventListener("click",e=>{ if(e.target.closest('nav.tabs button[data-v="canli"]')) setTimeout(paint,60); },true);
+  try{ const i=document.getElementById("cvQi"); if(i){ i.addEventListener("input",()=>setTimeout(paint,220)); } }catch(e){}
+  setTimeout(()=>{ try{ const i=document.getElementById("cvQi"); if(i&&!i.dataset.nx){ i.dataset.nx=1; i.addEventListener("input",()=>setTimeout(paint,220)); } }catch(e){} },2500);
+  setInterval(()=>{ const v=$("v-canli"); if(v&&!v.hidden&&!document.hidden) paint(); },60000);
+  try{ const i=$("cvQi"); if(i) i.placeholder="Maç ara: takım veya lig (canlı ve sıradaki)"; }catch(e){}
+  setTimeout(()=>{ try{ const i=$("cvQi"); if(i) i.placeholder="Maç ara: takım veya lig (canlı ve sıradaki)"; }catch(e){} },2600);
 })();
 </script>
 </body>
