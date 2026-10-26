@@ -7,6 +7,8 @@
 #     gece ile aynı α/β) + indirimli Harville ilk-3 olasılıkları.
 #  4) Sonucu aynaya düşen koşuları aynı akşam puanlar: data/at/canli/<tarih>.json içinde `sonuc`; sabah kilitli
 #     tahminler (data/at/tahmin) gece.puanla ile karneye eklenir (kosu_id ile idempotent, çift sayım yok).
+#  5) 6'lı ganyan (lab/at/altili.py): o günün 6'lılarını güncel p'lerle data/at/altili/<tarih>.json'a yazar; ilk ayak
+#     başlayınca kupon kilitlenir, sonuçlar geldikçe ayak ayak puanlanır; altili_karne.json'un canlı bölümü tazelenir.
 # Depoya yalnız türetilmiş çıktılar yazılır (olasılıklar + koşu/at bilgisi özetleri); ham ayna dosyası yazılmaz.
 import argparse, json, math, os, sys, time
 from collections import defaultdict, deque
@@ -18,6 +20,7 @@ BURA = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, BURA)
 import gece  # noqa: E402  (AT_KAYNAK varsayılanını da ayarlar)
 import veri, ozellik, model as M  # noqa: E402
+import altili  # noqa: E402  (6'lı ganyan: data/at/altili/<gün>.json)
 
 CANLI = os.path.join(gece.CIKTI, "canli")
 KAYNAK_ATIF = "açık TJK sonuç arşivi (github.com/cenkozgur/tjk-data)"
@@ -213,9 +216,19 @@ def main():
                    "oran_ilk_tuttu": sum(1 for e in ekler if e.get("oran_tuttu")),
                    "favori_tuttu": sum(1 for e in ekler if e.get("fav_tuttu")),
                    "oranli_bitti": sum(1 for e in ekler if "oran_tuttu" in e), "yazildi": degisti}
+        try:
+            A = altili.gun_guncelle(t, kaynak, simdi=simdi.replace(tzinfo=None))
+            ozet[t]["altili"] = len(A["altililar"]) if A else 0
+        except Exception as e:   # 6'lı modülü ana canlı akışı asla durdurmaz
+            print("6'lı güncellenemedi:", type(e).__name__, e)
     print("canlı:", json.dumps(ozet, ensure_ascii=False))
     _, puanlanan = gece.puanla(kosular, yalniz_degisince=True)
     print("karneye eklenen gün(ler):", puanlanan)
+    try:
+        k = altili.joku(altili.KARNE, {}) or {}
+        altili.jyaz(altili.KARNE, {**k, "canli": altili.canli_karne()}, sikisik=False)
+    except Exception as e:
+        print("6'lı karnesi güncellenemedi:", type(e).__name__, e)
     print(f"tamam ({time.time() - t0:.1f} sn)")
 
 

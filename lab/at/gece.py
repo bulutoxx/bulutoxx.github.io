@@ -1020,6 +1020,13 @@ def main():
     print("kilitlenen:", kilit)
     karne, puanlanan = puanla(kosular)
     print("puanlanan:", puanlanan)
+    try:   # 6'lı ganyan: geri test + canlı karne (altili_karne.json), bugün/yarın 6'lıları (canlı dosya yoksa sabah tahmini)
+        import altili
+        altili.karne_guncelle()
+        for t in (bugun, yarin):
+            altili.gun_guncelle(t)
+    except Exception as e:
+        print("6'lı güncellenemedi:", type(e).__name__, e)
     jyaz(os.path.join(CIKTI, "model.json"), mj)
     rapor_yaz(mj, karne, bugun, ayna)
     print("tamam")
