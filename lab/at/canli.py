@@ -98,7 +98,10 @@ def gun_sonuclari(tarih, kaynak):
             "kazanan_ad": veri.ad(kaz.get("name")), "ganyan": _sayi(kaz.get("odds")),
             # kupon puanlaması için: koşan at sayısı (plase/ikili alt sınırları) ve eşit derece (dead heat) bilgisi
             "kosan": sum(1 for h in r.get("horses") or [] if not h.get("nonRunner")) + len(r.get("unplaced") or []),
-            "derece": poz, "esit": len(set(poz)) < len(poz)}
+            "derece": poz, "esit": len(set(poz)) < len(poz),
+            # koşmayan (start almayan) atlar: kupon satırında seçimden düşülür, kombinasyon yeniden sayılır
+            "kosmayan": sorted({str(h.get("no")) for h in (r.get("nonRunners") or []) + [h for h in r.get("horses") or [] if h.get("nonRunner")]
+                                if h.get("no") not in (None, "")}, key=lambda x: (len(x), x))}
     return out
 
 
@@ -156,16 +159,19 @@ def kosu_canli(m, kosu, gecmis, yayin_modu, sonuc, ekuri=None):
         # derece = sira'daki atların resmî dereceleri (eşit derece = dead heat), ekuri = koşan ekürili at grupları
         kos_no = {str(a["no"]) for a in atlar}
         s["ekuri"] = [g for g in ([str(x) for x in grp if str(x) in kos_no] for grp in (ekuri or [])) if len(g) > 1]
-        for a_ in ("kosan", "derece", "esit"):
+        for a_ in ("kosan", "derece", "esit", "kosmayan"):
             if a_ in sonuc:
                 s[a_] = sonuc[a_]
         if oran_var:   # rapor için (dosyaya yazılmaz): harmanın ve piyasa favorisinin ilk seçimi
             ek["oran_tuttu"] = atlar[int(idx[int(np.argmax(p_o))])]["ad"] == sonuc["kazanan_ad"]
             ek["fav_tuttu"] = atlar[int(idx[int(np.argmax(q))])]["ad"] == sonuc["kazanan_ad"]
     durum = "bitti" if s else ("oran_var" if oran_var else "bekliyor")
+    # koşu düzeyinde (koşu öncesi, programdan) ekürili at grupları: arayüz kurucuda ekürili atları tek birim sayar
+    prog_no = {str(a["no"]) for a in atlar}
+    ekuri_k = [g for g in ([str(x) for x in grp if str(x) in prog_no] for grp in (ekuri or [])) if len(g) > 1]
     return {"kosu_id": f'{kosu["tarih"]}/{kosu["hipodrom"]}/{kosu["kosu"]}', "hipodrom": kosu["hipodrom"],
             "kosu": kosu["kosu"], "saat": kosu.get("saat"), "mesafe": kosu["mesafe"], "pist": kosu["pist"],
-            "sinif": kosu["sinif"], "durum": durum, "atlar": cikti, "sonuc": s}, ek
+            "sinif": kosu["sinif"], "durum": durum, "ekuri": ekuri_k, "atlar": cikti, "sonuc": s}, ek
 
 
 # ---------------------------------------------------------------- dosya
