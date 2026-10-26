@@ -1534,6 +1534,12 @@ body.tb2 #hdrRefresh{display:flex!important}
 .at-hero .at-logo svg{width:100%;height:100%}
 .at-hero h2{margin:0;font:900 22px/1.1 var(--font,system-ui);background:linear-gradient(135deg,#FFF3C2,#E6C35C 45%,#C9A646);-webkit-background-clip:text;background-clip:text;color:transparent}
 .at-hero p{margin:4px 0 0;color:var(--ink2);font-size:12.5px;line-height:1.4}
+.pd-card{margin:10px 0;padding:12px 14px;border-radius:18px;border:1px solid rgba(233,199,102,.35);background:linear-gradient(160deg,rgba(233,199,102,.10),rgba(11,20,40,.55) 55%)}
+.pd-hd{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:6px}
+.pd-hd b{font:900 15px/1.2 var(--font,system-ui);color:#F3DC8A}.pd-hd small{color:var(--ink2);font-size:11.5px;white-space:nowrap}
+.pd-l{display:flex;gap:8px;margin:6px 0;font-size:13px;line-height:1.45;color:var(--ink,#E8EEF8)}.pd-i{flex:none;width:20px;text-align:center}
+.pd-h{color:#F3DC8A;font-weight:800;text-decoration:underline dotted;text-underline-offset:3px;cursor:pointer}
+.pd-ok{color:#4ADE80}.pd-no{color:#FF8A80}.pd-f{margin:8px 0 0;font-size:11px;color:var(--ink2)}
 .at-pill{display:inline-block;vertical-align:4px;margin-left:8px;padding:2px 8px;border-radius:999px;font:800 10.5px var(--font,system-ui);letter-spacing:.08em;color:#2A1C00;background:linear-gradient(135deg,#D4AF37,#FFF0B3 50%,#C9A646)}
 .at-km{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:12px}
 .at-km div{padding:10px;border-radius:14px;background:var(--surface,#0E1422);border:1px solid var(--line);text-align:center}
@@ -5597,7 +5603,7 @@ if((location.hash||"")==="#sonuclar") setTimeout(()=>$("navRes").click(),200);
 // =====================================================================
 // BULUTOXX v35: Otomatik sürüm güncelleme — yeni sürüm yayınlanınca uygulama kendini yeniler
 // =====================================================================
-const APP_V="2026-10-26.90";
+const APP_V="2026-10-26.91";
 (function autoUpdate(){
   let shown=false;
   async function check(auto){
@@ -7660,6 +7666,52 @@ setTimeout(()=>{ try{ renderTP(); }catch(e){} },1500);
       <details class="sx" id="atOz"${(()=>{ try{ return localStorage.getItem("bx-at-oz")==="1"?" open":""; }catch(e){ return ""; } })()}><summary>📈 Model ne kadar başarılı? <small>sınama ve karne</small></summary><div class="sx-in">
       <div class="at-km at-km4"><div><b>${pct(mo.ilk_secim_isabet)}</b><small>sabah tahmini<br>ilk seçim kazandı</small></div><div><b>${pct(h.ilk_secim_isabet)}</b><small>oranla harman<br>ilk seçim kazandı</small></div><div><b>${pct(f.ilk_secim_isabet)}</b><small>ganyan favorisi<br>aynı koşularda</small></div><div><b>${kn?"%"+Math.round(kh/kn*100):"–"}</b><small>kilitli karne<br>${kn?kn+" koşu":"birikiyor"}</small></div></div>
       <p class="at-note">🧪 Dürüst durum (son ${n.toLocaleString("tr-TR")} koşuda sınandı): burada gördüğün <b>sabah tahmini</b> oran açılmadan yapılır ve ganyan favorisinin gerisindedir. Koşu öncesi oranla harmanlanınca olasılık hatasında piyasayı az farkla geçiyor, ama ilk seçim isabetinde henüz favori seviyesinde. Model her gece yeniden öğrenir. Garanti değildir · 18+. Bahis sitesine yönlendirme yoktur.</p></div></details>`; }
+  // ---- 📋 Padok Notu: günün yarış öncesi açıklaması; her veri akışında (sabah kilidi, oran, sonuç, 6'lı ayağı) yeniden yazılır ----
+  function padok(){ const d=AT.d, D=d&&AT.data[d]; if(!D||!(D.kosular||[]).length) return null;
+    const C=AT.canli&&AT.canli[d], A=AT.alt&&AT.alt[d], L=[], now=Date.now(), day=dLbl(d);
+    const P=x=>"%"+Math.round((x||0)*100), hm=s=>s?String(s).slice(11,16)||String(s).slice(0,5):"";
+    const KS=D.kosular.slice().sort((a,b)=>(a.saat||"").localeCompare(b.saat||"")), hips=[...new Set(KS.map(r=>r.hipodrom))];
+    const son=r=>{ const c=cRace(r); return c&&c.sonuc?c.sonuc:null; };
+    const bitti=r=>!!son(r)||(()=>{ const t=Date.parse(d+"T"+(r.saat||"23:59")+":00+03:00"); return isFinite(t)&&t+20*60e3<now; })();
+    const lnk=(r,h)=>`<span class="pd-h" data-ah="${esc(r.kosu_id)}|${esc(h.no)}" role="button">${esc(h.ad)}</span>`;
+    const yer=r=>`${esc(r.hipodrom)} ${r.kosu}. koşu${r.saat?", saat "+esc(r.saat):""}`;
+    // 1) program ve ilerleme
+    const ilk=KS[0], biten=KS.filter(r=>son(r)), kalan=KS.filter(r=>!bitti(r));
+    let p1=`${esc(day)} ${hips.length} hipodromda ${KS.length} koşu var: ${hips.map(h=>{ const R=KS.filter(r=>r.hipodrom===h); return `${esc(h)} ${R.length} koşu (${esc(R[0].saat||"")}–${esc(R[R.length-1].saat||"")})`; }).join(", ")}.`;
+    if(biten.length){ const ok=biten.filter(r=>son(r).tuttu).length; p1+=` Şu ana kadar <b>${biten.length}</b> koşu bitti; modelin ilk seçimi <b>${ok}</b> tanesinde kazandı${kalan.length?`, ${kalan.length} koşu kaldı`:", günün tüm koşuları tamamlandı"}.`; }
+    else if(ilk&&!bitti(ilk)) p1+=` İlk koşu: ${esc(ilk.hipodrom)}, saat ${esc(ilk.saat||"")}.`;
+    L.push(["🗓️",p1]);
+    // 2) altın atlar ve durumları
+    const G=goldOfDay(D);
+    if(G.length) L.push(["🥇",`Günün altın at${G.length>1?"ları":"ı"}: `+G.map(x=>{ const s=son(x.r); const st=s?(String(s.kazanan)===String(x.h.no)?" <b class=\"pd-ok\">✓ kazandı</b>":" <b class=\"pd-no\">✗ kazanamadı</b>"):""; return `${lnk(x.r,x.h)} · ${yer(x.r)} · kazanma şansı <b>${P(x.h.p_kazanma)}</b>${st}`; }).join("; ")+"."]);
+    else L.push(["🥇","Bugün altın kuralına uyan at yok: model hiçbir koşuda yeterince emin değil, bu yüzden altın vermiyor."]);
+    // 3) piyasa sinyali (oran açıldıysa): sabah tahminine göre en çok yükselen at
+    if(C){ let best=null; for(const r of kalan){ const c=cRace(r); if(!c) continue; for(const h of c.atlar||[]){ const t0=(r.atlar||[]).find(x=>String(x.no)===String(h.no)); if(!t0||h.p_piyasa==null||h.p_piyasa<.12) continue; const df=h.p_piyasa-(t0.p_kazanma||0); if(!best||df>best.df) best={r,h:t0,pq:h.p_piyasa,df}; } }
+      if(best&&best.df>=.06) L.push(["💹",`Oranlar açıldı. Piyasanın modelden çok daha fazla inandığı at: ${lnk(best.r,best.h)} (${yer(best.r)}). BULUTOXX tahmini ${P(best.h.p_kazanma)}, ganyan oranına göre ${P(best.pq)}.${C.guncelleme_tsi?` <small>${esc(hm(C.guncelleme_tsi))} oranı</small>`:""}`]); }
+    // 4) en açık koşu (henüz koşulmamış)
+    const op=kalan.map(r=>({r,m:Math.max(...(r.atlar||[]).map(h=>h.p_kazanma||0))})).filter(x=>x.m>0).sort((a,b)=>a.m-b.m)[0];
+    if(op&&op.m<.2) L.push(["🎲",`Günün en açık koşusu ${yer(op.r)}. Favori bile ${P(op.m)}, sürprize çok açık.`]);
+    // 5) 6'lı ganyan
+    if(A&&(A.altililar||[]).length){ const sv=AT.sev||"orta", SV=SEV.find(x=>x[0]===sv)[1];
+      const t=A.altililar.map(X=>{ const S=X.seviyeler&&X.seviyeler[sv], R=X.sonuc, at=R&&R.ayak_tuttu&&R.ayak_tuttu[sv]; if(!S) return "";
+        const b=(at||[]).filter(v=>v!=null).length, dus=(at||[]).some(v=>v===false), bk=(S.ayaklar||[]).map((a,i)=>a.banko?i+1:0).filter(Boolean);
+        const st=R&&R.tamam?(R.tuttu&&R.tuttu[sv]?" <b class=\"pd-ok\">✓ tuttu</b>":` <b class="pd-no">✗ tutmadı</b> (${(at||[]).filter(Boolean).length}/6)`):b?(dus?` · ${b}/6 ayak bitti, <b class="pd-no">kupon düştü</b>`:` · ${b}/6 ayak bitti, <b class="pd-ok">kupon hâlâ ayakta</b>`):"";
+        return `${esc(X.hipodrom)} ${X.no}. 6'lı (${esc(X.saat||"")}) <b>%${(S.p*100).toFixed(S.p<.1?1:0).replace(".",",")}</b>${bk.length?` · banko ayak: ${bk.join(", ")}`:""}${st}`; }).filter(Boolean);
+      if(t.length) L.push(["🎯",`6'lı ganyanda 6 ayağı birden tutma şansı (${SV} kupon): ${t.join("; ")}.`]); }
+    // 6) formdaki jokey (bugün binişi olanlar arasında en yüksek katkı)
+    const J=AT.jok&&(AT.jok.jokeyler||[]).filter(x=>(x.bugun_binis||[]).length&&+x.katki>0).sort((a,b)=>b.katki-a.katki)[0];
+    if(J){ const bb=J.bugun_binis.slice().sort((a,b)=>(b.p_kazanma||0)-(a.p_kazanma||0))[0]; const r=bb&&D.kosular.find(x=>x.kosu_id===bb.kosu_id), h=r&&(r.atlar||[]).find(x=>x.ad===bb.at);
+      L.push(["🏇",`Günün jokeyi: <b>${esc(J.ad)}</b>${J.form_trend==="yukseliyor"?" 📈":""}. Son 90 günde bindiği attan bağımsız en güçlülerden; bugün ${J.bugun_binis.length} binişi var${r&&h?`, en şanslısı ${lnk(r,h)} (${yer(r)}, kazanma şansı ${P(h.p_kazanma)})`:""}.`]); }
+    // 7) dünün karnesi
+    const kg=AT.karne&&AT.karne.gunler, yd=dISO(-1), yk=kg&&(Array.isArray(kg)?kg.find(x=>x.tarih===yd):kg[yd]);
+    if(d===dISO(0)&&yk&&yk.kosu) L.push(["📊",`Dün kilitli tahminler ${yk.kosu} koşuda sınandı; ilk seçim %${Math.round((yk.ilk_secim_isabet||0)*100)} kazandı.`]);
+    const up=[C&&C.guncelleme_tsi,A&&A.guncelleme_tsi,D.kilit_zamani_tsi].filter(Boolean).sort().pop();
+    return {L,up:hm(up)}; }
+  function padokHtml(){ const p=padok(); if(!p) return "";
+    return `<div class="pd-card"><div class="pd-hd"><b>📋 Padok Notu</b><small>${esc(dLbl(AT.d))} · ${p.up?"güncellendi "+esc(p.up):"sabah tahmini"}</small></div>
+      ${p.L.map(([ic,t])=>`<p class="pd-l"><span class="pd-i">${ic}</span><span>${t}</span></p>`).join("")}
+      <p class="pd-f">Oran, sonuç ve 6'lı ayakları geldikçe kendiliğinden yeniden yazılır. Hobi amaçlı olasılıktır, garanti değildir · 18+</p></div>`; }
+  window.BX_padok=()=>padok();
   // ---- gün içi canlı veri (data/at/canli/<gün>.json): oranla güncel olasılık + aynı akşam sonuç ----
   const FAV=(()=>{ try{ return new Set(JSON.parse(localStorage.getItem("bx-at-fav")||"[]")); }catch(e){ return new Set(); } })();
   const favSave=()=>{ try{ localStorage.setItem("bx-at-fav",JSON.stringify([...FAV].slice(-200))); }catch(e){} };
@@ -7702,6 +7754,7 @@ setTimeout(()=>{ try{ renderTP(); }catch(e){} },1500);
     if(!AT.d){ box.innerHTML=h+`<div class="panel"><p class="note" style="margin:0">${AT.busy?"Yükleniyor…":"Bugün ve yakın günler için kilitli at yarışı tahmini bulunamadı. Laboratuvar her sabah 05:23 ve öğlen 12:23'te yeni programı işler."}</p></div>`; return; }
     const D=AT.data[AT.d], hips=[...new Set(D.kosular.map(r=>r.hipodrom))]; if(!AT.hip||!hips.includes(AT.hip)) AT.hip=hips[0];
     const G=goldOfDay(D), S=resOfDay(AT.d);
+    try{ h+=padokHtml(); }catch(e){}
     h+=`<div class="at-tabs" role="tablist"><button type="button" data-t="tah" aria-pressed="${AT.tab==="tah"}">Tahmin</button><button type="button" data-t="altin" aria-pressed="${AT.tab==="altin"}">🥇 Altın${G.length?` <small>${G.length}</small>`:""}</button><button type="button" data-t="sonuc" aria-pressed="${AT.tab==="sonuc"}">Sonuç${S.length?` <small>${S.length}</small>`:""}</button><button type="button" data-t="altili" aria-pressed="${AT.tab==="altili"}">🎯 6\'lı</button><button type="button" data-t="jokey" aria-pressed="${AT.tab==="jokey"}">🏇 Jokey</button></div>`;
     h+=`<div class="at-chips" role="group" aria-label="Gün">${AT.days.map(d=>`<button type="button" data-d="${d}" aria-pressed="${d===AT.d}">${dLbl(d)}</button>`).join("")}</div>`;
     const FT=[]; if(FAV.size) for(const r of D.kosular) for(const h of r.atlar||[]) if(FAV.has(h.ad)) FT.push({r,h});
@@ -7785,6 +7838,9 @@ setTimeout(()=>{ try{ renderTP(); }catch(e){} },1500);
         S.ayaklar.map((a,i)=>`${i+1}. ayak: ${a.secim.map(esc).join("-")}${a.banko?" 🥇":""} (%${Math.round(a.p_ayak*100)})`).join(" · "); }).join("<br><br>");
     return {html:`🎯 ${esc(day)} 6'lı ganyan · ${SV} kapsam:<br>${h}${kar}<br><small>Olasılıklar ayaklar bağımsız varsayılarak çarpılır; garanti değildir. Para tutarı gösterilmez · 18+</small>`,chips:["At bölümünü aç","Altın atlar"]}; }
   async function atAnswer(raw){ const n=NZ(raw); const hasKey=AKEY.test(n), venue=VEN.find(v=>n.includes(v));
+    if(/\bpadok\b|\bgunun (at )?notu\b|\bat(lar)? (yarisi )?(gunun )?ozeti\b/.test(n)){ await ensure(); const p=padok();
+      if(!p) return {html:"📋 Padok Notu: bugün için kilitli at yarışı tahmini henüz yok. Laboratuvar her sabah 05:23'te yeni programı işler.",chips:["At bölümünü aç"]};
+      return {html:`📋 <b>Padok Notu</b> · ${esc(dLbl(AT.d))}${p.up?" · "+esc(p.up):""}<br>`+p.L.map(([ic,t])=>`${ic} ${t}`).join("<br>")+`<br><small>Hobi amaçlı olasılıktır, garanti değildir · 18+</small>`,chips:["At bölümünü aç","Bugün 6'lı","Altın atlar"]}; }
     if(ALTK.test(n)&&(hasKey||venue||!FUTK.test(n))){ await ensure(); if(/\b(ac|goster)\b/.test(n)){ AT.tab="altili"; setTimeout(()=>{ try{ openAt(); }catch(e){} },300); } return altiliAnswer(n,venue); }
     const D0=AT.d?AT.data[AT.d]:null; let horseHit=null;
     if(!hasKey&&D0){ for(const r of D0.kosular) for(const h of r.atlar||[]){ const hn=NZ(h.ad); if(hn.length>=7&&(" "+n+" ").includes(" "+hn+" ")) { horseHit={r,h}; break; } } }
