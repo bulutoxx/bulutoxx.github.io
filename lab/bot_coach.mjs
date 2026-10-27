@@ -39,14 +39,32 @@ const escRe = s => String(s).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 function rng(seed) { let a = 0; for (const ch of seed) a = (a * 31 + ch.charCodeAt(0)) >>> 0; return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
 
 // ---------------- saat ve günler (İstanbul) ----------------
-const NOW = process.env.BOT_COACH_TIME ? new Date(process.env.BOT_COACH_TIME) : new Date();
+// Saat veriyle tutarlı olmalı: data/fixtures.json'daki gün aralığının dışındaki bir saatle (ör. eski bir BOT_COACH_TIME, veri bir gün
+// ilerlediğinde) "bugün" soruları boş bülten görür, gün adı soruları başka güne düşer ve ölçüm yapay olarak çöker (v123 öncesi %84,9).
+// Bu yüzden saat (BOT_COACH_TIME ya da gerçek saat) veri aralığının dışındaysa saat-dakika korunarak verinin ilk gününe kaydırılır.
+// BOT_COACH_STRICT=1 ile kaydırma kapatılır (yalnız uyarı).
 const istDay = d => new Date(d).toLocaleDateString("sv-SE", { timeZone: "Europe/Istanbul" });
+function dataDays() {
+  try { const F = JSON.parse(fs.readFileSync(path.join(DATA, "fixtures.json"), "utf8")); const ds = (Array.isArray(F) ? F : []).map(x => x && x.d).filter(d => /^\d{4}-\d\d-\d\d$/.test(d || "")).sort();
+    return ds.length ? { from: ds[0], to: ds[ds.length - 1] } : null; } catch (e) { return null; }
+}
+const DDAYS = dataDays();
+const NOW_ASKED = process.env.BOT_COACH_TIME ? new Date(process.env.BOT_COACH_TIME) : new Date();
+const NOW = (() => {
+  const d = istDay(NOW_ASKED); if (!DDAYS || (d >= DDAYS.from && d < DDAYS.to)) return NOW_ASKED;
+  const hm = NOW_ASKED.toLocaleTimeString("sv-SE", { timeZone: "Europe/Istanbul", hour: "2-digit", minute: "2-digit" });
+  const alt = new Date(`${DDAYS.from}T${hm}:00+03:00`);
+  console.log(`[koç] UYARI: saat ${NOW_ASKED.toISOString()} (${d}) veri aralığının (${DDAYS.from} … ${DDAYS.to}) dışında` + (process.env.BOT_COACH_STRICT === "1" ? "; BOT_COACH_STRICT=1, kaydırılmadı" : `; ${alt.toISOString()} kullanılıyor`));
+  return process.env.BOT_COACH_STRICT === "1" ? NOW_ASKED : alt;
+})();
 const TODAY = istDay(NOW);
 const WDN = ["Paz", "Pzt", "Sal", "Çar", "Per", "Cum", "Cmt"];
 const MON = ["ocak", "şubat", "mart", "nisan", "mayıs", "haziran", "temmuz", "ağustos", "eylül", "ekim", "kasım", "aralık"];
 const dayAt = k => new Date(Date.parse(TODAY + "T12:00:00+03:00") + k * 864e5);
 const wdOf = k => WDN[dayAt(k).getUTCDay()];
 const resolveDay = arr => arr ? arr.map(x => /^\+\d+$/.test(x) ? wdOf(+x.slice(1)) : x) : arr;
+const WDQ = [[/\bpazartesi\b/, "Pzt"], [/\bsali\b/, "Sal"], [/\bcarsamba\b/, "Çar"], [/\bpersembe\b/, "Per"], [/\bcumartesi\b/, "Cmt"], [/\bcuma\b/, "Cum"], [/\bpazar\b/, "Paz"]];
+const wdInQ = q => { const n = N(q); if (/\bhafta ?sonu/.test(n)) return null; const hit = WDQ.filter(([re]) => re.test(n)); return hit.length === 1 ? hit[0][1] : null; };
 const fillQ = q => q.replace(/\{D\+(\d+)\}/g, (_, k) => { const d = dayAt(+k); return `${d.getUTCDate()} ${MON[d.getUTCMonth()]}`; })
   .replace(/\{DOT\+(\d+)\}/g, (_, k) => { const d = dayAt(+k); return `${d.getUTCDate()}.${String(d.getUTCMonth() + 1).padStart(2, "0")}`; });
 
@@ -143,6 +161,12 @@ async function needs(p, convs) {
       if (n.teams && !n.teams.every(has)) return false;
       if (n.match && !P.some(m => (n.match.some(t => GX.test(t)) || (adult(m.h) && adult(m.a))) && n.match.every(t => fold(m.h + " | " + m.a).includes(fold(t))))) return false;
       if (n.gold && !gold) return false;
+      if (n.days) { const WD = ["Paz", "Pzt", "Sal", "Çar", "Per", "Cum", "Cmt"]; let any = false;
+        for (let k = 0; k <= 6 && !any; k++) { const f = d0(T) + k * D, wd = WD[new Date(f + 12 * 3600e3).getUTCDay()]; if (!n.days.includes(wd)) continue;
+          // bugün: kalan maçlar saatle azalır, önerilebilir (oranlı) maç kalmadıysa soru uygulanamaz; diğer günler: başlamamış maç olması yeter
+          if (k === 0) { try { any = botPre({ from: now, to: f + D }).length > 0; } catch (e) { any = true; } }
+          else any = Pick.list().some(m => { const t = m.dt.getTime(); return !m.started && t >= f && t < f + D; }); }
+        if (!any) return false; }
       if (n.lg) { let from = now, to = now + 4 * D; if (n.day) { const k = +n.day.slice(1); from = Math.max(now, d0(T) + k * D); to = d0(T) + (k + 1) * D; }
         let L = []; try { L = botPre({ lg: n.lg, from, to }); } catch (e) { } if (!L.length) return false; }
       return true; };
@@ -178,9 +202,16 @@ let LGLAB = {};
 const NSTATIC = SUITE.core.length + SUITE.holdout.length;   // sabit küme konuşma sayısı (raporda ayrıca gösterilir)
 function prep(t) {
   const c = cDes(t.c);
+  // eski üretilmiş testler gün adını göreli "+k" ile saklıyordu ("pazartesi maclari" → +6, üretildiği güne göre): başka gün
+  // çalıştırılınca yanlış güne bakıyordu. Soruda tek bir gün adı varsa beklenen gün o addır.
+  const wq = c.day && c.day.every(x => /^\+\d+$/.test(x)) ? wdInQ(t.q) : null;
+  if (wq) c.day = [wq];
   if (c.day) c.day = resolveDay(c.day);
+  // gün belirten soru: o gün(ler)de bültende önerilebilir (başlamamış, oranlı) maç yoksa soru o saatte uygulanamaz (iki tarafta da aynı)
+  let need = t.need || null;
+  if (c.day && c.day.length) need = Object.assign({}, need || {}, { days: c.day });
   if (c.lgCode) { const labs = LGLAB[c.lgCode] || []; c.lg = labs.length ? new RegExp(labs.map(escRe).join("|")) : /^$/; }
-  return { q: fillQ(t.q), k: t.k, c, need: t.need || null, id: t.id || null };
+  return { q: fillQ(t.q), k: t.k, c, need, id: t.id || null };
 }
 async function runSuite(p, convs, label) {
   const ok = await needs(p, convs); const out = []; let skip = 0;
@@ -214,6 +245,22 @@ function collides(key, kbA) {
   return k.split(" ").some(w => LEX.stop.has(w)) || LEX.sl.has(k) || LEX.botlg.has(k) || (kbA && ((kbA.takim || {})[k] || (kbA.esanlam || {})[k] || (kbA.yazim || {})[k]));
 }
 
+// RAW takım adı (uygulamanın listesi) ile bültendeki ad aynı takım mı? Genel kelimeler ("city", "united", "real"…) atılarak
+// karşılaştırılırken bu kelimeler iki adda da aynı olmalı: aksi halde "Manchester United" = "Manchester City" sanılıyordu
+// ("man utd maçı" testi Manchester City bekliyordu).
+const GENKEY = n => N(n).split(" ").filter(w => w.length >= 4 && LEX.gen.has(w)).sort().join(" ");
+function rawSame(rname, tname) {
+  const rn = N(rname), tn = N(tname);
+  if (tn === rn || tn.startsWith(rn + " ") || rn.startsWith(tn + " ")) return true;
+  return distinct(rname).length >= 1 && tn.split(" ").filter(w => !LEX.gen.has(w)).join(" ") === distinct(rname).join(" ") && GENKEY(rname) === GENKEY(tname);
+}
+// eski gecelerde üretilmiş, kısaltması yanlış takıma bağlanmış testler değerlendirmeye alınmaz
+function aliasTestOk(t) {
+  if (t.kaynak !== "takim-kisaltma" || !t.c || !t.c.team) return true;
+  const al = N(t.q.replace(/\s+ma[çc]\S*\s*$/i, ""));
+  const rs = LEX.raw.filter(r => r.al.some(a => N(a) === al)); if (!rs.length) return true;
+  return rs.some(r => rawSame(r.name, t.c.team));
+}
 function candidates(W, kbA, done) {
   const R = rng(TODAY), C = [], pure = [];
   const seenQ = new Set(done);
@@ -232,8 +279,7 @@ function candidates(W, kbA, done) {
   // a) uygulamanın kendi takım listesindeki kısaltmalar (RAW): "spurs", "wolves", "gladbach"… — yalnız ad birebir eşleşirse
   for (const r of LEX.raw) for (const al of r.al) {
     const key = N(al); if (key.length < 3 || collides(key, kbA) || LEX.gen.has(key)) continue;
-    const rn = N(r.name);
-    const tg = senior.filter(t => N(t.n) === rn || N(t.n).startsWith(rn + " ") || rn.startsWith(N(t.n) + " ") || (distinct(r.name).length >= 1 && N(t.n).split(" ").filter(w => !LEX.gen.has(w)).join(" ") === distinct(r.name).join(" ")));
+    const tg = senior.filter(t => rawSame(r.name, t.n));
     if (tg.length !== 1) continue;
     addC("takim", key, tg[0].n, { q: `${al} maçı`, k: "takim", c: { team: tg[0].n }, need: { teams: [tg[0].n] }, kaynak: "takim-kisaltma" });
   }
@@ -282,7 +328,7 @@ function candidates(W, kbA, done) {
     addT({ q: `${a} ${b} ${["ne olur", "kim kazanır", "maçı analiz", "skor tahmini"][nA % 4]}`, k: "analiz", c: { teams: [m.h, m.a] }, need: { match: [m.h, m.a] }, kaynak: "gunun-maci" }); nA++; }
   const wdTr = ["pazar", "pazartesi", "salı", "çarşamba", "perşembe", "cuma", "cumartesi"];
   for (let k = 2; k <= 6; k++) { const wd = dayAt(k).getUTCDay(); const forms = [`${N(wdTr[wd])} maclari`, `{D+${k}} için tahmin`, `${k} gün sonra ne var`, `{DOT+${k}} tahminleri`];
-    const f = forms[Math.floor(R() * forms.length)]; addT({ q: f, k: "tarih", c: { day: [`+${k}`] }, kaynak: "tarih" }); }
+    const f = forms[Math.floor(R() * forms.length)]; addT({ q: f, k: "tarih", c: { day: [f === forms[0] ? WDN[wd] : `+${k}`] }, kaynak: "tarih" }); }
   const on = notable(W)[0];   // öne çıkan maç sorusu (bilgi bankasındaki "onemli" listesini sınar)
   if (on) addT({ q: ["günün önemli maçı hangisi", "bugünün büyük maçı", "öne çıkan maçlar neler"][Math.floor(R() * 3)], k: "onemli", c: {}, need: { match: [on.h, on.a] }, kaynak: "onemli" });
   return { C, pure };
@@ -339,10 +385,12 @@ try {
   const A = await openPage(browser, port, kbA, coachPrev.son ? coachPrev : null);
   if (!ONLY_EVAL && !(await A.p.evaluate(() => !!window.BOT70))) throw new Error("index.html'de bot-v70 katmanı yok");
   const W = await world(A.p);
+  log(`saat ${NOW.toISOString()}${DDAYS ? ` (veri ${DDAYS.from} … ${DDAYS.to})` : ""}`);
   log(`gün ${TODAY}: ${W.m.length} tahminli maç (3 gün), ${W.teams.length} takım, altın: ${W.gold}`);
   // 2) sınanacak test kümesi
   const fresh = d => !d || (Date.parse(TODAY) - Date.parse(d)) / 864e5 <= 21;
   let gen = genStore.testler.filter(t => !t.need || fresh(t.eklendi));      // veriye bağlı üretilmiş sorular 21 gün sonra emekli olur
+  const nBad = gen.filter(t => !aliasTestOk(t)).length; if (nBad) { log(`${nBad} üretilmiş test yanlış takıma bağlı (kısaltma hatası), atlandı`); gen = gen.filter(aliasTestOk); }
   const staticConvs = SUITE.core.concat(SUITE.holdout);
   const toConvs = (list) => list.map(t => [prep(t)]);
   if (ONLY_EVAL) {
