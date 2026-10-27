@@ -67,6 +67,9 @@ jobs:
     # Yalnız veri değiştiyse test atlanır (yayın eskisi kadar hızlı). Yeni uygulama yayınlandıysa yayından sonra canlı adreste
     # aynı test koşar; o da geçmezse son iyi sürüm otomatik geri yayınlanır. Sonuçlar data/saglik/update-yayin.json (lab/adim.py),
     # data/qa_kapi.json ve data/qa_yayin.json'a yazılır; kurtarıcı görür. Issue/mail/bildirim açılmaz.
+    # 📦 Pages'e tüm depo DEĞİL, yalnız uygulamanın istediği dosyalar çıkar (lab/yayin_listesi.py → $RUNNER_TEMP/_site):
+    # index.html/sw.js/manifest'te geçen yollar + bilinen dinamik yollar (data/at/canli/<gün>.json, tahmin, oran_izi, version.json …).
+    # lab/, scripts/, data/derin/ gibi robot iç verisi yayınlanmaz. Duman testi bu daraltılmış klasörü sınar; 404 alan istek = red.
     needs: [update]
     if: always() && (needs.update.result == 'success' || needs.update.result == 'skipped')
     runs-on: ubuntu-latest
@@ -101,7 +104,8 @@ jobs:
         continue-on-error: true
         run: |
           python3 lab/adim.py duman-kurulum --onem bilgi -- bash lab/duman.sh kur
-          python3 lab/adim.py yayin-kapisi --onem bilgi --kritik -- bash lab/duman.sh . "$RUNNER_TEMP/qa_kapi.json"
+          python3 lab/yayin_listesi.py kur "$RUNNER_TEMP/site_kapi"
+          python3 lab/adim.py yayin-kapisi --onem bilgi --kritik -- bash lab/duman.sh "$RUNNER_TEMP/site_kapi" "$RUNNER_TEMP/qa_kapi.json"
       - name: ↩️ Test geçmedi → uygulama son iyi sürümde kalır (veri yine güncellenir)
         id: geri
         if: steps.karar.outputs.karar == 'red' || (steps.karar.outputs.karar == 'test' && steps.kapi.outcome != 'success')
@@ -122,9 +126,11 @@ jobs:
           else
             python3 lab/yayin_kapisi.py yaz --commit "${{ steps.karar.outputs.basla }}"
           fi
+      - name: 📦 Yayın klasörü (yalnız uygulamanın istediği dosyalar)
+        run: python3 lab/yayin_listesi.py kur "$RUNNER_TEMP/_site"
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: .
+          path: ${{ runner.temp }}/_site
       - id: deployment
         uses: actions/deploy-pages@v4
       - name: 🔎 Yayın sonrası duman testi (canlı adres; yalnız yeni uygulama yayınlandıysa)
@@ -148,11 +154,12 @@ jobs:
           if [ -n "$V" ]; then printf '{"v":"%s"}\n' "$V" > data/version.json; fi
           python3 lab/yayin_kapisi.py yaz --commit "${{ steps.karar.outputs.canli_commit }}" \
             --red-ozet "${{ steps.karar.outputs.ozet }}" --red-commit "${{ steps.karar.outputs.basla }}" --red-neden "canlı test:" --red-neden-qa data/qa_yayin.json
+          python3 lab/yayin_listesi.py kur "$RUNNER_TEMP/_site_geri"
           echo "::warning title=Yayın geri alındı::Canlı duman testi geçmedi; son iyi uygulama sürümü yeniden yayınlandı."
       - uses: actions/upload-pages-artifact@v3
         if: steps.geri2.outcome == 'success'
         with:
-          path: .
+          path: ${{ runner.temp }}/_site_geri
           name: github-pages-geri
       - id: deployment2
         if: steps.geri2.outcome == 'success'

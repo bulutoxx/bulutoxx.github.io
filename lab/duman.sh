@@ -4,6 +4,8 @@
 #   bash lab/duman.sh kur                      # Playwright'ı (sürüm sabit) $QA_PW klasörüne kurar; depo ağacına node_modules koymaz
 #   bash lab/duman.sh <site_klasoru> <cikti.json>   # klasörü yerelde (python3 -m http.server) sunup test eder
 #   bash lab/duman.sh <https://adres/> <cikti.json> # yayındaki siteyi test eder
+# Aynı kaynaktan 404 alan istek alarmdır (yayın listesinden eksik dosya; lab/yayin_listesi.py). QA_KAYNAK = depo kökü (varsayılan bu depo):
+# tarihli dosya (…/<gün>.json) depoda da yoksa 404 normal sayılır.
 #
 # QA_PW: Playwright kurulum klasörü (varsayılan $RUNNER_TEMP/pw ya da /tmp/oxx-pw). qa.mjs oraya kopyalanıp çalıştırılır,
 # böylece "import playwright" o klasörün node_modules'unu bulur ve Pages'e yüklenen çalışma ağacı kirlenmez.
@@ -55,7 +57,7 @@ fi
 
 echo "[duman] $ADRES → $CIKTI"
 set +e
-QA_URL="$ADRES" QA_MOD=hizli QA_CIKTI="$CIKTI" QA_EKRAN="${QA_EKRAN:-}" timeout "${QA_SURE:-600}" node "$BETIK" >"$CIKTI.log" 2>&1
+QA_URL="$ADRES" QA_MOD=hizli QA_CIKTI="$CIKTI" QA_KAYNAK="${QA_KAYNAK:-$KOK}" QA_EKRAN="${QA_EKRAN:-}" timeout "${QA_SURE:-600}" node "$BETIK" >"$CIKTI.log" 2>&1
 RC=$?
 set -e
 python3 - "$CIKTI" <<'PY' || true
@@ -65,7 +67,7 @@ try:
 except Exception as e:
     print(f"[duman] sonuç okunamadı: {e}"); sys.exit(0)
 b = d.get("butce") or {}
-print(f"[duman] alarm={d.get('alarm')} süre={d.get('sure_sn')} sn pageerror={d.get('pageerror')} taşma={d.get('tasma')} "
+print(f"[duman] alarm={d.get('alarm')} süre={d.get('sure_sn')} sn pageerror={d.get('pageerror')} taşma={d.get('tasma')} 404={len(d.get('istek404') or [])} "
       f"index={b.get('index_kb')} KB ilk_veri={b.get('ilk_veri_kb')} KB en_uzun_görev={b.get('en_uzun_gorev_ms')} ms")
 for h in (d.get("hatalar") or [])[:15]:
     print("  ✗", h)

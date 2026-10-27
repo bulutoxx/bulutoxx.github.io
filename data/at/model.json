@@ -1,6 +1,6 @@
 {
- "surum": "20261027T0322",
- "olusturma": "2026-10-27T03:22:26+00:00",
+ "surum": "20261027T0420",
+ "olusturma": "2026-10-27T04:20:52+00:00",
  "tarif": {
   "surum": "v4",
   "ozellikler": [
@@ -131,7 +131,10 @@
    "a6_m_egim",
    "a6_m_uzak",
    "a6_g_proj",
-   "a6_g_alan"
+   "a6_g_alan",
+   "gl_wfa_av",
+   "gl_etkin_kilo",
+   "gl_wfa_x_mes"
   ],
   "gbm": true,
   "gbm_ayar": {
@@ -213,7 +216,10 @@
    "k_r": 290.0,
    "k_q": 1.5,
    "g_k": 30.0
-  }
+  },
+  "gl": [
+   "gl_wfa"
+  ]
  },
  "degerlendirme": {
   "protokol": "aylık walk-forward: sınamanın her ayı için yalnız o aydan önceki verilerle yeniden eğitim; kalibrasyon ayın hemen öncesindeki 90 günde; zaman ağırlığı yarı ömrü 180 gün",
@@ -258,38 +264,38 @@
     "metrik": {
      "model": {
       "kosu": 2190,
-      "log_loss": 1.8244,
-      "brier": 0.7861,
-      "ilk_secim_isabet": 0.3333,
-      "ikili_sirali_isabet": 0.095,
-      "ilk_iki_ikisi_de_ilk2": 0.1763,
+      "log_loss": 1.8226,
+      "brier": 0.7856,
+      "ilk_secim_isabet": 0.3347,
+      "ikili_sirali_isabet": 0.0941,
+      "ilk_iki_ikisi_de_ilk2": 0.1744,
       "p>=0.30": {
-       "secim": 1260,
-       "isabet": 0.3968,
-       "ort_p": 0.3903
+       "secim": 1282,
+       "isabet": 0.4002,
+       "ort_p": 0.3888
       },
       "p>=0.50": {
-       "secim": 133,
-       "isabet": 0.6241,
-       "ort_p": 0.5723
+       "secim": 129,
+       "isabet": 0.5891,
+       "ort_p": 0.5746
       }
      },
      "harman": {
       "kosu": 2190,
-      "log_loss": 1.7701,
-      "brier": 0.7682,
-      "ilk_secim_isabet": 0.3621,
-      "ikili_sirali_isabet": 0.1155,
-      "ilk_iki_ikisi_de_ilk2": 0.1895,
+      "log_loss": 1.7692,
+      "brier": 0.768,
+      "ilk_secim_isabet": 0.3612,
+      "ikili_sirali_isabet": 0.1137,
+      "ilk_iki_ikisi_de_ilk2": 0.1886,
       "p>=0.30": {
-       "secim": 1531,
-       "isabet": 0.4161,
-       "ort_p": 0.4064
+       "secim": 1546,
+       "isabet": 0.4146,
+       "ort_p": 0.4053
       },
       "p>=0.50": {
-       "secim": 246,
-       "isabet": 0.5976,
-       "ort_p": 0.5763
+       "secim": 245,
+       "isabet": 0.6082,
+       "ort_p": 0.5766
       }
      },
      "piyasa": {
@@ -315,77 +321,77 @@
      "model": [
       {
        "aralik": "0.00-0.05",
-       "at": 8568,
-       "ort_tahmin": 0.0234,
-       "gercek": 0.0245
+       "at": 8576,
+       "ort_tahmin": 0.0235,
+       "gercek": 0.0241
       },
       {
        "aralik": "0.05-0.10",
-       "at": 4704,
-       "ort_tahmin": 0.0728,
-       "gercek": 0.071
+       "at": 4678,
+       "ort_tahmin": 0.0727,
+       "gercek": 0.072
       },
       {
        "aralik": "0.10-0.20",
-       "at": 4600,
-       "ort_tahmin": 0.1427,
-       "gercek": 0.1322
+       "at": 4606,
+       "ort_tahmin": 0.1423,
+       "gercek": 0.1303
       },
       {
        "aralik": "0.20-0.30",
-       "at": 2051,
-       "ort_tahmin": 0.243,
-       "gercek": 0.2623
+       "at": 2041,
+       "ort_tahmin": 0.2423,
+       "gercek": 0.2611
       },
       {
        "aralik": "0.30-0.50",
-       "at": 1127,
-       "ort_tahmin": 0.3688,
-       "gercek": 0.37
+       "at": 1153,
+       "ort_tahmin": 0.368,
+       "gercek": 0.379
       },
       {
        "aralik": "0.50-1.00",
-       "at": 133,
-       "ort_tahmin": 0.5723,
-       "gercek": 0.6241
+       "at": 129,
+       "ort_tahmin": 0.5746,
+       "gercek": 0.5891
       }
      ],
      "harman": [
       {
        "aralik": "0.00-0.05",
-       "at": 9294,
+       "at": 9312,
        "ort_tahmin": 0.0236,
-       "gercek": 0.0233
+       "gercek": 0.0236
       },
       {
        "aralik": "0.05-0.10",
-       "at": 4435,
-       "ort_tahmin": 0.072,
-       "gercek": 0.0701
+       "at": 4431,
+       "ort_tahmin": 0.0722,
+       "gercek": 0.0682
       },
       {
        "aralik": "0.10-0.20",
-       "at": 4120,
+       "at": 4100,
        "ort_tahmin": 0.143,
-       "gercek": 0.1376
+       "gercek": 0.1402
       },
       {
        "aralik": "0.20-0.30",
-       "at": 1803,
-       "ort_tahmin": 0.2442,
-       "gercek": 0.254
+       "at": 1794,
+       "ort_tahmin": 0.2438,
+       "gercek": 0.252
       },
       {
        "aralik": "0.30-0.50",
-       "at": 1285,
-       "ort_tahmin": 0.3739,
-       "gercek": 0.3813
+       "at": 1301,
+       "ort_tahmin": 0.3731,
+       "gercek": 0.3782
       },
       {
        "aralik": "0.50-1.00",
-       "at": 246,
-       "ort_tahmin": 0.5763,
-       "gercek": 0.5976
+       "at": 245,
+       "ort_tahmin": 0.5766,
+       "gercek": 0.6082
       }
      ]
     }
@@ -399,38 +405,38 @@
     "metrik": {
      "model": {
       "kosu": 3279,
-      "log_loss": 1.8716,
-      "brier": 0.8013,
-      "ilk_secim_isabet": 0.3144,
-      "ikili_sirali_isabet": 0.0991,
-      "ilk_iki_ikisi_de_ilk2": 0.1705,
+      "log_loss": 1.8717,
+      "brier": 0.8011,
+      "ilk_secim_isabet": 0.3159,
+      "ikili_sirali_isabet": 0.0967,
+      "ilk_iki_ikisi_de_ilk2": 0.1686,
       "p>=0.30": {
-       "secim": 1936,
-       "isabet": 0.3864,
-       "ort_p": 0.3979
+       "secim": 1919,
+       "isabet": 0.3913,
+       "ort_p": 0.3997
       },
       "p>=0.50": {
-       "secim": 236,
-       "isabet": 0.5551,
-       "ort_p": 0.5867
+       "secim": 245,
+       "isabet": 0.5388,
+       "ort_p": 0.5855
       }
      },
      "harman": {
       "kosu": 3279,
       "log_loss": 1.8083,
-      "brier": 0.7817,
-      "ilk_secim_isabet": 0.3431,
-      "ikili_sirali_isabet": 0.1098,
-      "ilk_iki_ikisi_de_ilk2": 0.1934,
+      "brier": 0.7815,
+      "ilk_secim_isabet": 0.3437,
+      "ikili_sirali_isabet": 0.1113,
+      "ilk_iki_ikisi_de_ilk2": 0.1937,
       "p>=0.30": {
-       "secim": 2276,
-       "isabet": 0.3994,
-       "ort_p": 0.4177
+       "secim": 2272,
+       "isabet": 0.3979,
+       "ort_p": 0.4179
       },
       "p>=0.50": {
-       "secim": 404,
-       "isabet": 0.5545,
-       "ort_p": 0.5902
+       "secim": 411,
+       "isabet": 0.5499,
+       "ort_p": 0.589
       }
      },
      "piyasa": {
@@ -456,77 +462,77 @@
      "model": [
       {
        "aralik": "0.00-0.05",
-       "at": 13607,
+       "at": 13641,
        "ort_tahmin": 0.0229,
-       "gercek": 0.0232
+       "gercek": 0.0235
       },
       {
        "aralik": "0.05-0.10",
-       "at": 7304,
-       "ort_tahmin": 0.0731,
-       "gercek": 0.0765
+       "at": 7225,
+       "ort_tahmin": 0.073,
+       "gercek": 0.077
       },
       {
        "aralik": "0.10-0.20",
-       "at": 7010,
-       "ort_tahmin": 0.1422,
-       "gercek": 0.1466
+       "at": 7071,
+       "ort_tahmin": 0.1421,
+       "gercek": 0.1461
       },
       {
        "aralik": "0.20-0.30",
-       "at": 2749,
-       "ort_tahmin": 0.2423,
-       "gercek": 0.2284
+       "at": 2750,
+       "ort_tahmin": 0.2426,
+       "gercek": 0.2247
       },
       {
        "aralik": "0.30-0.50",
-       "at": 1700,
-       "ort_tahmin": 0.3717,
-       "gercek": 0.3629
+       "at": 1674,
+       "ort_tahmin": 0.3725,
+       "gercek": 0.3698
       },
       {
        "aralik": "0.50-1.00",
-       "at": 236,
-       "ort_tahmin": 0.5867,
-       "gercek": 0.5551
+       "at": 245,
+       "ort_tahmin": 0.5855,
+       "gercek": 0.5388
       }
      ],
      "harman": [
       {
        "aralik": "0.00-0.05",
-       "at": 14920,
+       "at": 14911,
        "ort_tahmin": 0.0229,
-       "gercek": 0.0231
+       "gercek": 0.0225
       },
       {
        "aralik": "0.05-0.10",
-       "at": 6638,
-       "ort_tahmin": 0.0721,
-       "gercek": 0.0782
+       "at": 6667,
+       "ort_tahmin": 0.0722,
+       "gercek": 0.079
       },
       {
        "aralik": "0.10-0.20",
-       "at": 6202,
-       "ort_tahmin": 0.1418,
-       "gercek": 0.1446
+       "at": 6190,
+       "ort_tahmin": 0.1419,
+       "gercek": 0.1462
       },
       {
        "aralik": "0.20-0.30",
-       "at": 2570,
-       "ort_tahmin": 0.2446,
-       "gercek": 0.2374
+       "at": 2566,
+       "ort_tahmin": 0.2449,
+       "gercek": 0.2366
       },
       {
        "aralik": "0.30-0.50",
-       "at": 1872,
-       "ort_tahmin": 0.3804,
-       "gercek": 0.3659
+       "at": 1861,
+       "ort_tahmin": 0.3801,
+       "gercek": 0.3643
       },
       {
        "aralik": "0.50-1.00",
-       "at": 404,
-       "ort_tahmin": 0.5902,
-       "gercek": 0.5545
+       "at": 411,
+       "ort_tahmin": 0.589,
+       "gercek": 0.5499
       }
      ]
     }
@@ -535,38 +541,38 @@
   "metrik": {
    "model": {
     "kosu": 3279,
-    "log_loss": 1.8716,
-    "brier": 0.8013,
-    "ilk_secim_isabet": 0.3144,
-    "ikili_sirali_isabet": 0.0991,
-    "ilk_iki_ikisi_de_ilk2": 0.1705,
+    "log_loss": 1.8717,
+    "brier": 0.8011,
+    "ilk_secim_isabet": 0.3159,
+    "ikili_sirali_isabet": 0.0967,
+    "ilk_iki_ikisi_de_ilk2": 0.1686,
     "p>=0.30": {
-     "secim": 1936,
-     "isabet": 0.3864,
-     "ort_p": 0.3979
+     "secim": 1919,
+     "isabet": 0.3913,
+     "ort_p": 0.3997
     },
     "p>=0.50": {
-     "secim": 236,
-     "isabet": 0.5551,
-     "ort_p": 0.5867
+     "secim": 245,
+     "isabet": 0.5388,
+     "ort_p": 0.5855
     }
    },
    "harman": {
     "kosu": 3279,
     "log_loss": 1.8083,
-    "brier": 0.7817,
-    "ilk_secim_isabet": 0.3431,
-    "ikili_sirali_isabet": 0.1098,
-    "ilk_iki_ikisi_de_ilk2": 0.1934,
+    "brier": 0.7815,
+    "ilk_secim_isabet": 0.3437,
+    "ikili_sirali_isabet": 0.1113,
+    "ilk_iki_ikisi_de_ilk2": 0.1937,
     "p>=0.30": {
-     "secim": 2276,
-     "isabet": 0.3994,
-     "ort_p": 0.4177
+     "secim": 2272,
+     "isabet": 0.3979,
+     "ort_p": 0.4179
     },
     "p>=0.50": {
-     "secim": 404,
-     "isabet": 0.5545,
-     "ort_p": 0.5902
+     "secim": 411,
+     "isabet": 0.5499,
+     "ort_p": 0.589
     }
    },
    "piyasa": {
@@ -618,114 +624,114 @@
    }
   },
   "harman_eksi_piyasa": {
-   "ll_fark": -0.0251,
-   "std_hata": 0.0042
+   "ll_fark": -0.0252,
+   "std_hata": 0.0043
   },
   "model_eksi_piyasa": {
-   "ll_fark": 0.0381,
+   "ll_fark": 0.0383,
    "std_hata": 0.0094
   },
   "sira_ll": {
    "model": {
-    "ikili_ll": 3.707,
-    "uclu_ll": 5.4777,
+    "ikili_ll": 3.7076,
+    "uclu_ll": 5.4793,
     "kosu": 3263
    },
    "model_h1": {
-    "ikili_ll": 3.7163,
-    "uclu_ll": 5.5188,
+    "ikili_ll": 3.7173,
+    "uclu_ll": 5.5213,
     "kosu": 3263
    },
    "harman": {
-    "ikili_ll": 3.6118,
-    "uclu_ll": 5.3732,
+    "ikili_ll": 3.6117,
+    "uclu_ll": 5.3731,
     "kosu": 3263
    },
    "harman_h1": {
-    "ikili_ll": 3.6218,
-    "uclu_ll": 5.4187,
+    "ikili_ll": 3.6219,
+    "uclu_ll": 5.4194,
     "kosu": 3263
    }
   },
   "harman_eksi_keskin_piyasa": {
    "ll_fark": -0.0245,
-   "std_hata": 0.0042
+   "std_hata": 0.0043
   },
   "kovalar": {
    "model": [
     {
      "aralik": "0.00-0.05",
-     "at": 13607,
+     "at": 13641,
      "ort_tahmin": 0.0229,
-     "gercek": 0.0232
+     "gercek": 0.0235
     },
     {
      "aralik": "0.05-0.10",
-     "at": 7304,
-     "ort_tahmin": 0.0731,
-     "gercek": 0.0765
+     "at": 7225,
+     "ort_tahmin": 0.073,
+     "gercek": 0.077
     },
     {
      "aralik": "0.10-0.20",
-     "at": 7010,
-     "ort_tahmin": 0.1422,
-     "gercek": 0.1466
+     "at": 7071,
+     "ort_tahmin": 0.1421,
+     "gercek": 0.1461
     },
     {
      "aralik": "0.20-0.30",
-     "at": 2749,
-     "ort_tahmin": 0.2423,
-     "gercek": 0.2284
+     "at": 2750,
+     "ort_tahmin": 0.2426,
+     "gercek": 0.2247
     },
     {
      "aralik": "0.30-0.50",
-     "at": 1700,
-     "ort_tahmin": 0.3717,
-     "gercek": 0.3629
+     "at": 1674,
+     "ort_tahmin": 0.3725,
+     "gercek": 0.3698
     },
     {
      "aralik": "0.50-1.00",
-     "at": 236,
-     "ort_tahmin": 0.5867,
-     "gercek": 0.5551
+     "at": 245,
+     "ort_tahmin": 0.5855,
+     "gercek": 0.5388
     }
    ],
    "harman": [
     {
      "aralik": "0.00-0.05",
-     "at": 14920,
+     "at": 14911,
      "ort_tahmin": 0.0229,
-     "gercek": 0.0231
+     "gercek": 0.0225
     },
     {
      "aralik": "0.05-0.10",
-     "at": 6638,
-     "ort_tahmin": 0.0721,
-     "gercek": 0.0782
+     "at": 6667,
+     "ort_tahmin": 0.0722,
+     "gercek": 0.079
     },
     {
      "aralik": "0.10-0.20",
-     "at": 6202,
-     "ort_tahmin": 0.1418,
-     "gercek": 0.1446
+     "at": 6190,
+     "ort_tahmin": 0.1419,
+     "gercek": 0.1462
     },
     {
      "aralik": "0.20-0.30",
-     "at": 2570,
-     "ort_tahmin": 0.2446,
-     "gercek": 0.2374
+     "at": 2566,
+     "ort_tahmin": 0.2449,
+     "gercek": 0.2366
     },
     {
      "aralik": "0.30-0.50",
-     "at": 1872,
-     "ort_tahmin": 0.3804,
-     "gercek": 0.3659
+     "at": 1861,
+     "ort_tahmin": 0.3801,
+     "gercek": 0.3643
     },
     {
      "aralik": "0.50-1.00",
-     "at": 404,
-     "ort_tahmin": 0.5902,
-     "gercek": 0.5545
+     "at": 411,
+     "ort_tahmin": 0.589,
+     "gercek": 0.5499
     }
    ],
    "piyasa": [
@@ -770,75 +776,75 @@
   "onem": [
    {
     "ozellik": "a6_k_sd",
-    "std_katsayi": -0.9345
+    "std_katsayi": -0.9389
    },
    {
     "ozellik": "hz_yok",
-    "std_katsayi": 0.8882
+    "std_katsayi": 0.8928
    },
    {
     "ozellik": "r_at_belirsiz",
-    "std_katsayi": 0.239
+    "std_katsayi": 0.2231
+   },
+   {
+    "ozellik": "yas3",
+    "std_katsayi": 0.2188
    },
    {
     "ozellik": "a6_e_hp",
-    "std_katsayi": 0.2013
+    "std_katsayi": 0.2004
    },
    {
     "ozellik": "jk_j",
-    "std_katsayi": 0.1974
+    "std_katsayi": 0.1973
    },
    {
     "ozellik": "a5_sr_ort5",
-    "std_katsayi": 0.1903
-   },
-   {
-    "ozellik": "hz_ort3",
-    "std_katsayi": 0.1878
-   },
-   {
-    "ozellik": "jk_logp",
-    "std_katsayi": 0.1851
-   },
-   {
-    "ozellik": "jk_at_s",
-    "std_katsayi": 0.1577
-   },
-   {
-    "ozellik": "geri_en_iyi5",
-    "std_katsayi": -0.15
-   },
-   {
-    "ozellik": "yeni",
-    "std_katsayi": -0.1472
+    "std_katsayi": 0.1927
    },
    {
     "ozellik": "kilo_min_h",
-    "std_katsayi": -0.1371
+    "std_katsayi": -0.188
    },
    {
-    "ozellik": "geri_sonum",
-    "std_katsayi": 0.1334
+    "ozellik": "jk_logp",
+    "std_katsayi": 0.1855
    },
    {
-    "ozellik": "r_jokey",
-    "std_katsayi": 0.1307
+    "ozellik": "hz_ort3",
+    "std_katsayi": 0.1849
+   },
+   {
+    "ozellik": "jk_at_s",
+    "std_katsayi": 0.1542
+   },
+   {
+    "ozellik": "geri_en_iyi5",
+    "std_katsayi": -0.1499
+   },
+   {
+    "ozellik": "yeni",
+    "std_katsayi": -0.144
    },
    {
     "ozellik": "n_kosu",
-    "std_katsayi": -0.1203
+    "std_katsayi": -0.1403
    },
    {
-    "ozellik": "a6_k_z",
-    "std_katsayi": 0.118
+    "ozellik": "r_jokey",
+    "std_katsayi": 0.1325
+   },
+   {
+    "ozellik": "geri_sonum",
+    "std_katsayi": 0.1304
    },
    {
     "ozellik": "piyasa_ustu",
-    "std_katsayi": -0.117
+    "std_katsayi": -0.12
    },
    {
-    "ozellik": "kilo_x_sinif",
-    "std_katsayi": -0.1143
+    "ozellik": "a6_k_z",
+    "std_katsayi": 0.1154
    },
    {
     "ozellik": "a6_k_sira",
@@ -846,403 +852,415 @@
    },
    {
     "ozellik": "hipodrom_uyum",
-    "std_katsayi": 0.0998
+    "std_katsayi": 0.0996
    },
    {
-    "ozellik": "piyasa3",
-    "std_katsayi": 0.093
+    "ozellik": "kilo_x_sinif",
+    "std_katsayi": -0.0963
    },
    {
     "ozellik": "pist_uyum",
-    "std_katsayi": 0.092
+    "std_katsayi": 0.0919
    },
    {
     "ozellik": "mesafe_deg_y",
-    "std_katsayi": -0.0912
+    "std_katsayi": -0.0905
+   },
+   {
+    "ozellik": "piyasa3",
+    "std_katsayi": 0.09
    },
    {
     "ozellik": "a6_e_id_var",
-    "std_katsayi": 0.0896
-   },
-   {
-    "ozellik": "piyasa_yok",
-    "std_katsayi": -0.0804
-   },
-   {
-    "ozellik": "p_sira3",
-    "std_katsayi": 0.0795
+    "std_katsayi": 0.0899
    },
    {
     "ozellik": "a6_e_id_n30",
+    "std_katsayi": 0.0791
+   },
+   {
+    "ozellik": "piyasa_yok",
+    "std_katsayi": -0.0789
+   },
+   {
+    "ozellik": "p_sira3",
     "std_katsayi": 0.0785
    },
    {
     "ozellik": "kilo_degisim",
-    "std_katsayi": -0.0753
+    "std_katsayi": -0.0761
    },
    {
     "ozellik": "hz_son",
-    "std_katsayi": -0.0706
+    "std_katsayi": -0.0742
    },
    {
     "ozellik": "jokey_gal60",
-    "std_katsayi": -0.0672
-   },
-   {
-    "ozellik": "log_gun",
-    "std_katsayi": -0.0659
-   },
-   {
-    "ozellik": "a5_sr_son",
-    "std_katsayi": 0.0659
+    "std_katsayi": -0.0679
    },
    {
     "ozellik": "jk_jz",
-    "std_katsayi": -0.0655
+    "std_katsayi": -0.0653
    },
    {
-    "ozellik": "hz_trend",
-    "std_katsayi": 0.063
+    "ozellik": "a5_sr_son",
+    "std_katsayi": 0.0651
+   },
+   {
+    "ozellik": "log_gun",
+    "std_katsayi": -0.0648
    },
    {
     "ozellik": "a6_e_hp_z",
-    "std_katsayi": 0.0602
+    "std_katsayi": 0.0644
+   },
+   {
+    "ozellik": "hz_trend",
+    "std_katsayi": 0.0636
+   },
+   {
+    "ozellik": "gl_wfa_av",
+    "std_katsayi": -0.0584
    },
    {
     "ozellik": "geri_son",
-    "std_katsayi": -0.0583
+    "std_katsayi": -0.0581
    },
    {
     "ozellik": "a6_e_hp_yok",
-    "std_katsayi": -0.0566
-   },
-   {
-    "ozellik": "hp_once",
-    "std_katsayi": -0.0553
+    "std_katsayi": -0.0556
    },
    {
     "ozellik": "a6_e_id_400",
-    "std_katsayi": -0.0544
+    "std_katsayi": -0.0547
    },
    {
-    "ozellik": "ilk3_10",
-    "std_katsayi": -0.049
-   },
-   {
-    "ozellik": "a6_k_tutarli",
-    "std_katsayi": 0.0485
+    "ozellik": "hp_once",
+    "std_katsayi": -0.0539
    },
    {
     "ozellik": "a6_k_m",
-    "std_katsayi": 0.0461
+    "std_katsayi": 0.0491
    },
    {
-    "ozellik": "r_antrenor",
-    "std_katsayi": 0.0431
+    "ozellik": "a6_k_tutarli",
+    "std_katsayi": 0.0479
+   },
+   {
+    "ozellik": "ilk3_10",
+    "std_katsayi": -0.0471
    },
    {
     "ozellik": "pist_degisti",
-    "std_katsayi": -0.0425
+    "std_katsayi": -0.0427
    },
    {
-    "ozellik": "skor_son",
-    "std_katsayi": 0.0405
-   },
-   {
-    "ozellik": "skor3",
-    "std_katsayi": 0.0397
+    "ozellik": "r_antrenor",
+    "std_katsayi": 0.0425
    },
    {
     "ozellik": "pz_ewma",
-    "std_katsayi": 0.0395
+    "std_katsayi": 0.0413
+   },
+   {
+    "ozellik": "skor_son",
+    "std_katsayi": 0.0406
+   },
+   {
+    "ozellik": "skor3",
+    "std_katsayi": 0.0403
    },
    {
     "ozellik": "alan_x_form",
-    "std_katsayi": 0.0379
-   },
-   {
-    "ozellik": "donus_2",
-    "std_katsayi": -0.0364
+    "std_katsayi": 0.038
    },
    {
     "ozellik": "jk_at",
-    "std_katsayi": 0.0364
+    "std_katsayi": 0.0368
    },
    {
-    "ozellik": "hp_alan",
-    "std_katsayi": 0.0356
+    "ozellik": "donus_2",
+    "std_katsayi": -0.0365
    },
    {
     "ozellik": "a6_e_st_yok",
-    "std_katsayi": 0.0346
+    "std_katsayi": 0.0348
    },
    {
-    "ozellik": "kilo_fark",
-    "std_katsayi": -0.0331
+    "ozellik": "hp_alan",
+    "std_katsayi": 0.0345
+   },
+   {
+    "ozellik": "kilo_hnd",
+    "std_katsayi": 0.0341
    },
    {
     "ozellik": "jokey_degisti",
-    "std_katsayi": -0.0327
-   },
-   {
-    "ozellik": "geri3",
-    "std_katsayi": -0.0322
+    "std_katsayi": -0.0323
    },
    {
     "ozellik": "jk_tecrube",
-    "std_katsayi": 0.0321
+    "std_katsayi": 0.0322
    },
    {
     "ozellik": "a6_m_yakin",
-    "std_katsayi": 0.032
+    "std_katsayi": 0.0321
    },
    {
     "ozellik": "jokey_at_uyum",
-    "std_katsayi": 0.0318
-   },
-   {
-    "ozellik": "ara_10",
-    "std_katsayi": -0.0312
-   },
-   {
-    "ozellik": "pist_payi",
-    "std_katsayi": 0.0301
+    "std_katsayi": 0.0315
    },
    {
     "ozellik": "jk_apr_kilo",
-    "std_katsayi": 0.0301
+    "std_katsayi": 0.031
+   },
+   {
+    "ozellik": "geri3",
+    "std_katsayi": -0.0308
+   },
+   {
+    "ozellik": "pist_payi",
+    "std_katsayi": 0.0308
+   },
+   {
+    "ozellik": "galibiyet10",
+    "std_katsayi": 0.0303
+   },
+   {
+    "ozellik": "ara_10",
+    "std_katsayi": -0.0303
    },
    {
     "ozellik": "jk_uz_hip",
-    "std_katsayi": 0.0272
-   },
-   {
-    "ozellik": "sinif_degisim",
-    "std_katsayi": -0.027
-   },
-   {
-    "ozellik": "a6_m_egim",
-    "std_katsayi": 0.0266
+    "std_katsayi": 0.0271
    },
    {
     "ozellik": "uzun_ara",
-    "std_katsayi": -0.0261
+    "std_katsayi": -0.0265
+   },
+   {
+    "ozellik": "a6_m_egim",
+    "std_katsayi": 0.0264
+   },
+   {
+    "ozellik": "kilo_sira_h",
+    "std_katsayi": 0.0263
    },
    {
     "ozellik": "a6_e_st_kisa",
     "std_katsayi": -0.0258
    },
    {
-    "ozellik": "galibiyet10",
-    "std_katsayi": 0.025
+    "ozellik": "sinif_degisim",
+    "std_katsayi": -0.0257
    },
    {
     "ozellik": "jk_apr",
-    "std_katsayi": -0.0247
-   },
-   {
-    "ozellik": "piyasa_reyting",
-    "std_katsayi": 0.0245
+    "std_katsayi": -0.0244
    },
    {
     "ozellik": "hp_bugun",
-    "std_katsayi": 0.0242
-   },
-   {
-    "ozellik": "kilo_sira_h",
-    "std_katsayi": 0.024
+    "std_katsayi": 0.0234
    },
    {
     "ozellik": "a6_e_st",
     "std_katsayi": -0.0232
    },
    {
-    "ozellik": "a5_ust_ilk3",
-    "std_katsayi": 0.0226
+    "ozellik": "gl_etkin_kilo",
+    "std_katsayi": -0.0232
    },
    {
-    "ozellik": "kilo_hnd",
-    "std_katsayi": 0.0223
+    "ozellik": "a5_ust_ilk3",
+    "std_katsayi": 0.0229
    },
    {
     "ozellik": "ara_60_120",
-    "std_katsayi": -0.0217
+    "std_katsayi": -0.0218
    },
    {
     "ozellik": "mesafe_uyum",
-    "std_katsayi": 0.0215
+    "std_katsayi": 0.0217
    },
    {
     "ozellik": "jokey_at_n",
-    "std_katsayi": 0.0213
-   },
-   {
-    "ozellik": "skor10",
-    "std_katsayi": 0.0198
-   },
-   {
-    "ozellik": "a6_h_x_r",
-    "std_katsayi": 0.0193
-   },
-   {
-    "ozellik": "skor_sonum",
-    "std_katsayi": 0.0179
+    "std_katsayi": 0.0216
    },
    {
     "ozellik": "piyasa_son",
-    "std_katsayi": 0.0176
+    "std_katsayi": 0.0204
    },
    {
-    "ozellik": "hp_yok",
-    "std_katsayi": 0.0168
+    "ozellik": "a6_h_x_r",
+    "std_katsayi": 0.0199
    },
    {
-    "ozellik": "a6_m_uzak",
-    "std_katsayi": -0.0167
+    "ozellik": "skor_sonum",
+    "std_katsayi": 0.0196
+   },
+   {
+    "ozellik": "piyasa_reyting",
+    "std_katsayi": 0.0188
    },
    {
     "ozellik": "pz_en_iyi5",
-    "std_katsayi": 0.0166
+    "std_katsayi": 0.0171
    },
    {
-    "ozellik": "a6_g_alan",
-    "std_katsayi": 0.015
+    "ozellik": "a6_m_uzak",
+    "std_katsayi": -0.017
    },
    {
-    "ozellik": "yas3",
-    "std_katsayi": 0.0148
+    "ozellik": "hp_yok",
+    "std_katsayi": 0.0154
    },
    {
     "ozellik": "a6_e_id_gun",
     "std_katsayi": -0.0145
    },
    {
+    "ozellik": "skor10",
+    "std_katsayi": 0.0144
+   },
+   {
     "ozellik": "a6_e_st_cim",
-    "std_katsayi": -0.0144
+    "std_katsayi": -0.0142
+   },
+   {
+    "ozellik": "gl_wfa_x_mes",
+    "std_katsayi": 0.0142
+   },
+   {
+    "ozellik": "a6_g_alan",
+    "std_katsayi": 0.014
    },
    {
     "ozellik": "r_at_alan",
-    "std_katsayi": -0.0132
-   },
-   {
-    "ozellik": "mesafe_degisim",
-    "std_katsayi": -0.0131
+    "std_katsayi": -0.0135
    },
    {
     "ozellik": "jokey_r_fark",
-    "std_katsayi": -0.0129
-   },
-   {
-    "ozellik": "at_ustu_sinif",
-    "std_katsayi": -0.0117
-   },
-   {
-    "ozellik": "jk_t",
-    "std_katsayi": -0.0114
-   },
-   {
-    "ozellik": "ara_120_240",
-    "std_katsayi": 0.011
-   },
-   {
-    "ozellik": "sinif_cik",
-    "std_katsayi": 0.0108
-   },
-   {
-    "ozellik": "r_at",
-    "std_katsayi": -0.0106
-   },
-   {
-    "ozellik": "a6_g_proj",
-    "std_katsayi": 0.0106
-   },
-   {
-    "ozellik": "antrenor_ae",
-    "std_katsayi": 0.0094
-   },
-   {
-    "ozellik": "skor5",
-    "std_katsayi": 0.0093
+    "std_katsayi": -0.0133
    },
    {
     "ozellik": "hp_degisim",
-    "std_katsayi": -0.0091
+    "std_katsayi": -0.0131
    },
    {
-    "ozellik": "a6_h_x_uyum",
-    "std_katsayi": 0.008
+    "ozellik": "mesafe_degisim",
+    "std_katsayi": -0.0129
    },
    {
-    "ozellik": "a6_h_x_kilo",
-    "std_katsayi": 0.008
+    "ozellik": "kilo_fark",
+    "std_katsayi": -0.0128
+   },
+   {
+    "ozellik": "skor5",
+    "std_katsayi": 0.0121
+   },
+   {
+    "ozellik": "at_ustu_sinif",
+    "std_katsayi": -0.012
+   },
+   {
+    "ozellik": "sinif_cik",
+    "std_katsayi": 0.0112
+   },
+   {
+    "ozellik": "r_at",
+    "std_katsayi": -0.0108
+   },
+   {
+    "ozellik": "jk_t",
+    "std_katsayi": -0.0106
+   },
+   {
+    "ozellik": "ara_120_240",
+    "std_katsayi": 0.0103
+   },
+   {
+    "ozellik": "a6_g_proj",
+    "std_katsayi": 0.0099
+   },
+   {
+    "ozellik": "antrenor_ae",
+    "std_katsayi": 0.0093
    },
    {
     "ozellik": "hz_alan",
+    "std_katsayi": 0.0082
+   },
+   {
+    "ozellik": "a6_h_x_uyum",
     "std_katsayi": 0.0076
    },
    {
+    "ozellik": "a6_h_x_kilo",
+    "std_katsayi": 0.0075
+   },
+   {
     "ozellik": "jk_uz_mes",
-    "std_katsayi": 0.0072
+    "std_katsayi": 0.007
    },
    {
     "ozellik": "a6_h_uyum",
-    "std_katsayi": -0.0054
+    "std_katsayi": -0.0055
    },
    {
     "ozellik": "antrenor_gal60",
-    "std_katsayi": 0.005
+    "std_katsayi": 0.0048
    },
    {
     "ozellik": "fav_son",
-    "std_katsayi": 0.004
+    "std_katsayi": 0.0045
    },
    {
     "ozellik": "yas6p",
-    "std_katsayi": -0.0037
+    "std_katsayi": -0.004
    },
    {
     "ozellik": "jokey_ae",
-    "std_katsayi": -0.0037
+    "std_katsayi": -0.0039
    },
    {
     "ozellik": "yenilen_fav",
-    "std_katsayi": -0.0037
-   },
-   {
-    "ozellik": "jk_uz_pist",
-    "std_katsayi": 0.0031
+    "std_katsayi": -0.0038
    },
    {
     "ozellik": "pist_ilk",
-    "std_katsayi": 0.0025
+    "std_katsayi": 0.003
+   },
+   {
+    "ozellik": "jk_uz_pist",
+    "std_katsayi": 0.003
+   },
+   {
+    "ozellik": "sinif_r_degisim",
+    "std_katsayi": -0.0025
    },
    {
     "ozellik": "hz_en_iyi3",
-    "std_katsayi": 0.0022
+    "std_katsayi": 0.0024
    },
    {
     "ozellik": "a6_e_id_600",
     "std_katsayi": -0.002
    },
    {
-    "ozellik": "ara_240p",
-    "std_katsayi": 0.0012
+    "ozellik": "p_sira_son",
+    "std_katsayi": 0.0017
    },
    {
     "ozellik": "sinif_dus",
-    "std_katsayi": 0.0011
+    "std_katsayi": 0.0016
    },
    {
-    "ozellik": "p_sira_son",
-    "std_katsayi": -0.0006
+    "ozellik": "ara_240p",
+    "std_katsayi": 0.0003
    },
    {
     "ozellik": "a5_sr_ilk3_max",
-    "std_katsayi": 0.0006
-   },
-   {
-    "ozellik": "sinif_r_degisim",
-    "std_katsayi": 0.0001
+    "std_katsayi": -0.0002
    },
    {
     "ozellik": "yas2",
@@ -1250,11 +1268,11 @@
    },
    {
     "ozellik": "handikap",
-    "std_katsayi": -0.0
+    "std_katsayi": 0.0
    },
    {
     "ozellik": "maiden",
-    "std_katsayi": 0.0
+    "std_katsayi": -0.0
    },
    {
     "ozellik": "sinif_r",
@@ -1262,11 +1280,11 @@
    },
    {
     "ozellik": "yas2_mesafe",
-    "std_katsayi": -0.0
+    "std_katsayi": 0.0
    },
    {
     "ozellik": "a6_h_islak",
-    "std_katsayi": 0.0
+    "std_katsayi": -0.0
    },
    {
     "ozellik": "a6_h_yok",
@@ -1278,93 +1296,93 @@
    },
    {
     "ozellik": "a6_h_x_cim",
-    "std_katsayi": -0.0
+    "std_katsayi": 0.0
    }
   ],
   "birlestirme": [
    {
-    "c_dogrusal": 0.585,
-    "c_gbm": 0.455,
-    "alfa": 0.395,
-    "beta": 0.733
+    "c_dogrusal": 0.577,
+    "c_gbm": 0.464,
+    "alfa": 0.398,
+    "beta": 0.731
    },
    {
-    "c_dogrusal": 0.792,
-    "c_gbm": 0.375,
-    "alfa": 0.479,
-    "beta": 0.667
+    "c_dogrusal": 0.766,
+    "c_gbm": 0.402,
+    "alfa": 0.482,
+    "beta": 0.664
    },
    {
-    "c_dogrusal": 0.754,
-    "c_gbm": 0.394,
-    "alfa": 0.422,
-    "beta": 0.743
+    "c_dogrusal": 0.707,
+    "c_gbm": 0.44,
+    "alfa": 0.426,
+    "beta": 0.739
    },
    {
-    "c_dogrusal": 0.864,
-    "c_gbm": 0.28,
-    "alfa": 0.475,
-    "beta": 0.692
+    "c_dogrusal": 0.758,
+    "c_gbm": 0.357,
+    "alfa": 0.476,
+    "beta": 0.691
    },
    {
-    "c_dogrusal": 0.669,
-    "c_gbm": 0.454,
-    "alfa": 0.467,
-    "beta": 0.738
+    "c_dogrusal": 0.618,
+    "c_gbm": 0.507,
+    "alfa": 0.47,
+    "beta": 0.735
    },
    {
-    "c_dogrusal": 0.557,
-    "c_gbm": 0.574,
-    "alfa": 0.538,
-    "beta": 0.649
+    "c_dogrusal": 0.481,
+    "c_gbm": 0.655,
+    "alfa": 0.545,
+    "beta": 0.642
    },
    {
-    "c_dogrusal": 0.592,
-    "c_gbm": 0.517,
-    "alfa": 0.525,
-    "beta": 0.661
+    "c_dogrusal": 0.55,
+    "c_gbm": 0.559,
+    "alfa": 0.533,
+    "beta": 0.652
    },
    {
-    "c_dogrusal": 0.593,
-    "c_gbm": 0.429,
-    "alfa": 0.447,
-    "beta": 0.713
+    "c_dogrusal": 0.605,
+    "c_gbm": 0.422,
+    "alfa": 0.452,
+    "beta": 0.709
    },
    {
-    "c_dogrusal": 0.594,
+    "c_dogrusal": 0.598,
     "c_gbm": 0.392,
-    "alfa": 0.435,
+    "alfa": 0.438,
+    "beta": 0.709
+   },
+   {
+    "c_dogrusal": 0.42,
+    "c_gbm": 0.514,
+    "alfa": 0.397,
+    "beta": 0.725
+   },
+   {
+    "c_dogrusal": 0.347,
+    "c_gbm": 0.611,
+    "alfa": 0.457,
+    "beta": 0.664
+   },
+   {
+    "c_dogrusal": 0.498,
+    "c_gbm": 0.469,
+    "alfa": 0.425,
     "beta": 0.712
-   },
-   {
-    "c_dogrusal": 0.45,
-    "c_gbm": 0.484,
-    "alfa": 0.394,
-    "beta": 0.727
-   },
-   {
-    "c_dogrusal": 0.298,
-    "c_gbm": 0.663,
-    "alfa": 0.462,
-    "beta": 0.659
-   },
-   {
-    "c_dogrusal": 0.512,
-    "c_gbm": 0.457,
-    "alfa": 0.423,
-    "beta": 0.714
    }
   ],
   "ablasyon": [
    {
     "grup_cikarildi": "a6_ek_hp",
-    "model_ll_fark": 0.011,
-    "harman_ll_fark": 0.0019
+    "model_ll_fark": 0.0113,
+    "harman_ll_fark": 0.002
    },
    {
     "grup_cikarildi": "a6_ek_idman",
-    "model_ll_fark": 0.0074,
-    "harman_ll_fark": 0.0031
+    "model_ll_fark": 0.0075,
+    "harman_ll_fark": 0.0032
    },
    {
     "grup_cikarildi": "pist_mesafe_hipodrom",
@@ -1373,38 +1391,43 @@
    },
    {
     "grup_cikarildi": "a6_kalman",
-    "model_ll_fark": 0.0045,
+    "model_ll_fark": 0.0046,
     "harman_ll_fark": 0.0016
    },
    {
-    "grup_cikarildi": "jk_beceri",
+    "grup_cikarildi": "a5_sinif",
     "model_ll_fark": 0.0044,
+    "harman_ll_fark": 0.0022
+   },
+   {
+    "grup_cikarildi": "jk_beceri",
+    "model_ll_fark": 0.0043,
     "harman_ll_fark": 0.0008
    },
    {
-    "grup_cikarildi": "a5_sinif",
-    "model_ll_fark": 0.0043,
-    "harman_ll_fark": 0.002
-   },
-   {
     "grup_cikarildi": "degisim",
-    "model_ll_fark": 0.004,
+    "model_ll_fark": 0.0039,
     "harman_ll_fark": 0.0019
    },
    {
     "grup_cikarildi": "kilo",
-    "model_ll_fark": 0.003,
-    "harman_ll_fark": 0.0016
+    "model_ll_fark": 0.0022,
+    "harman_ll_fark": 0.0012
    },
    {
     "grup_cikarildi": "a6_mesafe",
     "model_ll_fark": 0.0009,
-    "harman_ll_fark": 0.0002
+    "harman_ll_fark": 0.0003
    },
    {
     "grup_cikarildi": "hiz3",
     "model_ll_fark": 0.0009,
-    "harman_ll_fark": 0.0002
+    "harman_ll_fark": 0.0003
+   },
+   {
+    "grup_cikarildi": "gl_wfa",
+    "model_ll_fark": 0.0007,
+    "harman_ll_fark": 0.0007
    },
    {
     "grup_cikarildi": "a6_hava",
@@ -1424,12 +1447,12 @@
    {
     "grup_cikarildi": "sinif",
     "model_ll_fark": 0.0003,
-    "harman_ll_fark": 0.0002
+    "harman_ll_fark": 0.0003
    },
    {
-    "grup_cikarildi": "hp",
-    "model_ll_fark": 0.0002,
-    "harman_ll_fark": 0.0001
+    "grup_cikarildi": "yas",
+    "model_ll_fark": 0.0003,
+    "harman_ll_fark": 0.0006
    },
    {
     "grup_cikarildi": "piyasa_gecmisi",
@@ -1442,6 +1465,11 @@
     "harman_ll_fark": 0.0002
    },
    {
+    "grup_cikarildi": "hp",
+    "model_ll_fark": 0.0001,
+    "harman_ll_fark": 0.0001
+   },
+   {
     "grup_cikarildi": "a6_gelisim",
     "model_ll_fark": 0.0,
     "harman_ll_fark": 0.0
@@ -1449,12 +1477,12 @@
    {
     "grup_cikarildi": "jk_apr",
     "model_ll_fark": 0.0,
-    "harman_ll_fark": 0.0
+    "harman_ll_fark": 0.0001
    },
    {
-    "grup_cikarildi": "a6_ek_st",
+    "grup_cikarildi": "antrenor",
     "model_ll_fark": -0.0001,
-    "harman_ll_fark": 0.0002
+    "harman_ll_fark": 0.0001
    },
    {
     "grup_cikarildi": "fark",
@@ -1462,29 +1490,19 @@
     "harman_ll_fark": 0.0001
    },
    {
-    "grup_cikarildi": "antrenor",
+    "grup_cikarildi": "a6_ek_st",
     "model_ll_fark": -0.0002,
-    "harman_ll_fark": 0.0001
-   },
-   {
-    "grup_cikarildi": "dinlenme",
-    "model_ll_fark": -0.0004,
-    "harman_ll_fark": 0.0
+    "harman_ll_fark": 0.0002
    },
    {
     "grup_cikarildi": "jokey",
     "model_ll_fark": -0.0004,
-    "harman_ll_fark": -0.0002
-   },
-   {
-    "grup_cikarildi": "yas",
-    "model_ll_fark": -0.0004,
     "harman_ll_fark": -0.0001
    },
    {
-    "grup_cikarildi": "fark2",
+    "grup_cikarildi": "dinlenme",
     "model_ll_fark": -0.0005,
-    "harman_ll_fark": -0.0002
+    "harman_ll_fark": 0.0
    },
    {
     "grup_cikarildi": "form",
@@ -1492,19 +1510,24 @@
     "harman_ll_fark": -0.0003
    },
    {
+    "grup_cikarildi": "fark2",
+    "model_ll_fark": -0.0006,
+    "harman_ll_fark": -0.0001
+   },
+   {
     "grup_cikarildi": "piyasa_hafiza",
-    "model_ll_fark": -0.0005,
+    "model_ll_fark": -0.0006,
     "harman_ll_fark": -0.0002
    },
    {
     "grup_cikarildi": "reyting",
-    "model_ll_fark": -0.0008,
-    "harman_ll_fark": -0.0004
+    "model_ll_fark": -0.0009,
+    "harman_ll_fark": -0.0003
    },
    {
     "grup_cikarildi": "jokey_at",
     "model_ll_fark": -0.0019,
-    "harman_ll_fark": -0.001
+    "harman_ll_fark": -0.0009
    }
   ],
   "ablasyon_tarih": "2026-10-27"
@@ -1638,7 +1661,10 @@
    "a6_m_egim",
    "a6_m_uzak",
    "a6_g_proj",
-   "a6_g_alan"
+   "a6_g_alan",
+   "gl_wfa_av",
+   "gl_etkin_kilo",
+   "gl_wfa_x_mes"
   ],
   "ortalama": [
    0.070581,
@@ -1768,7 +1794,10 @@
    0.002112,
    0.153918,
    -0.070364,
-   -0.0
+   -0.0,
+   0.0,
+   -0.0,
+   0.0
   ],
   "olcek": [
    0.256124,
@@ -1898,168 +1927,174 @@
    0.215905,
    0.148414,
    0.144395,
-   0.102275
+   0.102275,
+   0.42088,
+   2.364286,
+   0.11895
   ],
   "agirlik": [
-   -0.138861,
-   -0.178231,
-   0.041159,
-   0.024472,
-   0.004739,
-   0.027528,
-   0.025865,
-   -0.046027,
-   -0.05707,
-   -0.065694,
-   0.024538,
-   0.054562,
-   -0.07042,
-   -0.040196,
-   0.086533,
-   0.012298,
-   0.022719,
-   -0.014266,
-   0.108094,
-   -0.017148,
-   -0.039711,
-   -0.079905,
-   0.0,
-   0.015196,
-   -0.003801,
-   -0.04687,
-   0.002939,
-   0.004564,
-   0.006552,
-   0.013344,
-   0.026092,
-   -0.046049,
-   0.03626,
-   0.093794,
-   0.021177,
-   0.015585,
-   0.068026,
-   -0.007066,
-   0.004396,
-   -0.112796,
-   0.00444,
-   -0.085416,
-   -0.005641,
-   0.140462,
-   0.040859,
-   0.173412,
-   -0.007069,
+   -0.135824,
+   -0.19776,
+   0.041369,
+   0.0252,
+   0.007194,
+   0.022427,
+   0.030782,
+   -0.044124,
+   -0.056945,
+   -0.064131,
+   0.027179,
+   0.051893,
+   -0.069016,
+   -0.040429,
+   0.08646,
+   0.013011,
+   0.022849,
+   -0.014011,
+   0.10788,
+   -0.015777,
+   -0.015855,
+   -0.080556,
    -0.0,
-   -0.0,
-   -0.013826,
-   -0.0,
-   -0.027607,
-   -0.006267,
-   0.01261,
-   0.170201,
-   -0.158159,
-   -0.104905,
-   -0.000846,
-   0.164961,
-   0.078886,
-   0.859219,
-   -0.002942,
-   -0.056099,
-   0.017269,
-   0.022026,
-   -0.015476,
-   0.032467,
-   0.020397,
-   -0.096281,
-   -0.084346,
-   -0.10689,
-   -0.058107,
-   -0.00995,
-   -0.0139,
-   -0.031953,
-   -0.006014,
-   0.013332,
-   0.010404,
-   -0.035355,
-   -0.0,
-   -0.007079,
-   0.023322,
-   0.142338,
-   -0.040283,
-   -0.0065,
-   0.05168,
-   0.149439,
-   0.154246,
-   0.01224,
-   0.005999,
-   0.028242,
-   -0.026747,
-   0.03036,
-   0.046002,
-   0.205922,
-   0.04425,
-   0.012659,
-   0.014363,
+   0.22728,
+   -0.004043,
+   -0.047469,
+   0.00266,
+   0.004395,
+   0.006441,
+   0.013529,
+   0.025917,
+   -0.045626,
+   0.03641,
+   0.095199,
+   0.021802,
+   0.01757,
+   0.067064,
+   -0.006575,
+   0.004216,
+   -0.115511,
+   -0.000987,
+   -0.08389,
+   -0.005835,
+   0.142062,
+   0.040228,
+   0.158229,
+   -0.007312,
    0.0,
    0.0,
+   -0.005338,
    -0.0,
-   0.006099,
-   0.004351,
-   0.013984,
-   0.007982,
+   -0.030224,
+   -0.006483,
+   0.014216,
+   0.167109,
+   -0.158047,
+   -0.107775,
+   -0.000694,
+   0.162669,
+   0.079311,
+   0.864174,
+   -0.002414,
+   -0.054996,
+   0.015987,
+   0.021448,
+   -0.018972,
+   0.031616,
+   0.022584,
+   -0.138501,
+   -0.068406,
+   -0.106319,
+   -0.058285,
+   -0.009363,
+   -0.014226,
+   -0.031023,
+   -0.006302,
+   0.012362,
+   0.009454,
+   -0.03544,
    -0.0,
-   -0.028906,
-   -0.028408,
-   -0.010724,
-   0.03214,
-   0.205848,
-   0.056187,
-   -0.050285,
-   0.086982,
-   -0.020612,
-   0.085528,
-   -0.058434,
-   -0.005364,
-   0.023918,
-   -0.920605,
-   0.172904,
-   -0.099576,
-   0.050817,
-   0.020449,
-   0.028249,
-   -0.025067,
-   0.006694,
-   0.009451
+   -0.006669,
+   0.023777,
+   0.142379,
+   -0.040245,
+   -0.005624,
+   0.051862,
+   0.146024,
+   0.154623,
+   0.012156,
+   0.005797,
+   0.028027,
+   -0.026463,
+   0.031258,
+   0.046041,
+   0.207926,
+   0.043666,
+   0.011858,
+   0.014622,
+   0.0,
+   0.0,
+   -0.0,
+   0.005922,
+   0.00409,
+   0.014645,
+   0.007359,
+   -0.0,
+   -0.028801,
+   -0.028363,
+   -0.010613,
+   0.032386,
+   0.205272,
+   0.060092,
+   -0.049435,
+   0.087163,
+   -0.020414,
+   0.086159,
+   -0.058726,
+   -0.005338,
+   0.026793,
+   -0.925622,
+   0.170126,
+   -0.09963,
+   0.050232,
+   0.02053,
+   0.028041,
+   -0.025309,
+   0.005968,
+   0.008426,
+   -0.058178,
+   -0.026426,
+   0.013066
   ],
   "sicaklik": 1.0,
-  "alfa": 0.4586,
-  "beta": 0.6844,
+  "alfa": 0.4545,
+  "beta": 0.689,
   "henery_gamma": 0.84,
   "henery_delta": 0.78,
   "lambda": 3.0,
   "henery_gamma_model": 0.84,
   "henery_delta_model": 0.78,
   "piyasa_keskin_beta": 1.0197,
-  "c_dogrusal": 0.59913,
-  "c_gbm": 0.37645,
+  "c_dogrusal": 0.68037,
+  "c_gbm": 0.28911,
   "gbm": true,
   "kalibrasyon": [
    [
     "beta",
-    1.19161,
-    1.037
+    1.18956,
+    1.02742
    ],
    [
     "ust",
-    0.98742,
-    0.12451,
+    0.98986,
+    0.10028,
     0.25
    ]
   ],
   "gbm_tohum": 1,
   "yedek": {
-   "cl": 0.9639,
-   "alfa": 0.43969,
-   "beta": 0.70643
+   "cl": 0.95932,
+   "alfa": 0.4406,
+   "beta": 0.70566
   }
  },
  "gecmis": [
@@ -2322,9 +2357,25 @@
    "ilk_secim_isabet": 0.3431,
    "model_log_loss": 1.8716,
    "model_ilk_secim_isabet": 0.3144
+  },
+  {
+   "tarih": "2026-10-27T04:20:52+00:00",
+   "karar": "KABUL",
+   "log_loss": 1.8083,
+   "ilk_secim_isabet": 0.3437,
+   "model_log_loss": 1.8717,
+   "model_ilk_secim_isabet": 0.3159
+  },
+  {
+   "tarih": "2026-10-27T05:34:41+00:00",
+   "karar": "KORU",
+   "log_loss": 1.8083,
+   "ilk_secim_isabet": 0.3437,
+   "model_log_loss": 1.8717,
+   "model_ilk_secim_isabet": 0.3159
   }
  ],
- "guncelleme": "2026-10-27T03:22:26+00:00",
+ "guncelleme": "2026-10-27T05:34:41+00:00",
  "altin_kural": {
   "p_min": 0.35,
   "fark_min": 0.12,
@@ -2368,12 +2419,12 @@
   "az_at": 0
  },
  "kapi": {
-  "karar": "KABUL",
-  "neden": "yalnız-model log-loss 1.8686→1.8527, ilk seçim 0.3165→0.322; harman log-loss 1.796→1.793 (ortak 5469 sınama koşusunda)",
+  "karar": "KORU",
+  "neden": "aynı tarif; katsayılar 0 günlük (haftalık yenileme), özellikler bu gece yeni sonuçlarla güncellendi",
   "yeni": {
-   "model_ll": 1.8527,
-   "model_ilk": 0.322,
-   "harman_ll": 1.793,
+   "model_ll": 1.8521,
+   "model_ilk": 0.3235,
+   "harman_ll": 1.7926,
    "harman_ilk": 0.3507
   },
   "eski": {
@@ -2382,7 +2433,7 @@
    "harman_ll": 1.796,
    "harman_ilk": 0.3516
   },
-  "tarih": "2026-10-27T03:22:26+00:00"
+  "tarih": "2026-10-27T05:34:41+00:00"
  },
  "yayin_modu": "model+piyasa",
  "kaynak": {

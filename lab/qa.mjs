@@ -12,6 +12,8 @@
 //   QA_EKRAN    ekran görüntüsü klasörü (tam modda varsayılan data/qa; boş = alma)
 //   QA_DIS      engelle | izin  — dış alan adlarına istek (yerel adreste varsayılan engelle). tjk.org ve atyarisi.com HER ZAMAN engellenir.
 //   QA_BUTCE_INDEX_KB, QA_BUTCE_VERI_KB, QA_BUTCE_GOREV_MS   bütçe sınırları (aşılırsa alarm)
+//   QA_KAYNAK   depo kökü (lab/duman.sh verir). Aynı kaynaktan 404 alan her istek HATADIR (yayın listesinden eksik dosya → kapı reddeder).
+//               Tek istisna: tarihli dosya (…/2026-10-28.json gibi) depoda da yoksa 404 normaldir (o günün verisi henüz yok) → yalnız bilgi.
 import { chromium, devices } from "playwright";
 import fs from "fs";
 import path from "path";
@@ -33,10 +35,12 @@ const ARDISIK_SINIR = MOD === "hizli" ? 3 : 6;   // art arda bu kadar ekran aç�
 const HEDEF = { index_kb: 1300, veri_aktarim_kb: 900, gorev_ms: 2000 };
 const YASAK = [/\b(bahis\w*|ganyan\w*|banko|kupon\w*)\b/gi, /bulut/gi];
 const YASAK_ALAN = /(^|\.)(tjk\.org|atyarisi\.com)$/i;
+const KAYNAK = process.env.QA_KAYNAK || "";
+const TARIHLI = /\d{4}-\d{2}(-\d{2})?\.json$/;
 
 const out = {
   zaman: new Date().toISOString(), url: URL, mod: MOD, hatalar: [], uyarilar: [], sayfalar: {},
-  dugme: { tiklanan: 0, hata: 0 }, acilis_ms: null, pageerror: 0, tasma: 0, yasak_kelime: [], butce: null, sure_sn: null, alarm: true,
+  dugme: { tiklanan: 0, hata: 0 }, istek404: [], istek404_normal: [], acilis_ms: null, pageerror: 0, tasma: 0, yasak_kelime: [], butce: null, sure_sn: null, alarm: true,
   aciklama: "Kalite botu (lab/qa.mjs). alarm=true → hatalar listesine bakın; adım sağlık kaydında hata olarak görünür.",
 };
 const T0 = Date.now();
@@ -73,6 +77,17 @@ try {
   p.setDefaultTimeout(240000); p.setDefaultNavigationTimeout(240000);
   p.on("pageerror", e => { const m = String(e.message || e).slice(0, 240); errs.push([ekran, m]); });
   p.on("dialog", d => d.dismiss().catch(() => { }));
+  // 404 denetimi: yayından eksik kalan dosya uygulamayı kırar (lab/yayin_listesi.py)
+  p.on("response", r => {
+    try {
+      if (r.status() !== 404 || !r.url().startsWith(URL)) return;
+      const yol = decodeURIComponent(new globalThis.URL(r.url()).pathname.slice(new globalThis.URL(URL).pathname.length));
+      const depodaVar = KAYNAK ? fs.existsSync(path.join(KAYNAK, yol)) : false;
+      const normal = (TARIHLI.test(yol) && !depodaVar) || yol === "favicon.ico";
+      const L = normal ? out.istek404_normal : out.istek404;
+      if (!L.includes(yol)) L.push(yol);
+    } catch (e) { }
+  });
 
   // ---------------------------------------------------------------- yardımcılar
   const gorunurView = () => p.evaluate(() => { const s = document.querySelector("main section.view:not([hidden])") || document.querySelector("section.view:not([hidden])"); return s ? s.id : null; });
@@ -284,6 +299,7 @@ try {
   hata(`betik yarıda kaldı (${ekran}): ${String(e.message || e).split("\n")[0].slice(0, 200)}`);
 } finally {
   out.pageerror = errs.length;
+  if (out.istek404.length) hata(`404: ${out.istek404.length} dosya bulunamadı (yayın listesinden eksik olabilir: lab/yayin_listesi.py) → ${out.istek404.slice(0, 6).join(", ")}`);
   for (const [ad, m] of errs.slice(0, 12)) hata(`JS (${ad}): ${maskele(m)}`);
   if (out.yasak_kelime.length) hata(`yasak kelime: ${out.yasak_kelime.length} yerde (${out.yasak_kelime.slice(0, 3).join(" · ")})`);
   out.sure_sn = Math.round((Date.now() - T0) / 1000);
