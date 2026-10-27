@@ -1,15 +1,20 @@
 name: OXXai at yarisi canli (gun ici)
-# Yarış günü 11:00–00:30 TSİ: güncel ganyan oranlarıyla olasılıkları tazeler, aynı akşam sonuçları puanlar. Yalnız data/at/canli/,
-# data/at/oran_izi/, data/at/karne.json, 6'lı (data/at/altili/, altili_karne.json) ve OXXai at kuponlarını (data/oxx_kupon/at/) yazar;
-# futbol sistemine, index.html'e dokunmaz.
-# Tek iş içinde döngü: 3 tur × 15 dk (≈32 dk). Zamanlayıcı 30 dakikada bir tetikler; concurrency kuyruğu üst üste binmeyi önler,
-# böylece zamanlayıcı gecikmesine rağmen (30 dk hedef → gerçekte ~56 dk) tazeleme pratikte 15 dk aralıkla sürer. Turlar tek commit.
-# Veri: github.com/cenkozgur/tjk-data aynası sığ klonlanır (_tjk-data, gitignore'da); 2. turdan itibaren canli.py aynı aynayı
-# yalnız GitHub'dan günceller. tjk.org'a / atyarisi.com'a istek YOK.
+# Yarış saatleri (TSİ 11:00–00:59 = UTC 08–21): her iş ~28 dk boyunca 5 dk arayla döner (tahmin tazeleme + sonuç yoklama);
+# zamanlayıcı 15 dk'da bir tetikler, concurrency kuyruğu (en çok 1 bekleyen) işleri arka arkaya dizer → zamanlayıcı
+# gecikse de yarış saatlerinde kesintisiz ~5 dk aralık. Yeni koşu sonucu gelince o tur HEMEN kaydedilir (en az 5 dk arayla);
+# sonuç yoksa en çok 15 dk'da bir kayıt (Pages derleme sınırı: saatte ~10 derleme).
+# Gece/sabah (TSİ 00:07–02:37 ve 07:07–10:37): 30 dk'da bir tek tur — geç yayınlanan sonuçlar ve sabah programı.
+# Her çalışma son 3 günün sonucu eksik koşularını da yeniden dener (canli.py GERI_GUN; tahminler korunur, sonuç eklenir).
+# Yalnız data/at/canli/, data/at/oran_izi/, data/at/karne.json, 6'lı (data/at/altili/, altili_karne.json), KUPO at
+# (data/oxx_kupon/at/) ve türetilmiş ek kaynak özetlerini yazar; futbol sistemine, index.html'e dokunmaz.
+# Veri: github.com/cenkozgur/tjk-data aynası (sığ klon, _tjk-data, gitignore'da) + Ek kaynak A (yalnız secret; sonuç yedeği,
+# adres hiçbir yere yazılmaz, _ek_sonuc/ gitignore'da). Resmî yarış sitelerine istek YOK.
 # Yeniden eğitim yok: gece akışının (at-lab.yml) kaydettiği yayın modeli kullanılır (her turda uzak daldan tazelenir).
+# Dakika: depo herkese açık → GitHub Actions dakikası sınırsız (özel depoda ≈ 26 bin dk/ay olurdu; ücretsiz kota 2 bin).
 on:
   schedule:
-    - cron: "*/30 8-21 * * *"
+    - cron: "*/15 8-21 * * *"
+    - cron: "7,37 4-7,22-23 * * *"
   workflow_dispatch:
 permissions:
   contents: write
@@ -19,10 +24,11 @@ concurrency:
 jobs:
   canli:
     runs-on: ubuntu-latest
-    timeout-minutes: 42   # kurtarıcının "45 dk kuyrukta bekleyen" kuralının altında kalsın
+    timeout-minutes: 40   # kurtarıcının "45 dk kuyrukta bekleyen" kuralının altında kalsın
     env:
-      TUR: "3"
-      ARALIK_SN: "900"
+      SURE_SN: "1680"      # yarış saatlerinde döngü süresi (28 dk)
+      ARALIK_SN: "300"     # tur aralığı (5 dk)
+      KAYIT_SN: "900"      # sonuç yokken en sık kayıt aralığı (15 dk)
       AT_KAYNAK: ./_tjk-data
     steps:
       - uses: actions/checkout@v4
@@ -39,12 +45,18 @@ jobs:
         env:
           AT_EK_KAYNAK: ${{ secrets.AT_EK_KAYNAK }}
         run: python3 lab/adim.py ek-kaynak --onem bilgi -- python3 lab/at/ek_kaynak.py --gerekirse 6
-      - name: 🐎 Gün içi döngü (15 dk arayla tahmin + aynı akşam puanlama + 🎟️ OXXai at kuponları)
+      - name: 🐎 Gün içi döngü (5 dk arayla tahmin + sonuç yoklama; yeni sonuç gelince hemen kayıt + 🎟️ KUPO puanlama)
         env:
           GH_TOKEN: ${{ github.token }}
+          AT_EK_KAYNAK: ${{ secrets.AT_EK_KAYNAK }}
         run: |
-          for i in $(seq 1 "$TUR"); do
-            t0=$(date +%s)
+          SAAT=$(date -u +%-H)
+          if [ "$SAAT" -ge 8 ] && [ "$SAAT" -le 21 ] && [ "${{ github.event_name }}" = "schedule" ]; then SURE=$SURE_SN; else SURE=0; fi
+          BAS=$(date +%s); SON_KAYIT=$BAS; ONCEKI=-1; i=0
+          export AT_BITTI_SAYAC="$RUNNER_TEMP/at_bitti"
+          YOLLAR="data/at/canli data/at/ek_ozellik data/at/karne.json data/at/altili data/at/altili_karne.json data/oxx_kupon/at data/at/oran_izi data/saglik"
+          while :; do
+            i=$((i+1)); t0=$(date +%s)
             GUNC="--guncelleme-yok"
             if [ "$i" -gt 1 ]; then
               GUNC=""   # canli.py aynayı kendisi günceller (yalnız github.com/cenkozgur/tjk-data)
@@ -53,12 +65,21 @@ jobs:
             fi
             python3 lab/adim.py at-canli -- timeout 420 python lab/at/canli.py $GUNC
             python3 lab/adim.py at-kupon -- timeout 60 python scripts/oxx_kupon.py --at
-            if [ "$i" -lt "$TUR" ]; then
-              s=$(( t0 + ARALIK_SN - $(date +%s) ))
-              if [ "$s" -gt 0 ]; then sleep "$s"; fi
+            SIMDI=$(cat "$AT_BITTI_SAYAC" 2>/dev/null || echo 0)
+            YENI=0; if [ "$ONCEKI" -ge 0 ] && [ "$SIMDI" -gt "$ONCEKI" ]; then YENI=1; fi
+            if [ "$i" -eq 1 ] && [ "$SIMDI" -gt 0 ]; then YENI=1; fi   # ilk tur: önceki işten bu yana gelen sonuçlar
+            ONCEKI=$SIMDI
+            KALAN=$(( BAS + SURE - $(date +%s) ))
+            if [ "$KALAN" -le "$ARALIK_SN" ]; then break; fi   # son tur: aşağıdaki kayıt adımı yazar
+            if [ "$YENI" = 1 ] || [ $(( $(date +%s) - SON_KAYIT )) -ge "$KAYIT_SN" ]; then
+              echo "tur $i: kayıt (yeni sonuç=$YENI, toplam sonuçlu koşu=$SIMDI)"
+              python3 lab/gonder.py -m "At canlı: $(TZ=Europe/Istanbul date '+%Y-%m-%d %H:%M') [skip ci]" $YOLLAR || true
+              SON_KAYIT=$(date +%s)
             fi
+            s=$(( t0 + ARALIK_SN - $(date +%s) ))
+            if [ "$s" -gt 0 ]; then sleep "$s"; fi
           done
-      - name: Yalnız değişen türetilmiş çıktıları kaydet (tüm turlar tek commit)
+      - name: Son turun türetilmiş çıktılarını kaydet
         run: |
           python3 lab/gonder.py -m "At canlı: $(TZ=Europe/Istanbul date '+%Y-%m-%d %H:%M') [skip ci]" \
             data/at/canli data/at/ek_ozellik data/at/karne.json data/at/altili data/at/altili_karne.json data/oxx_kupon/at data/at/oran_izi data/saglik

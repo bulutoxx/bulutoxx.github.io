@@ -7928,7 +7928,7 @@ setTimeout(()=>{ try{ renderTP(); }catch(e){} },1500);
 // =====================================================================
 // OXXai v73: 🐎 At Yarışı (DENEME) — her gece kendini eğiten laboratuvarın (lab/at) olasılıkları.
 // Veri: data/at/tahmin/<gün>.json (kilitli, yalnız türetilmiş olasılıklar), data/at/model.json (sınama ölçümleri),
-// data/at/karne.json (kilitli tahminlerin sonuçları). Kaynak: açık TJK arşivi; tjk.org'a istek yok. Hobi amaçlı, 18+.
+// data/at/karne.json (kilitli tahminlerin sonuçları). Kaynak: açık yarış sonuç arşivi; resmî siteye istek yok. Hobi amaçlı, 18+.
 // =====================================================================
 (function(){
   const LOGO=(k)=>`<img class="at-emb" src="icons/oxxai-at.webp" alt="" aria-hidden="true" decoding="async" onerror="this.onerror=null;this.src='icons/oxxai-at.png'">`;
@@ -7975,7 +7975,7 @@ setTimeout(()=>{ try{ renderTP(); }catch(e){} },1500);
       <p class="note" style="margin:6px 0">"Katkı", jokeyin aynı atla beklenenden ne kadar iyi sonuç aldığını gösterir; yalnız kazanma sayısına bakmaz. 📈 formu yükselen, 📉 düşen.</p>${L.map(row).join("")}</div>
       ${tl.length?`<details class="sx"><summary>🧑‍🏫 Antrenörler <small>${tl.length}</small></summary><div class="sx-in"><div class="at-race">${tl.map(row).join("")}</div></div></details>`:""}
       ${ik.length?`<details class="sx"><summary>🤝 En uyumlu jokey–antrenör ikilileri <small>${ik.length}</small></summary><div class="sx-in"><div class="at-race">${ik.map((x,i)=>`<div class="jk-r"><span class="jk-i">${i+1}</span><span class="jk-n"><b>${esc(x.jokey)} + ${esc(x.antrenor)}</b><small>${x.binis} birliktelik · kazanma %${Math.round((x.kazanma||0)*100)}</small></span><span class="jk-k"><b>${(+x.katki>0?"+":"")+(+x.katki).toFixed(2).replace(".",",")}</b></span></div>`).join("")}</div></div></details>`:""}
-      <p class="note">Dönem: ${esc((J.donem||[]).join(" – "))} · güncelleme ${esc(J.guncelleme||"")}. Kaynak: açık TJK sonuç arşivi; yalnız türetilmiş istatistik.</p>`; }
+      <p class="note">Dönem: ${esc((J.donem||[]).join(" – "))} · güncelleme ${esc(J.guncelleme||"")}. Kaynak: açık yarış sonuç arşivi; yalnız türetilmiş istatistik.</p>`; }
   function goldOfDay(D){ const out=[];
     for(const r of D.kosular||[]){ const A=(r.atlar||[]).slice().sort((a,b)=>b.p_kazanma-a.p_kazanma); if(A.length<2) continue;
       const a=A[0], gap=a.p_kazanma-A[1].p_kazanma; if(a.p_kazanma>=.35&&gap>=.12) out.push({r,h:a,s:a.p_kazanma+gap}); }
@@ -8103,7 +8103,7 @@ setTimeout(()=>{ try{ renderTP(); }catch(e){} },1500);
       h+=ac.map(race).join("")||`<div class="panel"><p class="note" style="margin:0">Bu hipodromda bugün başlamamış koşu kalmadı.</p></div>`;
       if(bt.length) h+=`<details class="sx"><summary>🏁 Biten koşular <small>${bt.length}</small></summary><div class="sx-in">${bt.map(race).join("")}</div></details>`;
     }
-    h+=`<p class="note">Kilit: ${esc(D.kilit_zamani_tsi||"")} · model ${esc(D.model_surumu||"")}. Veri: herkese açık TJK sonuç arşivi (github.com/cenkozgur/tjk-data); OXXai TJK sitesine istek atmaz. ${esc(String(D.not||"").replace(/kosudan_once=false olan koşular canlı karneye sayılmaz\.?/,"Koşular başladıktan sonra eklenen tahminler karneye sayılmaz."))}</p>`;
+    h+=`<p class="note">Kilit: ${esc(D.kilit_zamani_tsi||"")} · model ${esc(D.model_surumu||"")}. Veri: herkese açık yarış sonuç arşivi (GitHub aynası); OXXai resmî yarış sitesine istek atmaz. ${esc(String(D.not||"").replace(/kosudan_once=false olan koşular canlı karneye sayılmaz\.?/,"Koşular başladıktan sonra eklenen tahminler karneye sayılmaz."))}</p>`;
     box.innerHTML=h;
     box.querySelectorAll("[data-d]").forEach(b=>b.onclick=()=>{ AT.d=b.dataset.d; buzz(6); render(); });
     const oz=$("atOz"); if(oz) oz.addEventListener("toggle",()=>{ try{ localStorage.setItem("bx-at-oz",oz.open?"1":"0"); }catch(e){} });
@@ -8141,7 +8141,16 @@ setTimeout(()=>{ try{ renderTP(); }catch(e){} },1500);
     c.onclick=openAt; g.appendChild(c); }
   mountMenu(); setTimeout(mountMenu,1600); setTimeout(mountMenu,5200);
   if((location.hash||"")==="#at") setTimeout(openAt,450);
-  setInterval(()=>{ const v=$("v-at"); if(v&&!v.hidden&&!document.hidden) load(); },5*60e3);
+  // v134+: yarış saatlerinde (koşuya 20 dk kala → başladıktan 90 dk sonrasına, sonuç gelene dek) yalnız canlı dosya 45 sn'de bir
+  // tazelenir (önbelleksiz); tam yükleme 5 dk'da bir. Sayfa/sekme gizliyken çalışmaz (perf-v118 planlayıcısı).
+  let lastFull=Date.now();
+  const hotAt=()=>{ const d0=dISO(0), C=AT.canli&&AT.canli[d0], now=Date.now(); if(!C||!C.kosular) return false;
+    return C.kosular.some(k=>{ if(k.sonuc||!k.saat) return false; const t=new Date(d0+"T"+k.saat+":00+03:00").getTime(); return isFinite(t)&&now>t-20*60e3&&now<t+90*60e3; }); };
+  async function loadCanli(){ const ds=[...new Set([dISO(0),AT.d].filter(d=>d&&AT.days.includes(d)))]; if(!ds.length) return;
+    const cs=await Promise.all(ds.map(d=>j("data/at/canli/"+d+".json"))); let ch=false; AT.canli=AT.canli||{};
+    ds.forEach((d,i)=>{ const v=cs[i], o=AT.canli[d]; if(v&&v.kosular&&(!o||o.guncelleme_tsi!==v.guncelleme_tsi)){ AT.canli[d]=v; ch=true; } });
+    if(ch){ render(); try{ if(window.BX_AT2) window.BX_AT2.paint(); }catch(e){} } }
+  setInterval(()=>{ const v=$("v-at"); if(!v||v.hidden||document.hidden) return; if(Date.now()-lastFull>=5*60e3){ lastFull=Date.now(); load(); } else if(hotAt()) loadCanli().catch(()=>{}); },45e3);
 
   // ---------- OXXai: at yarışı soruları (yalnız telefondaki kilitli olasılıklardan; uydurma yok) ----------
   const NZ=t=>String(t||"").toLocaleLowerCase("tr").replace(/ç/g,"c").replace(/ğ/g,"g").replace(/ı/g,"i").replace(/ö/g,"o").replace(/ş/g,"s").replace(/ü/g,"u").replace(/[^a-z0-9 .]/g," ").replace(/\s+/g," ").trim();
@@ -11585,7 +11594,9 @@ html[data-v122-ctx="at"] nav.tabs button[aria-current]{color:var(--ink3,#8893AB)
   const open=r=>{ const s=st(r); return s==="bekliyor"||s==="oran"; };
   function stPill(r,m){ const s=st(r);
     if(s==="bitti"){ m=m||M(r); const ok=m.son.tuttu!=null?!!m.son.tuttu:(m.A[0]&&String(m.son.kazanan)===m.A[0].no); return `<span class="a2-pill ${ok?"ok":"no"}">${ok?"✓":"✗"} Bitti</span>`; }
-    if(s==="kosuldu") return `<span class="a2-pill w">Sonuç bekleniyor</span>`;
+    const dt=tsOf(dayOf(r.kosu_id),r.saat)-NOW();
+    if(s==="kosuldu") return dt>-4*60e3?`<span class="a2-pill w">Koşuluyor</span>`:`<span class="a2-pill w">Sonuç bekleniyor</span>`;
+    if(isFinite(dt)&&dt<=10*60e3) return `<span class="a2-pill or">Başlamak üzere</span>`;
     if(s==="oran") return `<span class="a2-pill or">Oranla güncel</span>`; return `<span class="a2-pill">Sabah tahmini</span>`; }
   const golds=()=>D()?X.goldOfDay(D()):[];
   const dLbl=d=>X.dLbl(d);
@@ -11670,7 +11681,7 @@ html[data-v122-ctx="at"] nav.tabs button[aria-current]{color:var(--ink3,#8893AB)
     return V(rt.a); }
   const skel=()=>`<div class="a2-sk" style="height:56px"></div><div class="a2-sk" style="height:150px"></div><div class="a2-sk" style="height:120px"></div><div class="a2-sk" style="height:64px"></div><p class="a2-sr">Yükleniyor</p>`;
   const notFound=t=>`<div class="a2-card a2-empty"><div class="e" aria-hidden="true">🔎</div><b>${E(t)}</b><p>Bu kayıt seçili günün verisinde yok (eski bir bağlantı olabilir).</p><a class="a2-btn q" href="#at/program" data-tab="program">Programa dön</a></div>`;
-  const foot=()=>{ const Dd=D(); return `<p class="a2-foot">${Dd&&Dd.kilit_zamani_tsi?`Kilit: ${E(Dd.kilit_zamani_tsi)} · model ${E(Dd.model_surumu||"")}. `:""}Veri: herkese açık TJK sonuç arşivi (github.com/cenkozgur/tjk-data); OXXai TJK sitesine istek atmaz. Hobi amaçlı olasılıktır, garanti değildir. Para tutarı gösterilmez · 18+</p>`; };
+  const foot=()=>{ const Dd=D(); return `<p class="a2-foot">${Dd&&Dd.kilit_zamani_tsi?`Kilit: ${E(Dd.kilit_zamani_tsi)} · model ${E(Dd.model_surumu||"")}. `:""}Veri: herkese açık yarış sonuç arşivi (GitHub aynası); OXXai resmî yarış sitesine istek atmaz. Hobi amaçlı olasılıktır, garanti değildir. Para tutarı gösterilmez · 18+</p>`; };
   const dayChips=()=>AT.days.length>1?`<div class="a2-chips" role="group" aria-label="Gün seç">${AT.days.map(x=>`<button class="a2-chip" type="button" data-day="${x}" aria-pressed="${x===AT.d}">${E(dLbl(x))}</button>`).join("")}</div>`:"";
   function titleRow(){ const R=races(); return `<div class="a2-hd"><h1><img class="at-emb a2-emb" src="icons/oxxai-at.webp" alt="" aria-hidden="true" decoding="async" onerror="this.onerror=null;this.src='icons/oxxai-at.png'">At Yarışı<span class="a2-dn">DENEME</span><small>${E(dLbl(AT.d))} · ${hips().length} hipodrom · ${R.length} koşu</small></h1>
     <a class="a2-ib" href="#at/istatistik" aria-label="İstatistik: model karnesi ve jokey sıralaması">${IC.stat}</a><a class="a2-ib" href="#at/takip" aria-label="Takip listem${tkN()?" ("+tkN()+")":""}">${tkN()?IC.starF:IC.star}</a></div>`; }
@@ -11876,7 +11887,7 @@ html[data-v122-ctx="at"] nav.tabs button[aria-current]{color:var(--ink3,#8893AB)
     h+=`<h2 class="a2-sec">🏇 Jokeyler · son 90 gün</h2><div class="a2-card"><p class="a2-note" style="margin:0 0 6px">“Katkı”, jokeyin aynı atla beklenenden ne kadar iyi sonuç aldığını gösterir; yalnız kazanma sayısına bakmaz. 📈 formu yükselen, 📉 düşen.</p>${L(J.jokeyler,"jokey",25)}</div>`;
     if((J.antrenorler||[]).length) h+=`<h2 class="a2-sec">🧑‍🏫 Antrenörler</h2><div class="a2-card">${L(J.antrenorler,"antrenor",15)}</div>`;
     if((J.ikililer||[]).length) h+=`<h2 class="a2-sec">🤝 En uyumlu jokey–antrenör ikilileri</h2><div class="a2-card">${J.ikililer.slice(0,10).map((x,i)=>`<div class="a2-jr"><span class="rk">${i+1}</span><span class="a2-hn"><b>${E(x.jokey)} + ${E(x.antrenor)}</b><small>${E(x.binis)} birliktelik · kazanma ${P(x.kazanma)}</small></span><span class="kk"><b class="${+x.katki>0?"up":"dn"}">${+x.katki>0?"+":""}${fx(x.katki,1)}</b></span></div>`).join("")}</div>`;
-    return h+`<p class="a2-note">Dönem: ${E((J.donem||[]).join(" – "))} · güncelleme ${E(J.guncelleme||"")}. Kaynak: açık TJK sonuç arşivi; yalnız türetilmiş istatistik.</p>`+foot(); }
+    return h+`<p class="a2-note">Dönem: ${E((J.donem||[]).join(" – "))} · güncelleme ${E(J.guncelleme||"")}. Kaynak: açık yarış sonuç arşivi; yalnız türetilmiş istatistik.</p>`+foot(); }
   // =====================================================================
   // Paylaş (eski metinlerle aynı)
   // =====================================================================
@@ -12171,7 +12182,7 @@ html[data-v122-ctx="at"] nav.tabs button[aria-current]{color:var(--ink3,#8893AB)
       <p class="a2-note" style="margin:8px 2px 0">Kazanma ${P(d[0]/z.n)} · ilk 3 ${P(i3/z.n)}${z.jk&&h.jokey?` · bugünkü jokeyi ${E(h.jokey)} ile ${z.jk[0]} koşu${z.jk[0]?`, ${z.jk[1]} birincilik`:""}`:""}.</p>
       ${son?`<div class="a3-sub">Son ${z.son.length} derece <span style="text-transform:none;letter-spacing:0;font-weight:500">(en yeni solda)</span></div><span class="a2-fm" role="img" aria-label="Son dereceler: ${E(z.son.join(", "))}">${son}</span>`:""}
       ${dist(z.pist,pist,"Pist")}${dist(z.mes,mg,"Mesafe")}${dist(Object.fromEntries(Object.entries(z.hip||{}).map(([k,v])=>[k,[v[0],v[1],null]])),r.hipodrom,"Hipodrom")}
-      <p class="a2-note" style="margin:10px 2px 0">Gri çubuk koşu sayısı, altın çubuk ilk 3'e girdiği koşular (hipodromda birincilik). Yalnız bu günden önceki sonuçlar; kaynak açık TJK sonuç arşivi (türetilmiş özet).</p></div>`;
+      <p class="a2-note" style="margin:10px 2px 0">Gri çubuk koşu sayısı, altın çubuk ilk 3'e girdiği koşular (hipodromda birincilik). Yalnız bu günden önceki sonuçlar; kaynak açık yarış sonuç arşivi (türetilmiş özet).</p></div>`;
     return o; }
   function deco(kind,rt){ if(box.querySelector("[data-a3d]")) return; const r=raceById(unK(rt.a[0]||"")); if(!r) return; const d=dayOf(r.kosu_id); oiLoad(d);
     if(kind==="kosu"){ const main=box.querySelector(".a2-sade")||(box.querySelector(".a2-sortb")||{closest:()=>null}).closest(".a2-card"); if(!main) return;
@@ -13018,7 +13029,7 @@ html[data-v122-ctx="at"] nav.tabs button[aria-current]{color:var(--ink3,#8893AB)
     else h+=R.gec.length?`<div class="a2-card">${R.gec.slice(0,U.nG).map(o=>rowGec(o,q)).join("")}${R.gec.length>U.nG?`<button class="a2-btn q a5-more" type="button" data-a5m="g">${R.gec.length-U.nG} sonuç daha</button>`:""}</div>`
       :`<div class="a2-card"><p class="a2-note" style="margin:0">${R.prog.length?"Arşivde başka eşleşme yok.":"Arşivde de eşleşme yok. Adın bir kısmını ya da başka yazımını dene."}</p></div>`;
     return h+dzNote(); }
-  function dzNote(){ const v=DZ.v; return v?`<p class="a5-st">Arşiv: ${v.atlar.length.toLocaleString("tr-TR")} at · ${v.jk.length} jokey · ${v.an.length} antrenör · son sonuç ${E(ddmm(v.son_sonuc))}. Kaynak: açık TJK sonuç arşivi, yalnız türetilmiş özet. Para tutarı yok · 18+</p>`:""; }
+  function dzNote(){ const v=DZ.v; return v?`<p class="a5-st">Arşiv: ${v.atlar.length.toLocaleString("tr-TR")} at · ${v.jk.length} jokey · ${v.an.length} antrenör · son sonuç ${E(ddmm(v.son_sonuc))}. Kaynak: açık yarış sonuç arşivi, yalnız türetilmiş özet. Para tutarı yok · 18+</p>`:""; }
   function screen(){ return `<div class="a5-ara"><div class="a5-sf" role="search">${IC.lu}<input id="a5q" type="search" value="${E(U.q)}" placeholder="At, jokey ya da antrenör adı" aria-label="At, jokey ya da antrenör ara" autocomplete="off" autocapitalize="characters" spellcheck="false" enterkeyhint="search" aria-describedby="a5cnt"><button class="a5-cl" type="button" data-a5c="1" aria-label="Aramayı temizle"${U.q?"":" hidden"}>${IC.x}</button></div>
       <div class="a2-chips a5-k" role="group" aria-label="Ne aranıyor">${[["tum","Tümü"],["at","At"],["jokey","Jokey"],["antrenor","Antrenör"]].map(([k,l])=>`<button class="a2-chip" type="button" data-a5k="${k}" aria-pressed="${U.k===k}">${l}</button>`).join("")}</div>
       <span id="a5cnt" class="a2-sr"></span><div id="a5res">${results()}</div></div>`; }

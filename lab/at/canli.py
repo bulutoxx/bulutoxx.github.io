@@ -26,7 +26,8 @@ import altili  # noqa: E402  (6'lı ganyan: data/at/altili/<gün>.json)
 import kilit  # noqa: E402  (oran olgunluk kapısı + koruyucu)
 
 CANLI = os.path.join(gece.CIKTI, "canli")
-KAYNAK_ATIF = "açık TJK sonuç arşivi (github.com/cenkozgur/tjk-data)"
+KAYNAK_ATIF = "herkese açık yarış sonuç arşivi (GitHub aynası)"
+GERI_GUN = 3   # sonucu eksik kalan son 3 günün canlı dosyası her çalışmada yeniden denenir (geç gelen sonuç)
 
 
 def tsi_simdi():
@@ -178,6 +179,33 @@ def kosu_canli(m, kosu, gecmis, yayin_modu, sonuc, ekuri=None, yakalama=None):
             "sinif": kosu["sinif"], "durum": durum, "ekuri": ekuri_k, "kapi": kp, "atlar": cikti, "sonuc": s}, ek
 
 
+def gecmis_birlestir(yol, ks, surum):
+    """Geçmiş günün canlı dosyası: önceki çalışmalarda yayınlanan koşu kayıtları (olasılıklar) AYNEN korunur; sonucu
+    olmayan koşuya yeni gelen sonuç eklenir, model ilk seçimi KORUNAN p_sabah'tan hesaplanır. Dosya yoksa yeni kayıt."""
+    eski = gece.joku(yol) or {}
+    ek = {k["kosu_id"]: k for k in eski.get("kosular") or []}
+    if not ek:
+        return ks, surum
+    out = []
+    for kc in ks:
+        o = ek.get(kc["kosu_id"])
+        if not o:
+            out.append(kc); continue
+        o = dict(o)
+        s = kc.get("sonuc")
+        if s and not o.get("sonuc"):
+            s = dict(s)
+            ps = [(a.get("p_sabah") or 0.0, a) for a in o.get("atlar") or []]
+            if ps:
+                ilk = max(ps, key=lambda x: x[0])[1]
+                s["model_ilk"] = ilk["no"]; s["tuttu"] = ilk["ad"] == s["kazanan_ad"]
+            o["sonuc"], o["durum"] = s, "bitti"
+        out.append(o)
+    out += [k for k in eski["kosular"] if k["kosu_id"] not in {x["kosu_id"] for x in ks}]
+    out.sort(key=lambda k: (k.get("saat") or "99:99", k["hipodrom"], k["kosu"]))
+    return out, eski.get("model_surumu", surum)
+
+
 # ---------------------------------------------------------------- dosya
 def _icerik(d):
     return {k: v for k, v in d.items() if k != "guncelleme_tsi"}
@@ -281,8 +309,22 @@ def main():
     bugun = ar.bugun or simdi.date().isoformat()
     b = date.fromisoformat(bugun)
     gunler = [bugun, (b + timedelta(days=1)).isoformat()]
-    if not ar.bugun and simdi.hour < 6:   # gece yarısından sonraki çalışma: dünün geç sonuçlarını da tamamla
-        gunler.insert(0, (b - timedelta(days=1)).isoformat())
+    # geriye dönük tamamlama: son GERI_GUN günün canlı dosyasında sonucu gelmemiş koşu varsa gün yeniden işlenir
+    # (tahminler korunur, yalnız sonuç eklenir — bkz. gecmis_birlestir). Gece yarısından sonra dün her zaman denenir.
+    geri = []
+    for i in range(GERI_GUN, 0, -1):
+        t = (b - timedelta(days=i)).isoformat()
+        eski = gece.joku(os.path.join(CANLI, t + ".json")) or {}
+        if any(not k.get("sonuc") for k in eski.get("kosular") or []) or (i == 1 and not ar.bugun and simdi.hour < 6):
+            geri.append(t)
+    gunler = geri + gunler
+    try:   # Ek kaynak A: aynada sonucu olmayan koşular için yedek sonuç (adres yalnız secret'ta; yoksa sessizce atlanır)
+        import ek_sonuc
+        ek_y = ek_sonuc.guncelle()
+        ek_sonuc.durum_yaz(ek_y)
+    except Exception as e:   # noqa: BLE001
+        ek_sonuc, ek_y = None, "hata:" + type(e).__name__
+    print("ek sonuç:", ek_y, "| geriye dönük:", geri)
     progs = {t: veri.program_yukle(t, kaynak) for t in gunler}
     progs = {t: p for t, p in progs.items() if p}
     print("program:", {t: len(p) for t, p in progs.items()})
@@ -299,9 +341,17 @@ def main():
 
     gecmis = Gecmis(kosular)
     ozet = {}
+    ek_kosular = []
     for t in sorted(progs):
         gecmis.ilerlet(t)     # yalnız t gününden ÖNCEKİ sonuçlar
         sonuclar = gun_sonuclari(t, kaynak)
+        if ek_sonuc is not None:   # aynada olmayan koşular Ek kaynak A'dan (ayna her zaman önceliklidir)
+            try:
+                for anah, v in ek_sonuc.gun_sonuclari(t).items():
+                    if anah not in sonuclar:
+                        sonuclar[anah] = dict(v, kaynak="ek")
+            except Exception as e:   # noqa: BLE001
+                print("ek sonuç okunamadı:", type(e).__name__)
         try:
             gprog = altili.gun_programi(t, kaynak)   # (hipodrom, koşu) -> (isGanyanStart, ekürili gruplar)
         except Exception:
@@ -313,7 +363,17 @@ def main():
                                 (gprog.get((k["hipodrom"], k["kosu"])) or (None, []))[1], yak.get((k["hipodrom"], k["kosu"])))
             ks.append(kc); ekler.append(ek)
         ks.sort(key=lambda k: (k.get("saat") or "99:99", k["hipodrom"], k["kosu"]))
-        out = {"tarih": t, "guncelleme_tsi": simdi.strftime("%Y-%m-%d %H:%M"), "model_surumu": mj.get("surum", "?"),
+        surum = mj.get("surum", "?")
+        if t < bugun:   # geçmiş gün: yayınlanmış tahminler korunur, yalnız eksik sonuçlar eklenir
+            ks, surum = gecmis_birlestir(os.path.join(CANLI, t + ".json"), ks, surum)
+        for kc in ks:   # koşu saati geçti ama sonuç yok: arayüz "Sonuç bekleniyor" gösterir (uydurma yok)
+            kc["sonuc_bekleniyor"] = (not kc.get("sonuc")) and (t < bugun or (kc.get("saat") or "99:99") <= simdi.strftime("%H:%M"))
+        for k in progs[t]:   # Ek kaynak A'dan gelen sonuç: karne puanlaması için sentetik sonuç koşusu (yalnız bu çalışmada)
+            v = sonuclar.get((k["hipodrom"], k["kosu"]))
+            if v and v.get("kaynak") == "ek" and v.get("_sira_no"):
+                ek_kosular.append(dict(k, tarih=t, atlar=[dict(a, sira=v["_sira_no"].get(str(a["no"]))) for a in k["atlar"]
+                                                           if v["_sira_no"].get(str(a["no"]))]))
+        out = {"tarih": t, "guncelleme_tsi": simdi.strftime("%Y-%m-%d %H:%M"), "model_surumu": surum,
                "kaynak": KAYNAK_ATIF, "kosular": ks}
         degisti = yaz_degisince(os.path.join(CANLI, t + ".json"), out)
         try:   # gün içi oran izi (arayüzde mini çizgi); hata ana canlı akışı durdurmaz
@@ -333,7 +393,16 @@ def main():
             print("6'lı güncellenemedi:", type(e).__name__, e)
     oran_izi_temizle(bugun)
     print("canlı:", json.dumps(ozet, ensure_ascii=False))
-    _, puanlanan = gece.puanla(kosular, yalniz_degisince=True)
+    var = {(k["tarih"], k["hipodrom"], k["kosu"]) for k in kosular[-400:]}
+    ek_kosular = [k for k in ek_kosular if (k["tarih"], k["hipodrom"], k["kosu"]) not in var
+                  and sum(1 for a in k["atlar"] if a["sira"] == 1) == 1]
+    _, puanlanan = gece.puanla(kosular + ek_kosular, yalniz_degisince=True)
+    bitti = sum(1 for t in progs for k in (gece.joku(os.path.join(CANLI, t + ".json")) or {}).get("kosular", []) if k.get("sonuc"))
+    try:   # iş akışı döngüsü: yeni sonuç geldiyse hemen kaydet (bkz. at-canli.yml)
+        with open(os.environ.get("AT_BITTI_SAYAC") or os.devnull, "w") as f:
+            f.write(str(bitti))
+    except OSError:
+        pass
     print("karneye eklenen gün(ler):", puanlanan)
     try:
         k = altili.joku(altili.KARNE, {}) or {}

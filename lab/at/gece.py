@@ -51,7 +51,7 @@ V6_EK = os.path.join(CIKTI, "deneyler_v6_ek.json")       # v6b: Ek kaynak A dene
 JOKEY_DOSYA = os.path.join(CIKTI, "jokeyler.json")    # arayüz: attan arındırılmış jokey/antrenör istatistikleri
 YENILEME_GUN = 7   # aynı tarifte yayın katsayılarının yenilenme aralığı (gün)
 TAKIP = [("2026-10-25", "İstanbul", 5)]   # raporda kalıcı izlenen örnek koşu(lar)
-KAYNAKLAR = ["github.com/cenkozgur/tjk-data (herkese açık ayna; tjk.org'a istek yok)"]
+KAYNAKLAR = ["github.com/cenkozgur/tjk-data (herkese açık ayna; resmî siteye istek yok)"]
 
 IFADE = {  # özellik -> (değeri koşu ortalamasından YÜKSEKSE, DÜŞÜKSE) — yön katkının işaretinden ayrı seçilir
     "yeni": ("ilk koşusu, geçmiş verisi yok", ""),

@@ -100,7 +100,7 @@ Futbolda tek maçın sonucu doğası gereği belirsizdir; hiçbir model her maç
 - **Kaydetme:** tüm iş akışları `python3 lab/gonder.py -m "mesaj" yol...` kullanır. Uzak dal ilerlediyse `pull --rebase -X theirs` yerine
   dosya dosya 3 yollu birleştirme: JSON'lar anahtar düzeyinde (kimlikli listeler kimlik kimlik), diğer metinler `git merge-file`;
   aynı alanı iki iş de değiştirdiyse yerel kazanır. Gönderemezse 1 ile çıkar (iş başarısız görünür). Yalnız nabız değiştiyse commit atılmaz.
-- **Sıklık:** canlı kayıt tek işte ~25 dk boyunca 5 dk arayla (zamanlayıcı 20 dk'da bir), at canlı 3 tur × 15 dk (zamanlayıcı 30 dk'da bir);
+- **Sıklık:** canlı kayıt tek işte ~25 dk boyunca 5 dk arayla (zamanlayıcı 20 dk'da bir), at canlı yarış saatlerinde (TSİ 11:00–00:59) ~28 dk boyunca 5 dk arayla (zamanlayıcı 15 dk'da bir; yeni koşu sonucu gelince o tur hemen kaydedilir, sonuç yokken en çok 15 dk'da bir kayıt), gece/sabah (TSİ 01:07–02:37, 07:07–10:37) 30 dk'da bir tek tur; her çalışma son 3 günün sonucu eksik koşularını yeniden dener (tahminler korunur), Ek kaynak A yalnız secret üzerinden sonuç yedeğidir (`lab/at/ek_sonuc.py`, durum `data/at/ek_ozellik/_sonuc_durum.json`);
   concurrency kuyruğu üst üste binmeyi önler, turlar tek commit'te birleşir. Turlar arasında girdiler `gonder.py --tazele` ile uzak daldan alınır.
 - **Sürekli deney** (`surekli-deney.yml`, 3 saatte bir): matris (futbol, basket, at → `oxx_ogren` kuyruğu ve kapısı; autolab → dönen lig
   alt kümesi, yalnız ölçüm) sonuçları `data/deney/<iş>/`'e yazar; karar işi kapıyı geçeni gölgeye alır (en az 3 gün / 3 ölçüm), kötüleşmezse
