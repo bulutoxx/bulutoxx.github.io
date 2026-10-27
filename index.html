@@ -13067,6 +13067,8 @@ nav.tabs .pw-btn .pw-logo::after{content:"";position:absolute;inset:0;border-rad
 .ses-p.on i{animation:sesP .7s ease-out}
 @keyframes sesP{0%{box-shadow:0 0 0 0 rgba(247,205,85,.6)}100%{box-shadow:0 0 0 12px rgba(247,205,85,0)}}
 @media (max-width:359px){.ses-ls .ses-row{grid-template-columns:1fr}}
+.ses-kay{margin:-6px 8px 16px;font-size:11px;line-height:1.45;color:var(--ink3);overflow-wrap:anywhere}
+.ses-kay a{color:var(--ink2)}
 @media (prefers-reduced-motion:reduce){.ses-p.on i{animation:none}}
 </style>
 <script id="ses-v121">
@@ -13188,7 +13190,31 @@ nav.tabs .pw-btn .pw-logo::after{content:"";position:absolute;inset:0;border-rad
   function bugle(c,B,t,notes,g,o){ o=o||{}; let e=t; notes.forEach(([f,at,d])=>{ e=Math.max(e,brass(c,B,t+at,f,d,g,{br:o.br||8,q:1.6,vib:3,a:.014,rel:.08,s:o.s==null?.36:o.s,p:o.p||0})); }); return e; }
   function motif(c,B,t,g,o){ o=o||{}; MOTIF.forEach((f,i)=>fm(c,B,t+i*(o.st||.11),f,i===2?(o.last||.8):(o.d||.38),g*(i===2?1:.85),{r:3.5,i:1.35,s:o.s==null?.32:o.s,p:[-.25,.25,0][i]})); }
 
-  // ---------- sesler (her biri ≤3 sn) ----------
+  // ---------- gerçek kayıtlar (CC0 / CC BY / kamu malı; ayrıntı: ses_kaynaklari.md) ----------
+  // İlk dokunuştan sonra arka planda tembel yüklenir (ses/v121/*.webm, Opus desteklemeyen cihazda *.mp3); hazır değilse sentez yedeği çalar.
+  // ses/ yolu data/ dışında: servis çalışanı bunu ilk istekten sonra önbellekten verir (data/ her seferinde ağdan gelir).
+  const SM={base:"ses/v121/",ad:["gol_kalabalik","alkis","tezahurat","duduk","dortnala","buzzer","file"],buf:{},st:"yok",p:null};
+  const has=a=>!!SM.buf[a];
+  function fmt(){ try{ return new Audio().canPlayType('audio/webm; codecs="opus"')==="probably"?"webm":"mp3"; }catch(e){ return "mp3"; } }
+  function dec(c,ab){ return new Promise((ok,no)=>{ let d=false; const y=b=>{ if(!d){ d=true; ok(b); } }, n=e=>{ if(!d){ d=true; no(e); } };
+    try{ const r=c.decodeAudioData(ab,y,n); if(r&&r.then) r.then(y,n); }catch(e){ n(e); } }); }
+  async function one(c,ad,ext){ const r=await fetch(SM.base+ad+"."+ext); if(!r.ok) throw new Error(r.status); return dec(c,await r.arrayBuffer()); }
+  function loadSamples(c){ if(SM.p) return SM.p; if(!c) return Promise.resolve(); SM.st="yukleniyor"; const ext=fmt();
+    SM.p=Promise.all(SM.ad.map(async ad=>{ try{ SM.buf[ad]=await one(c,ad,ext); }catch(e){ if(ext!=="mp3"){ try{ SM.buf[ad]=await one(c,ad,"mp3"); }catch(_){} } } }))
+      .then(()=>{ SM.st=SM.ad.every(has)?"hazir":"eksik"; }); return SM.p; }
+  // örnek çalar: iki kopya (sol/sağ, 17 ms) ile stadyum genişliği; isteğe bağlı perde kayması ve süzgeç
+  function smp(c,B,t,ad,o){ const b=SM.buf[ad]; if(!b) return 0; o=o||{}; const rate=o.rate||1, off=Math.min(o.off||0,b.duration-.05), full=(b.duration-off)/rate, dur=Math.min(o.d||full,full);
+    const mk=(pan,dl,gk,r2)=>{ const sN=c.createBufferSource(); sN.buffer=b; sN.playbackRate.setValueAtTime(rate*r2,t+dl); if(o.rate2) sN.playbackRate.linearRampToValueAtTime(o.rate2*r2,t+dl+dur);
+      let n=sN; for(const [ty,f0,f1] of [["lowpass",o.lp,o.lp2],["highpass",o.hp,o.hp2]]){ if(!f0) continue; const f=c.createBiquadFilter(); f.type=ty; f.Q.value=.6; f.frequency.setValueAtTime(f0,t+dl); if(f1) f.frequency.exponentialRampToValueAtTime(f1,t+dl+dur); n.connect(f); n=f; }
+      const v=c.createGain(), g=Math.max(.00011,(o.g||.5)*gk), a=o.a||.006, r=Math.min(o.r||.25,dur*.9), e=t+dl+dur;
+      v.gain.setValueAtTime(.0001,t+dl); v.gain.exponentialRampToValueAtTime(g,t+dl+a); v.gain.setValueAtTime(g,Math.max(t+dl+a,e-r)); v.gain.exponentialRampToValueAtTime(.0001,e);
+      n.connect(v); out(c,B,v,pan,o.s==null?.12:o.s); sN.start(t+dl,off,dur*rate*r2+.02); sN.stop(e+.03); };
+    if(o.wide===false) mk(o.p||0,0,1,1); else { mk(-.45+(o.p||0),0,.78,1); mk(.45+(o.p||0),.017,.7,1.004); }
+    return dur; }
+  // hakem düdüğü: gerçek kayıt (uzun / kısa)
+  function duduk(c,B,t,d,g){ if(has("duduk")) return smp(c,B,t,"duduk",{g:g||.55,d:d||.5,r:d&&d<.3?.05:.08,wide:false,s:.22}); whistle(c,B,t,d||.5,.055); return d||.5; }
+
+  // ---------- sesler (her biri ≤3 sn; gerçek kayıtlı olaylar ≤4 sn) ----------
   const R={
     // ⚽ futbol
     gol(c,B,t,o){ const rm=o.rm;
@@ -13244,10 +13270,58 @@ nav.tabs .pw-btn .pw-logo::after{content:"";position:absolute;inset:0;border-rad
     star(c,B,t){ fm(c,B,t,NT.A5,.05,.045,{r:3.5,i:1,s:.1,p:-.15}); fm(c,B,t+.04,NT.Fs6,.075,.04,{r:3.5,i:1,s:.14,p:.15}); return .12; },
     ready(c,B,t){ motif(c,B,t,.06,{st:.07,d:.26,last:.45,s:.25}); return .65; }
   };
+  // gerçek kayıtlı sürümler (kayıt yoksa yukarıdaki sentez yedeği)
+  const SY=Object.assign({},R);
+  Object.assign(R,{
+    gol(c,B,t,o){ if(!has("gol_kalabalik")) return SY.gol(c,B,t,o);
+      smp(c,B,t,"gol_kalabalik",{g:.62,a:.02,r:1.3,d:o.rm?2.4:3.9,s:.16});
+      if(has("alkis")) smp(c,B,t+.95,"alkis",{g:.34,a:.6,r:1.1,d:o.rm?1.4:2.9,s:.14});
+      if(!o.rm&&has("tezahurat")) smp(c,B,t+1.7,"tezahurat",{g:.2,a:.5,r:.8,d:2.1,off:.5,s:.14});
+      boom(c,B,t+.5,.16);
+      [[NT.A4,-.3],[NT.Cs5,.3],[NT.E5,0]].forEach(([f,p])=>brass(c,B,t+.5,f,.08,.035,{p,br:6,rel:.05,s:.3}));
+      [[NT.D4,-.35],[NT.Fs4,.35],[NT.A4,-.1],[NT.D5,.12]].forEach(([f,p],i)=>brass(c,B,t+.62+i*.006,f,.5,.045,{p,br:6,rel:.3,s:.35}));
+      motif(c,B,t+1.3,.045,{st:.12,last:.9,s:.45}); return o.rm?2.6:3.95; },
+    golRakip(c,B,t,o){ if(!has("gol_kalabalik")) return SY.golRakip(c,B,t,o);
+      smp(c,B,t,"gol_kalabalik",{off:1.1,rate:.84,rate2:.7,lp:1500,lp2:550,g:.5,a:.1,r:.9,d:1.45,s:.2});
+      fm(c,B,t+.35,NT.A5,.4,.035,{r:3.5,i:1.1,s:.35,p:-.15}); fm(c,B,t+.52,NT.F5,.6,.035,{r:3.5,i:1.1,s:.35,p:.15}); return 1.5; },
+    macBasladi(c,B,t){ if(!has("duduk")) return SY.macBasladi(c,B,t); duduk(c,B,t,.5); fm(c,B,t+.62,NT.D5,.32,.04,{r:3.5,i:1.1,s:.3,p:-.2}); fm(c,B,t+.72,NT.A5,.45,.035,{r:3.5,i:1.1,s:.32,p:.2}); return 1.25; },
+    ilkYari(c,B,t){ if(!has("duduk")) return SY.ilkYari(c,B,t); duduk(c,B,t,.2); duduk(c,B,t+.28,.26); if(has("alkis")) smp(c,B,t+.5,"alkis",{g:.12,a:.25,r:.5,d:.9,off:1,s:.12}); return 1.4; },
+    macBitti(c,B,t){ if(!has("duduk")) return SY.macBitti(c,B,t); duduk(c,B,t,.17); duduk(c,B,t+.24,.17); duduk(c,B,t+.48,.5);
+      if(has("alkis")) smp(c,B,t+.95,"alkis",{g:.22,a:.3,r:.9,d:1.7,s:.14});
+      [[NT.D4,-.3],[NT.Fs4,.3],[NT.A4,0]].forEach(([f,p])=>brass(c,B,t+1.05,f,.45,.03,{p,br:3.4,a:.06,rel:.3,vib:3,s:.35})); return 2.7; },
+    kirmizi(c,B,t){ if(!has("duduk")) return SY.kirmizi(c,B,t); duduk(c,B,t,.24,.5);
+      if(has("gol_kalabalik")) smp(c,B,t+.12,"gol_kalabalik",{off:1.6,rate:.92,rate2:.82,lp:1800,lp2:700,g:.26,a:.12,r:.5,d:.9,s:.18});
+      [.3,.48].forEach((dt,i)=>{ brass(c,B,t+dt,NT.D4,i?.22:.1,.04,{br:5,rel:.08,p:-.2}); brass(c,B,t+dt,NT.Eb4,i?.22:.1,.034,{br:5,rel:.08,p:.2}); }); return 1.1; },
+    kupoTuttu(c,B,t,o){ if(!has("alkis")) return SY.kupoTuttu(c,B,t,o);
+      [NT.D5,NT.Fs5,NT.A5,NT.D6,NT.Fs6,NT.A6].forEach((f,i)=>fm(c,B,t+i*.05,f,.5,.045*(1-i*.06),{r:3.5,i:1.2,s:.32,p:i%2?.3:-.3}));
+      smp(c,B,t+.2,"alkis",{g:.42,a:.12,r:1,d:2.8,s:.14}); if(!o.rm&&has("tezahurat")) smp(c,B,t+.3,"tezahurat",{g:.26,a:.2,r:.9,d:2.5,s:.14});
+      [[NT.D4,-.3],[NT.Fs4,.3],[NT.A4,0],[NT.D5,.1]].forEach(([f,p])=>brass(c,B,t+.32,f,.5,.035,{p,br:6,rel:.25,s:.3}));
+      motif(c,B,t+1.05,.045,{st:.1,last:.7,s:.4}); return 3.1; },
+    bacak(c,B,t){ SY.bacak(c,B,t); if(has("alkis")) smp(c,B,t+.06,"alkis",{g:.16,a:.06,r:.55,d:.95,off:.6,s:.12}); return 1.05; },
+    bkTuttu(c,B,t,o){ if(!has("file")) return SY.bkTuttu(c,B,t,o); smp(c,B,t,"file",{g:.55,d:.4,r:.2,hp:500,s:.12});
+      if(has("buzzer")) smp(c,B,t+.34,"buzzer",{g:.36,d:.34,r:.05,wide:false,s:.15}); if(!o.rm&&has("alkis")) smp(c,B,t+.4,"alkis",{g:.22,a:.08,r:.6,d:1.2,s:.12}); return 1.65; },
+    bkBitti(c,B,t,o){ if(!has("buzzer")) return SY.bkBitti(c,B,t,o); smp(c,B,t,"buzzer",{g:.45,d:.76,r:.08,wide:false,s:.15});
+      if(!o.rm&&has("tezahurat")) smp(c,B,t+.12,"tezahurat",{g:.34,a:.15,r:.8,d:2.1,s:.14}); fm(c,B,t+.95,NT.D5,.4,.035,{r:3.5,i:1.1,s:.35,p:-.2}); fm(c,B,t+1.05,NT.A5,.55,.035,{r:3.5,i:1.1,s:.35,p:.2}); return 2.3; },
+    atStart(c,B,t,o){ if(!has("dortnala")) return SY.atStart(c,B,t,o); for(let i=0;i<11;i++) fm(c,B,t+i*.045,1250,.05,.045,{r:3.5,i:1.4,s:.12,p:i%2?.2:-.2});
+      smp(c,B,t+.5,"dortnala",{hp:230,g:.5,d:o.rm?.8:1.45,r:.4,s:.1}); return o.rm?1.35:2.0; },
+    atKazandi(c,B,t,o){ if(!has("dortnala")) return SY.atKazandi(c,B,t,o); smp(c,B,t,"dortnala",{hp:230,g:.5,d:1.5,r:.5,rate:1.05,s:.1});
+      if(has("tezahurat")) smp(c,B,t+.85,"tezahurat",{g:.36,a:.25,r:.9,d:o.rm?1.4:2.5,s:.14}); if(!o.rm&&has("alkis")) smp(c,B,t+1.3,"alkis",{g:.2,a:.4,r:.8,d:1.9,s:.14});
+      bugle(c,B,t+1.0,[[NT.D5,0,.07],[NT.D5,.1,.07],[NT.Fs5,.2,.07],[NT.A5,.3,.5]],.045,{br:7,s:.4});
+      motif(c,B,t+1.75,.04,{st:.09,last:.6,d:.3,s:.45}); return 3.35; },
+    atKupoTuttu(c,B,t,o){ if(!has("dortnala")) return SY.atKupoTuttu(c,B,t,o); smp(c,B,t,"dortnala",{hp:230,g:.46,d:1.05,r:.4,rate:1.05,s:.1});
+      [NT.D5,NT.Fs5,NT.A5,NT.D6].forEach((f,i)=>fm(c,B,t+.7+i*.05,f,.45,.045,{r:3.5,i:1.2,s:.32,p:i%2?.3:-.3}));
+      if(has("alkis")) smp(c,B,t+.75,"alkis",{g:.4,a:.15,r:.9,d:o.rm?1.3:2.3,s:.14});
+      [[NT.D4,-.3],[NT.Fs4,.3],[NT.A4,0],[NT.D5,.1]].forEach(([f,p])=>brass(c,B,t+.9,f,.5,.035,{p,br:6,rel:.25,s:.3}));
+      motif(c,B,t+1.4,.04,{st:.09,last:.6,d:.3,s:.45}); return 3.1; }
+  });
+  // hangi olay hangi kayda dayanıyor (kayıt hazırsa ayrı seviye tablosu)
+  const PRI={gol:"gol_kalabalik",golRakip:"gol_kalabalik",macBasladi:"duduk",ilkYari:"duduk",macBitti:"duduk",kirmizi:"duduk",kupoTuttu:"alkis",bacak:"alkis",
+    bkTuttu:"file",bkBitti:"buzzer",atStart:"dortnala",atKazandi:"dortnala",atKupoTuttu:"dortnala"};
+  const LVR={gol:-1.5,golRakip:-6,macBasladi:-6,ilkYari:1,macBitti:-5,kirmizi:0,kupoTuttu:.5,bacak:1,bkTuttu:-3,bkBitti:-4,atStart:-4,atKazandi:0,atKupoTuttu:1};
   // seviye dengesi (dB): OfflineAudioContext + BS.1770 ölçümüyle ayarlandı (büyük olay ≈ −13, orta ≈ −17, küçük ≈ −22, menü ≈ −35 LUFS anlık; ana ses %100)
   const LV={gol:0,golRakip:3,macBasladi:-3.5,ilkYari:-1,macBitti:-2,kirmizi:1.5,kupoEkle:8,kupoCikar:10,kupoTuttu:3,bacak:6,tutmadi:1,bkTuttu:3.5,bkBitti:1.5,
     atCagri:1,atStart:8,atSerit:2.5,atKazandi:2.5,atKupoTuttu:2.8,tap:10,tab:6.5,acik:4,kapali:5,ac:6,kapa:8,kaydir:12,power:3.5,msgIn:6.5,msgOut:12,star:5.5,ready:0};
-  const lv=n=>Math.pow(10,(LV[n]||0)/20);
+  const lv=n=>Math.pow(10,((PRI[n]&&has(PRI[n]))?(LVR[n]||0):(LV[n]||0))/20);
   const CAT={gol:"sesGol",golRakip:"sesGol",macBasladi:"sesGol",ilkYari:"sesGol",macBitti:"sesGol",kirmizi:"sesGol",
     kupoEkle:"sesKupo",kupoCikar:"sesKupo",kupoTuttu:"sesKupo",bacak:"sesKupo",tutmadi:"sesKupo",
     bkTuttu:"sesBasket",bkBitti:"sesBasket",atCagri:"sesAt",atStart:"sesAt",atSerit:"sesAt",atKazandi:"sesAt",atKupoTuttu:"sesAt"};
@@ -13267,8 +13341,11 @@ nav.tabs .pw-btn .pw-logo::after{content:"";position:absolute;inset:0;border-rad
     try{ bus=chain(ctx,ctx.destination,volG()); }catch(e){ ctx=null; return null; } return ctx; }
   function unlock(){ const c=mk(); if(!c) return;
     try{ const b=c.createBuffer(1,1,c.sampleRate), s=c.createBufferSource(); s.buffer=b; s.connect(c.destination); s.start(0); }catch(e){}
-    const ok=()=>{ if(c.state==="running"){ unlocked=true; hold(c,c.currentTime); } };
+    const ok=()=>{ if(c.state==="running"){ unlocked=true; hold(c,c.currentTime); lazy(c); } };
     if(c.state!=="running"){ try{ c.resume().then(ok,()=>{}); }catch(e){} } else ok(); }
+  // gerçek kayıtlar: açılışı yavaşlatmamak için ilk dokunuştan sonra, tarayıcı boşta kalınca bir kez
+  function lazy(c){ if(SM.p) return; const go=()=>{ if(PREFS.sound&&!SM.p) loadSamples(c); };
+    if("requestIdleCallback" in W) W.requestIdleCallback(go,{timeout:4000}); else setTimeout(go,1500); }
   ["pointerdown","touchend","keydown","click"].forEach(ev=>D.addEventListener(ev,()=>{ if(!unlocked) unlock(); },{capture:true,passive:true}));
   // boşta askıya al: zamanlayıcı yerine sessiz bir kaynak bitince (son sesten 1,5 sn sonra)
   function hold(c,end){ const id=++sent; try{ const o=c.createOscillator(), g=c.createGain(); g.gain.value=0; o.connect(g); g.connect(c.destination);
@@ -13279,7 +13356,7 @@ nav.tabs .pw-btn .pw-logo::after{content:"";position:absolute;inset:0;border-rad
   function trVoice(){ try{ if(!("speechSynthesis" in W)) return null; const vs=speechSynthesis.getVoices()||[]; return vs.find(v=>/^tr([-_]|$)/i.test(v.lang||""))||null; }catch(e){ return null; } }
   function speak(text,cos){ const v=trVoice(); if(!v) return; try{ speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(text); u.voice=v; u.lang=v.lang||"tr-TR";
       u.rate=cos?1.12:1; u.pitch=cos?1.25:.95; u.volume=Math.max(.25,Math.min(1,(+PREFS.sesVol||.8)+.15)); speechSynthesis.speak(u); }catch(e){} }
-  function play(name,o){ const c=ctx; if(!c||!unlocked) return;
+  function play(name,o){ const c=ctx; if(!c||!unlocked) return; if(!SM.p) lazy(c);
     const go=()=>{ if(c.state!=="running") return; try{ if(bus) bus.vol.gain.value=volG(); }catch(e){}
       const t=c.currentTime+.012, duck=UI.has(name)&&c.currentTime<evEnd, B=sub(c,bus,(duck?.5:1)*lv(name)); let d=0;
       try{ d=R[name](c,B,t,Object.assign({rm:RM()},o)); }catch(e){ return; }
@@ -13308,14 +13385,17 @@ nav.tabs .pw-btn .pw-logo::after{content:"";position:absolute;inset:0;border-rad
     const say=can?(rak?`Gol, ${o.takim}. ${o.hs} ${o.as}.`:`Gol! ${o.takim}, ${o.hs} ${o.as}!`):null;
     const ok=olay(nm,{say,cos:!rak,sayAt:rak?.55:(RM()?.5:1.15)}); return !!(ok&&say); }
   async function renderOffline(name,o){ o=o||{}; const sr=o.sr||48000, OC=W.OfflineAudioContext||W.webkitOfflineAudioContext; if(!OC||!R[name]) return null;
+    if(o.gercek!==false&&!SM.p) await loadSamples(new OC(1,1,sr)); else if(SM.p) await SM.p;
+    const keep=SM.buf; if(o.gercek===false) SM.buf={};
+    try{
     const c=new OC(2,Math.ceil(sr*(o.len||4)),sr), B=chain(c,c.destination,o.vol==null?1:o.vol), t=.02, d=R[name](c,sub(c,B,lv(name)),t,Object.assign({rm:false},o));
-    const buf=await c.startRendering(); return {sr,d,L:buf.getChannelData(0),R:buf.getChannelData(1)}; }
+    const buf=await c.startRendering(); return {sr,d,L:buf.getChannelData(0),R:buf.getChannelData(1)}; } finally{ SM.buf=keep; } }
 
   // ---------- eski API korunur, genişletilir ----------
   Object.assign(Sound,{
     unlock, olay, taraf, goal, renderOffline,
     tap(){ olay("tap"); }, tab(){ olay("tab"); }, toggle(v){ olay(v?"acik":"kapali"); }, star(){ olay("star"); }, ready(){ olay("ready"); },
-    names:()=>Object.keys(R), label:n=>AD[n]||n, cat:n=>CAT[n], log:LOG, trVoice:()=>!!trVoice(),
+    names:()=>Object.keys(R), label:n=>AD[n]||n, kayit:()=>({st:SM.st,hazir:SM.ad.filter(has)}), yukle:()=>loadSamples(ctx||mk()), cat:n=>CAT[n], log:LOG, trVoice:()=>!!trVoice(),
     state:()=>({ctx:ctx?ctx.state:"yok",unlocked,vol:volG()})
   });
 
@@ -13381,7 +13461,8 @@ nav.tabs .pw-btn .pw-logo::after{content:"";position:absolute;inset:0;border-rad
     </div>
     <details class="ses-ls" id="sesDinle"><summary><span class="ic" aria-hidden="true">▶</span><span class="tx"><b>Sesleri dinle</b><small>${Object.keys(R).length} ses · her birini dene</small></span></summary>
       ${GR.map(([h,L])=>`<div class="ses-g"><h4>${h}</h4><div class="ses-row">${L.map(n=>`<button type="button" class="ses-p" data-sesp="${n}" aria-label="${E(AD[n])} sesini dinle"><i aria-hidden="true">▶</i><span>${E(AD[n])}</span></button>`).join("")}</div></div>`).join("")}
-    </details>`; }
+    </details>
+    <p class="ses-kay" id="sesKay">Ses kaynakları (değiştirilerek kullanıldı): kalabalık “goal scored” jordiroquer · alkış Mike Koenig · tezahürat ve dörtnala Steffen Gerlach (C-evo) — CC BY 3.0; düdük cityrocker, file Electroviolence — CC0; buzzer TuxMath — kamu malı. Diğer sesler OXXai için sentezlendi. <a href="ses_kaynaklari.md" target="_blank" rel="noopener">Ayrıntı</a></p>`; }
   function wire(bx){ bx.querySelectorAll("input[data-ses]").forEach(inp=>inp.addEventListener("change",()=>{ PREFS[inp.dataset.ses]=inp.checked; try{ savePrefs(); }catch(e){} try{ buzz(6); }catch(e){} olay(inp.checked?"acik":"kapali",{preview:true}); }));
     const r=bx.querySelector("#sesVol"), tx=bx.querySelector("#sesVolTx");
     if(r){ r.addEventListener("input",()=>{ PREFS.sesVol=(+r.value)/100; if(tx) tx.textContent="%"+r.value; r.style.setProperty("--v",r.value+"%"); try{ if(bus) bus.vol.gain.value=volG(); }catch(e){} });
