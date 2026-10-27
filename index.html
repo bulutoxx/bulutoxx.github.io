@@ -5822,7 +5822,7 @@ if((location.hash||"")==="#sonuclar") setTimeout(()=>$("navRes").click(),200);
 // =====================================================================
 // OXXai v35: Otomatik sürüm güncelleme — yeni sürüm yayınlanınca uygulama kendini yeniler
 // =====================================================================
-const APP_V="2026-10-27.121";
+const APP_V="2026-10-27.122";
 (function autoUpdate(){
   let shown=false;
   async function check(auto){
@@ -7176,7 +7176,7 @@ setTimeout(()=>{ try{ renderTP(); }catch(e){} },1500);
     ["adil",/adil oran/,()=>`<b>Adil oran</b> = 1 ÷ olasılık. Ör. %80 tahminin adil oranı 1,25'tir. Kartlarda oran yoksa "adil" oranı gösteririm; bu bir oyun teklifi değil, olasılığın başka bir yazılışıdır.`],
     ["birlikte",/birlikte tutma|toplam olasilik|liste olasilig/,()=>`<b>Birlikte tutma olasılığı</b>: listedeki tüm tahminlerin aynı anda tutma olasılığı; tek tek olasılıkların çarpımıdır. Ör. %80 × %80 × %80 ≈ %51. Bu yüzden maç eklendikçe hızla düşer; 2-3 maçlık listeler çok daha sık tutar.`],
     ["oran",/\boran\w*/,()=>`<b>Oran</b>, piyasanın bir sonuca biçtiği ödeme katsayısıdır. <b>1 ÷ oran</b> kabaca piyasanın o sonuca verdiği olasılıktır: 1,50 → yaklaşık %67 (şirket marjı dahil, gerçeği biraz daha düşüktür). OXXai'de oranlar bilgi içindir; asıl ölçü <b>tutma olasılığı</b>dır.`],
-    ["banko",/banko|kesin mac|garanti mac/,()=>`<b>Banko</b> halk arasında "kesin" diye oynanan maçtır. Dürüst olayım: futbolda kesin yok. OXXai'de en yakın karşılığı <b>Güçlü (%70+)</b> ve <b>🥇 Altın</b> tahminlerdir; onlar bile güven seviyesine göre her 4-5 maçtan birinde tutmayabilir.${karneStr()}`],
+    ["banko",/banko|kesin mac|garanti mac/,()=>`<b>"Kesin maç"</b> diye bir şey yok. Dürüst olayım: futbolda kesinlik olmaz. OXXai'de en yakın karşılığı <b>Güçlü (%70+)</b> ve <b>🥇 Altın</b> tahminlerdir; onlar bile güven seviyesine göre her 4-5 maçtan birinde tutmayabilir.${karneStr()}`],
     ["altin",/altin/,()=>`<b>🥇 Altın tahmin</b>: OXXai'nin en güvendiği seçim. Kural: olasılık <b>%${Math.round(GOLD.thr*100)}+</b>, oran ${GOLD.omin.toFixed(2).replace(".",",")}–${GOLD.omax.toFixed(2).replace(".",",")} arası, günde en fazla ${GOLD.perDay}. Hak eden maç yoksa rozet verilmez.${GOLD.karne&&GOLD.karne.n?` Kurala uyan geçmiş tahminler: ${GOLD.karne.h}/${GOLD.karne.n} tuttu.`:""}`],
     ["guclu",/guclu/,()=>`<b>Güçlü tahmin</b>: OXXai'nin tutma olasılığını <b>%70 ve üstü</b> gördüğü seçim (🔥 işareti). %58–69 arası "Tahmin", %58 altı "Pas" sayılır.${karneStr()}`],
     ["pas",/\bpas\b/,()=>`<b>Pas</b>: en olası sonucun bile olasılığı <b>%58'in altında</b>; maç dengeli, net tahmin yok. OXXai bu maçları önermez, pas geçmeni söyler.`],
