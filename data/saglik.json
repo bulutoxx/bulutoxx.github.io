@@ -1,15 +1,104 @@
 {
- "zaman": "2026-10-26T23:25Z",
+ "zaman": "2026-10-27T00:45Z",
  "alarm": true,
  "sorunlar": [
+  "At yarışı gece: adım başarısız: arsiv-yukle (çıkış 1, 1/1 tur)",
+  "Futbol motoru: adım başarısız: arsiv-yukle (çıkış 1, 1/1 tur)",
   "kalite alarmı (qa.json): bulten: menü düğmesi tıklanamadı, canli: menü düğmesi tıklanamadı, power: menü düğmesi tıklanamadı"
  ],
- "adimlar": {},
+ "adimlar": {
+  "at-lab.yml": {
+   "at-lab.json": {
+    "run": "40426352177",
+    "guncelleme": "2026-10-27T00:30:44Z",
+    "basarisiz": [
+     {
+      "adim": "arsiv-yukle",
+      "rc": 1,
+      "hata_tur": "1/1"
+     }
+    ],
+    "bilgi_hata": []
+   }
+  },
+  "auto-lab.yml": {
+   "auto-lab.json": {
+    "run": "40419674506",
+    "guncelleme": "2026-10-26T23:26:28Z",
+    "basarisiz": [],
+    "bilgi_hata": []
+   }
+  },
+  "kurtarici.yml": {
+   "kurtarici.json": {
+    "run": "40419681467",
+    "guncelleme": "2026-10-26T23:25:52Z",
+    "basarisiz": [],
+    "bilgi_hata": []
+   }
+  },
+  "live-log.yml": {
+   "live-log.json": {
+    "run": "40423821870",
+    "guncelleme": "2026-10-27T00:28:04Z",
+    "basarisiz": [],
+    "bilgi_hata": []
+   }
+  },
+  "otonom-ekip.yml": {
+   "otonom-ekip.json": {
+    "run": "40426352044",
+    "guncelleme": "2026-10-27T00:27:44Z",
+    "basarisiz": [],
+    "bilgi_hata": []
+   }
+  },
+  "surekli-deney.yml": {
+   "surekli-deney-at.json": {
+    "run": "40419685079",
+    "guncelleme": "2026-10-26T23:25:54Z",
+    "basarisiz": [],
+    "bilgi_hata": []
+   },
+   "surekli-deney-autolab.json": {
+    "run": "40419685079",
+    "guncelleme": "2026-10-26T23:26:29Z",
+    "basarisiz": [],
+    "bilgi_hata": []
+   },
+   "surekli-deney-basket.json": {
+    "run": "40419685079",
+    "guncelleme": "2026-10-26T23:25:55Z",
+    "basarisiz": [],
+    "bilgi_hata": []
+   },
+   "surekli-deney-futbol.json": {
+    "run": "40419685079",
+    "guncelleme": "2026-10-26T23:25:56Z",
+    "basarisiz": [],
+    "bilgi_hata": []
+   }
+  },
+  "update.yml": {
+   "update.json": {
+    "run": "40427461428",
+    "guncelleme": "2026-10-27T00:40:06Z",
+    "basarisiz": [
+     {
+      "adim": "arsiv-yukle",
+      "rc": 1,
+      "hata_tur": "1/1"
+     }
+    ],
+    "bilgi_hata": []
+   }
+  }
+ },
  "tazelik": [
   {
    "ad": "Fikstür ve oranlar",
    "dosya": "data/fixtures.json",
-   "yas_saat": 0.67,
+   "yas_saat": 0.09,
    "beklenen_saat": 4.0,
    "is_akisi": "update.yml",
    "bayat": false
@@ -17,7 +106,7 @@
   {
    "ad": "Futbol modeli",
    "dosya": "data/model.json",
-   "yas_saat": 0.68,
+   "yas_saat": 0.11,
    "beklenen_saat": 4.0,
    "is_akisi": "update.yml",
    "bayat": false
@@ -25,7 +114,7 @@
   {
    "ad": "Günlük karne (toplayıcı)",
    "dosya": "data/daily.json",
-   "yas_saat": 0.68,
+   "yas_saat": 0.11,
    "beklenen_saat": 4.0,
    "is_akisi": "update.yml",
    "bayat": false
@@ -33,7 +122,7 @@
   {
    "ad": "Kilitli tahmin günlüğü (predlog)",
    "dosya": "data/predlog.json",
-   "yas_saat": 1.0,
+   "yas_saat": 0.09,
    "beklenen_saat": 12.0,
    "is_akisi": "update.yml",
    "bayat": false
@@ -41,7 +130,7 @@
   {
    "ad": "Canlı kayıt nabzı",
    "dosya": "data/health.json",
-   "yas_saat": 0.11,
+   "yas_saat": 0.3,
    "beklenen_saat": 1.5,
    "is_akisi": "live-log.yml",
    "bayat": false
@@ -50,7 +139,7 @@
  "kalite": {
   "qa.json": {
    "alarm": true,
-   "zaman": "2026-10-26T22:24:46.872Z",
+   "zaman": "2026-10-27T00:26:34.806Z",
    "hatalar": [
     "bulten: menü düğmesi tıklanamadı",
     "canli: menü düğmesi tıklanamadı",
@@ -58,7 +147,7 @@
     "sonuclar: menü düğmesi tıklanamadı",
     "menu: menü düğmesi tıklanamadı"
    ],
-   "acilis_ms": 8127
+   "acilis_ms": 4564
   }
  },
  "aciklama": "Sağlık özeti (lab/kurtarici.py): adım çıkış kodları (data/saglik/*.json, lab/adim.py), ana dosyaların tazeliği, kalite alarmları. Sorun görülürse ilgili iş akışı bir kez yeniden tetiklenir; issue/mail/bildirim açılmaz."
