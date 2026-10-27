@@ -1353,6 +1353,76 @@ def pick_calib(season, rho):
     return {"bins": tab(rows), "min_odd": 1.15, "n": len(rows), "hit": round(float(np.mean([r[2] for r in rows])), 4),
             "dogrulama": {"sezon": last, "ogrenme": tr, "test": te, "brier_ham": round(b0, 4), "brier_kalibre": round(b1, 4), "kabul": b1 <= b0}}
 
+IDDAA_LIG = os.path.join(DATA, "iddaa_lig.json")
+KADIN_RE = re.compile(r"(kad[ıi]n|women|\(k\))", re.I)
+_EVRE = re.compile(r"^(a[cç][ıi]l[ıi][sş]|kapan[ıi][sş]|final|apertura|clausura|play.?off|normal sezon|1\. ?etap|2\. ?etap|ilk etap)$", re.I)
+
+def _komp_ad(s):
+    """iddaa yarışma adı → karşılaştırma anahtarı: küçük harf, ASCII; yalnız sezon evresi eki (", Açılış", ", Final") atılır."""
+    s = (s or "").strip()
+    if "," in s:
+        bas, son = s.rsplit(",", 1)
+        if _EVRE.match(son.strip()): s = bas
+    s = unicodedata.normalize("NFKD", s.replace("ı", "i").replace("İ", "I")).encode("ascii", "ignore").decode().lower()
+    return " ".join(re.split(r"[^a-z0-9]+", s)).strip()
+
+def _lig_yaz(H, path):
+    """Hafıza dosyası: her yarışma bir satır (git farkı okunur kalır)."""
+    dm = lambda x: json.dumps(x, ensure_ascii=False, separators=(",", ":"))
+    bas = ",\n".join(f"{dm(k)}:{dm(v)}" for k, v in H.items() if k != "komp")
+    kom = ",\n".join(f" {dm(k)}:{dm(v)}" for k, v in (H.get("komp") or {}).items())
+    open(path, "w", encoding="utf-8").write("{" + bas + ',\n"komp":{\n' + kom + "\n}}\n")
+
+def iddaa_lig_hafiza(evs, cl, known, today, path=None, yaz=True):
+    """iddaa yarışma kimliği (ci) → bilinen lig kodu hafızası (data/iddaa_lig.json, veri güdümlü).
+    · Bu turda maç eşleşmesiyle öğrenilen (cl) eşlemeler hafızaya yazılır/güncellenir (yeni kanıt eskisini ezer).
+    · Eşleşmesi çıkmayan yarışma: önce ci, yoksa normalleştirilmiş ad + ülke ile hafızada aranır; aday lig ancak
+      yarışmadaki takımların en az yarısı o ligin model takımlarıyla eşleşirse kabul edilir (yanlış ci / yeniden kullanılmış kimlik koruması).
+    · Kadın yarışmaları ve kupalar bağlanmaz (hafızaya yalnız lig maçıyla eşleşmiş yarışmalar girer).
+    Dönüş: (yeni cl, {ci: "mac"|"hafiza"|"ad"}). Eski i### kayıtları değişmez; eşlenemeyen yarışma yine i{ci} olarak kalır."""
+    import iddaa as ID
+    path = path or IDDAA_LIG
+    try: H = json.load(open(path, encoding="utf-8"))
+    except Exception: H = {}
+    komp = H.setdefault("komp", {})
+    gecerli = set(LEAGUES) | set(EXTRA)
+    by_ci = collections.defaultdict(list)
+    for e in evs: by_ci[e["ci"]].append(e)
+    kadin = lambda es: any(KADIN_RE.search(x["comp"] or "") or "(K)" in x["h"] or "(K)" in x["a"] for x in es)
+    bugun = today.isoformat(); out = dict(cl); kay = {ci: "mac" for ci in cl}
+    for ci, lg in cl.items():   # öğren
+        es = by_ci.get(ci) or []
+        if not es or kadin(es): continue
+        k = komp.get(str(ci)) or {}
+        komp[str(ci)] = {"lg": lg, "ad": es[0]["comp"] or k.get("ad"), "cc": es[0].get("cc") or k.get("cc"),
+                         "n": (k.get("n", 0) + 1) if k.get("lg") == lg else 1, "son": bugun}
+    ad_idx = collections.defaultdict(set)
+    for ci_, k in komp.items():
+        if k.get("ad") and k.get("lg") in gecerli: ad_idx[(_komp_ad(k["ad"]), (k.get("cc") or "").upper()[:2])].add(k["lg"])
+    for ci, es in by_ci.items():   # uygula
+        if ci in out or kadin(es): continue
+        k = komp.get(str(ci)); lg, yol = (k or {}).get("lg"), "hafiza"
+        if not lg:
+            c_ = ad_idx.get((_komp_ad(es[0]["comp"]), (es[0].get("cc") or "").upper()[:2])) or set()
+            lg, yol = (next(iter(c_)) if len(c_) == 1 else None), "ad"
+        if not lg or lg not in gecerli: continue
+        kn = known.get(lg) or []
+        if not kn: continue   # modelde takım listesi olmayan lige bağlanmaz
+        tak = {t for x in es for t in (x["h"], x["a"])}
+        tut = sum(1 for t in tak if ID.best_name(t, kn))
+        if tut * 2 < len(tak): continue
+        out[ci] = lg; kay[ci] = yol
+        if yol == "ad": komp[str(ci)] = {"lg": lg, "ad": es[0]["comp"], "cc": es[0].get("cc"), "n": 0, "son": bugun, "yol": "ad"}
+    if yaz:
+        H["v"] = 1; H["guncelleme"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%MZ")
+        H["aciklama"] = ("iddaa yarışma kimliği → lig kodu hafızası. scripts/update.py merge_iddaa her turda maç eşleşmesinden öğrenir; "
+                         "eşleşme çıkmayan turda bu tablo kullanılır (takım adı doğrulamalı).")
+        H["komp"] = dict(sorted(komp.items(), key=lambda kv: (kv[1].get("lg", ""), kv[0])))
+        _lig_yaz(H, path)
+    n_h = sum(1 for v in kay.values() if v != "mac")
+    if n_h: print(f"iddaa lig hafızası: {n_h} yarışma bilinen lige bağlandı " + ", ".join(f"i{c}→{out[c]}" for c, v in kay.items() if v != "mac"), flush=True)
+    return out, kay
+
 def merge_iddaa(fx, season, today):
     """Resmi iddaa bülteni: Bilyoner'deki maçların tamamı. Bizdeki maçlara iddaa oranı eklenir,
     bizde olmayanlar ayrı lig başlığıyla bültene girer. Her maç için piyasa gol beklentisi (lh, la) data/iddaa.json'a yazılır."""
@@ -1386,6 +1456,10 @@ def merge_iddaa(fx, season, today):
         if c and not women(e):
             lg_, n_ = c.most_common(1)[0]
             if n_ >= 2 or sum(c.values()) == n_ == sum(1 for x in evs if x["ci"] == e["ci"]): cl[e["ci"]] = lg_
+    # v128 lig hafızası: bu turda eşleşecek fikstürü olmayan (football-data o ligin yeni haftasını henüz yayınlamamış) yarışma,
+    # önceki turlarda öğrenilmiş eşlemeyle bilinen lig koduna bağlanır (i584 → tr1). Takım adları ligin takımlarıyla doğrulanır.
+    try: cl, lig_kay = iddaa_lig_hafiza(evs, cl, known, today)
+    except Exception as ex: lig_kay = {}; print("iddaa lig hafızası atlandı:", ex.__class__.__name__, ex, flush=True)
     # 2. tur: aynı lig + yakın saat + bir takım adı çok benzer (Amed Sportif Faaliyetler ~ Amedspor)
     for e in evs:
         if e["iid"] in matched or e["ci"] not in cl: continue
@@ -1423,6 +1497,7 @@ def merge_iddaa(fx, season, today):
             h = ID.best_name(h, known[lg]) or h; a = ID.best_name(a, known[lg]) or a
         f = {"d": dt.date().isoformat(), "t": dt.strftime("%H:%M"), "lg": lg or f"i{e['ci']}", "h": h, "a": a, "src": "iddaa"}
         if not lg: f["ln"] = e["comp"]; f["cc"] = e["cc"]
+        elif lig_kay.get(e["ci"]) in ("hafiza", "ad"): f["lgk"] = lig_kay[e["ci"]]   # lig kodu hafızadan (eski kod: i{ci})
         add_io(f, e); extra.append(f)
     out_fx += extra
     # piyasa gol beklentisi (canlı tahminin başlangıç noktası)
@@ -1438,7 +1513,7 @@ def merge_iddaa(fx, season, today):
     for x in tmp:
         if x.get("xg"): lam[str(x["iid"])] = [x["xg"][0], x["xg"][1], tsd[x["iid"]]]
     json.dump({"updated": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%MZ"), "lam": lam,
-               "comp_lg": {str(k): v for k, v in cl.items()}},
+               "comp_lg": {str(k): v for k, v in cl.items()}, "comp_lg_kaynak": {str(k): v for k, v in lig_kay.items()}},
               open(os.path.join(DATA, "iddaa.json"), "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
     print(f"iddaa bülteni: {len(evs)} maç · {len(matched)} bizdeki maçla eşleşti · {len(extra)} yeni maç eklendi", flush=True)
     try:   # teşhis: bültendeki pazar adları ve hangi koda ayrıştırıldığı (oran değeri yazılmaz)
@@ -1774,7 +1849,10 @@ def main():
             return datetime.fromisoformat(f["d"]).replace(hour=int(hh), minute=int(mm), tzinfo=ZoneInfo("Europe/London"))
         except Exception:
             return datetime.fromisoformat(f["d"] + "T23:59:00+00:00")
-    fx_lock = [f for f in fx if f.get("src") != "iddaa" and kickoff(f) > now_utc and (f["lg"], f["h"], f["a"], f["d"]) not in played]
+    # iddaa kaynaklı maç: lig hafızasıyla bilinen lige bağlandı ve iki takım da o ligin model takımıysa (ad çözülmüş) kilitlenir
+    lg_tk = {lg: {t for m in ms for t in (m["h"], m["a"])} for lg, ms in all_ms.items()}
+    ok_src = lambda f: f.get("src") != "iddaa" or (f.get("lgk") and f["h"] in lg_tk.get(f["lg"], ()) and f["a"] in lg_tk.get(f["lg"], ()))
+    fx_lock = [f for f in fx if ok_src(f) and kickoff(f) > now_utc and (f["lg"], f["h"], f["a"], f["d"]) not in played]
     for e in predict_fixtures(fx_lock, all_ms, P, today, pzmap=pzmap):
         if e["id"] not in have:                           # maçtan önceki ilk tahmin kilitlenir, sonradan değiştirilmez
             e["v"] = ENGINE_V; e["ts"] = now_utc.strftime("%Y-%m-%dT%H:%MZ"); plog.append(e); have.add(e["id"])
