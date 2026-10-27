@@ -1,58 +1,74 @@
 {
- "zaman": "2026-10-27T08:24Z",
+ "zaman": "2026-10-27T14:14Z",
  "deneme": false,
  "isler": [
   {
    "is": "Futbol motoru",
    "son_basari_saat": 0.03,
-   "calisan": 0,
-   "durum": "sağlık sorunu (bir kez tetiklendi, bekleniyor)",
+   "calisan": 1,
+   "durum": "sağlık sorunu",
    "saglik": [
     "adım başarısız: arsiv-yukle (çıkış 1, 1/1 tur)"
    ]
   },
   {
    "is": "Canlı kayıt",
-   "son_basari_saat": 0.54,
-   "calisan": 1,
+   "son_basari_saat": 0.32,
+   "calisan": 0,
    "durum": "sağlıklı"
   },
   {
    "is": "At yarışı canlı",
-   "son_basari_saat": 10.4,
+   "son_basari_saat": 0.34,
    "calisan": 0,
    "durum": "sağlıklı"
   },
   {
    "is": "At yarışı gece",
-   "son_basari_saat": 0.7,
+   "son_basari_saat": 4.16,
    "calisan": 0,
-   "durum": "sağlık sorunu (bir kez tetiklendi, bekleniyor)",
+   "durum": "sağlık sorunu → yeniden tetiklendi",
    "saglik": [
     "adım başarısız: arsiv-yukle (çıkış 1, 1/1 tur)"
    ]
   },
   {
    "is": "Otonom ekip",
-   "son_basari_saat": 3.39,
+   "son_basari_saat": 9.22,
    "calisan": 0,
    "durum": "sağlıklı"
   },
   {
    "is": "Otomatik laboratuvar",
-   "son_basari_saat": 5.23,
+   "son_basari_saat": 2.24,
    "calisan": 0,
    "durum": "sağlıklı"
   },
   {
    "is": "Sürekli deney",
-   "son_basari_saat": 0.22,
+   "son_basari_saat": 3.13,
    "calisan": 0,
    "durum": "sağlıklı"
   }
  ],
- "eylem": [],
+ "eylem": [
+  {
+   "is": "At yarışı gece",
+   "eylem": "sağlık kaydında sorun → bir kez yeniden tetiklendi",
+   "neden": [
+    "adım başarısız: arsiv-yukle (çıkış 1, 1/1 tur)"
+   ]
+  }
+ ],
  "gecmis": [
+  {
+   "zaman": "2026-10-27T14:14Z",
+   "is": "At yarışı gece",
+   "eylem": "sağlık kaydında sorun → bir kez yeniden tetiklendi",
+   "neden": [
+    "adım başarısız: arsiv-yukle (çıkış 1, 1/1 tur)"
+   ]
+  },
   {
    "zaman": "2026-10-27T07:32Z",
    "is": "At yarışı gece",
@@ -94,7 +110,7 @@
  "saglik_tetik": {
   "at-lab.yml": {
    "imza": "adım başarısız: arsiv-yukle (çıkış 1, 1/1 tur)",
-   "zaman": "2026-10-27T07:32Z"
+   "zaman": "2026-10-27T14:14Z"
   },
   "update.yml": {
    "imza": "adım başarısız: arsiv-yukle (çıkış 1, 1/1 tur)",
