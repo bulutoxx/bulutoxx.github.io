@@ -44,18 +44,18 @@ UYARI = "Hobi amaçlı olasılık ölçümü; garanti değildir, para tutarı yo
 
 # ------------------------------------------------------------------ stratejiler (kimlikler KARARLIDIR; arayüz bunlarla eşler)
 STRATEJI = {
-    "fb_altin": ("futbol", "Altın kupon",
+    "fb_altin": ("futbol", "Altın KUPO",
                  "Uygulamadaki öneri (MS 1/X/2, 2,5 A/Ü; oranı olan seçenekler içinde OXXai'nin en yüksek olasılığı). Olasılık ≥ p_min, "
-                 "oran omin–omax, günde en fazla 'gunde' maç; hepsi tek kuponda."),
-    "fb_70": ("futbol", "%70+ kupon",
+                 "oran omin–omax, günde en fazla 'gunde' maç; hepsi tek KUPO'da."),
+    "fb_70": ("futbol", "%70+ KUPO",
               "Olasılığı ≥ p_bacak ve oranı ≥ omin öneriler (en olası 'aday' tanesi) içinden, birlikte tutma olasılığı ≥ p_kupon kalan "
-              "2–en_cok maçlık kombinasyonların toplam oranı en yüksek olanı (uygulamadaki Power Now %70+ kuponuyla aynı kural)."),
+              "2–en_cok maçlık kombinasyonların toplam oranı en yüksek olanı (uygulamadaki Power Now %70+ KUPO'suyla aynı kural)."),
     "fb_3lu": ("futbol", "3 maçlık en olası",
                "Günün en yüksek olasılıklı 3 önerisi (olasılık ≥ p_min, oran ≥ omin; farklı maçlar)."),
-    "fb_deger": ("futbol", "Değerli kupon",
+    "fb_deger": ("futbol", "Değerli KUPO",
                  "Her maçta oranı olan seçenekler (MS 1/X/2, 2,5 A/Ü) içinde OXXai olasılığı × oran en yüksek seçenek (olasılık ≥ p_min); "
                  "değer katsayısı en yüksek 'bacak' maç."),
-    "fb_guvenli": ("futbol", "Güvenli kupon (yeni pazarlar)",
+    "fb_guvenli": ("futbol", "Güvenli KUPO (yeni pazarlar)",
                    "Pazar karnesinde oneriye_uygun=true olan yeni pazarlar (Çifte şans, 1,5/3,5 A/Ü, KG, İY/2Y, birleşik…) içinde her maçın "
                    "en olası seçeneği; olasılık ≥ p_min ve iddaa oranı (yoksa adil oran 1/p) ≥ adil_min; en olası 'bacak' maç."),
     "bk_en_olasi": ("basket", "Basket: günün en olası seçimleri",
@@ -63,16 +63,16 @@ STRATEJI = {
                     "(3.'nün olasılığı p3_min altındaysa 2 maç)."),
     "at_altin": ("at", "Altın atlar",
                  "Gece robotunun Altın kuralı (data/at/model.json altin_kural): kazanma olasılığı ≥ p_min ve ikinciden fark ≥ fark_min; "
-                 "günde en fazla gunluk_max at; her at ayrı ganyan kuponu."),
+                 "günde en fazla gunluk_max at; her at ayrı bir kazanan KUPO'su."),
     "at_sirali_ikili": ("at", "OXXai sıralı ikili",
                         "Her koşuda (en az 4 at) indirimli Harville ile en olası sıralı ilk iki (1. ve 2. at, sırasıyla)."),
     "at_ikili": ("at", "OXXai ikili",
                  "Her koşuda (en az 7 at) en olası sırasız ilk iki."),
     "at_cifte": ("at", "OXXai çifte",
                  "Her hipodromda ardışık iki koşunun favorilerinin birlikte kazanma olasılığı en yüksek çifti (tek kombinasyon)."),
-    "at_altili_dar": ("at", "6'lı Dar (64)", "lab/at/altili.py dar seviye kuponu (ilk ayaktan önce kilitli)."),
-    "at_altili_orta": ("at", "6'lı Orta (192)", "lab/at/altili.py orta seviye kuponu (ilk ayaktan önce kilitli)."),
-    "at_altili_genis": ("at", "6'lı Geniş (576)", "lab/at/altili.py geniş seviye kuponu (ilk ayaktan önce kilitli)."),
+    "at_altili_dar": ("at", "6'lı Dar (64)", "lab/at/altili.py dar seviye KUPO'su (ilk ayaktan önce kilitli)."),
+    "at_altili_orta": ("at", "6'lı Orta (192)", "lab/at/altili.py orta seviye KUPO'su (ilk ayaktan önce kilitli)."),
+    "at_altili_genis": ("at", "6'lı Geniş (576)", "lab/at/altili.py geniş seviye KUPO'su (ilk ayaktan önce kilitli)."),
 }
 VARSAYILAN = {
     "fb_altin": {"p_min": 0.78, "omin": 1.15, "omax": 2.00, "gunde": 3},
@@ -862,9 +862,9 @@ def karne_kur(bugun, log=print):
     gd = sorted({g for g, _, _, geri in T if geri}); cd = sorted({g for g, _, _, geri in T if not geri})
     J = jl(AYAR, {}) or {}
     out = {"v": 1, "oxx_v": OXX_V, "guncelleme_utc": iso(datetime.now(timezone.utc)), "uyari": UYARI,
-           "aciklama": "Strateji başına kilitli OXXai kuponları: n = puanlanmış kupon, tutan, beklenen = kupon tutma olasılıkları toplamı "
-                       "(iyi kalibre robotta tutan ≈ beklenen; z = (tutan − beklenen)/√Σp(1−p)). bacak = kupondaki tek tek tahminler. "
-                       "geriye_donuk = kilit sistemi kurulmadan önceki günler için yalnız o günden önce bilinenle sonradan kurulan kuponlar; "
+           "aciklama": "Strateji başına kilitli OXXai KUPO'ları: n = puanlanmış KUPO, tutan, beklenen = KUPO tutma olasılıkları toplamı "
+                       "(iyi kalibre robotta tutan ≈ beklenen; z = (tutan − beklenen)/√Σp(1−p)). bacak = KUPO'daki tek tek tahminler. "
+                       "geriye_donuk = kilit sistemi kurulmadan önceki günler için yalnız o günden önce bilinenle sonradan kurulan KUPO'lar; "
                        "canli = gerçekten maçtan önce kilitlenenler. Para tutarı yoktur.",
            "donem": {"geriye_donuk": [gd[0], gd[-1]] if gd else None, "canli": [cd[0], cd[-1]] if cd else None},
            "ayar_surum": J.get("surum", "varsayilan"), "motor": motor_surumu(), "stratejiler": S}
@@ -902,7 +902,7 @@ def geriye(n_gun, bugun, log=print):
         else:
             M, SN, kay = G.get(g, []), SON, "season.json (football-data kapanış oranı + sonuç)"
         D = {"tarih": g, "oxx_v": OXX_V, "geriye_donuk": True, "uyari": UYARI,
-             "not": "GERİYE DÖNÜK: kilit sistemi bu gün için çalışmıyordu; kuponlar sonradan, yalnız o günden önce bilinen bilgiyle kuruldu "
+             "not": "GERİYE DÖNÜK: kilit sistemi bu gün için çalışmıyordu; KUPO'lar sonradan, yalnız o günden önce bilinen bilgiyle kuruldu "
                     "(maç öncesi oran, önceki maçlarla öğrenilmiş kalibrasyon/model). Varsayılan strateji kuralları.",
              "kilit_utc": iso(simdi), "bilgi_kesimi": g + "T00:00+03:00", "motor": motor_surumu()}
         if len(M) >= MIN_FB_MAC:

@@ -168,7 +168,7 @@ def sinyaller(bugun, A):
         if z <= -2.5:
             C.append({"anahtar": f"lig:{lg}", "tur": "lig", "alan": "futbol", "yol": ["lig_dis"], "deger": sorted(set((A.get("lig_dis") or []) + [lg])),
                       "stratejiler": [s for s in K.STRATEJI if s.startswith("fb_")], "sinyal": {"n": n, "tutan": int(h), "beklenen": round(e, 2), "z": round(z, 2),
-                      "kaynak": "predlog (kilitli maç öncesi tahmin)"}, "aciklama": f"{lg}: en olası sonuç beklentinin belirgin altında → OXXai kuponlarından çıkar"})
+                      "kaynak": "predlog (kilitli maç öncesi tahmin)"}, "aciklama": f"{lg}: en olası sonuç beklentinin belirgin altında → OXXai KUPO'larından çıkar"})
     # d) basket σ
     BJ = K.jl(os.path.join(DATA, "basket.json"), {}) or {}
     L = []

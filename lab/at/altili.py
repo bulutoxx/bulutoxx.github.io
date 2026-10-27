@@ -542,7 +542,7 @@ def gun_guncelle(tarih, kaynak=None, simdi=None, kurallar=None, log=print):
     veri_ = {"tarih": tarih, "guncelleme_tsi": sim, "model_surumu": surum, "butce": SEVIYE, "tau": tau,
              "altin_kural": kural, "aciklama": "6'yı birden tutma olasılığı = ayaklardaki seçilen atların toplam olasılığının "
              "çarpımı (koşular bağımsız varsayılır). Kombinasyon = ayaklardaki seçim sayılarının çarpımı (ekürili atlar tek "
-             "seçim). Kupon ilk ayak başlayınca kilitlenir.", "uyari": UYARI, "altililar": out}
+             "seçim). KUPO ilk ayak başlayınca kilitlenir.", "uyari": UYARI, "altililar": out}
     onceki = joku(yol)
     if onceki and {k: v for k, v in onceki.items() if k != "guncelleme_tsi"} == \
             json.loads(json.dumps({k: v for k, v in veri_.items() if k != "guncelleme_tsi"}, ensure_ascii=False)):

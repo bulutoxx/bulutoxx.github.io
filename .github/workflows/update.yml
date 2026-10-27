@@ -53,6 +53,10 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: python3 lab/adim.py arsiv-yukle -- python3 lab/arsiv.py yukle --en-az-saat 6 data/bk_games.json
+      - name: Sürüm dosyası (data/version.json ← index.html APP_V; uygulama sürüm kontrolünde bunu okur)
+        run: |
+          V=$(sed -nE 's/^const APP_V="([^"]+)";.*/\1/p' index.html | head -1)
+          if [ -n "$V" ]; then printf '{"v":"%s"}\n' "$V" > data/version.json; cat data/version.json; else echo "::warning::APP_V bulunamadı, version.json değişmedi"; fi
       - name: Değişiklikleri kaydet
         run: python3 lab/gonder.py -m "Veri ve model güncellemesi $(date -u +%F)" data
 
@@ -67,6 +71,10 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: main
+      - name: Sürüm dosyası (data/version.json ← index.html APP_V; uygulama sürüm kontrolünde bunu okur)
+        run: |
+          V=$(sed -nE 's/^const APP_V="([^"]+)";.*/\1/p' index.html | head -1)
+          if [ -n "$V" ]; then printf '{"v":"%s"}\n' "$V" > data/version.json; cat data/version.json; else echo "::warning::APP_V bulunamadı, version.json değişmedi"; fi
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
