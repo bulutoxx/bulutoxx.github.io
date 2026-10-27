@@ -45,7 +45,8 @@ def altin_kural(eski):
     return dict(ALTIN_VARSAYILAN)
 V5_DOSYA = os.path.join(CIKTI, "deneyler_v5.json")     # v5 deney kaydı (a5_* grupları, harman hm_alan)
 V6_DOSYA = os.path.join(CIKTI, "deneyler_v6.json")     # v6 deney kaydı (derin tarama: a6_* grupları, m6_rank)
-V6_PIYASA = os.path.join(CIKTI, "oran_izi_v6.json")    # v6 harman katmanı ölçümleri (oran izi, üçüncü taraf)
+V6_PIYASA = os.path.join(CIKTI, "oran_izi_v6.json")
+V6_EK = os.path.join(CIKTI, "deneyler_v6_ek.json")       # v6b: Ek kaynak A deneyleri (a6_ek_*, a6_hava)    # v6 harman katmanı ölçümleri (oran izi, üçüncü taraf)
 JOKEY_DOSYA = os.path.join(CIKTI, "jokeyler.json")    # arayüz: attan arındırılmış jokey/antrenör istatistikleri
 YENILEME_GUN = 7   # aynı tarifte yayın katsayılarının yenilenme aralığı (gün)
 TAKIP = [("2026-10-25", "İstanbul", 5)]   # raporda kalıcı izlenen örnek koşu(lar)
@@ -528,6 +529,24 @@ def _v6_bolum(a):
     if dj.get("toplam"):
         tp = dj["toplam"]
         a(f"- Toplam (seçilenler − taban): yalnız model {_ga(tp['model'])}; harman {_ga(tp['harman'])}.")
+    ej = joku(V6_EK) or {}
+    if ej.get("adimlar"):
+        a("")
+        a("### v6b: Ek kaynak A (herkese açık hazır veri dosyaları; yalnız türetilmiş özellik, adres gizli)")
+        a("")
+        a("| # | deney | sonuç | ort. LL / ilk seçim | ΔLL birleşik [%95 GA] | ΔLL A | ΔLL B | ΔLL harman |")
+        a("|---|---|---|---|---|---|---|---|")
+        for s_ in ej["adimlar"]:
+            sonuc = ("taban" if s_["gecti"] is None else "ℹ️ sağlamlık" if s_.get("saglamlik")
+                     else ("✅ kaldı" if s_["gecti"] else "❌ elendi"))
+            fm, fh = s_.get("fark_model"), s_.get("fark_harman")
+            a(f"| {s_['no']} | {s_['deney']} | {sonuc} | {s_['model']['ll']:.4f} / {_y(s_['model']['ilk'])} | "
+              f"{_ga(fm) if fm else '–'} | {_ga(fm['A']) if fm else '–'} | {_ga(fm['B']) if fm else '–'} | "
+              f"{_ga(fh) if fh else '–'} |")
+        if ej.get("toplam"):
+            a("")
+            a(f"- Toplam (Ek kaynak A seçilenleri − v6 tabanı): yalnız model {_ga(ej['toplam']['model'])}; harman "
+              f"{_ga(ej['toplam']['harman'])}. Seçilen: {', '.join((ej.get('secim') or {}).get('gruplar') or []) or 'yok'}.")
     pj = joku(V6_PIYASA) or {}
     if pj.get("deneyler"):
         a("")
@@ -1166,6 +1185,9 @@ def main():
          "neden": "veri tjkbulten.atyarisi.com / tjkgw.atyarisi.com API'lerinden geliyor ve robots.txt tüm robotlara "
                   "Disallow: / diyor; llms.txt izni yalnız www için ve www sayfalarında veri yok; kullanım şartları da "
                   "robots-kapalı help alanından yükleniyor."}]
+    if any(g.startswith("a6_ek_") for g in at6.A6_SECILI):
+        mj["kaynaklar"].append({"ad": "Ek kaynak A", "durum": "bağlı", "lisans": "herkese açık hazır veri dosyaları (yalnız model eğitimi)",
+                                "kullanim": "start, handikap puanı, idman/galop — yalnız türetilmiş özellikler (data/at/ek_ozellik)"})
     if "a6_hava" in at6.A6_SECILI:
         mj["kaynaklar"].append({"ad": "Open-Meteo (open-meteo.com)", "durum": "bağlı", "lisans": "CC BY 4.0",
                                 "kullanim": "hipodrom yağış/sıcaklık (a6_hava); atıf: Hava verisi Open-Meteo.com"})

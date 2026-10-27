@@ -1,6 +1,6 @@
 # OXXai 🐎 At Yarışı Laboratuvarı — Rapor
 
-_Otomatik üretildi: 2026-10-27T01:50:16+00:00 · model sürümü `20261027T0111` · hobi amaçlıdır, garanti değildir · 18+_
+_Otomatik üretildi: 2026-10-27T02:56:19+00:00 · model sürümü `20261027T0111` · hobi amaçlıdır, garanti değildir · 18+_
 
 ## Yeniden oynatma (replay): 2026-03-16 → 2026-10-23
 
@@ -170,7 +170,7 @@ Kapılı deneyler (v4 iki katlı kapı; ΔLL = yeni − önceki kabul, yalnız m
 ## v6 turu: derin açık kaynak taraması (pist vekili, Kalman figür, mesafe profili, gelişim, LambdaRank)
 
 54 aday tarandı (tablo, sorgular ve yasal notlar: `lab/at/KAYNAKLAR.md`). TJK yasağına uyan, ücretsiz ve lisansı uygun dış sinyal yalnız **hava** (Open-Meteo, CC BY 4.0); start/kulvar, ara derece, pedigri, idman/galop ve AGF için yasal açık kaynak yok. Adaylar aynanın kullanılmayan boyutlarından (program havası, önceki günlerin pist durumu, figür geçmişi) kuruldu. Kapı: deney4 iki katlı kapı; walk-forward (her ay yalnız geçmişle eğitim). Sızıntı testi: `python lab/at/deney6.py --sizinti`.
-Open-Meteo hava (a6_hava): ölçülemedi: Open-Meteo bu ortamdan erişilemedi; lisanslı hava dosyası yok (üretim çekicisi lab/at/hava.py hazır).
+Open-Meteo hava (a6_hava): v6 turunda ölçülemedi (erişim yok); v6b'de Ek kaynak A'nın hazır hava kopyasıyla ölçüldü (aşağıda). Üretimde hava Open-Meteo'dan doğrudan çekilir (`lab/at/hava.py`, CC BY 4.0).
 
 | # | deney | sonuç | ort. LL / ilk seçim | B: LL / ilk | ΔLL birleşik [%95 GA] | ΔLL A | ΔLL B | harman ort. LL / ilk | ΔLL harman |
 |---|---|---|---|---|---|---|---|---|---|
@@ -181,8 +181,24 @@ Open-Meteo hava (a6_hava): ölçülemedi: Open-Meteo bu ortamdan erişilemedi; l
 | 4 | a6_gelisim — yaş × ara gelişim eğrisi: ardışık figür farkının (yaş, ara kovası) ortalaması, alana göre | ✅ kaldı | 1.8563 / %32.1 | 1.8872 / %30.6 | -0.0007 [-0.0019, +0.0004] | -0.0012 [-0.0031, +0.0006] | -0.0004 [-0.0018, +0.0010] | 1.7894 / %35.4 | -0.0002 [-0.0007, +0.0003] |
 | 5 | m6_rank — GBM amacı LambdaRank (ilk 3 kademeli alaka) — koşu içi softmax yerine | ❌ elendi | 1.8569 / %32.2 | 1.8876 / %30.7 | +0.0006 [-0.0017, +0.0029] | +0.0008 [-0.0030, +0.0049] | +0.0004 [-0.0024, +0.0032] | 1.7898 / %35.3 | +0.0004 [-0.0006, +0.0014] |
 
-- Kapıdan geçen a6 grupları: **a6_kalman, a6_mesafe, a6_gelisim**; LambdaRank: elendi. Yayındaki a6: a6_kalman, a6_mesafe, a6_gelisim. Deney kaydı: `data/at/deneyler_v6.json` (2026-10-27T03:53:59; süre 3655 sn).
+- Kapıdan geçen a6 grupları: **a6_kalman, a6_mesafe, a6_gelisim**; LambdaRank: elendi. Yayındaki a6: a6_kalman, a6_mesafe, a6_gelisim, a6_ek_st, a6_ek_idman, a6_ek_hp, a6_hava. Deney kaydı: `data/at/deneyler_v6.json` (2026-10-27T03:53:59; süre 3655 sn).
 - Toplam (seçilenler − taban): yalnız model -0.0055 [-0.0084, -0.0023]; harman -0.0013 [-0.0027, +0.0001].
+
+### v6b: Ek kaynak A (herkese açık hazır veri dosyaları; yalnız türetilmiş özellik, adres gizli)
+
+| # | deney | sonuç | ort. LL / ilk seçim | ΔLL birleşik [%95 GA] | ΔLL A | ΔLL B | ΔLL harman |
+|---|---|---|---|---|---|---|---|
+| 0 | taban (yayındaki tarif + a6_kalman, a6_mesafe, a6_gelisim) | taban | 1.8563 / %32.1 | – | – | – | – |
+| 1 | a6_ek_st — Ek kaynak A — start (kulvar) sırası: alan içi göreli start, × kısa mesafe (≤1300 m), × çim | ✅ kaldı | 1.8559 / %32.2 | -0.0006 [-0.0024, +0.0012] | +0.0006 [-0.0023, +0.0036] | -0.0015 [-0.0038, +0.0008] | -0.0005 [-0.0013, +0.0003] |
+| 2 | a6_ek_hp — Ek kaynak A — resmî handikap puanı: alan ortalamasından fark, alan içi z | ❌ elendi | 1.8505 / %32.1 | -0.0058 [-0.0099, -0.0020] | -0.0031 [-0.0100, +0.0042] | -0.0076 [-0.0123, -0.0029] | +0.0003 [-0.0015, +0.0021] |
+| 3 | a6_ek_soy — Ek kaynak A — baba (soy) tablosu: babanın yavrularının geçmiş galibiyet/beklenen oranı (genel, pist, mesafe kovası; yalnız koşu gününden önceki sonuçlar), alana göre | ❌ elendi | 1.8544 / %32.0 | -0.0014 [-0.0040, +0.0011] | -0.0023 [-0.0066, +0.0019] | -0.0009 [-0.0040, +0.0023] | -0.0007 [-0.0018, +0.0005] |
+| 4 | a6_ek_idman — Ek kaynak A — idman/galop: son idmandan bu yana gün, 30 günde idman sayısı, 45 günün en iyi 400/600 m derecesinin alan ortancasından farkı (yalnız koşu gününden önceki idmanlar) | ✅ kaldı | 1.8525 / %32.4 | -0.0041 [-0.0061, -0.0022] | +0.0000 [-0.0000, +0.0000] | -0.0068 [-0.0098, -0.0035] | -0.0015 [-0.0025, -0.0007] |
+| 5 | yeniden (yeni tabanda): a6_ek_hp | ✅ kaldı | 1.8473 / %32.4 | -0.0056 [-0.0095, -0.0017] | -0.0031 [-0.0100, +0.0042] | -0.0072 [-0.0120, -0.0027] | +0.0005 [-0.0012, +0.0023] |
+| 6 | yeniden (yeni tabanda): a6_ek_soy | ❌ elendi | 1.8466 / %32.0 | -0.0005 [-0.0028, +0.0021] | -0.0025 [-0.0067, +0.0018] | +0.0009 [-0.0023, +0.0041] | -0.0004 [-0.0015, +0.0008] |
+| 7 | a6_hava — hava (Open-Meteo): ıslaklık endeksi (yarış günü + önceki 3 gün), sıcaklık, atın ıslak pist uyumu, ıslaklık × (uyum, alan içi reyting, kilo, çim) | ✅ kaldı | 1.8470 / %32.5 | -0.0003 [-0.0015, +0.0010] | -0.0005 [-0.0026, +0.0016] | -0.0001 [-0.0018, +0.0016] | -0.0001 [-0.0007, +0.0005] |
+| 8 | sağlamlık: a6_hava yarış günü yağışı olmadan (yalnız önceki 3 gün; sıcaklık önceki gün) | ℹ️ sağlamlık | 1.8470 / %32.6 | -0.0001 [-0.0011, +0.0008] | +0.0002 [-0.0015, +0.0018] | -0.0004 [-0.0016, +0.0008] | -0.0001 [-0.0005, +0.0004] |
+
+- Toplam (Ek kaynak A seçilenleri − v6 tabanı): yalnız model -0.0106 [-0.0152, -0.0061]; harman -0.0016 [-0.0037, +0.0005]. Seçilen: a6_ek_st, a6_ek_idman, a6_ek_hp, a6_hava.
 
 Harman/yığma katmanı (aynanın git geçmişi + kendi oran izimiz `data/at/oran_izi/`; `lab/at/oran_izi.py`, `lab/at/ucuncu_taraf.py`; taban `replay_kosular.json` sızıntısız olasılıkları, aylık walk-forward):
 
@@ -193,8 +209,15 @@ Harman/yığma katmanı (aynanın git geçmişi + kendi oran izimiz `data/at/ora
 | oran izi: eşik ≥60 dk | 1,001 | +0.0014 [-0.0016, +0.0047] | ❌ elendi |
 | erken piyasa (q_erken) p_oran'a ek | 1,313 | +0.0003 [-0.0023, +0.0029] | ❌ elendi |
 | üçüncü taraf tahmin günlüğü (memory/predictions, sabah sürümü) p_sabah'a yığma | 1,265 | -0.0019 [-0.0055, +0.0015] | ❌ elendi |
+| Ek kaynak A AGF zaman serisi (koşudan ≥15 dk önce yakalanan görüntü) p_oran'a ek; gün dışarıda bırakmalı | 171 | +0.0056 [-0.0124, +0.0265] | ❌ elendi |
+| Ek kaynak A AGF (≥30 dk önce) | 170 | +0.0036 [-0.0141, +0.0228] | ❌ elendi |
 
 - Oran hareketi nihai piyasa oranına bilgi katmıyor: nihai oran erken parayı zaten içeriyor (erken oranın kendi LL'si çok daha kötü). Aynadaki üçüncü taraf tahminleri bizim sabah modelimizden belirgin zayıf.
+- Sızıntı testleri: `python lab/at/deney6.py --sizinti` (a6_* ve a6_ek_* sütunları, 4 rastgele gün: kesme, sonuç karıştırma, ters gün içi sıra → AYNI; **SIZINTI YOK**) ve türetici testi `ek_kaynak.sizinti_testi` (sonuçlar/idmanlar D'den itibaren silinip yeniden türetilince D'nin özellikleri birebir aynı; 4 gün, 650 koşan, fark 0). AGF/oran sabah modeline girmez (sabah kilidi yalnız model, `lab/at/kilit.py`); AGF yalnız harman tarafında ve koşudan ≥15 dk önce yakalanmış görüntüyle sınandı (`lab/at/ek_agf.py`): +0,0056 [−0,0124; +0,0265], 171 koşu → elendi.
+- Robota bağlantı: `at6.A6_SECILI = [a6_kalman, a6_mesafe, a6_gelisim, a6_ek_st, a6_ek_idman, a6_ek_hp, a6_hava]`. Yerel gece sınaması (bugün=2026-10-27): gece kapısı **KABUL** — yalnız model log-loss 1,8681 → 1,8526, ilk seçim %31,67 → %32,35; harman 1,7950 → 1,7923 (ortak 5.453 sınama koşusu).
+- Ek kaynak A üretimi: `lab/at/ek_kaynak.py` adresi yalnız `AT_EK_KAYNAK` secret'ından alır, sığ + seyrek klonlar (≈23 sn), koşu içi göreli türetilmiş özellikleri `data/at/ek_ozellik/<ay>.json.gz`'ye yazar, ham veriyi siler; secret yoksa "ek kaynak yok" der ve atlar (`at-lab.yml`, `at-canli.yml` 6 saatte bir; sağlık kaydı `lab/adim.py` → `data/saglik/`).
+- Gece akışı süresi (yerel, 2 çekirdek, a6 + a6_ek + hava dahil, Open-Meteo erişilemezken hızlı vazgeçme ile): **858 sn (≈14,3 dk)** + ek kaynak adımı ≈23 sn ≤ 25 dk. Gün içi robot (canli.py) 45 sn.
+- Düzeltme: eğitimde sabit kalan bir sütun (ör. `a6_h_yok`) tahminde değişince 0'a bölme oluyordu; `model.py` ölçeği ≈0 olan sütunu 1 ile ölçekler (puan değişmez).
 
 ## v5 turu: sınıf-ayarlı form, kilo, dinlenme, harman
 
@@ -379,7 +402,7 @@ Yorum: sabah tahmininde en çok taşıyan bilgiler reytingler (at/jokey/antrenö
 ## Kapı (sürekli öğrenme)
 
 - Kural: tarif (özellikler/ayarlar) değişirse yeni model ancak **aynı sınama koşularında** yalnız-model log-loss'u düşürür, ilk seçim isabetini düşürmez ve harman log-loss'unu 0,001'den fazla bozmazsa kabul edilir. Tarif aynıysa özellikler her gece yeni sonuçlarla güncellenir, katsayılar haftada bir yeniden eğitilir (KORU = bu gece yenileme günü değil); ortak koşularda belirgin bozulma (veri sorunu) olursa dünkü model korunur. İz: `data/at/sinama_izi.json`.
-- Son karar (2026-10-27T01:50:16+00:00): **KORU** — aynı tarif; katsayılar 0 günlük (haftalık yenileme), özellikler bu gece yeni sonuçlarla güncellendi
+- Son karar (2026-10-27T02:56:19+00:00): **KORU** — aynı tarif; katsayılar 0 günlük (haftalık yenileme), özellikler bu gece yeni sonuçlarla güncellendi
 - Yeni: yalnız model log-loss 1.8630, ilk seçim %31.8; harman 1.7946. Kıyas: yalnız model 1.8686, ilk seçim %31.6; harman 1.7960.
 
 ## Canlı karne (kilitlenmiş tahminler, sonuç gelince)

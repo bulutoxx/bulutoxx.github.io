@@ -48,12 +48,19 @@ def main():
     except Exception:
         eski = {"adaylar": []}
     aday = {a["ad"]: a for a in eski.get("adaylar", [])}
+    # Ek kaynak A gizlidir: adresi yalnız AT_EK_KAYNAK secret'ında; aday listesine (herkese açık dosya) yazılmaz
+    gizli = os.environ.get("AT_EK_KAYNAK", "").strip().rstrip("/").removesuffix(".git").lower()
+    gizli_ad = "/".join(gizli.split("/")[-2:]) if gizli else ""
+    gizle = lambda ad_: bool(gizli_ad) and ad_.lower() == gizli_ad
+    aday = {k: v for k, v in aday.items() if not gizle(k)}
     hatalar, simdi = [], datetime.now(timezone.utc).isoformat(timespec="seconds")
     for tur, q in SORGULAR:
         try:
             for it in ara(q, token):
                 ad = it.get("full_name")
                 if not ad or it.get("fork"):
+                    continue
+                if gizle(ad):
                     continue
                 d = aday.get(ad, {"ilk_gorulme": simdi})
                 metin = " ".join(str(it.get(x) or "") for x in ("full_name", "description")).lower()
