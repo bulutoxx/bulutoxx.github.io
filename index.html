@@ -5920,7 +5920,7 @@ if((location.hash||"")==="#sonuclar") setTimeout(()=>$("navRes").click(),200);
 // =====================================================================
 // OXXai v35: Otomatik sürüm güncelleme — yeni sürüm yayınlanınca uygulama kendini yeniler
 // =====================================================================
-const APP_V="2026-10-27.133";
+const APP_V="2026-10-28.134";
 (function autoUpdate(){
   let shown=false;
   async function check(auto){
@@ -14330,5 +14330,69 @@ html[data-v122-ctx="at"] nav.tabs button[aria-current]{color:var(--ink3,#8893AB)
       return r; }; }catch(e){}
 })();
 </script>
+<script id="canli-nabiz-v134">
+// =====================================================================
+// OXXai v134 · CANLI NABIZ: canlı skor ekranda anlık güncellenir
+// Kök neden (şikâyet "canlı maç izlerken skor değişmiyor"): açık maç penceresi (openMatch → msRender) açılış anındaki
+// IDL nesnesinin kopyasını (MS.live) çiziyordu; IDL.load her yenilemede yeni nesneler ürettiği için pencere yalnız
+// "↻ Güncel tahmin"e basınca tazeleniyordu. Bülten (Takip/arama) ve KUPO canlı satırları da 60–120 sn'lik döngülere kalıyordu.
+// Çözüm: sayfa görünürken 15 sn'de bir (yalnız canlı bir yüzey ekrandayken) iddaa canlı bülteni tazelenir ve
+//  • açık maç penceresi yeni veriye bağlanır; skor/kart/devre değişince yeniden çizilir (kaydırma yeri korunur),
+//  • Canlı sekmesi dışındaki canlı satırların (.lv-c) skor ve dakikası yerinde güncellenir, KUPO canlı satırları yeniden bezenir.
+// Sayfa gizliyken çalışmaz (everyVisible); görünür olunca hemen bir tur atar. Canlı sekmesinin kendi 10 sn döngüsü değişmez.
+// =====================================================================
+(function(){ "use strict";
+  const PER=15000;
+  const sig=m=>m?[m.hs,m.as,(m.rc||[]).join(","),m.st].join("|"):"";
+  const vis=id=>{ const v=document.getElementById(id); return !!(v&&!v.hidden); };
+  const msOpen=()=>{ const el=document.getElementById("msheet"); return !!(el&&!el.hidden&&typeof MS!=="undefined"&&MS.m); };
+  const tms=d=>{ try{ const t=d&&d.getTime?d.getTime():Date.parse(d); return isFinite(t)?t:NaN; }catch(e){ return NaN; } };
+  function msStarted(){ const m=MS.m; if(!m) return false; if(m.sp||MS.live) return true; const t=tms(m.dt); return isFinite(t)&&t<Date.now()+60e3&&t>Date.now()-3*3600e3; }
+  function msFind(){ const m=MS.m, by=(IDL.byId&&IDL.byId[1])||{};
+    if(MS.live&&MS.live.sp===1) return by[MS.live.id]||null;
+    if(m&&m.sp===1) return by[m.id]||null;
+    if(m&&m.iid&&by[m.iid]) return by[m.iid];
+    try{ return (IDL.live[1]||[]).find(x=>tmEq(x.h,m.h)&&tmEq(x.a,m.a))||null; }catch(e){ return null; } }
+  function msUpdate(){ if(!msOpen()||!msStarted()) return;
+    const nw=msFind(); if(!nw) return; const old=MS.live, ch=!old||sig(old)!==sig(nw);
+    MS.live=nw; if(MS.m&&MS.m.sp===1) MS.m=nw;
+    const el=document.getElementById("msheet");
+    if(ch&&MS.tab!=="form"){ const sc=el.scrollTop; try{ msRender(); }catch(e){} el.scrollTop=sc; }
+    else { const b=el.querySelector(".ms-sc.live b"); if(b) b.textContent=`${nw.hs}-${nw.as}`; } }
+  // Canlı sekmesi dışındaki canlı satırlar (bülten takip/arama, güç sayfası vb.): skor ve dakika yerinde
+  function rowsUpdate(){ const by=(IDL.byId&&IDL.byId[1])||{};
+    document.querySelectorAll(".lv-c[data-id]").forEach(r=>{ if(r.closest("#idlBox")) return; const c=r.querySelector(".lclk"), sp=c?+c.dataset.sp:1; const m=(IDL.byId[sp]||by)[+r.dataset.id]; if(!m) return;
+      const b=r.querySelector(".lv-sc b"), t=`${m.hs}-${m.as}`; if(b&&b.textContent!==t){ b.textContent=t; r.classList.remove("nb-gol"); void r.offsetWidth; r.classList.add("nb-gol"); } }); }
+  function kupoLive(){ try{ const box=document.getElementById("cpBox"); if(!box||!box.offsetParent) return false; return (CP.items||[]).some(x=>x.ok==null&&(x.live||(tms(x.dt)<Date.now()&&tms(x.dt)>Date.now()-3*3600e3))); }catch(e){ return false; } }
+  function need(){ if(document.hidden) return false;
+    if(msOpen()&&msStarted()) return true;
+    if(document.querySelector(".lv-c[data-id]")&&[...document.querySelectorAll(".lv-c[data-id]")].some(r=>!r.closest("#idlBox")&&r.offsetParent)) return true;
+    return kupoLive(); }
+  let busy=false;
+  async function tick(force){ if(busy||!need()) return; busy=true;
+    try{ if(typeof idlCanliVisible==="function"&&idlCanliVisible()&&!msOpen()) return;   // Canlı sekmesi kendi 10 sn döngüsüyle tazelenir
+      if(force||Date.now()-(IDL.at[1]||0)>=PER-1500) await IDL.load(1,!!force);
+      msUpdate(); rowsUpdate();
+      try{ if(kupoLive()&&window.kxLiveDeco) window.kxLiveDeco(); }catch(e){}
+    }catch(e){} finally{ busy=false; } }
+  if(typeof everyVisible==="function") everyVisible(()=>tick(false),PER); else setInterval(()=>{ if(!document.hidden) tick(false); },PER);
+  // arka plandan dönüş: hemen tazele (10 sn'den eskiyse); Canlı sekmesi de anında yeniden çizilir
+  function back(){ if(document.hidden) return; setTimeout(()=>{ try{
+      if(Date.now()-(IDL.at[1]||0)>10e3){
+        if(typeof idlCanliVisible==="function"&&idlCanliVisible()) IDL.load(IDLV.sp,true).then(()=>{ idlRenderAll(); msUpdate(); });
+        else tick(true); } }catch(e){} },150); }
+  document.addEventListener("visibilitychange",back);
+  window.addEventListener("pageshow",e=>{ if(e.persisted) back(); });
+  window.addEventListener("online",back);
+  // maç penceresi açılırken veri eskiyse hemen tazele
+  try{ const _om=openMatch; openMatch=function(){ const r=_om.apply(this,arguments); try{ if(MS.m&&msStarted()&&Date.now()-(IDL.at[1]||0)>PER) tick(true); }catch(e){} return r; }; }catch(e){}
+  window.oxxNabiz={tick,need};
+})();
+</script>
+<style id="canli-nabiz-v134-css">
+@keyframes nbGol{0%{background:rgba(31,191,91,.28)}100%{background:transparent}}
+.lv-c.nb-gol .lv-sc b{animation:nbGol 2.4s ease-out}
+@media (prefers-reduced-motion:reduce){.lv-c.nb-gol .lv-sc b{animation:none}}
+</style>
 </body>
 </html>
