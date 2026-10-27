@@ -1,6 +1,6 @@
 {
  "surum": "2026-10-27.1",
- "guncelleme": "2026-10-27 07:45",
+ "guncelleme": "2026-10-27 07:59",
  "aciklama": "Basket piyasa karnesi: kilitli model tahmini ile maç öncesi son piyasa oranı (marjı Shin ile ayrılmış) aynı maçlarda. Harman = Benter iki aşama (lig grubu, zaman sıralı ağırlık). Çapalı = model fark/toplamının handikap ve alt/üst çizgisine çekilmesi. GA: gün blokları bootstrap %95. Üretime yalnız OXXai kapısı + gölge sonrası girer.",
  "kurallar": {
   "kapi": "n ≥ 150, gün ≥ 20, ΔLL GA üst < 0, ΔBrier < 0, isabet düşmez",
@@ -165,13 +165,6 @@
   }
  },
  "agirlik": {
-  "kolej": {
-   "a": 0.3,
-   "b": 0.7,
-   "w_m": 0.6,
-   "w_t": 0.6,
-   "n_ogrenme": 0
-  },
   "avrupa": {
    "a": 0.3,
    "b": 0.7,
@@ -185,6 +178,13 @@
    "w_m": 0.8132,
    "w_t": 1.0,
    "n_ogrenme": 39
+  },
+  "kolej": {
+   "a": 0.3,
+   "b": 0.7,
+   "w_m": 0.6,
+   "w_t": 0.6,
+   "n_ogrenme": 0
   }
  },
  "uretimde": {},
@@ -200,10 +200,10 @@
   },
   "el": {
    "kilitli": 21,
-   "oranli": 10,
+   "oranli": 12,
    "sonuclu_oranli": 0,
-   "iddaa_ms": 10,
-   "iddaa_hnd": 10,
+   "iddaa_ms": 12,
+   "iddaa_hnd": 12,
    "iddaa_au": 8,
    "espn": 0
   },
@@ -227,11 +227,11 @@
   },
   "nbl": {
    "kilitli": 13,
-   "oranli": 4,
+   "oranli": 5,
    "sonuclu_oranli": 2,
-   "iddaa_ms": 4,
-   "iddaa_hnd": 2,
-   "iddaa_au": 4,
+   "iddaa_ms": 5,
+   "iddaa_hnd": 3,
+   "iddaa_au": 5,
    "espn": 0
   },
   "ncaa": {
@@ -254,13 +254,13 @@
   }
  },
  "sentetik_yarismalar": {
+  "Çin CBA": 5,
   "European North Basketball Leag": 1,
   "Uruguay Basketbol Ligi": 2,
   "Arjantin LNB": 4,
   "Euroleague": 2,
   "Europe Kupası": 4,
   "Şampiyonlar Ligi": 3,
-  "Çin CBA": 6,
   "Avrupa Kuzey Basket Ligi, Gr.B": 1,
   "İsveç Basketbol Ligi": 3,
   "Almanya Pro A": 1,
