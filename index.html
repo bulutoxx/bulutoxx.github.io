@@ -13339,6 +13339,117 @@ html[data-v122-ctx="at"] nav.tabs button[aria-current]{color:var(--ink3,#8893AB)
   }
 })();
 </script>
+<script id="bot-v127">
+// =====================================================================
+// OXXai v127 · Sohbet: lig / kupa adları veriden öğrenilir
+// Kök neden: lig eşleştirici (BOT_LG) sabit bir sözlük + gece koçunun bankasıydı. Bültene yeni giren yarışmalar ("Çekya Kupası",
+// "Polonya Kupası", "Avusturya Kupası", "Rusya Kupası"…) sözlükte olmadığından "çekya kupası maçları" sorusunda yalnız ülke ("cekya")
+// tanınıyor, cevap o ülkenin bütün liglerinden karışık geliyordu.
+// Çözüm: bültendeki gerçek yarışma adlarından (fikstürdeki cn / ln ve LEAGUES adı) otomatik bir eş anlamlı sözlüğü kurulur:
+//  · tam ad ("cekya 2 lig", "almanya 2 bundesliga"), virgülden sonraki tur / grup eki atılmış taban ad ("rusya kupasi"),
+//  · ulusal kupa kalıbı: "<ülke> kupası" ve İngilizce / yerel karşılıkları ("czech cup", "puchar polski", "ofb cup", "mol cup"),
+//  · ülke adının İngilizce karşılığıyla lig adları ("czech 2 lig"); Türkçe harf toleransı normalize ile ("cekya" = "Çekya").
+// Aynı yarışmanın grupları ("Romanya Kupası, 1. Grup" … "4. Grup") tek aile sayılır: aile adı sorulunca hepsinden seçilir.
+// Bir ifade birden çok yarışmaya gidiyorsa eklenmez. Sabit sözlükteki büyük ligler (ör. "türkiye süper lig" → Süper Lig) korunur.
+// Sözlük veri değiştikçe kendiliğinden yenilenir; bundan sonra bültene giren her yarışma ek iş gerekmeden tanınır.
+// =====================================================================
+(function(){
+  "use strict";
+  if(typeof botAnswer!=="function"||typeof BOT_LG!=="object"||typeof nluPhrase!=="function") return;
+  const N=s=>String(s||"").toLocaleLowerCase("tr").replace(/ç/g,"c").replace(/ğ/g,"g").replace(/ı/g,"i").replace(/ö/g,"o").replace(/ş/g,"s").replace(/ü/g,"u")
+    .normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^a-z0-9]+/g," ").trim();
+  // ülke adları: Türkçe (normalize) → İngilizce / yerel karşılıklar (yarışma listesi değil; yalnız ülke adı çevirisi)
+  const CC={cekya:"czech czechia cesko cek",polonya:"poland polish polska",avusturya:"austria austrian osterreich",rusya:"russia russian",almanya:"germany german deutschland",
+    ingiltere:"england english",ispanya:"spain spanish",italya:"italy italian",fransa:"france french",hollanda:"netherlands holland dutch",portekiz:"portugal portuguese",
+    yunanistan:"greece greek",danimarka:"denmark danish",norvec:"norway norwegian",isvec:"sweden swedish",romanya:"romania romanian",sirbistan:"serbia serbian",
+    hirvatistan:"croatia croatian",gurcistan:"georgia georgian",turkiye:"turkey turkish",arjantin:"argentina",ekvador:"ecuador",paraguay:"",uruguay:"",macaristan:"hungary hungarian",
+    belcika:"belgium belgian",isvicre:"switzerland swiss",iskocya:"scotland scottish",slovakya:"slovakia slovak",slovenya:"slovenia",bulgaristan:"bulgaria",ukrayna:"ukraine",
+    brezilya:"brazil",meksika:"mexico",japonya:"japan",kolombiya:"colombia",sili:"chile",finlandiya:"finland",irlanda:"ireland",galler:"wales",kibris:"cyprus",israil:"israel",
+    misir:"egypt",fas:"morocco",litvanya:"lithuania",letonya:"latvia",estonya:"estonia",karadag:"montenegro",arnavutluk:"albania",kazakistan:"kazakhstan",azerbaycan:"azerbaijan",
+    ermenistan:"armenia",izlanda:"iceland",avustralya:"australia",cin:"china",tayland:"thailand",endonezya:"indonesia",venezuela:"",peru:"",bolivya:"bolivia",sirbistan_:"",
+    "suudi arabistan":"saudi arabia saudi","guney afrika":"south africa","kuzey irlanda":"northern ireland","guney kore":"south korea korea","kuzey makedonya":"north macedonia macedonia",
+    "bosna hersek":"bosnia","faroe adalari":"faroe","orta amerika":"central america",abd:"usa"};
+  // yerel / İngilizce kupa adları → "<ülke> kupasi" (yalnız veride o kupa varsa etkili olur)
+  const CUPN={"mol cup":"cekya","puchar polski":"polonya","ofb cup":"avusturya","ofb pokal":"avusturya","uniqa cup":"avusturya","dfb pokal":"almanya","coppa italia":"italya",
+    "coupe de france":"fransa","knvb beker":"hollanda","taca de portugal":"portekiz","fa cup":"ingiltere","scottish cup":"iskocya","ziraat turkiye kupasi":"turkiye","ziraat kupasi":"turkiye",
+    "svenska cupen":"isvec","dbu pokalen":"danimarka","magyar kupa":"macaristan","cupa romaniei":"romanya","kypello elladas":"yunanistan","hrvatski kup":"hirvatistan",
+    "copa argentina":"arjantin","copa paraguay":"paraguay","copa ecuador":"ekvador","beker van belgie":"belcika","schweizer cup":"isvicre","russian cup":"rusya"};
+  const CUPW=/\b(kupasi|kupa|cup|pokal|puchar|copa|coppa|coupe|taca|beker|kup)\b/;
+  const SUFX=/\s+(\d+\s*)?(grup|grub|group|eleme|siralama|ana tur|final turu|turu|ilk etap|ikinci etap|playoff|play off)(\s+\w+)?$/;
+  const CTRY=Object.keys(CC).filter(k=>!k.endsWith("_")).sort((a,b)=>b.split(" ").length-a.split(" ").length);
+  const GEN=new Set("lig ligi league liga premier super pro primera division ligue serie profesyonel futbol ulusal national kupa kupasi cup a b c 1 2 3 i ii amator".split(" "));
+  const BIG=new Set(["tr1","tr2","en","es","it","de","fr","nl","pt","be","ucl","uel","uecl"]);
+  const lgFix=s=>s.replace(/\bligi\b/g,"lig").replace(/\bliga\b/g,"lig").replace(/\bleague\b/g,"lig").replace(/\bsuperliga(en)?\b/g,"super lig");
+  const ctryOf=n=>{ for(const c of CTRY) if(n===c||n.startsWith(c+" ")) return c; return null; };
+  let KEY="", AUTO=[], FAM=Object.create(null), FIRST=null; const AUTO_SET=new Set();
+  function labelsOf(){ const by=Object.create(null);
+    for(const f of (typeof FIXTURES!=="undefined"&&FIXTURES)||[]){ if(!f||!f.lg) continue; const s=by[f.lg]||(by[f.lg]={n:0,lab:new Set()}); s.n++;
+      if(f.cn) s.lab.add(f.cn); if(f.ln) s.lab.add(f.ln); }
+    for(const [lg,s] of Object.entries(by)){ const L=LEAGUES[lg]; if(L&&L.n) s.lab.add(L.n); }
+    return by; }
+  function build(){ const by=labelsOf(); const ph=Object.create(null), base=Object.create(null), fam=Object.create(null);
+    const put=(p,lg,exact)=>{ p=N(p).replace(/\s+/g," ").trim(); if(!p||p.split(" ").length<2) return; const o=ph[p]||(ph[p]={lgs:new Set(),ex:new Set()}); o.lgs.add(lg); if(exact) o.ex.add(lg); };
+    for(const [lg,s] of Object.entries(by)){ if(!LEAGUES[lg]) continue;
+      for(const lab of s.lab){ const raw=String(lab); if(/women|kadin|\(k\)|\bu ?\d\d\b|juvenil|youth/i.test(N(raw))) continue;
+        const full=N(raw), b0=N(raw.split(/,| - /)[0]).replace(SUFX,"").trim(), b=b0||full;
+        (fam[b]=fam[b]||new Map()).set(lg,s.n); if(full===b) base[b]=lg;
+        for(const v of new Set([full,b,lgFix(full),lgFix(b)])) put(v,lg,v===b||v===lgFix(b));
+        const c=ctryOf(b), rest=c?b.slice(c.length).trim():"";
+        if(c&&rest){ const al=(CC[c]||"").split(" ").filter(Boolean);
+          for(const a of al) for(const r of new Set([rest,lgFix(rest)])) put(a+" "+r,lg,true);
+          if(rest==="kupasi"){ put(c+" kupasi",lg,true); put(c+" cup",lg,true); for(const a of al){ put(a+" cup",lg,true); put(a+" kupasi",lg,true); } }
+          // özel adlı kupa: "kral kupasi", "efl kupasi" — ülke olmadan da (ayırt edici kelime varsa)
+          const rw=rest.split(" "); if(CUPW.test(rest)&&rw.length>=2&&rw.some(w=>w.length>=3&&!GEN.has(w))) put(rest,lg,false); } } }
+    for(const [nm,c] of Object.entries(CUPN)){ const t=ph[c+" kupasi"]; if(t) for(const lg of t.lgs) put(nm,lg,true); }
+    // aile: aynı taban adın grupları; temsilci = taban adı birebir taşıyan lig, yoksa en çok maçı olan
+    const F2=Object.create(null), repOf=Object.create(null);
+    for(const [b,m] of Object.entries(fam)){ const lgs=[...m.keys()]; const rep=base[b]||lgs.sort((x,y)=>m.get(y)-m.get(x))[0]; for(const lg of lgs) repOf[b+"|"+lg]=rep; if(lgs.length>1) F2[rep]=new Set(lgs); }
+    const out=[];
+    for(const [p,o] of Object.entries(ph)){ let lgs=[...o.lgs];
+      // aynı ailenin üyeleri tek yarışma sayılır
+      const reps=new Set(lgs.map(lg=>{ for(const [r,S] of Object.entries(F2)) if(S.has(lg)) return r; return lg; }));
+      let lg=null; if(reps.size===1) lg=[...reps][0]; else if(o.ex.size===1) lg=[...o.ex][0];
+      if(lg&&LEAGUES[lg]) out.push([p,lg]); }
+    out.sort((a,b)=>b[0].split(" ").length-a[0].split(" ").length||b[0].length-a[0].length);
+    // sabit sözlükteki büyük lig ile bültendeki aynı yarışma ("Süper Lig" ↔ "Türkiye Süper Lig"): ülke kelimesi o lige gidiyorsa tek aile
+    for(const [ck,E] of Object.entries(BOT_LG)){ const c=N(ck); if(!BIG.has(E)||c.includes(" ")||!CC.hasOwnProperty(c)||!LEAGUES[E]) continue;
+      const want=lgFix(c+" "+N(botLgName(E)));
+      for(const [b,m] of Object.entries(fam)) if(lgFix(b)===want) for(const lg of m.keys()) if(lg!==E){ (F2[E]=F2[E]||new Set([E])).add(lg); }
+    }
+    FAM=F2; return out; }
+  function existing(p,cur){ const toks=p.split(" "); for(const [k,v] of cur){ if(!LEAGUES[v]) continue; try{ if(nluPhrase(toks,N(k))) return [N(k),v]; }catch(e){} } return null; }
+  function hasUp(lg){ try{ const now=Date.now(); return Pick.list().some(m=>m.lg===lg&&!m.started&&m.dt.getTime()>now&&m.dt.getTime()<now+8*864e5); }catch(e){ return false; } }
+  function ensure(){ try{
+      const k=((typeof FIXTURES!=="undefined"&&FIXTURES.length)||0)+"|"+Object.keys(LEAGUES).length;
+      if(k!==KEY){ KEY=k; AUTO=build(); FIRST=null; }
+      if(!AUTO.length) return;
+      if(FIRST){ const ks=Object.keys(BOT_LG); if(ks.length===FIRST[2]&&ks[0]===FIRST[0]&&BOT_LG[FIRST[0]]===FIRST[1]) return; }   // kurulu (koç bankası yüklenince BOT_LG yeniden yazılır)
+      const cur=Object.entries(BOT_LG).filter(([kk])=>!AUTO_SET.has(kk)), have=new Set(cur.map(([kk])=>N(kk)));
+      const add=[];
+      for(const [p,lg] of AUTO){ if(have.has(p)) continue;
+        if(!CUPW.test(p)){ const e=existing(p,cur);   // büyük lig zaten doğru eşleşiyorsa (ör. "türkiye süper lig" → Süper Lig) dokunma
+          if(e&&e[1]!==lg&&BIG.has(e[1])&&(hasUp(e[1])||(FAM[e[1]]&&FAM[e[1]].has(lg)))){ const c=ctryOf(p); if(!c||BOT_LG[c]===e[1]||N(botLgName(e[1]))===p.slice(c.length).trim()) continue; } }
+        add.push([p,lg]); }
+      for(const kk of Object.keys(BOT_LG)) delete BOT_LG[kk];
+      AUTO_SET.clear(); for(const [p,lg] of add){ BOT_LG[p]=lg; AUTO_SET.add(p); }
+      for(const [kk,v] of cur) if(!(kk in BOT_LG)) BOT_LG[kk]=v;
+      const k0=Object.keys(BOT_LG); FIRST=k0.length?[k0[0],BOT_LG[k0[0]],k0.length]:null;
+    }catch(e){} }
+  // aile: temsilci lig sorulunca grupların hepsinden seç
+  // "<ülke> ligi" (kupa sözü yok): ülke süzgecinde kupa yarışmaları karışmasın
+  let LASTQ="";
+  const isCupLg=lg=>CUPW.test(N(botLgName(lg)));
+  if(typeof botPre==="function"){ const _bp=botPre;
+    botPre=function(o){ const S=o&&o.lg&&FAM[o.lg];
+      if(!S){ const L=_bp.apply(this,arguments);
+        if(o&&o.cn&&!o.lg&&/\blig/.test(LASTQ)&&!CUPW.test(LASTQ)){ const L2=L.filter(x=>!(x&&x.m&&isCupLg(x.m.lg))); if(L2.length) return L2; }
+        return L; }
+      const o2=Object.assign({},o); delete o2.lg; return _bp.call(this,o2).filter(x=>x&&x.m&&S.has(x.m.lg)); }; }
+  window.BOT127={ensure,phrases:()=>{ ensure(); return AUTO.slice(); },fam:()=>FAM};
+  const _ba=botAnswer;
+  botAnswer=async function(raw){ ensure(); LASTQ=N(raw); return _ba.apply(this,arguments); };
+})();
+</script>
 
 <script id="ui-v125">
 // =====================================================================
