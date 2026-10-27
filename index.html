@@ -5892,7 +5892,7 @@ if((location.hash||"")==="#sonuclar") setTimeout(()=>$("navRes").click(),200);
 // =====================================================================
 // OXXai v35: Otomatik sürüm güncelleme — yeni sürüm yayınlanınca uygulama kendini yeniler
 // =====================================================================
-const APP_V="2026-10-27.131";
+const APP_V="2026-10-27.132";
 (function autoUpdate(){
   let shown=false;
   async function check(auto){
@@ -14241,6 +14241,14 @@ html[data-v122-ctx="at"] nav.tabs button[aria-current]{color:var(--ink3,#8893AB)
   hook(); setTimeout(hook,1500); setTimeout(hook,4500);
   try{ const _s=window.kxSave; if(typeof _s==="function") window.kxSave=function(){ const r=_s.apply(this,arguments); later(); return r; }; }catch(e){}
 })();
+</script>
+<script id="oransiz-kupa-v132">
+// v132: Bültende MS oranı kapalı (dev favori kupa maçı) ve lig modeli olmayan maç: maç listede görünür, uydurma tahmin gösterilmez
+(function(){ try{
+  const bos=f=>!!(f&&f.src==="iddaa"&&String(f.lg||"").startsWith("i")&&!f.odds&&!f.io&&!(f.kp&&f.kp.length===3));
+  if(typeof quickPred==="function"){ const _q=quickPred; quickPred=function(m,f){ if(bos(f)) return null; return _q.apply(this,arguments); }; }
+  if(typeof fullPred==="function"){ const _f=fullPred; fullPred=function(m,f){ if(bos(f)) return null; return _f.apply(this,arguments); }; }
+}catch(e){} })();
 </script>
 </body>
 </html>

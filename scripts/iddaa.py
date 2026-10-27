@@ -144,8 +144,9 @@ def market_names(evs_raw, limit=400):
             seen[k]["n"] += 1
     return seen
 
-def fetch(sport, days=7):
-    """sport: 1 futbol, 2 basketbol. Dönüş: [{iid, ts(UTC epoch), comp, cc, h, a, mbc, mk:{...}}]"""
+def fetch(sport, days=7, eksik_ms=False):
+    """eksik_ms: futbolda MS oranlarından biri kapalı/≤1,01 (ör. kupada dev favori) maç da döner (mk["ms"] yok, mk["ms_eksik"]=True).
+    sport: 1 futbol, 2 basketbol. Dönüş: [{iid, ts(UTC epoch), comp, cc, h, a, mbc, mk:{...}}]"""
     comps = {c["i"]: c for c in (_get("competitions") or [])}
     ev = (_get(f"events?st={sport}&type=0&version=0") or {}).get("events") or []
     now = datetime.now(timezone.utc).timestamp(); lim = now + days * 86400
@@ -164,6 +165,7 @@ def fetch(sport, days=7):
             st, sov, o = m.get("st"), m.get("sov"), _mk(m)
             if sport == 1:
                 if st == 1 and all(o.get(k, 0) > 1.01 for k in ("1", "0", "2")): mk["ms"] = [o["1"], o["0"], o["2"]]
+                elif st == 1: mk["ms_eksik"] = True
                 elif st == 101 and str(sov) == "2.5" and "Üst" in o and "Alt" in o: mk["ou"] = [o["Üst"], o["Alt"]]
                 elif st == 89 and "Var" in o and "Yok" in o: mk["kg"] = [o["Var"], o["Yok"]]
             else:
@@ -184,7 +186,7 @@ def fetch(sport, days=7):
                 mx = max(t[0] for t in tots); c_ = [t for t in tots if t[0] >= 0.85 * mx and t[0] >= 110]   # maç toplamı (yarı/çeyrek değil)
                 if c_: mk["tot"] = list(min(c_, key=bal))
             if hnds: mk["hnd"] = list(min(hnds, key=bal))          # ana çizgi: oranları en dengeli olan
-        if "ms" not in mk: continue
+        if "ms" not in mk and not (eksik_ms and sport == 1 and mk.get("ms_eksik")): continue
         if sport == 1:
             try:
                 px = extra_markets(e)

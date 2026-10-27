@@ -1429,7 +1429,7 @@ def merge_iddaa(fx, season, today):
     import iddaa as ID
     from zoneinfo import ZoneInfo
     UK, TR = ZoneInfo("Europe/London"), ZoneInfo("Europe/Istanbul")
-    evs = ID.fetch(1)
+    evs = ID.fetch(1, eksik_ms=True)   # MS oranı kapalı dev favori maçları da bültende (oransız: güç modeliyle tahmin)
     known = {lg: sorted({m["h"] for m in d["matches"]} | {m["a"] for m in d["matches"]}) for lg, d in season.items() if not d.get("cup")}
     def ko(f):
         try:
@@ -1472,7 +1472,11 @@ def merge_iddaa(fx, season, today):
         if best is not None: used.add(best); matched[e["iid"]] = best
     out_fx = list(fx); extra = []; lam = {}
     def add_io(f, e):
-        mk = e["mk"]; f["io"] = mk["ms"]; f["iid"] = e["iid"]; f["cn"] = e["comp"]
+        mk = e["mk"]; f["iid"] = e["iid"]; f["cn"] = e["comp"]
+        if not mk.get("ms"):                       # MS kapalı: oransız maç gibi (oran alanları yazılmaz)
+            if e.get("mbc"): f["mbs"] = e["mbc"]
+            return
+        f["io"] = mk["ms"]
         if e.get("mbc"): f["mbs"] = e["mbc"]
         if mk.get("ou"): f["iou"] = mk["ou"]
         if mk.get("kg"): f["ikg"] = mk["kg"]
@@ -1501,7 +1505,7 @@ def merge_iddaa(fx, season, today):
         add_io(f, e); extra.append(f)
     out_fx += extra
     # piyasa gol beklentisi (canlı tahminin başlangıç noktası)
-    tmp = [dict({"odds": e["mk"]["ms"], "iid": e["iid"]}, **({"ou": e["mk"]["ou"]} if e["mk"].get("ou") else {})) for e in evs]
+    tmp = [dict({"odds": e["mk"]["ms"], "iid": e["iid"]}, **({"ou": e["mk"]["ou"]} if e["mk"].get("ou") else {})) for e in evs if e["mk"].get("ms")]
     market_xg(tmp)
     # başlamış maçlar bültenden düşer; canlı tahmin ve Sonuçlar için maç öncesi beklenti 8 gün saklanır
     try:
