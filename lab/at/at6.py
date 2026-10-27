@@ -34,6 +34,12 @@ A6_OZELLIKLER = [
     ("a6_h_x_uyum", "a6_hava"), ("a6_h_x_r", "a6_hava"), ("a6_h_x_kilo", "a6_hava"), ("a6_h_x_cim", "a6_hava"),
     ("a6_p_yagmur", "a6_pist"), ("a6_p_nem", "a6_pist"), ("a6_p_sicak", "a6_pist"), ("a6_p_dun", "a6_pist"),
     ("a6_p_yok", "a6_pist"), ("a6_p_x_uyum", "a6_pist"), ("a6_p_x_kilo", "a6_pist"), ("a6_p_x_r", "a6_pist"),
+    ("a6_e_st", "a6_ek_st"), ("a6_e_st_kisa", "a6_ek_st"), ("a6_e_st_cim", "a6_ek_st"), ("a6_e_st_yok", "a6_ek_st"),
+    ("a6_e_hp", "a6_ek_hp"), ("a6_e_hp_z", "a6_ek_hp"), ("a6_e_hp_yok", "a6_ek_hp"),
+    ("a6_e_soy", "a6_ek_soy"), ("a6_e_soy_alan", "a6_ek_soy"), ("a6_e_soy_pist", "a6_ek_soy"), ("a6_e_soy_mes", "a6_ek_soy"),
+    ("a6_e_soy_n", "a6_ek_soy"),
+    ("a6_e_id_var", "a6_ek_idman"), ("a6_e_id_gun", "a6_ek_idman"), ("a6_e_id_n30", "a6_ek_idman"),
+    ("a6_e_id_400", "a6_ek_idman"), ("a6_e_id_600", "a6_ek_idman"),
     ("a6_k_m", "a6_kalman"), ("a6_k_sd", "a6_kalman"), ("a6_k_z", "a6_kalman"), ("a6_k_sira", "a6_kalman"),
     ("a6_k_tutarli", "a6_kalman"),
     ("a6_m_yakin", "a6_mesafe"), ("a6_m_egim", "a6_mesafe"), ("a6_m_uzak", "a6_mesafe"),
@@ -44,12 +50,18 @@ A6_GRUPLAR = list(dict.fromkeys(g for _, g in A6_OZELLIKLER))
 # Kapıdan geçen gruplar (lab/at/deney6.py ile seçilir; yayın tarifine eklenir — bkz. ozellik.SECILI_GRUPLAR)
 # 27.10.2026 deney6: a6_kalman ΔLL −0,0037 [−0,0065; −0,0009], a6_mesafe −0,0010, a6_gelisim −0,0007 kapıyı geçti;
 # toplam −0,0055 [−0,0084; −0,0023]. a6_pist (±0,0000) ve m6_rank (+0,0006) elendi; a6_hava ölçülemedi.
-A6_SECILI = ["a6_kalman", "a6_mesafe", "a6_gelisim"]
+# 27.10 deney6 --ek (Ek kaynak A; taban = yukarıdaki üçü): a6_ek_st −0,0006, a6_ek_idman −0,0041 [−0,0061; −0,0022],
+# a6_ek_hp −0,0056 [−0,0095; −0,0017] (yeni tabanda), a6_hava −0,0003 (sınırda) geçti; a6_ek_soy elendi.
+# Toplam −0,0106 [−0,0152; −0,0061]. Ek kaynak A tablosu: data/at/ek_ozellik/ (lab/at/ek_kaynak.py, secret AT_EK_KAYNAK).
+A6_SECILI = ["a6_kalman", "a6_mesafe", "a6_gelisim", "a6_ek_st", "a6_ek_idman", "a6_ek_hp", "a6_hava"]
 
 IFADE = {
     "a6_h_uyum": ("ıslak pistte formu iyi", "ıslak pistte formu zayıf"),
     "a6_k_m": ("hız figürü eğilimi (Kalman) alanın üstünde", "hız figürü eğilimi (Kalman) alanın altında"),
     "a6_m_yakin": ("bu mesafede en iyi derecelerini yapıyor", "en iyi dereceleri başka mesafede"),
+    "a6_e_hp": ("handikap puanı alanın üstünde", "handikap puanı alanın altında"),
+    "a6_e_id_400": ("son idman derecesi alanın gerisinde", "son idmanda alanın en hızlılarından"),
+    "a6_e_st": ("dış kulvardan çıkıyor", "iç kulvardan çıkıyor"),
     "a6_p_x_uyum": ("ağır/ıslak pist beklentisinde formu iyi", "ağır/ıslak pist beklentisinde formu zayıf"),
 }
 
@@ -163,6 +175,17 @@ def hava_yukle(yol=None):
     return out
 
 
+def _ek_goreli(r):
+    """Eski (ham ara değerli: st, n, hk, id_400 …) deney tablosunu göreli biçime çevirir; yeni biçim aynen döner."""
+    if not r or "st_g" in r:
+        return r
+    st, n = r.get("st"), r.get("n") or 1
+    return {"st_g": ((st - 1) / max(n - 1, 1)) if st else None, "hp_f": r.get("hk") or None,
+            "soy_ae": r.get("soy_ae"), "soy_pist": r.get("soy_pist"), "soy_mes": r.get("soy_mes"),
+            "soy_n": r.get("soy_n"), "id_gun": r.get("id_gun"), "id_n30": r.get("id_n30"),
+            "id_400f": r.get("id_400") or None, "id_600f": r.get("id_600") or None}
+
+
 def _ara_kova(ara):
     return 0 if ara <= 15 else 1 if ara <= 30 else 2 if ara <= 60 else 3 if ara <= 120 else 4
 
@@ -175,6 +198,57 @@ class A6Durum:
         self.gel = defaultdict(lambda: [0, 0.0])        # (yaş, ara kovası) -> [n, Σ Δfigür]
         self.bekleyen = []                              # (at, yaş) bugün koşanlar
         self._prog = None                               # a6_pist: aynanın program havası/pist tablosu (tembel)
+        self._ek = None                                 # a6_ek_*: Ek kaynak A türetilmiş tablosu (tembel; lab/at/ek_kaynak.py)
+
+    def ek_satirlar(self, kosu):
+        """Ek kaynak A türetilmiş özellikleri (koşu gününden önce bilinen): start, handikap puanı, baba, idman.
+        Tablo koşu içi göreli değerler tutar (lab/at/ek_kaynak.py ALANLAR); alan içi farklar burada koşan atlarla alınır."""
+        if self._ek is None:
+            import ek_kaynak
+            self._ek = ek_kaynak.yukle()
+        R = [_ek_goreli(self._ek.get(f'{kosu["tarih"]}|{kosu["hipodrom"]}|{kosu["kosu"]}|{a["no"]}') or {})
+             for a in kosu["atlar"]]
+        kisa = 1.0 if (kosu["mesafe"] or 0) and kosu["mesafe"] <= 1300 else 0.0
+        cim = 1.0 if kosu["pist"] == "Çim" else 0.0
+        hk_v = [r["hp_f"] for r in R if r.get("hp_f") is not None]
+        hk_m = sum(hk_v) / len(hk_v) if hk_v else 0.0
+        hk_s = (sum((x - hk_m) ** 2 for x in hk_v) / len(hk_v)) ** 0.5 if len(hk_v) > 1 else 0.0
+        so_v = [r["soy_ae"] for r in R if r.get("soy_ae") is not None]
+        so_m = sum(so_v) / len(so_v) if so_v else 0.0
+        def med(xs):
+            xs = sorted(x for x in xs if x is not None)
+            return xs[len(xs) // 2] if xs else None
+        m4, m6 = med(r.get("id_400f") for r in R), med(r.get("id_600f") for r in R)
+        out = []
+        for r in R:
+            f = {}
+            if r.get("st_g") is not None:
+                f["a6_e_st"] = r["st_g"] - 0.5
+                f["a6_e_st_kisa"] = f["a6_e_st"] * kisa
+                f["a6_e_st_cim"] = f["a6_e_st"] * cim
+            else:
+                f["a6_e_st_yok"] = 1.0
+            if r.get("hp_f") is not None:
+                f["a6_e_hp"] = (r["hp_f"] - hk_m) / 10.0
+                f["a6_e_hp_z"] = (r["hp_f"] - hk_m) / hk_s if hk_s > 0 else 0.0
+            else:
+                f["a6_e_hp_yok"] = 1.0
+            if r.get("soy_ae") is not None:
+                f["a6_e_soy"] = r["soy_ae"]
+                f["a6_e_soy_alan"] = r["soy_ae"] - so_m
+            f["a6_e_soy_pist"] = r.get("soy_pist") or 0.0
+            f["a6_e_soy_mes"] = r.get("soy_mes") or 0.0
+            f["a6_e_soy_n"] = math.log1p(r.get("soy_n") or 0) / 5.0
+            if r.get("id_gun") is not None:
+                f["a6_e_id_var"] = 1.0
+                f["a6_e_id_gun"] = math.log1p(min(r["id_gun"], 120)) / 3.0
+                f["a6_e_id_n30"] = min(r.get("id_n30") or 0, 10) / 5.0
+                if r.get("id_400f") is not None and m4 is not None:
+                    f["a6_e_id_400"] = max(min(r["id_400f"] - m4, 4.0), -4.0)
+                if r.get("id_600f") is not None and m6 is not None:
+                    f["a6_e_id_600"] = max(min(r["id_600f"] - m6, 6.0), -6.0) / 1.5
+            out.append(f)
+        return out
 
     def _pist_tablolari(self):
         if self._prog is None:
@@ -233,6 +307,7 @@ class A6Durum:
         cim = 1.0 if kosu["pist"] == "Çim" else 0.0
         mes = kosu["mesafe"] or 1400
         pv = self.pist_vekili(kosu, bugun) if self._pist_lazim else None
+        ek = self.ek_satirlar(kosu)
         # Kalman durumları (bugüne taşınmış)
         km = []
         for a in kosu["atlar"]:
@@ -277,6 +352,7 @@ class A6Durum:
                     f["a6_h_uyum"] = (sum(s) + K_UYUM * ort) / (len(s) + K_UYUM) - ort
                     if isl is not None:
                         f["a6_h_x_uyum"] = isl * f["a6_h_uyum"]
+            f.update(ek[ai])
             # --- pist/hava vekili (ayna programı, sabah bilinen)
             if pv is None:
                 f["a6_p_yok"] = 1.0

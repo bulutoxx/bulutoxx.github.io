@@ -7,7 +7,7 @@
 # Taban: yayındaki tarif (v4 + jk_uzman, jk_apr, jk_beceri + a5_sinif). Adaylar (en fazla 5):
 #   a6_pist, a6_kalman, a6_mesafe, a6_gelisim (lab/at/at6.py) — özellik grupları, tek tek eklenir; geçen sonrakinin tabanı.
 #   a6_hava (Open-Meteo) yalnız AT_HAVA ile lisanslı bir hava dosyası verildiyse denenir (Open-Meteo'dan lab/at/hava.py ile
-#   çekilmiş _hava/gunluk.csv; lisansı belirsiz üçüncü taraf kopyaları KULLANILMAZ). Dosya yoksa "ölçülemedi" yazılır.
+#   çekilmiş _hava/gunluk.csv ya da --ek turunda Ek kaynak A'nın hazır hava dosyası). Dosya yoksa "ölçülemedi" yazılır.
 #   m6_rank — model yöntemi: GBM katmanının amacı koşu içi softmax yerine LightGBM LambdaRank (ilk 3 kademeli alaka:
 #             1.=3, 2.=2, 3.=1, diğer 0); doğrusal+GBM yığma katsayıları kalibrasyon penceresinde aynı yolla öğrenilir.
 # a6_pist (ya da a6_hava) kapıyı geçerse sağlamlık satırı: yarış günü değerleri bilinmiyor sayılarak (yalnız önceki günler) yeniden ölçülür
@@ -27,9 +27,11 @@ import veri, ozellik as O, model as M, at6 as A6  # noqa: E402
 from deney4 import Masa, gecer, KATLAR  # noqa: E402
 from deney_jokey import _kisalt  # noqa: E402
 
-CIKTI = os.path.join(BURA, "..", "..", "data", "at", "deneyler_v6.json")
+EK = "--ek" in sys.argv   # Ek kaynak A turu: taban = yayındaki tarif (a6 seçilenler dahil), adaylar a6_ek_*
+CIKTI = os.path.join(BURA, "..", "..", "data", "at", "deneyler_v6_ek.json" if EK else "deneyler_v6.json")
+EK_GRUPLAR = ["a6_ek_st", "a6_ek_hp", "a6_ek_soy", "a6_ek_idman"] + (["a6_hava"] if os.environ.get("AT_HAVA") else [])
 # --devam önbelleği (depoya girmez): taban ve güncel kabulün koşu başına vektörleri; yeniden başlatmada pahalı eğitimi atlar
-ONBELLEK = os.environ.get("AT_DENEY6_ONBELLEK") or os.path.join(BURA, "..", "..", "_deney6_onbellek")
+ONBELLEK = os.environ.get("AT_DENEY6_ONBELLEK") or os.path.join(BURA, "..", "..", "_deney6_onbellek" + ("_ek" if EK else ""))
 ADLAR_GRUP = {
     "a6_pist": "ayna programından sabah bilinen pist/hava vekili: yağış bayrağı, nem, sıcaklık, aynı hipodrom+pistte önceki "
                "yarış gününün pist durumu (sönümlü); beklenen ıslaklık × (ıslak pist uyumu, kilo, reyting)",
@@ -40,6 +42,12 @@ ADLAR_GRUP = {
     "a6_mesafe": "mesafe profili: ±%10 mesafedeki en iyi figür − genel en iyi, figür–log(mesafe) eğimi × sapma, en iyi "
                  "figürün mesafesine uzaklık",
     "a6_gelisim": "yaş × ara gelişim eğrisi: ardışık figür farkının (yaş, ara kovası) ortalaması, alana göre",
+    "a6_ek_st": "Ek kaynak A — start (kulvar) sırası: alan içi göreli start, × kısa mesafe (≤1300 m), × çim",
+    "a6_ek_hp": "Ek kaynak A — resmî handikap puanı: alan ortalamasından fark, alan içi z",
+    "a6_ek_soy": "Ek kaynak A — baba (soy) tablosu: babanın yavrularının geçmiş galibiyet/beklenen oranı (genel, pist, "
+                 "mesafe kovası; yalnız koşu gününden önceki sonuçlar), alana göre",
+    "a6_ek_idman": "Ek kaynak A — idman/galop: son idmandan bu yana gün, 30 günde idman sayısı, 45 günün en iyi 400/600 m "
+                   "derecesinin alan ortancasından farkı (yalnız koşu gününden önceki idmanlar)",
     "m6_rank": "GBM amacı LambdaRank (ilk 3 kademeli alaka) — koşu içi softmax yerine",
 }
 _GBM_ASIL = M.gbm_egit
@@ -94,7 +102,7 @@ def main(devam=False):
     print(f"tablo {T['X'].shape} {time.time() - t0:.0f} sn", hava_kapsami(kosular), flush=True)
     masa = Masa(kosular, T)
     adla = lambda gr: [a for a, g in O.TUM_OZELLIKLER if g in gr]
-    gr = [g for g in O.SECILI_GRUPLAR if not g.startswith("a6_")]
+    gr = list(O.SECILI_GRUPLAR) if EK else [g for g in O.SECILI_GRUPLAR if not g.startswith("a6_")]
     egitim = {"yari_omur": None, "gbm_ayar": None, "patlat_ag": tuple(M.PATLAT), "tohumlar": tuple(M.GBM_TOHUM),
               "patlat_gbm": M.PATLAT_GBM}
     kal = dict(M.KAL_AYAR)
@@ -116,7 +124,8 @@ def main(devam=False):
     v_taban = v_cur
     kayit = {"olusturma": None, "katlar": masa.B["tarih"]["katlar"], "kapi": "deney4 iki katlı kapı",
              "hava": hava_kapsami(kosular), "taban_gruplar": list(gr),
-             "adimlar": [{"no": 0, "deney": "taban (yayındaki tarif: v4 + jk_uzman, jk_apr, jk_beceri + a5_sinif)",
+             "adimlar": [{"no": 0, "deney": ("taban (yayındaki tarif + a6_kalman, a6_mesafe, a6_gelisim)" if EK else
+                                             "taban (yayındaki tarif: v4 + jk_uzman, jk_apr, jk_beceri + a5_sinif)"),
                           "gecti": None, **_kisalt(cur)}]}
     print(0, cur["model"], cur["harman"], {k: cur["katlar"][k]["model"] for k in KATLAR}, f"{time.time() - t0:.0f} sn", flush=True)
     no = [0]
@@ -169,7 +178,7 @@ def main(devam=False):
     hava_var = os.path.exists(A6.hava_yolu())
     kayit["hava_durumu"] = ("ölçüldü: " + os.path.basename(A6.hava_yolu())) if hava_var else \
         "ölçülemedi: Open-Meteo bu ortamdan erişilemedi; lisanslı hava dosyası yok (üretim çekicisi lab/at/hava.py hazır)"
-    for g in A6.A6_GRUPLAR:
+    for g in (EK_GRUPLAR if EK else [g for g in A6.A6_GRUPLAR if not g.startswith("a6_ek_")]):
         if g == "a6_hava" and not hava_var:
             continue
         ok, d = dene(f"{g} — {ADLAR_GRUP[g]}", gr + [g], rank[0])
@@ -177,8 +186,9 @@ def main(devam=False):
             gr = gr + [g]
         elif not ok and d < 0:
             yakin.append(g)
-    ok, _ = dene(f"m6_rank — {ADLAR_GRUP['m6_rank']}", gr, True)
-    rank[0] = rank[0] or ok
+    if not EK:
+        ok, _ = dene(f"m6_rank — {ADLAR_GRUP['m6_rank']}", gr, True)
+        rank[0] = rank[0] or ok
     for g in yakin:   # tek tekrar, yeni tabanda (deney4 8a/8b usulü)
         ok, _ = dene(f"yeniden (yeni tabanda): {g}", gr + [g], rank[0])
         if ok and g not in gr:
@@ -202,7 +212,8 @@ def main(devam=False):
             adim(ad_s, r, v, saglamlik=True)
         finally:
             masa = masa_asil
-    kayit["secim"] = {"gruplar": list(dict.fromkeys(g for g in gr if g.startswith("a6_"))), "m6_rank": rank[0]}
+    kayit["secim"] = {"gruplar": list(dict.fromkeys(g for g in gr if (g in EK_GRUPLAR if EK else g.startswith("a6_")))),
+                      "m6_rank": rank[0]}
     kayit["toplam"] = {"model": masa.fark(v_cur, v_taban, "model"), "harman": masa.fark(v_cur, v_taban, "harman")}
     kayit["model_vs_piyasa"] = {"dll": round(float((v_cur["model"][0] - v_cur["piyasa"][0]).mean()), 4)}
     kayit["harman_vs_piyasa"] = {"dll": round(float((v_cur["harman"][0] - v_cur["piyasa"][0]).mean()), 4)}

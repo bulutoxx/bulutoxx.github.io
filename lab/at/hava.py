@@ -24,7 +24,7 @@ ALAN = "precipitation_sum,rain_sum,temperature_2m_mean"
 ATIF = "Hava verisi: Open-Meteo.com (CC BY 4.0) — https://open-meteo.com/"
 
 
-def _al(url, deneme=3):
+def _al(url, deneme=2):
     for i in range(deneme):
         try:
             with urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": "bulutoxx-at-lab"}), timeout=60) as r:
@@ -59,6 +59,9 @@ def guncelle(yol=None, bugun=None):
         d = _al(f"{TAHMIN}?latitude={la}&longitude={lo}&past_days=14&forecast_days=2&daily={ALAN}&timezone=Europe%2FIstanbul")
         if d:
             parcalar.append(("tahmin", d))
+        if not parcalar and not basari:
+            print("hava: ilk hipodromda erişim yok; kalanlar denenmeden geçiliyor (gece süresi korunur)")
+            break
         for kaynak, d in parcalar:
             basari += 1
             for t, p, r, s in zip(d["time"], d["precipitation_sum"], d["rain_sum"], d["temperature_2m_mean"]):
