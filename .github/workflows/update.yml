@@ -61,23 +61,110 @@ jobs:
         run: python3 lab/gonder.py -m "Veri ve model güncellemesi $(date -u +%F)" data
 
   deploy:
+    # 🚦 Yayın kapısı: Pages "GitHub Actions" kaynağından artifact ile yayınlanır. Uygulama dosyaları (index.html, sw.js,
+    # manifest.webmanifest, brain-worker.js, icons/) yayındakinden farklıysa yayından ÖNCE duman testi (lab/qa.mjs hızlı modu)
+    # koşar. Geçmezse yeni uygulama yayınlanmaz: uygulama dosyaları son iyi sürüme döner, veri (data/*) yine yeni haliyle çıkar.
+    # Yalnız veri değiştiyse test atlanır (yayın eskisi kadar hızlı). Yeni uygulama yayınlandıysa yayından sonra canlı adreste
+    # aynı test koşar; o da geçmezse son iyi sürüm otomatik geri yayınlanır. Sonuçlar data/saglik/update-yayin.json (lab/adim.py),
+    # data/qa_kapi.json ve data/qa_yayin.json'a yazılır; kurtarıcı görür. Issue/mail/bildirim açılmaz.
     needs: [update]
     if: always() && (needs.update.result == 'success' || needs.update.result == 'skipped')
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
+    env:
+      ADIM_ALT: yayin            # sağlık kaydı: data/saglik/update-yayin.json
     steps:
       - uses: actions/checkout@v4
         with:
           ref: main
-      - name: Sürüm dosyası (data/version.json ← index.html APP_V; uygulama sürüm kontrolünde bunu okur)
+      - id: pages
+        uses: actions/configure-pages@v5
+      - name: 🚦 Kapı kararı (uygulama yayındakiyle aynı mı?)
+        id: karar
+        run: |
+          echo "basla=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          python3 lab/yayin_kapisi.py karar --canli "${{ steps.pages.outputs.base_url }}"
+      - uses: actions/setup-node@v4
+        if: steps.karar.outputs.karar == 'test'
+        with: { node-version: "20" }
+      - uses: actions/cache@v4
+        if: steps.karar.outputs.karar == 'test'
+        with:
+          path: ~/.cache/ms-playwright
+          key: pw-chromium-1.48.2-${{ runner.os }}
+      - name: 💨 Yayın öncesi duman testi (yerel kopya, hızlı mod)
+        id: kapi
+        if: steps.karar.outputs.karar == 'test'
+        continue-on-error: true
+        run: |
+          python3 lab/adim.py duman-kurulum --onem bilgi -- bash lab/duman.sh kur
+          python3 lab/adim.py yayin-kapisi --onem bilgi --kritik -- bash lab/duman.sh . "$RUNNER_TEMP/qa_kapi.json"
+      - name: ↩️ Test geçmedi → uygulama son iyi sürümde kalır (veri yine güncellenir)
+        id: geri
+        if: steps.karar.outputs.karar == 'red' || (steps.karar.outputs.karar == 'test' && steps.kapi.outcome != 'success')
+        run: |
+          python3 lab/adim.py yayin-geri-al --onem bilgi --kritik -- python3 lab/yayin_kapisi.py geri --commit "${{ steps.karar.outputs.canli_commit }}" --canli "${{ steps.pages.outputs.base_url }}"
+          echo "::warning title=Yayın kapısı::Yeni uygulama sürümü yayınlanmadı (${{ steps.karar.outputs.karar }}); son iyi sürüm yayında kalıyor, veri güncellendi."
+      - name: Sürüm dosyası (data/version.json ← yayınlanacak index.html APP_V) ve yayin.json
         run: |
           V=$(sed -nE 's/^const APP_V="([^"]+)";.*/\1/p' index.html | head -1)
           if [ -n "$V" ]; then printf '{"v":"%s"}\n' "$V" > data/version.json; cat data/version.json; else echo "::warning::APP_V bulunamadı, version.json değişmedi"; fi
-      - uses: actions/configure-pages@v5
+          if [ "${{ steps.karar.outputs.karar }}" = "test" ] && [ "${{ steps.kapi.outcome }}" != "success" ]; then
+            python3 lab/yayin_kapisi.py yaz --commit "${{ steps.karar.outputs.canli_commit }}" \
+              --red-ozet "${{ steps.karar.outputs.ozet }}" --red-commit "${{ steps.karar.outputs.basla }}" --red-neden-qa "$RUNNER_TEMP/qa_kapi.json"
+          elif [ "${{ steps.karar.outputs.karar }}" = "red" ]; then
+            python3 lab/yayin_kapisi.py yaz --commit "${{ steps.karar.outputs.canli_commit }}" --canli "${{ steps.pages.outputs.base_url }}" --onceki-red-koru
+          elif [ "${{ steps.karar.outputs.karar }}" = "atla" ]; then
+            python3 lab/yayin_kapisi.py yaz --commit "${{ steps.karar.outputs.basla }}" --canli "${{ steps.pages.outputs.base_url }}" --onceki-red-koru
+          else
+            python3 lab/yayin_kapisi.py yaz --commit "${{ steps.karar.outputs.basla }}"
+          fi
       - uses: actions/upload-pages-artifact@v3
         with:
           path: .
       - id: deployment
         uses: actions/deploy-pages@v4
+      - name: 🔎 Yayın sonrası duman testi (canlı adres; yalnız yeni uygulama yayınlandıysa)
+        id: canli
+        if: steps.karar.outputs.karar == 'test' && steps.kapi.outcome == 'success'
+        continue-on-error: true
+        run: |
+          python3 lab/yayin_kapisi.py bekle --canli "${{ steps.pages.outputs.base_url }}" --ozet "${{ steps.karar.outputs.ozet }}" --sn 300 || true
+          ok=1
+          for d in 1 2; do   # canlı ortamda ağ dalgalanmasına karşı bir kez daha dene
+            if python3 lab/adim.py yayin-sonrasi --onem bilgi --kritik -- bash lab/duman.sh "${{ steps.pages.outputs.base_url }}/" data/qa_yayin.json; then ok=0; break; fi
+            sleep 30
+          done
+          exit $ok
+      - name: ↩️ Canlı test geçmedi → son iyi sürümü geri yayınla
+        id: geri2
+        if: steps.canli.outcome == 'failure' && steps.karar.outputs.canli_commit != 'yok'
+        run: |
+          python3 lab/adim.py yayin-geri-al-canli --onem bilgi --kritik -- python3 lab/yayin_kapisi.py geri --commit "${{ steps.karar.outputs.canli_commit }}" --canli ""
+          V=$(sed -nE 's/^const APP_V="([^"]+)";.*/\1/p' index.html | head -1)
+          if [ -n "$V" ]; then printf '{"v":"%s"}\n' "$V" > data/version.json; fi
+          python3 lab/yayin_kapisi.py yaz --commit "${{ steps.karar.outputs.canli_commit }}" \
+            --red-ozet "${{ steps.karar.outputs.ozet }}" --red-commit "${{ steps.karar.outputs.basla }}" --red-neden "canlı test:" --red-neden-qa data/qa_yayin.json
+          echo "::warning title=Yayın geri alındı::Canlı duman testi geçmedi; son iyi uygulama sürümü yeniden yayınlandı."
+      - uses: actions/upload-pages-artifact@v3
+        if: steps.geri2.outcome == 'success'
+        with:
+          path: .
+          name: github-pages-geri
+      - id: deployment2
+        if: steps.geri2.outcome == 'success'
+        uses: actions/deploy-pages@v4
+        with:
+          artifact_name: github-pages-geri
+      - name: Kapı kayıtlarını kaydet (sağlık + qa_kapi / qa_yayin; yalnız veri dosyaları)
+        if: always()
+        run: |
+          git checkout -q HEAD -- index.html sw.js manifest.webmanifest brain-worker.js icons data/version.json 2>/dev/null || true
+          rm -f yayin.json
+          YOLLAR="data/saglik"
+          if [ -s "$RUNNER_TEMP/qa_kapi.json" ]; then cp "$RUNNER_TEMP/qa_kapi.json" data/qa_kapi.json; YOLLAR="$YOLLAR data/qa_kapi.json"; fi
+          if [ -s data/qa_yayin.json ]; then YOLLAR="$YOLLAR data/qa_yayin.json"; fi
+          python3 lab/gonder.py -m "Yayın kapısı kaydı $(date -u +%FT%H:%M) [skip ci]" $YOLLAR || echo "::warning::kapı kaydı gönderilemedi"
