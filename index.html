@@ -4443,6 +4443,7 @@ function bkPredict(f){
   const od=f.odds;
   if(od && od.spread!=null && od.ou){ const w=(D.market&&D.market.w!=null)?D.market.w:.5;
     const mar=(1-w)*(mh-ma)+w*(-od.spread), tot=(1-w)*(mh+ma)+w*od.ou; mh=(tot+mar)/2; ma=(tot-mar)/2; mkt=true; }
+  if(f.cp&&f.cp.ph!=null&&f.cp.pa!=null){ mh=+f.cp.ph; ma=+f.cp.pa; mkt=true; }   // v123: sunucuda kapıyı geçmiş piyasa çapası (yoksa yukarıdaki yol)
   const sm=L.sm||12, st=L.st||18, sh=L.shares||[.25,.25,.25,.25], s1=sh[0]+sh[1];
   const mar=mh-ma, tot=mh+ma, pH=bkPhi(mar/sm);
   // Tutarlı skor: MS = İY + 2Y = çeyreklerin toplamı, beraberlik yok
@@ -5822,7 +5823,7 @@ if((location.hash||"")==="#sonuclar") setTimeout(()=>$("navRes").click(),200);
 // =====================================================================
 // OXXai v35: Otomatik sürüm güncelleme — yeni sürüm yayınlanınca uygulama kendini yeniler
 // =====================================================================
-const APP_V="2026-10-27.122";
+const APP_V="2026-10-27.123";
 (function autoUpdate(){
   let shown=false;
   async function check(auto){
