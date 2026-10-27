@@ -1,0 +1,125 @@
+{
+ "is": "futbol",
+ "zaman": "20261026T2325Z",
+ "sure_sn": 3.3,
+ "denenen": [
+  {
+   "aday": {
+    "anahtar": "esik:fb_altin:p_min:0.76",
+    "tur": "esik",
+    "alan": "futbol",
+    "yol": [
+     "fb_altin",
+     "p_min"
+    ],
+    "deger": 0.76,
+    "stratejiler": [
+     "fb_altin"
+    ],
+    "sinyal": {
+     "kaynak": "keşif (sinyal yok)"
+    },
+    "aciklama": "keşif: fb_altin p_min 0.78 → 0.76"
+   },
+   "m": 6,
+   "rap": {
+    "olcut": "kupon isabet oranı farkı",
+    "alfa": 0.0083,
+    "deneme_no": 6,
+    "secim": {
+     "gun": [
+      "2026-01-01",
+      "2026-05-31"
+     ],
+     "fark": -0.1387,
+     "taban": {
+      "n": 55,
+      "tutan": 38,
+      "isabet": 0.6909,
+      "beklenen": 38.97,
+      "brier": 0.2029
+     },
+     "aday": {
+      "n": 67,
+      "tutan": 37,
+      "isabet": 0.5522,
+      "beklenen": 45.36,
+      "brier": 0.2529
+     }
+    },
+    "sinama": {
+     "gun": [
+      "2026-07-31",
+      "2026-10-21"
+     ],
+     "fark": -0.0018,
+     "alt_sinir": -0.0762,
+     "bootstrap_B": 2000,
+     "taban": {
+      "n": 32,
+      "tutan": 22,
+      "isabet": 0.6875,
+      "beklenen": 22.66,
+      "brier": 0.2143
+     },
+     "aday": {
+      "n": 35,
+      "tutan": 24,
+      "isabet": 0.6857,
+      "beklenen": 23.94,
+      "brier": 0.2102
+     },
+     "bacak_taban": {
+      "n": 58,
+      "tutan": 45,
+      "isabet": 0.7759,
+      "beklenen": 47.58,
+      "brier": 0.1779
+     },
+     "bacak_aday": {
+      "n": 67,
+      "tutan": 53,
+      "isabet": 0.791,
+      "beklenen": 54.51,
+      "brier": 0.1694
+     }
+    },
+    "koruma": {
+     "altin_taban": {
+      "n": 58,
+      "tutan": 45,
+      "isabet": 0.7759,
+      "beklenen": 47.58,
+      "brier": 0.1779
+     },
+     "altin_aday": {
+      "n": 67,
+      "tutan": 53,
+      "isabet": 0.791,
+      "beklenen": 54.51,
+      "brier": 0.1694
+     },
+     "guclu_taban": {
+      "n": 204,
+      "tutan": 160,
+      "isabet": 0.7843,
+      "beklenen": 157.48,
+      "brier": 0.17
+     },
+     "guclu_aday": {
+      "n": 204,
+      "tutan": 160,
+      "isabet": 0.7843,
+      "beklenen": 157.48,
+      "brier": 0.17
+     }
+    },
+    "karar": "ret",
+    "neden": "seçim diliminde iyileşme yok; sınama alt sınırı ≤ 0 (α=0.0083)"
+   },
+   "sure_sn": 3.2
+  }
+ ],
+ "golge_olcum": [],
+ "bugun": "2026-10-27"
+}

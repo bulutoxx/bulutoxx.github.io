@@ -1,0 +1,10 @@
+{
+ "adaylar": {},
+ "guncelleme": "2026-10-26T23:26Z",
+ "kurallar": {
+  "giris": "lab/oxx_ogren.sina kapısı (zaman sıralı seçim/sınama, gün bootstrap'ı, Bonferroni α, Altın/güçlü koruması)",
+  "golge": "en az 3 gün ve 3 ölçüm; tam veride ret ya da gölge sonrası günlerde fark < 0 (n ≥ 10) → geri çekilir",
+  "uygulama": "lab/oxx_ogren.uygula → data/oxx_ayar.json izlenen; 14 gün sonra yeniden sınama + canlı gölge kupon, kötüleşirse oxx_rollback",
+  "dondurma": "data/rollback.json aktif ya da anahtar oxx_rollback donmus listesinde ise uygulanmaz"
+ }
+}

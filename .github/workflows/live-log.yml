@@ -1,8 +1,13 @@
 name: OXXai canlı kayıt
-# 15 dakikada bir canlı maçlardaki en yüksek olasılıklı seçimi kilitleyip kaydeder (Power Now kendi isabetinden öğrenir)
+# Canlı maçlardaki en yüksek olasılıklı seçimi kilitleyip kaydeder (Power Now kendi isabetinden öğrenir).
+# Tek iş içinde döngü: ~25 dakika boyunca 5 dakikada bir kayıt. GitHub zamanlayıcısı kısa aralıklı işleri gecikmeyle başlattığı
+# için (15 dk hedef → gerçekte ~32 dk) zamanlayıcı yalnız işi tazeler: 20 dakikada bir tetikler, concurrency kuyruğu işlerin üst
+# üste binmesini önler (en çok bir iş bekler), böylece kayıt pratikte kesintisiz 5 dk aralıkla sürer.
+# Tüm turlar TEK commit'te birleşir (lab/gonder.py: aynı dosyaya yazan diğer işlerle anahtar düzeyinde, veri kaybetmeden birleştirir).
+# Her adımın çıkış kodu ve süresi data/saglik/live-log.json'a yazılır (lab/adim.py); kurtarıcı bunu okur.
 on:
   schedule:
-    - cron: "*/15 * * * *"
+    - cron: "*/20 * * * *"
   workflow_dispatch:
 permissions:
   contents: write
@@ -12,19 +17,30 @@ concurrency:
 jobs:
   log:
     runs-on: ubuntu-latest
-    timeout-minutes: 8
+    timeout-minutes: 40
+    env:
+      TUR: "6"          # 6 tur × 5 dk ≈ 25 dk
+      ARALIK_SN: "300"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: { python-version: "3.12" }
       - run: pip install numpy==2.1.3
-      - run: python scripts/collector.py live
-      - name: 🛡️ Bekçi
-        run: python lab/watchdog.py || true
-      - run: |
-          git config user.name "bulutoxx-bot"; git config user.email "bulutoxx-bot@users.noreply.github.com"
-          git add data/archive/live data/health.json
-          git add data/archive/live_stats 2>/dev/null || true
-          git diff --cached --quiet && exit 0
-          git commit -qm "Canlı seçim kaydı $(date -u +%FT%H:%M) [skip ci]"
-          for i in 1 2 3; do git pull -q --rebase -X theirs origin main && git push -q origin HEAD:main && break; sleep 8; done
+      - name: ⏱️ Canlı kayıt döngüsü (5 dk arayla) + 🛡️ bekçi
+        run: |
+          for i in $(seq 1 "$TUR"); do
+            t0=$(date +%s)
+            if [ "$i" -gt 1 ]; then
+              # girdileri (maç öncesi gol beklentisi, model, günün kilitli önerileri) uzak daldan tazele; bunlar bu işte commit edilmez
+              BUGUN=$(TZ=Europe/Istanbul date +%F); DUN=$(TZ=Europe/Istanbul date -d yesterday +%F)
+              python3 lab/gonder.py --tazele data/iddaa.json data/model.json data/daily.json "data/archive/$BUGUN.json" "data/archive/$DUN.json"
+            fi
+            python3 lab/adim.py canli-kayit -- timeout 240 python scripts/collector.py live
+            python3 lab/adim.py bekci --onem bilgi -- timeout 60 python lab/watchdog.py
+            if [ "$i" -lt "$TUR" ]; then
+              s=$(( t0 + ARALIK_SN - $(date +%s) ))
+              if [ "$s" -gt 0 ]; then sleep "$s"; fi
+            fi
+          done
+      - name: Kaydet (tüm turlar tek commit)
+        run: python3 lab/gonder.py -m "Canlı seçim kaydı $(date -u +%FT%H:%M) [skip ci]" data/archive/live data/archive/live_stats data/health.json data/saglik
