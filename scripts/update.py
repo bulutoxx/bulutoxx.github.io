@@ -537,15 +537,17 @@ def _dc_grid(l1, l2, rho, K):
     g[:, 0, 0] *= np.maximum(1 - l1 * l2 * rho, 0); g[:, 0, 1] *= 1 + l1 * rho; g[:, 1, 0] *= 1 + l2 * rho; g[:, 1, 1] *= 1 - rho
     g = np.maximum(g, 0); return g / g.sum((1, 2), keepdims=True)
 
-def ui_market_lam(odds, ous, rho):
-    """index.html fitMarket()'in aynısı: power marj ayırma, (0,25–3,8)×(0,2–3,4) tablo, 1X2 (+2,5 üst) en yakın nokta."""
+def ui_market_lam(odds, ous, rho, dv="power"):
+    """index.html fitMarket()'in aynısı: power marj ayırma, (0,25–3,8)×(0,2–3,4) tablo, 1X2 (+2,5 üst) en yakın nokta.
+    dv: yalnız laboratuvar kıyası için başka marj ayırma (uygulama bugün yalnız power kullanır)."""
     key = round(float(rho), 4)
     if key not in _UI_TAB:
         LH, LA = np.meshgrid(np.arange(0.25, 3.8001, 0.05), np.arange(0.2, 3.4001, 0.05), indexing="ij"); LH = LH.ravel(); LA = LA.ravel()
         G = _dc_grid(LH, LA, rho, 10); ii, jj = np.meshgrid(np.arange(11), np.arange(11), indexing="ij")
         _UI_TAB[key] = (LH, LA, (G * (ii > jj)).sum((1, 2)), (G * (ii == jj)).sum((1, 2)), (G * (ii < jj)).sum((1, 2)), (G * ((ii + jj) > 2)).sum((1, 2)))
     LH, LA, TH, TD, TA, TO = _UI_TAB[key]
-    p = np.array([power_devig(o) for o in odds]); po = np.array([power_devig(o)[0] if o else np.nan for o in ous])
+    dvf = power_devig if dv == "power" else (lambda o: devig(o, dv))
+    p = np.array([dvf(o) for o in odds]); po = np.array([dvf(o)[0] if o else np.nan for o in ous])
     out = np.zeros((len(p), 2))
     for s in range(0, len(p), 400):
         pp, oo = p[s:s + 400], po[s:s + 400]
@@ -770,6 +772,155 @@ def _served_walkforward(items, cs, cm, res, tot, dts, rs, ovs, hou, w, legacy, T
     return {"karar": bool(ok), "secilen": list(fin), "mevcut": list(cur), "kat_sayisi": len(folds), "kazanilan_kat": int(win),
             "n_sinama": int(len(sinama)), "aday": S_new, "mevcut_sonuc": S_cur, "fark_ci95": ci, "katlar": rows,
             "neden": "geçti" if ok else "geçemedi: " + ", ".join(neden)}
+
+# ------------------------------------------------------------------ 🔒 kilitli arşiv kalibrasyonu (2026-10-27, ml90)
+# Teşhis (denetim P1): calibrate_served T/g/dk'yı football-data'nın düşük marjlı (≈%5) ortalama/kapanış oranlarıyla öğreniyor;
+# uygulama ise maçtan saatler önce kilitlenen ≈%18 marjlı iddaa oranını sunuyor. Bu dağılım farkı yüzünden kilitli 1.216 maçta
+# favori olasılıkları şişik (1,0–1,3 oran bandında power %80,5 / gerçek %77,6; 1,6–2,0 bandında %49,9 / %43,2), beraberlik eksik.
+# Burada T/g/dk uygulamanın GERÇEKTEN sunduğu dağılımda öğrenilir: kilitli arşiv (iddaa kilit oranı + sonuç), aynı sunulan yol
+# (power marj → gol tablosu → iki yarı Dixon-Coles → T/dk). Kapı: zaman sıralı genişleyen pencere (ilk %40 öğren, kalan 4 dilimde
+# yalnız geçmişle seçilip sınanır), lig×gün küme bootstrap %95; kabul edilirse sunulan yolun kalibrasyonunun yerine geçer.
+KL_MIN, KL_MIN_GUN, KL_TEST0, KL_FOLDS, KL_BOOT = 800, 14, 0.4, 4, 2000
+# KL_MIN_GUN: ilk ölçümde (24–27 Ekim, 3 gün) gün etkisi baskındı (beraberlik %28,7 / %27,6 / %15,8; 0,78+ öneri isabeti
+# %69 / %83 / %91). Gün içi maçlar bağımsız değil: karar yalnız ≥14 günlük arşivde ve GÜN-blok bootstrap ile verilir.
+KL_TS = (0.80, 0.84, 0.88, 0.91, 0.94, 0.97, 1.0, 1.05, 1.1)
+KL_GS = (0.98, 1.0, 1.01, 1.02, 1.04)
+KL_DK = (1.0, 1.04, 1.08, 1.12, 1.14, 1.16, 1.2, 1.24, 1.28, 1.32)
+KL_BANDS = ((.5, .6), (.6, .7), (.7, .78), (.78, .85), (.85, 1.01))
+
+def kilitli_veri(data_dir=None):
+    """Kilitli arşivden sonucu belli, 1X2 iddaa oranı tam maçlar; başlama zamanına (ts) göre sıralı."""
+    import arsiv
+    out = []
+    for d, r in arsiv.kayitlar(data_dir or DATA, puanli=False):
+        if r.get("hs") is None or r.get("as") is None or not r.get("ms") or len(r["ms"]) != 3 or not all(r["ms"]): continue
+        ou = r.get("ou") if r.get("ou") and len(r["ou"]) == 2 and all(r["ou"]) else None
+        hs, as_ = r["hs"], r["as"]
+        out.append({"ts": r.get("ts") or 0, "d": d, "c": r.get("c") or "?", "ms": list(r["ms"]), "ou": ou,
+                    "res": 0 if hs > as_ else 1 if hs == as_ else 2, "ov": hs + as_ > 2})
+    out.sort(key=lambda x: (x["ts"], x["d"]))
+    return out
+
+class _KL:
+    """Kilitli veride sunulan yol olasılıkları (g başına önbellekli) ve maç başına kayıp."""
+    def __init__(self, V, rho, h1, dv="power"):
+        self.V, self.rho, self.h1 = V, rho, h1; self.n = len(V)
+        self.lam = ui_market_lam([v["ms"] for v in V], [v["ou"] for v in V], rho, dv)
+        self.res = np.array([v["res"] for v in V]); self.ov = np.array([v["ov"] for v in V]); self.hou = np.array([v["ou"] is not None for v in V])
+        self.O1 = np.array([v["ms"] for v in V], float); self.OU = np.array([v["ou"] or [0, 0] for v in V], float)
+        self.day = [v["d"] for v in V]; self.cl = np.unique([f'{v["c"]}|{v["d"]}' for v in V], return_inverse=True)[1]
+        self._c = {}
+    def probs(self, g):
+        if g not in self._c: self._c[g] = served_probs(self.lam[:, 0], self.lam[:, 1], g, self.rho, self.h1)
+        return self._c[g]
+    def loss(self, c):
+        """Maç başına amaç: 1X2 log-kayıp + ½·2,5 log-kayıp (calibrate_served ile aynı ağırlık); ayrıca q, O."""
+        T, g, dk = c; p, O = self.probs(g); return _kl_loss_from(self, _cal3(p, T, dk), O)
+    def picks(self, q, O):
+        """Uygulamadaki öneri (recOf / collector.served_pick): MS 1/X/2 ve 2,5 Üst/Alt içinden en yüksek olasılık."""
+        C = np.column_stack([q, np.where(self.hou, O, -1), np.where(self.hou, 1 - O, -1)]); k = C.argmax(1); j = np.arange(self.n)
+        pp = C[j, k]; od = np.where(k < 3, self.O1[j, np.minimum(k, 2)], self.OU[j, np.clip(k - 3, 0, 1)])
+        y = np.where(k < 3, self.res == k, np.where(k == 3, self.ov, ~self.ov)).astype(float)
+        return k, pp, od, y
+
+def _wilson(h, n):
+    if not n: return [None, None]
+    p = h / n; z = 1.96; den = 1 + z * z / n; c = (p + z * z / (2 * n)) / den; w = z * math.sqrt(p * (1 - p) / n + z * z / (4 * n * n)) / den
+    return [round(c - w, 3), round(c + w, 3)]
+
+def _kl_gold(day, pp, od, idx, cap=3):
+    """Altın kuralı (p ≥ 0,78, oran 1,15–2,00, günde en fazla 3); cap=None: günlük sınır yok (uygulamadaki Altın karnesi gibi)."""
+    by = collections.defaultdict(list)
+    for i in idx:
+        if pp[i] >= .78 and 1.15 <= od[i] <= 2.0: by[day[i]].append(i)
+    return [i for L in by.values() for i in (sorted(L, key=lambda i: -pp[i])[:cap] if cap else L)]
+
+def _kl_report(K, q, O, idx):
+    l1, l2, q, O = _kl_loss_from(K, q, O); k, pp, od, y = K.picks(q, O); i = np.asarray(idx); E = np.eye(3)[K.res[i]]
+    hi = i[K.hou[i]]; pc = np.clip(pp[i], 1e-4, 1 - 1e-4)
+    bands = []
+    for a, b in KL_BANDS:
+        m = i[(pp[i] >= a) & (pp[i] < b)]
+        if len(m): bands.append({"bant": f"{a:.2f}-{min(b, 1):.2f}", "n": int(len(m)), "tahmin": round(float(pp[m].mean()), 4),
+                                 "gercek": round(float(y[m].mean()), 4), "ci95": _wilson(int(y[m].sum()), len(m))})
+    g3 = _kl_gold(K.day, pp, od, i, 3); ga = _kl_gold(K.day, pp, od, i, None)
+    return {"n": int(len(i)), "amac": round(float((l1[i] + .5 * l2[i]).mean()), 5), "ll_1x2": round(float(l1[i].mean()), 5),
+            "ll_ou": round(float(l2[hi].mean()), 5) if len(hi) else None, "brier_1x2": round(float(((q[i] - E) ** 2).sum(1).mean()), 5),
+            "beraberlik_tahmin": round(float(q[i, 1].mean()), 4), "beraberlik_gercek": round(float((K.res[i] == 1).mean()), 4),
+            "oneri_ort": round(float(pp[i].mean()), 4), "oneri_gercek": round(float(y[i].mean()), 4),
+            "oneri_brier": round(float(np.mean((pp[i] - y[i]) ** 2)), 5), "oneri_ll": round(float(-np.mean(y[i] * np.log(pc) + (1 - y[i]) * np.log(1 - pc))), 5),
+            "bantlar": bands,
+            "altin": {"n": len(g3), "tutan": int(y[g3].sum()) if g3 else 0, "isabet": round(float(y[g3].mean()), 4) if g3 else None,
+                      "tahmin": round(float(pp[g3].mean()), 4) if g3 else None, "ci95": _wilson(int(y[g3].sum()), len(g3)) if g3 else None},
+            "altin_gunluk_sinirsiz": {"n": len(ga), "isabet": round(float(y[ga].mean()), 4) if ga else None,
+                                      "tahmin": round(float(pp[ga].mean()), 4) if ga else None, "ci95": _wilson(int(y[ga].sum()), len(ga)) if ga else None}}
+
+def _kl_boot(K, d, idx, B, seed, gun=False):
+    """Küme bootstrap (lig×gün; gun=True: gün blokları): Δ ortalamasının %95 aralığı."""
+    idx = np.asarray(idx); cl = np.asarray(K.day)[idx] if gun else K.cl[idx]; u, inv = np.unique(cl, return_inverse=True)
+    s = np.bincount(inv, weights=d[idx]); c = np.bincount(inv).astype(float); rng = np.random.default_rng(seed)
+    bs = []
+    for _ in range(B):
+        w = np.bincount(rng.integers(0, len(u), len(u)), minlength=len(u)); bs.append((w * s).sum() / max((w * c).sum(), 1))
+    return [round(float(np.percentile(bs, 2.5)), 5), round(float(np.percentile(bs, 97.5)), 5)]
+
+def calibrate_locked(P, V=None, dv="power", grid=None, cur=None, boot=KL_BOOT, seed=90, K=None):
+    """T/g/dk'yı kilitli arşivde (uygulamanın sunduğu iddaa kilit oranı dağılımı) öğren ve kapıdan geçir.
+    Zaman sıralı genişleyen pencere: ilk %40 yalnız öğrenme; kalan maçlar 4 ardışık dilim, her dilimde ayar yalnız ondan ÖNCEKİ
+    maçlarla seçilir. Birleşik dilim-dışı tahminler şu an sunulan ayarla (cur) maç maç eşleştirilir. Kabul (hepsi):
+      1) amaç (1X2 + ½·2,5 log-kayıp) farkının lig×gün küme bootstrap %95 üst sınırı < 0,
+      2) sınama döneminin iki zaman yarısında da fark < 0,
+      3) 1X2 Brier ve öneri Brier'i kötüleşmiyor.
+    Kabul edilirse uygulanan değer TÜM kilitli veride aynı amaçla seçilen T/g/dk'dır."""
+    V = kilitli_veri() if V is None else V; n = len(V)
+    if n < KL_MIN: return {"kabul": False, "neden": f"az veri ({n} < {KL_MIN})", "n": n}
+    rho, h1 = P.get("rho", -0.1), P.get("h1", .4437)
+    K = K or _KL(V, rho, h1, dv)
+    grid = grid or [(T, g, dk) for T in KL_TS for g in KL_GS for dk in KL_DK]
+    cur = tuple(cur or (P.get("calT", 1.0), P.get("gscale", 1.0), P.get("dk", 1.0)))
+    tot = {}
+    def obj(c):
+        if c not in tot: l1, l2, _, _ = K.loss(c); tot[c] = l1 + .5 * l2
+        return tot[c]
+    s0 = int(n * KL_TEST0); cuts = [s0 + (n - s0) * i // KL_FOLDS for i in range(KL_FOLDS + 1)]
+    sel = np.zeros(n); oos = np.arange(s0, n); folds = []
+    for a, b in zip(cuts[:-1], cuts[1:]):
+        c = min(grid, key=lambda x: obj(x)[:a].mean()); sel[a:b] = obj(c)[a:b]
+        folds.append({"egitim_n": a, "sinama_n": b - a, "secilen": list(c), "fark": round(float((obj(c)[a:b] - obj(cur)[a:b]).mean()), 5)})
+    d = sel - obj(cur); ci_lg = _kl_boot(K, d, oos, boot, seed); ci_gun = _kl_boot(K, d, oos, boot, seed, gun=True)
+    n_gun, n_gun_s = len(set(K.day)), len(set(K.day[i] for i in oos)); ci = ci_gun
+    h = (n - s0) // 2; d1, d2 = float(d[s0:s0 + h].mean()), float(d[s0 + h:].mean())
+    fin = min(grid, key=lambda x: obj(x).mean())
+    # birleşik dilim-dışı rapor: önce (cur) tek ayar; sonra (aday) dilim başına ayar → olasılıkları birleştirip raporla
+    l1c, l2c, qc, Oc = K.loss(cur); Q = qc.copy(); OO = Oc.copy()
+    for f, (a, b) in zip(folds, zip(cuts[:-1], cuts[1:])):
+        _, _, q_, O_ = K.loss(tuple(f["secilen"])); Q[a:b] = q_[a:b]; OO[a:b] = O_[a:b]
+    once = _kl_report(K, qc, Oc, oos); sonra = _kl_report(K, Q, OO, oos)
+    # Brier farkları için bootstrap
+    E = np.eye(3)[K.res]; db = ((Q - E) ** 2).sum(1) - ((qc - E) ** 2).sum(1)
+    _, pp1, _, y1 = K.picks(Q, OO); _, pp0, _, y0 = K.picks(qc, Oc); dpb = (pp1 - y1) ** 2 - (pp0 - y0) ** 2
+    ci_b = _kl_boot(K, db, oos, boot, seed + 1, gun=True); ci_pb = _kl_boot(K, dpb, oos, boot, seed + 2, gun=True)
+    ok_ci, ok_half = ci_gun[1] < 0 and ci_lg[1] < 0, d1 < 0 and d2 < 0
+    ok_b = float(db[oos].mean()) <= 0 and float(dpb[oos].mean()) <= 0; ok_g = n_gun >= KL_MIN_GUN
+    ok = bool(ok_ci and ok_half and ok_b and ok_g)
+    neden = [t for t, c_ in ((f"arşiv {n_gun} gün (< {KL_MIN_GUN})", ok_g), ("Δ amaç güven aralığı sıfırı dışlamıyor", ok_ci),
+                             ("iki zaman yarısı aynı yönde değil", ok_half), ("Brier kötüleşiyor", ok_b)) if not c_]
+    out = {"kabul": ok, "neden": "geçti" if ok else "geçemedi: " + ", ".join(neden), "yol": "kilitli", "devig": dv,
+           "n": n, "n_sinama": int(len(oos)), "gun": n_gun, "gun_sinama": n_gun_s, "ilk": V[0]["d"], "son": V[-1]["d"], "mevcut": list(cur), "secilen": list(fin),
+           "T": fin[0], "g": fin[1], "dk": fin[2], "katlar": folds,
+           "fark": {"amac": round(float(d[oos].mean()), 5), "amac_ci95": ci_gun, "amac_ci95_lig_gun": ci_lg, "yari1": round(d1, 5), "yari2": round(d2, 5),
+                    "brier_1x2": round(float(db[oos].mean()), 5), "brier_1x2_ci95": ci_b,
+                    "oneri_brier": round(float(dpb[oos].mean()), 5), "oneri_brier_ci95": ci_pb},
+           "once": once, "sonra": sonra,
+           # dürüst ileriye dönük karne: şu an sunulan ayarla TÜM kilitli arşiv (bu ayar kilitli veriyle seçilmedi)
+           "mevcut_tum_arsiv": _kl_report(K, qc, Oc, np.arange(n))}
+    print("Kilitli arşiv kalibrasyonu:", json.dumps({k: out[k] for k in ("kabul", "neden", "n", "gun", "mevcut", "secilen", "fark")}, ensure_ascii=False), flush=True)
+    return out
+
+def _kl_loss_from(K, Q, OO):
+    j = np.arange(K.n); l1 = -np.log(np.maximum(Q[j, K.res], 1e-9)); o = np.clip(OO, 1e-9, 1 - 1e-9)
+    l2 = np.where(K.hou, -np.where(K.ov, np.log(o), np.log(1 - o)), 0.0)
+    return l1, l2, Q, OO
 
 def build_ck(season, today):
     """Korner ve kart: takım bazlı oran modeli (gol modeliyle aynı yapı). Laboratuvar: korner 9,5 çizgisinde
@@ -1528,6 +1679,16 @@ def main():
                 if srv.get("kabul"): P["calT"], P["gscale"], P["dk"], P["cal_yol"] = srv["T"], srv["g"], srv["dk"], "sunulan"
         except Exception as e:
             print("sunulan yol kalibrasyonu atlandı:", e.__class__.__name__, e, flush=True)
+        # 🔒 ml90: uygulamanın gerçekten sunduğu dağılımda (kilitli iddaa oranı) kapı. Kabul edilirse sunulan yol ayarının yerine geçer.
+        try:
+            if RB:
+                CAL_INFO["kilitli"] = {"kabul": False, "neden": "Koruyucu geri alma süresince dondurulmuş"}
+            else:
+                kl = calibrate_locked(P)
+                CAL_INFO["kilitli"] = kl
+                if kl.get("kabul"): P["calT"], P["gscale"], P["dk"], P["cal_yol"] = kl["T"], kl["g"], kl["dk"], "kilitli"
+        except Exception as e:
+            print("kilitli arşiv kalibrasyonu atlandı:", e.__class__.__name__, e, flush=True)
         CAL_INFO["kullanilan"] = {"yol": P["cal_yol"], "T": P["calT"], "g": P["gscale"], "dk": P["dk"]}
     if not quick:
         if RB and RB.get("params"):
@@ -1651,13 +1812,81 @@ def main():
                                "derin_dosya": dx.get("dosya", 0), "arsiv": arsiv.ozet(DATA)}
     except Exception as e: print("veritabanı özeti atlandı:", e, flush=True)
     json.dump(clean_nan(model), open(mp, "w", encoding="utf-8"), ensure_ascii=False, indent=1, allow_nan=False)
-    hp = os.path.join(DATA, "history.json")
+    try: write_ratings(season, clean_nan(model).get("params") or {})
+    except Exception as e: print("ratings.json atlandı:", e, flush=True)
+    hp =os.path.join(DATA, "history.json")
     hist = json.load(open(hp, encoding="utf-8")) if os.path.exists(hp) else []
     if mt and not quick:
         hist.append({"t": now, "n": mt["n"], "logloss": mt["logloss"], "brier": mt["brier"], "r1x2": mt["r1x2"]})
         hist = hist[-200:]
     json.dump(hist, open(hp, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
     print("Bitti:", json.dumps({k: v for k, v in mt.items() if k != "by_league"}, ensure_ascii=False), "params", P)
+
+def fit_league_js(ms, MP):
+    """index.html fitLeague()'in birebir karşılığı (v118): uygulama artık telefonda eğitmiyor, bu sonucu data/ratings.json'dan okuyor."""
+    use = ms
+    if len(use) < 12: return None
+    last = date.fromisoformat(max(m["d"] for m in use))
+    W = [math.exp(-MP("decay", 0.004) * (last - date.fromisoformat(m["d"])).days) for m in use]
+    names = list(dict.fromkeys(x for m in use for x in (m["h"], m["a"])))
+    att = {n: 1.0 for n in names}; dfn = {n: 1.0 for n in names}
+    MK = MP("mkt", 0)
+    T = [[(1 - MK) * m["ft"][0] + MK * m["xg"][0], (1 - MK) * m["ft"][1] + MK * m["xg"][1]] if isinstance(m.get("xg"), list) else m["ft"] for m in use]
+    sw = sum(W); sh = sum(w * t[0] for w, t in zip(W, T)); sa = sum(w * t[1] for w, t in zip(W, T))
+    cl = lambda x, a, b: max(a, min(b, x))
+    gamma = cl(sh / max(sa, 0.1), 1.0, 1.6); mu = sa / sw
+    K = MP("prior", 2.5)
+    for _ in range(40):
+        gs = dict.fromkeys(names, 0.0); es = dict.fromkeys(names, 0.0); gc = dict.fromkeys(names, 0.0); ec = dict.fromkeys(names, 0.0)
+        for m, w, t in zip(use, W, T):
+            h, a = m["h"], m["a"]
+            eh = mu * gamma * att[h] * dfn[a]; ea = mu * att[a] * dfn[h]
+            gs[h] += w * t[0]; es[h] += w * eh / att[h]; gc[a] += w * t[0]; ec[a] += w * eh / dfn[a]
+            gs[a] += w * t[1]; es[a] += w * ea / att[a]; gc[h] += w * t[1]; ec[h] += w * ea / dfn[h]
+        base = mu * math.sqrt(gamma)
+        for n in names:
+            att[n] = (gs[n] + K * base) / (es[n] + K * base); dfn[n] = (gc[n] + K * base) / (ec[n] + K * base)
+        ga = math.exp(sum(math.log(att[n]) for n in names) / len(names)); gd = math.exp(sum(math.log(dfn[n]) for n in names) / len(names))
+        for n in names: att[n] /= ga; dfn[n] /= gd
+        nh = dh = na = da = 0.0
+        for m, w, t in zip(use, W, T):
+            nh += w * t[0]; dh += w * att[m["h"]] * dfn[m["a"]]; na += w * t[1]; da += w * att[m["a"]] * dfn[m["h"]]
+        mu = na / da; gamma = cl((nh / dh) / mu, 1.0, 1.6)
+    g1 = g = 0
+    for m in use:
+        if isinstance(m.get("ht"), list): g1 += m["ht"][0] + m["ht"][1]; g += m["ft"][0] + m["ft"][1]
+    h1 = cl((g1 + MP("h1", 0.44) * 60) / (g + 60), 0.36, 0.52)
+    cnt = collections.Counter(x for m in use for x in (m["h"], m["a"]))
+    return {"mu": mu, "gamma": gamma, "h1": h1, "n": len(use), "t": {n: [round(att[n], 6), round(dfn[n], 6), cnt[n]] for n in names}}
+
+def write_ratings(season, params):
+    """⚡ v118: data/ratings.json — uygulamanın açılışta ihtiyaç duyduğu küçük özet: lig güçleri (fitLeague sonucu) ve
+    her takımın son 5 maçı. season.json (3,8 MB) artık yalnız puan durumu / aralarındaki maçlar gibi ekranlarda, gerekince yüklenir.
+    Biçim: tm = takım adları; m = [tarih, ev no, dep no, ev gol, dep gol, sezon]; fit.a/fit.d/fit.c = tm sırasıyla hücum/savunma/maç;
+    o = bu sezonun takımları (uygulamadaki sırayla)."""
+    MP = lambda k, d: params[k] if params.get(k) is not None else d
+    out = {"v": 1, "updated": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%MZ"),
+           "params": {k: params.get(k) for k in ("decay", "prior", "mkt", "h1")}, "leagues": {}}
+    for lg, d in season.items():
+        ms = sorted([m for m in d.get("matches", []) if m and isinstance(m.get("ft"), list) and len(m["ft"]) == 2], key=lambda m: m["d"])
+        tm = list(dict.fromkeys(x for m in ms for x in (m["h"], m["a"]))); ix = {n: i for i, n in enumerate(tm)}
+        last5 = collections.defaultdict(list)
+        for i, m in enumerate(ms): last5[m["h"]].append(i); last5[m["a"]].append(i)
+        keep = sorted({i for L in last5.values() for i in L[-5:]})
+        L = {k: d[k] for k in ("name", "cup", "espn", "asOf", "season", "src") if d.get(k) is not None}
+        L.update(n=len(ms), tm=tm, m=[[ms[i]["d"], ix[ms[i]["h"]], ix[ms[i]["a"]], ms[i]["ft"][0], ms[i]["ft"][1], ms[i].get("season")] for i in keep])
+        if not d.get("cup"):
+            f = fit_league_js(ms, MP)
+            if f:
+                last = max((m.get("season") or 0) for m in ms)
+                cur = [m for m in ms if not m.get("season") or m.get("season") == last]
+                L["o"] = [ix[n] for n in dict.fromkeys(x for m in cur for x in (m["h"], m["a"]))]   # uygulamanın takımları gezdiği sıra
+                t = f.pop("t")
+                f.update(avg=sum(m["ft"][0] + m["ft"][1] for m in cur) / len(cur) if cur else None,
+                         a=[t[n][0] for n in tm], d=[t[n][1] for n in tm], c=[t[n][2] for n in tm])
+                L["fit"] = f
+        out["leagues"][lg] = L
+    json.dump(clean_nan(out), open(os.path.join(DATA, "ratings.json"), "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
 
 def clean_nan(o):
     """JSON'a NaN/sonsuz yazılmasın (tarayıcı okuyamaz): None'a çevir."""

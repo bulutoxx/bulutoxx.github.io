@@ -20,6 +20,7 @@ import numpy as np
 from veri import piyasa_q, zemin_sira
 import at5 as _a5     # v5 at özellikleri (lab/at/at5.py): sınıf-ayarlı form, göreli kilo, dinlenme eğrisi
 import jokey as _jk   # 🏇 jokey ve ahır uzmanı (lab/at/jokey.py): attan arındırılmış jokey/antrenör özellikleri
+import at6 as _a6     # v6 (derin tarama): hava (Open-Meteo), Kalman hız figürü, mesafe profili, gelişim (lab/at/at6.py)
 import os as _os, sys as _sys
 _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), "global"))
 import kuresel as _gl  # 🌍 küresel katkılar (lab/at/global/kuresel.py): yalnız oncul.json GLOBAL_SECILI ile yayına girer
@@ -64,7 +65,7 @@ TUM_OZELLIKLER = [
     ("mesafe_deg_y", "degisim"), ("pist_degisti", "degisim"), ("pist_ilk", "degisim"), ("jokey_r_fark", "degisim"),
     ("ara_10", "degisim"), ("ara_60_120", "degisim"), ("ara_120_240", "degisim"), ("ara_240p", "degisim"),
     ("donus_2", "degisim"), ("yas2_mesafe", "degisim"), ("sinif_dus", "degisim"), ("sinif_cik", "degisim"),
-] + _jk.JK_OZELLIKLER + _a5.A5_OZELLIKLER   # jokey/ahır (jk_*) ve v5 at (a5_*) adayları — mevcut sütunların sırası değişmez
+] + _jk.JK_OZELLIKLER + _a5.A5_OZELLIKLER + _a6.A6_OZELLIKLER   # jokey/ahır (jk_*), v5 (a5_*), v6 (a6_*) adayları — mevcut sütunların sırası değişmez
 TUM_OZELLIKLER = TUM_OZELLIKLER + _gl.GL_OZELLIKLER   # küresel (gl_*) adaylar en sona — mevcut sütunların sırası değişmez
 TUM_ADLAR = [o[0] for o in TUM_OZELLIKLER]
 GRUP = dict(TUM_OZELLIKLER)
@@ -77,6 +78,7 @@ V1_GRUPLAR = ["form", "fark", "piyasa_gecmisi", "dinlenme", "pist_mesafe_hipodro
 SECILI_GRUPLAR = V1_GRUPLAR + ["piyasa_hafiza", "reyting", "sinif2", "fark2", "hiz3", "degisim", "hp"]
 SECILI_GRUPLAR = SECILI_GRUPLAR + [g for g in _jk.JK_SECILI if g not in SECILI_GRUPLAR]   # jokey turu (deney_jokey.py)
 SECILI_GRUPLAR = SECILI_GRUPLAR + [g for g in _a5.A5_SECILI if g not in SECILI_GRUPLAR]   # v5 turu (deney5.py)
+SECILI_GRUPLAR = SECILI_GRUPLAR + [g for g in _a6.A6_SECILI if g not in SECILI_GRUPLAR]   # v6 turu (deney6.py)
 SECILI_GRUPLAR = SECILI_GRUPLAR + [g for g in _gl.GLOBAL_SECILI_GRUPLAR if g not in SECILI_GRUPLAR]   # küresel tur (deney_global.py)
 OZELLIKLER = [o for o in TUM_OZELLIKLER if o[1] in SECILI_GRUPLAR]
 ADLAR = [o[0] for o in OZELLIKLER]
@@ -206,6 +208,7 @@ class Durum:
         self.hp_bekleyen = []                              # günün handikap koşuları (gün sonunda işlenir)
         self.jk = _jk.JokeyDurum()                         # jokey/ahır: Bayes PL becerisi + kalıntı istatistikleri
         self.a5 = _a5.A5Durum()                            # v5: antrenörün uzun aradan dönüş kalıntısı
+        self.a6 = _a6.A6Durum()                            # v6: hava tablosu, Kalman figür durumu, gelişim tablosu
 
     # --- sınıf düzeyi: o sınıfta koşan atların geçmiş galibiyet sayısının (log) kayan ortalaması
     def sinif_duzeyi(self, k):
@@ -302,6 +305,8 @@ class Durum:
         kl_med = float(np.median(kl)) if kl else 0.0
         jk_sat = self.jk.satirlar(kosu) if any(x in _jk.JK_ADLAR for x in adlar) else None
         a5_sat = self.a5.satirlar(kosu, self, r_alan, kilo_ort, bugun) if any(x in _a5.A5_ADLAR for x in adlar) else None
+        a6_sat = (self.a6.satirlar(kosu, self, r_alan, kilo_ort, bugun, r_at_list)
+                  if any(x in _a6.A6_ADLAR for x in adlar) else None)
         gl_sat = _gl.wfa_satirlar(kosu) if any(x in _gl.GL_WFA_ADLAR for x in adlar) else None   # yalnız bugünkü program
         satirlar = []
         for ai, a in enumerate(kosu["atlar"]):
@@ -486,6 +491,8 @@ class Durum:
                 f.update(jk_sat[ai])
             if a5_sat is not None:
                 f.update(a5_sat[ai])
+            if a6_sat is not None:
+                f.update(a6_sat[ai])
             if gl_sat is not None:
                 f.update(zip(_gl.GL_WFA_ADLAR, gl_sat[ai].tolist()))
             satirlar.append([f[k] for k in adlar])
@@ -670,6 +677,7 @@ class Durum:
             self.gun_bekleyen.append((kosu, std - kaz_sure / km))
         self.jk.guncelle(kosu)
         self.a5.guncelle(kosu, q, aralar)
+        self.a6.guncelle(kosu)
         # v4 handikap vekili: gün sonunda (aynı günün başka koşusuna sızmasın diye)
         if self._handikap_mi(kosu):
             self.hp_bekleyen.append(kosu)
@@ -706,6 +714,7 @@ class Durum:
         self._hp_gun_sonu()
         self.jk.gun_sonu()
         self.a5.gun_sonu()
+        self.a6.gun_sonu(self)   # v6: günün figürleri hesaplandıktan sonra (Kalman, gelişim)
 
     def _hp_gun_sonu(self):
         """Günün handikap koşularından: sınıf düzeyi, jokey indirimi ve atların örtük HP değerleri güncellenir.

@@ -10,7 +10,7 @@ edilmedi; depoda yalnız türetilmiş küçük tablolar (WFA ölçeği, deney me
 
 **Ortam kısıtı (ölçüldü):** bu oturumun ağ geçidi yalnız GitHub (git clone / raw) ve PyPI'ye izin veriyor;
 Kaggle, Hugging Face, Zenodo, Dryad, Figshare, CRAN, data.gouv.fr, storage.googleapis.com bağlantıları 403 ile reddedildi.
-GitHub arama API'si de oturuma bağlı depolarla sınırlı. Bu yüzden veri indirmesi gerektiren adaylar “erişim: ortamda
+GitHub arama API'si de oturuma bağlı depolarla sınırlı. 27.10.2026 yeniden ölçüldü: query.wikidata.org ve www.wikidata.org da 403 (vekil reddi). Bu yüzden veri indirmesi gerektiren adaylar “erişim: ortamda
 kapalı” olarak işaretlendi; karar sütunu yasal kullanılabilirliği ayrıca gösterir.
 
 ## Aynanın sınırı (tüm aktarımı belirleyen gerçek)
@@ -20,6 +20,21 @@ form(boş)` var. **Baba/anne/aygır alanı yok, cinsiyet yok, kulvar (start no) 
 aygır/baba önseli (“baba gücü / mesafe eğilimi / pist eğilimi”) aynayla eşlenemez; bağlanabilecek tek köprü at adıdır
 ve uluslararası açık pedigri kaynakları (Wikipedia/Wikidata) yalnız ünlü atları içerir — Türkiye'de koşan atların
 çok küçük bir bölümü. Pedigri alanı başka bir yasal kaynaktan gelirse, aşağıdaki P-satırları hazır yöntemdir.
+
+## En iyi 10 (robota aktarılabilirlik × kanıt × yasal açıklık)
+
+| sıra | # | kaynak | neden | durum |
+|---|---|---|---|---|
+| 1 | 41 | Benter 1994 iki aşamalı model + piyasa | yayındaki harmanın temeli; 2. aşama eğriliği (gl_flb) sınandı | ✅ zaten var + gl_flb sınandı |
+| 2 | 38 | Lo & Bacon-Shone indirimli Harville (γ, δ) | 2./3. sıra olasılıkları (ikili/üçlü tahmini) | ✅ gl_harville denetimi |
+| 3 | 43 | Shin 1992/93 marj ayırma | kayırma–uzun atış (FLB) düzeltmeli piyasa olasılığı | ✅ gl_piyasa adayı |
+| 4 | 44 | Odds-ratio (Cheung 2015) / power (Clarke vd. 2017) | FLB'ye duyarlı q; power ≡ harman β | ✅ gl_piyasa adayı |
+| 5 | 30 | ARCI-010-020 WFA ölçeği | kamuya açık, tarih/mesafe/yaş tablosu; sabah bilinir | ✅ gl_wfa |
+| 6 | 51/66 | Burges LambdaMART / LightGBM lambdarank | sıralama amaçlı GBM | ✅ gl_lambdarank (+ deney6 m6_rank) |
+| 7 | 47 | Snowberg & Wolfers 2010 | FLB'nin algı hatası olduğu → q'da eğrilik terimi gerekçesi | 📘 gl_flb gerekçesi |
+| 8 | 24 | Sharman vd. 2022 (CC0, İngiltere/İrlanda hız verisi) | açık lisanslı büyük veri; yaş/ebeveyn yaşı etkisi | ⏸ ortamda kapalı, anonim |
+| 9 | 56 | Wikidata P22/P25 (CC0) aygır önseli | pedigri önseli (h²≈0,1–0,3) | ⏸ ortamda 403; aynada baba adı yok, Ek kaynak A soy grubu (a6_ek_soy) zaten elendi |
+| 10 | 13 | Huggy Database (Fransa, 356 bin koşu) | jokey/antrenör/kilo/oran etkilerinin dış kıyası | ⏸ ortamda kapalı, lisans belirsiz |
 
 ## Aday tablosu (66 aday)
 
@@ -125,6 +140,35 @@ position, finishTime` — **baba/anne adı hiçbir dosyada yok**. Wikidata/DBped
 baba adı olurdu; at adının kendisi Wikidata'da yalnız ünlü (çoğu yabancı) atlarda var. Bu yüzden aygır önseli
 deney masasına alınmadı; pedigri alanı yasal bir kaynaktan aynaya eklenirse (Türkiye ekibinin işi) #53/#56 yöntemi hazır:
 baba başına küçültmeli kazanma/mesafe eğilimi (h²≈0,1–0,3 → k≈20 sanal koşu önseli).
+
+## Deney sonuçları — v6b tabanına karşı (27.10.2026, `lab/at/deney_global.py`)
+
+Taban: main'deki yayın tarifi (v4 + jk + a5_sinif + v6b `A6_SECILI`: a6_kalman, a6_mesafe, a6_gelisim, a6_ek_st,
+a6_ek_idman, a6_ek_hp, a6_hava). 5.453 sınama koşusu, katlar A (2025-11-01 → 2026-03-16, 2.175 koşu) ve B
+(2026-03-17 → 2026-10-25, 3.278 koşu); walk-forward aylık eğitim. Kapı: deney4 iki katlı kapı (özellik/amaç adımları);
+piyasa yönlü adaylar yalnız harman kapısıyla (sabah kilidi yalnız modeldir, `lab/at/kilit.py`; harman yalnız koşuya
+≤ 15 dk kala oran kapısı geçince devreye girer). ΔLL < 0 iyileşme; GA = koşu-bootstrap %95.
+
+| # | deney | kapı | model LL / ilk | ΔLL model [%95 GA] | A / B | ΔLL harman [%95 GA] | sonuç |
+|---|---|---|---|---|---|---|---|
+| 0 | taban (v6b) | – | 1,8478 / %32,6 | – | – | harman 1,7887 / %35,3 | taban |
+| 1 | gl_piyasa (odds-ratio; sınama öncesi dönemde seçildi) | harman | 1,8478 | 0 | – | +0,0024 [+0,0009; +0,0039] (A +0,0013, B +0,0032) | ❌ elendi |
+| 2 | gl_flb (harmanda κ (log q)², κ ort. −0,013) | harman | 1,8478 | 0 | – | +0,0001 [−0,0006; +0,0008] | ❌ elendi |
+| 3 | gl_wfa (ARCI WFA önseli) | model | 1,8468 / %32,6 | −0,0008 [−0,0020; +0,0004] | −0,0015 / −0,0004 | −0,0005 [−0,0011; +0,0001] | ✅ geçti |
+| 4 | gl_lambdarank (LambdaMART, ilk 3) | model | 1,8493 / %32,3 | +0,0023 [+0,0001; +0,0045] | +0,0033 / +0,0017 | +0,0009 | ❌ elendi |
+| D | gl_harville denetimi (2.+3. sıra LL, 5.423 koşu) | ayrı | Harville 3,6324 | öğrenilen γ/δ −0,0511 [−0,0602; −0,0418]; LBS sabiti (0,81/0,65) −0,0506 | A −0,0585 / B −0,0462 | – | ✅ yayındaki öğrenilen γ/δ doğrulandı |
+
+- Sızıntı testi (`python lab/at/deney_global.py --sizinti`): 6 rastgele gün; kesme, sonuç/oran karıştırma, ters gün içi
+  sıra → hepsi AYNI → **sızıntı yok** (gl_wfa yalnız bugünkü programdaki yaş, kilo, ay, mesafeden).
+- Piyasa yöntem seçimi (sınama öncesi dönem, kazanan LL): orantılı 1,8071 < odds-ratio 1,8129 < Shin 1,8221. Türkiye
+  havuzunda (pari-mutuel) FLB marj ayırma yöntemleri orantılıdan kötü; harmanın β üssü (power yöntemi) eğriliği zaten alıyor.
+- LambdaRank v6'da (m6_rank +0,0006) ve burada (+0,0023) iki kez elendi: koşu-içi softmax amacı olasılık kalibrasyonunda üstün.
+- Öğrenilen γ/δ (aylık 0,74–0,92 / 0,60–0,78) Lo–Bacon-Shone Hong Kong değerlerine çok yakın; yayında zaten
+  `model.henery_ussu` ile öğreniliyor → değişiklik gerekmedi.
+- **GLOBAL_SECILI = ["gl_wfa"]** (`lab/at/global/oncul.json`) → `ozellik.SECILI_GRUPLAR` → gece.py eğitimi, sabah kilidi ve
+  gerekçe ifadeleri. Deney süresi 641 sn (2 çekirdek).
+- Gece ölçümü (gl_wfa bağlı, 2 çekirdek, ayna yerel): `gece.py` toplam **11 dk 56 sn** (≤ 25 dk); yayın kapısı KABUL
+  (yalnız-model LL 1,8526 → 1,8518, ilk seçim %32,35 → %32,39; harman 1,7923 → 1,7918, 5.453 ortak koşu).
 
 ## Sorgu listesi (kullanılan)
 

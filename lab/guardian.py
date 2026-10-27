@@ -31,6 +31,14 @@ def config():
     if ek is not None: cfg["elo_kupa"] = bool(ek.get("aktif"))
     return cfg
 
+def gelisim_ekle(G, tur, baslik, detay, anahtar, tarih=None):
+    """📈 Gelişim günlüğüne (data/gelisim.json, uygulamada gösterilir) tek olay ekler; aynı anahtar ikinci kez eklenmez.
+    Koruyucu ve sürekli deney karar işi (lab/surekli_deney.py) bu ortak işlevi kullanır."""
+    ev = G.setdefault("olaylar", [])
+    if any(e.get("anahtar") == anahtar for e in ev): return False
+    ev.append({"tarih": tarih or date.today().isoformat(), "tur": tur, "baslik": baslik, "detay": detay, "anahtar": anahtar})
+    return True
+
 def recs_between(d0, d1):
     return [r for _, r in arsiv.kayitlar(DATA, d0, d1)]
 
@@ -84,9 +92,7 @@ def main():
             ch["durum"] = "kalıcı (isabet korunuyor)"
     # 📈 Gelişim günlüğü: uygulamada gösterilen, sistemin kendi kendine yaptığı gelişmeler ve ölçümler
     G = jl("gelisim.json", {"olaylar": []}) or {"olaylar": []}; ev = G["olaylar"]
-    def add(tur, baslik, detay, anahtar):
-        if any(e.get("anahtar") == anahtar for e in ev): return
-        ev.append({"tarih": today, "tur": tur, "baslik": baslik, "detay": detay, "anahtar": anahtar})
+    def add(tur, baslik, detay, anahtar): gelisim_ekle(G, tur, baslik, detay, anahtar, today)
     NM = {"devig": "Piyasa marjı ayırma yöntemi", "analist": "Lig güven katsayıları", "auto_lab": "Laboratuvar karışımı", "motor sürümü": "Motor sürümü", "canli_platt": "Canlı olasılık kalibrasyonu (Platt)",
           "cal_yol": "Olasılık kalibrasyonunun öğrenildiği yol", "elo_kupa": "Kupa güçlerinde Club Elo (açık veri)"}
     for ch in log["degisiklikler"]:

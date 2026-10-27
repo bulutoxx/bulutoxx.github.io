@@ -40,7 +40,7 @@ async function run(vw, vh, tag) {
   let now = T0, min = 63, stats = summary([2, 7, 47, 5], [5, 12, 53, 3]);
   await p.clock.setFixedTime(new Date(now));
   const req = { sum: 0, sb: 0, idl: 0 };
-  await p.route(/iddaa\.com|espn|jsdelivr|googleapis|gstatic|web3forms|api\./, r => r.fulfill({ status: 404, body: "" }));
+  await p.route(/iddaa\.com|espn|jsdelivr|googleapis|gstatic|web3forms|abacus|api\./, r => r.fulfill({ status: 404, body: "" }));
   await p.route(/statisticsv2\.iddaa\.com\/live-results\?sportId=1$/, r => { req.idl++; r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(fakeLive(now, min)) }); });
   await p.route(/sportsbookv2\.iddaa\.com\/sportsbook\/events\?st=1/, r => r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(fakeSb) }));
   await p.route(/site\.api\.espn\.com\/apis\/site\/v2\/sports\/soccer\/[^/]+\/scoreboard/, r => { req.sb++; r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(/eng\.1\//.test(r.request().url()) ? sb(now) : { events: [] }) }); });
@@ -105,6 +105,39 @@ async function run(vw, vh, tag) {
   st = await p.evaluate(() => $("msheet").querySelector(".cgt-res").innerText);
   ok(/12 dk geçti, gol yok/.test(st), `${tag} MS gerekçesinde süre etkisi`);
 
+  // 4c) v117 kalan süre modeli: uygulama (canli-dr-v117) ↔ sunucu (canli_istat.rem_share + collector.live_pred) birebir
+  const DR = await p.evaluate(() => { const h1 = (MODEL && MODEL.params && MODEL.params.h1) || .4428, Z = CDR.ZDEF, R = [];
+    const T = [0, 10, 30, 44.5, 45, 46, 47, 48.5, 50, 60, 75, 85, 89.9, 90, 91, 93, 95, 97, 100];
+    for (const z of [null, Z]) for (const pd of [null, 0, 1, 2]) for (const t of T) R.push({ t, pd, z: !!z, v: CDR.remShare(t, pd, z) });
+    const C = []; const save = DAILY.canli.zaman;
+    const cases = [[30, 2, 0, 0, [0, 0]], [47, 2, 1, 0, [0, 0]], [45, 49, 1, 1, [0, 0]], [63, 3, 2, 0, [0, 1]], [88, 3, 1, 1, [0, 0]], [93, 3, 0, 1, [1, 0]], [96, 3, 2, 2, [0, 0]]];
+    for (const kab of [false, true]) { DAILY.canli.zaman = Object.assign({}, Z, { kabul: kab });
+      for (const [min, stc, hs, as, rc] of cases) { IDL.lam["7999"] = [1.6, 1.1]; const m = { sp: 1, id: 7999, hs, as, rc, min, st: stc, odds: {} };
+        const P = CGT.core(m, 1, 1); C.push({ min, st: stc, hs, as, rc, kab, H: P.H, D: P.D, A: P.A, LT: P.LH + P.LA, none: P.none, nh: P.nextH }); } }
+    DAILY.canli.zaman = save; delete IDL.lam["7999"];
+    return { h1, Z, R, C, cur: CDR.zaman(), m93: fbMinute("90'+3'"), m45: fbMinute("45'+2'"), m63: fbMinute("63'") }; });
+  const pyDR = JSON.parse(require("child_process").execFileSync("python3", ["-c", `
+import sys,json; sys.path.insert(0,"scripts"); import canli_istat as CI, collector as CO
+I=json.loads(sys.stdin.read()); h1=I["h1"]; Z=dict(CI.ZDEF)
+R=[CI.rem_share(r["t"],h1,r["pd"],Z if r["z"] else None) for r in I["R"]]
+C=[]
+for c in I["C"]:
+    pd=CI.period_of(c["st"]); t=45.0 if pd==0 else float(c["min"]); P=CO.live_pred(1.6,1.1,c["hs"],c["as"],t,c["rc"],h1,pd,Z if c["kab"] else None)
+    C.append([P["H"],P["D"],P["A"],P["LT"],P["none"],P["nh"]])
+print(json.dumps({"R":R,"C":C,"Z":{k:CI.ZDEF[k] for k in ("e1","e2","xi","rmin")}}))`], { cwd: ROOT, input: JSON.stringify(DR) }).toString());
+  const dR = Math.max(...DR.R.map((r, i) => Math.abs(r.v - pyDR.R[i]))), dC = Math.max(...DR.C.map((c, i) => Math.max(...[c.H, c.D, c.A, c.LT, c.none, c.nh].map((x, j) => Math.abs(x - pyDR.C[i][j])))));
+  ok(["e1", "e2", "xi", "rmin"].every(k => DR.Z[k] === pyDR.Z[k]), `${tag} v117 ZDEF JS = Python (${JSON.stringify(pyDR.Z)})`);
+  ok(dR < 1e-12, `${tag} kalan süre payı JS ↔ Python birebir (${DR.R.length} durum, en büyük fark ${dR.toExponential(1)})`);
+  ok(dC < 1e-12, `${tag} canlı olasılık (core ↔ collector.live_pred) birebir (${DR.C.length} durum, eski+v117, en büyük fark ${dC.toExponential(1)})`);
+  const g = (t, pd, z) => DR.R.find(r => r.t === t && r.pd === pd && r.z === z).v, h1 = DR.h1;
+  ok(g(93, 2, false) <= .012 + 1e-12 && g(93, null, false) <= .012 + 1e-12 && g(93, 2, true) < g(90, 2, true) && g(93, 2, true) < .05,
+    `${tag} 90+X uzatma devresine (120) düşmüyor (eski 93' ${g(93, 2, false).toFixed(4)}, v117 90' ${g(90, 2, true).toFixed(4)} → 93' ${g(93, 2, true).toFixed(4)})`);
+  ok(g(45, 0, false) === 1 - h1 && g(45, 0, true) === 1 - h1 && g(47, 0, true) === 1 - h1, `${tag} devre arası: kalan pay = 1 − h1 (${(1 - h1).toFixed(4)})`);
+  ok(g(47, 1, true) > 1 - h1 && g(47, 1, true) < g(44.5, 1, true) && g(47, 2, true) < 1 - h1, `${tag} v117 ilk yarı uzatması (45+2) ikinci yarı sanılmıyor (${g(47, 1, true).toFixed(4)} > ${(1 - h1).toFixed(4)})`);
+  ok(DR.R.filter(r => r.z && (r.pd === 1 || r.pd === 2)).every((r, i, a) => i === 0 || a[i - 1].pd !== r.pd || a[i - 1].v >= r.v - 1e-15), `${tag} v117 kalan pay dakikayla artmıyor (monoton)`);
+  ok(DR.m93 === 93 && DR.m45 === 45 && DR.m63 === 63, `${tag} ESPN saati 90'+3' → ${DR.m93}, 45'+2' → ${DR.m45}`);
+  console.log(`   (yayındaki kalan süre modeli: ${DR.cur ? "v117 " + JSON.stringify(DR.cur) : "eski doğrusal — daily.json canli.zaman kapısı kabul etmedi"})`);
+
   // 5) tek doğruluk kaynağı: pencere öneri kartı = Power Now = KUPO "OXX şimdi" = liveShown
   const C = await p.evaluate(async () => { const m = IDL.byId[1][7001], P = liveProbs(m), K = idlPick(m, P), k = K.best.k;
     const shown = Math.round(liveShown(m, k) * 100);
@@ -161,7 +194,7 @@ async function same(vw, vh) {
   const bh = process.env.BASE_HTML; if (!bh || !fs.existsSync(path.join(ROOT, bh))) { console.log("  (BASE_HTML yok: karşılaştırma atlandı)"); return; }
   const grab = async (file) => { const b = await chromium.launch(); const ctx = await b.newContext({ viewport: { width: vw, height: vh }, locale: "tr-TR", timezoneId: "Europe/Istanbul" });
     await ctx.addInitScript(() => { localStorage.setItem("bx-terms", JSON.stringify({ v: "2.0", at: Date.now(), kvkk: true, inst: Date.now() })); localStorage.setItem("bx-oxxai-hos", "1"); localStorage.setItem("bx-oxxai-ikon", "1"); localStorage.setItem("bx-coach", "1"); });
-    const p = await ctx.newPage(); await p.clock.setFixedTime(new Date(T0)); await p.route(/iddaa\.com|espn|jsdelivr|googleapis|gstatic|web3forms|api\./, r => r.fulfill({ status: 404, body: "" }));
+    const p = await ctx.newPage(); await p.clock.setFixedTime(new Date(T0)); await p.route(/iddaa\.com|espn|jsdelivr|googleapis|gstatic|web3forms|abacus|api\./, r => r.fulfill({ status: 404, body: "" }));
     await p.goto(BASE + "/" + file);
     for (let i = 0; i < 60; i++) { const r = await p.evaluate(() => { try { try { PL_RESET(); } catch (e) {} return FIXTURES.length > 0 && Pick.list().length > 0; } catch (e) { return false; } }); if (r) break; await p.waitForTimeout(500); }
     await p.waitForTimeout(1500);

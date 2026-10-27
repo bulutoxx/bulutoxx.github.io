@@ -12,6 +12,8 @@
 #                  harmanda log q yerine kullanılır (yalnız-model değişmez).
 #   gl_lambdarank: GBM katmanının amacı koşu-içi softmax yerine LambdaMART/LambdaRank (Burges 2010; LightGBM
 #                  'lambdarank'), etiket = ilk 3 sıralaması. Doğrusal katman ve kalibrasyon aynı.
+# 27.10.2026 deney_global (taban v6b A6_SECILI): gl_wfa ΔLL −0,0008 (A −0,0015, B −0,0004) GEÇTİ; gl_piyasa (odds-ratio)
+# harman +0,0024, gl_flb +0,0001, gl_lambdarank +0,0023 elendi; indirimli Harville (öğrenilen γ/δ) −0,0511 → yayındakiyle aynı.
 import math
 
 import numpy as np
@@ -168,7 +170,7 @@ def gbm_egit_lambdarank(M, lgb):
                "min_data_in_leaf": a["min_yaprak"], "feature_fraction": a["oznitelik_payi"], "bagging_fraction": 0.8,
                "bagging_freq": 1, "lambda_l2": a["l2"], "verbose": -1, "seed": tohum, "deterministic": True,
                "lambdarank_truncation_level": 3, "eval_at": [3],
-               "num_threads": min(4, os.cpu_count() or 1)}
+               "num_threads": min(2, os.cpu_count() or 1)}
         ds = lgb.Dataset(X, label=lab, group=np.asarray(K.n), weight=sw, free_raw_data=False)
         return lgb.train(par, ds, num_boost_round=a["n_agac"])
     return egit

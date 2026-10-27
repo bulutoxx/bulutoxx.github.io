@@ -3,7 +3,11 @@
 #   özellik/amaç adımları: katların ORTALAMA yalnız-model log-loss'u düşmeli (> 0,0001), ortalama ilk-seçim isabeti
 #   düşmemeli, en güncel kat (B) kötüleşmemeli, harman 0,001'den fazla bozulmamalı.
 #   harman adımı (gl_piyasa): harman ort. LL düşmeli (> 0,0001), harman ilk seçimi düşmemeli, B harman LL kötüleşmemeli.
-# Taban: yayındaki tarif (v4 + jk_uzman, jk_apr, jk_beceri + a5_sinif = ozellik.SECILI_GRUPLAR).
+# Taban: yayındaki tarif = ozellik.SECILI_GRUPLAR (v4 + jk + a5_sinif + v6b A6_SECILI: a6_kalman, a6_mesafe, a6_gelisim,
+#   a6_ek_st, a6_ek_idman, a6_ek_hp, a6_hava). a6_hava için AT_HAVA (ya da _hava/gunluk.csv) gerekir.
+# Sabah kilidi yalnız modeldir (lab/at/kilit.py): piyasa yönlü adaylar (gl_piyasa, gl_flb) YALNIZ harman tarafında
+#   (koşuya ≤ 15 dk kala oran kapısı geçince) denenir; yalnız-model olasılığını değiştirmezler.
+# Sıra: ucuz harman adımları + Harville denetimi (taban eğitimiyle) → pahalı yeniden eğitimler (gl_wfa, gl_lambdarank).
 # Adaylar (lab/at/global/kuresel.py): gl_piyasa (Shin / odds-ratio; yöntem sınama ÖNCESİ dönemde seçilir),
 #   gl_flb (Benter 2. aşamasına kayırma–uzun atış eğriliği: harmanda (log q)² terimi), gl_wfa (ARCI yaşa göre kilo
 #   önseli), gl_lambdarank (GBM amacı LambdaMART) + gl_harville denetimi (indirimli Harville γ/δ öğrenimi; 2./3. sıra LL,
@@ -174,7 +178,7 @@ def main():
     cur_E = E
     kayit = {"olusturma": None, "katlar": masa.B["tarih"]["katlar"], "kapi": "deney4 iki katlı kapı (gl_piyasa: harman kapısı)",
              "taban_gruplar": list(gr),
-             "adimlar": [{"no": 0, "deney": "taban (yayındaki tarif: v4 + jk + a5_sinif)", "gecti": None, **_kisalt(cur)}]}
+             "adimlar": [{"no": 0, "deney": "taban (yayındaki tarif: v4 + jk + a5_sinif + v6b A6_SECILI)", "gecti": None, **_kisalt(cur)}]}
     print(0, cur["model"], cur["harman"], cur["piyasa"], f"{time.time() - t0:.0f} sn", flush=True)
     kaydet(CIKTI, kayit)
     no = [0]
@@ -227,6 +231,19 @@ def main():
     if ok:
         secili["flb"] = True; flb_aktif[0] = True
 
+    # 1c) gl_harville denetimi (kazanan LL'sini değiştirmez; ayrı kapı) — taban eğitimiyle
+    th = time.time()
+    try:
+        hv = harville_denetim(masa, cur_E, kal)
+    except Exception as e:   # denetim hatası koşuyu düşürmesin (pahalı eğitimler sonra)
+        hv = {"hata": repr(e)[:300], "gecti": False}
+    hv["sure_sn"] = round(time.time() - th)
+    kayit["harville"] = hv
+    print("gl_harville:", hv, flush=True)
+    secili["harville"] = "ogrenilen" if hv["gecti"] else "harville"
+
+    kaydet(CIKTI, kayit)
+
     # 2) gl_wfa, 3) gl_lambdarank
     yakin = []
 
@@ -265,14 +282,6 @@ def main():
         if not any(s["gecti"] for s in kayit["adimlar"][1:]):
             break   # taban değişmediyse tekrar anlamsız (aynı sonuç)
         f(f"yeniden (yeni tabanda): {ad} — {ADLAR[ad]}")
-
-    # 4) gl_harville denetimi (kazanan LL'sini değiştirmez; ayrı kapı)
-    th = time.time()
-    hv = harville_denetim(masa, cur_E, kal)
-    hv["sure_sn"] = round(time.time() - th)
-    kayit["harville"] = hv
-    print("gl_harville:", hv, flush=True)
-    secili["harville"] = "ogrenilen" if hv["gecti"] else "harville"
 
     kayit["secim"] = secili
     kayit["toplam"] = {"model": masa.fark(v_cur, v_taban, "model"), "harman": masa.fark(v_cur, v_taban, "harman")}

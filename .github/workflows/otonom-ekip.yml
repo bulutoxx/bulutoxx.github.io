@@ -2,7 +2,8 @@ name: OXXai otonom ekip
 # Her gün: 🗄️ derin arşiv (bitmiş eski sezonlar, bir kez), 🔬 araştırmacı (kaynak keşfi, kütüphane takibi, marj deneyi), 📊 analist (lig güven katsayıları),
 # 🎨 tasarımcı/kalite (yayındaki uygulamayı telefonda açıp her düğmeyi dener, ekran görüntüsü alır),
 # 💬 sohbet koçu (OXXai'ye günün verisinden yeni takım/lig adları, kalıplar, terimler öğretir; test başarısını düşürmüyorsa yayınlar).
-# Doğrulanan bulgular data/*.json üzerinden motora ve uygulamaya otomatik geçer; sorun varsa GitHub'da uyarı kaydı açılır.
+# Doğrulanan bulgular data/*.json üzerinden motora ve uygulamaya otomatik geçer. Her adımın çıkış kodu ve süresi
+# data/saglik/otonom-ekip.json'a yazılır (lab/adim.py); kurtarıcı okur. Issue/mail/bildirim açılmaz.
 on:
   schedule:
     - cron: "7 3,15 * * *"    # günde iki kez: gece + öğleden sonra (OXXai koçu ve ekip daha sık öğrenir)
@@ -26,31 +27,35 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: "20" }
       - run: pip install numpy==2.1.3
+      - name: 🗃️ Önbellekleri arşivden al (OXXai öğrenme döngüsünün basket ve at sanal oynatması için)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 lab/adim.py arsiv-indir --onem bilgi -- python3 lab/arsiv.py indir data/bk_games.json data/at/replay_kosular.json
       - name: 🗄️ Derin arşiv (football-data bitmiş sezonlar; bir kez indirilir, sonra yalnız eksik sezon)
         env: { DERIN_SEZON: "5", DERIN_BUDGET: "600" }
-        run: python lab/derin.py || echo "derin arşiv atlandı"
+        run: python3 lab/adim.py derin-arsiv --onem bilgi -- python lab/derin.py
       - name: 🔬 Araştırmacı
-        run: python lab/research.py || echo "araştırmacı atlandı"
+        run: python3 lab/adim.py arastirmaci -- python lab/research.py
       - name: 📊 Analist
-        run: python lab/analyst.py || echo "analist atlandı"
+        run: python3 lab/adim.py analist -- python lab/analyst.py
       - name: 🛡️ Koruyucu (değişiklik izleme, gerekirse geri alma)
-        run: python lab/guardian.py || echo "koruyucu atlandı"
+        run: python3 lab/adim.py koruyucu -- python lab/guardian.py
       - name: 🔁 OXXai öğrenme döngüsü (deney kuyruğu → ileriye dönük sanal oynatma → kapı; 14 gün sonra yeniden sınama/geri alma)
         env: { OXX_N: "3", OXX_BUDGET: "300" }
-        run: timeout 420 python lab/oxx_ogren.py || echo "OXXai öğrenme döngüsü atlandı"
+        run: python3 lab/adim.py oxx-ogren -- timeout 420 python lab/oxx_ogren.py
       - name: 🧹 Veri ve güvenlik denetçisi
-        run: python lab/dq.py || echo "denetçi atlandı"
+        run: python3 lab/adim.py denetci -- python lab/dq.py
       - name: 🎨 Tasarımcı / kalite
         run: |
-          cd lab && npm init -y >/dev/null && npm i playwright@1.48.2 >/dev/null && npx playwright install --with-deps chromium >/dev/null
-          cd .. && node lab/qa.mjs || echo "kalite botu atlandı"
+          python3 lab/adim.py kalite-kurulum --onem bilgi -- "cd lab && npm init -y >/dev/null && npm i playwright@1.48.2 >/dev/null && npx playwright install --with-deps chromium >/dev/null"
+          # tam mod: ekranlar + düğmeler + yasak kelime + bütçe. Alarm → çıkış 1 → sağlık kaydında "hata" (data/saglik/otonom-ekip.json);
+          # ayrıntı data/qa.json'da, kurtarıcı ikisini de sağlık özetine taşır. Yayındaki site test edilir (tjk.org / atyarisi.com engelli).
+          python3 lab/adim.py kalite --onem bilgi -- timeout 1200 node lab/qa.mjs
       - name: 💬 Sohbet koçu (OXXai'ye yeni bilgi + test kapısı)
-        run: timeout 900 node lab/bot_coach.mjs || echo "sohbet koçu atlandı"
+        run: python3 lab/adim.py sohbet-kocu --onem bilgi -- timeout 900 node lab/bot_coach.mjs
       - name: Kaydet
         run: |
-          git config user.name "bulutoxx-bot"; git config user.email "bulutoxx-bot@users.noreply.github.com"
-          git add data/derin data/research.json data/analyst.json data/qa.json data/qa data/changes.json data/rollback.json data/dq.json data/gelisim.json data/bot_kb.json data/bot_coach.json data/bot_tests.json 2>/dev/null || true
-          git add data/oxx_ayar.json data/deney_kuyrugu.json data/ogrenme_gunlugu.json data/oxx_rollback.json 2>/dev/null || true
-          git diff --cached --quiet && exit 0
-          git commit -qm "Otonom ekip raporu $(date -u +%F)"
-          for i in 1 2 3; do git pull -q --rebase -X theirs origin main && git push -q origin HEAD:main && break; sleep 8; done
+          python3 lab/gonder.py -m "Otonom ekip raporu $(date -u +%F)" \
+            data/derin data/research.json data/analyst.json data/qa.json data/qa data/changes.json data/rollback.json data/dq.json \
+            data/gelisim.json data/bot_kb.json data/bot_coach.json data/bot_tests.json \
+            data/oxx_ayar.json data/deney_kuyrugu.json data/ogrenme_gunlugu.json data/oxx_rollback.json data/saglik

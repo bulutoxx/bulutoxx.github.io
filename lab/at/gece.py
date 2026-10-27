@@ -19,7 +19,9 @@ os.environ.setdefault("AT_KAYNAK", os.path.join(KOK, "_tjk-data"))
 
 import veri, ozellik, model as M  # noqa: E402
 import at5  # noqa: E402  (v5 at özellikleri: a5_* grupları, lab/at/deney5.py)
+import at6  # noqa: E402  (v6 derin tarama: a6_* grupları, lab/at/deney6.py; kaynaklar lab/at/KAYNAKLAR.md)
 import jokey  # noqa: E402  (🏇 jokey/ahır uzmanı: data/at/jokeyler.json + jk_* özellik grupları)
+import kilit  # noqa: E402  (sabah kilidi yalnız model + oran olgunluk kapısı + karne mod_hatali)
 
 CIKTI = os.path.join(KOK, "data", "at")
 TAHMIN = os.path.join(CIKTI, "tahmin")
@@ -42,6 +44,9 @@ def altin_kural(eski):
         return dict(r["kural"], donem=(joku(REPLAY_DOSYA) or {}).get("donem"))
     return dict(ALTIN_VARSAYILAN)
 V5_DOSYA = os.path.join(CIKTI, "deneyler_v5.json")     # v5 deney kaydı (a5_* grupları, harman hm_alan)
+V6_DOSYA = os.path.join(CIKTI, "deneyler_v6.json")     # v6 deney kaydı (derin tarama: a6_* grupları, m6_rank)
+V6_PIYASA = os.path.join(CIKTI, "oran_izi_v6.json")
+V6_EK = os.path.join(CIKTI, "deneyler_v6_ek.json")       # v6b: Ek kaynak A deneyleri (a6_ek_*, a6_hava)    # v6 harman katmanı ölçümleri (oran izi, üçüncü taraf)
 JOKEY_DOSYA = os.path.join(CIKTI, "jokeyler.json")    # arayüz: attan arındırılmış jokey/antrenör istatistikleri
 YENILEME_GUN = 7   # aynı tarifte yayın katsayılarının yenilenme aralığı (gün)
 TAKIP = [("2026-10-25", "İstanbul", 5)]   # raporda kalıcı izlenen örnek koşu(lar)
@@ -136,6 +141,7 @@ IFADE = {  # özellik -> (değeri koşu ortalamasından YÜKSEKSE, DÜŞÜKSE) �
 }
 IFADE.update(jokey.IFADE)   # jk_* özellikleri (yalnız seçilmişse gerekçede görünür)
 IFADE.update(at5.IFADE)     # a5_* özellikleri
+IFADE.update(at6.IFADE)     # a6_* özellikleri (v6)
 IFADE.update(ozellik._gl.IFADE)   # 🌍 gl_* küresel özellikler (lab/at/global/kuresel.py; yalnız seçilmişse gerekçede görünür)
 GLOBAL_DOSYA = os.path.join(BURA, "global", "deneyler_global.json")   # küresel deney kaydı (lab/at/deney_global.py)
 
@@ -247,8 +253,10 @@ def kilitle(gunler, son_sonuc, m, durum, yayin_modu, surum):
             continue
         simdi_tr = (datetime.now(timezone.utc) + timedelta(hours=3)).strftime("%Y-%m-%d %H:%M")
         ks = []
+        yak = kilit.yakalama_tablosu(t)
         for k in prog:
-            kt = kosu_tahmini(m, k, durum, yayin_modu)
+            # sabah kilidi her zaman yalnız model (erken havuz oranı harmana girmez); o anki oranlar yalnız kayda yazılır
+            kt = kilit.sabah_tahmini(kosu_tahmini, m, k, durum, yak.get((k["hipodrom"], k["kosu"])))
             # koşu saati geçtiyse kilit "canlı" sayılmaz (sızıntısızdır ama koşudan sonra atılmıştır)
             kt["kosudan_once"] = not (k.get("saat") and f"{t} {k['saat']}" <= simdi_tr)
             ks.append(kt)
@@ -322,6 +330,7 @@ def puanla(kosular, yalniz_degisince=False):
                            "ilk_secim_isabet": round(float(np.mean([x["ilk_secim_tuttu"] for x in ks])), 4),
                            "ikili_isabet": round(float(np.mean([x["ikili_tuttu"] for x in ks])), 4),
                            "kovalar": M.kovalar(pw[:, 0], pw[:, 1])}
+    kilit.karne_ek(karne)   # mod_hatali işareti + "hariç" sütunu (geçmiş silinmez)
     karne["guncelleme"] = datetime.now(timezone.utc).isoformat(timespec="seconds")
     jyaz(os.path.join(CIKTI, "karne.json"), karne)
     return karne, yeni
@@ -489,6 +498,74 @@ def _v5_bolum(a):
     a("")
 
 
+def _v6_bolum(a):
+    """v6 turu (derin açık kaynak taraması): lab/at/KAYNAKLAR.md + lab/at/deney6.py + harman katmanı ölçümleri."""
+    dj = joku(V6_DOSYA)
+    if not dj or not dj.get("adimlar"):
+        return
+    a("## v6 turu: derin açık kaynak taraması (pist vekili, Kalman figür, mesafe profili, gelişim, LambdaRank)")
+    a("")
+    a("54 aday tarandı (tablo, sorgular ve yasal notlar: `lab/at/KAYNAKLAR.md`). TJK yasağına uyan, ücretsiz ve lisansı "
+      "uygun dış sinyal yalnız **hava** (Open-Meteo, CC BY 4.0); start/kulvar, ara derece, pedigri, idman/galop ve AGF için "
+      "yasal açık kaynak yok. Adaylar aynanın kullanılmayan boyutlarından (program havası, önceki günlerin pist durumu, "
+      "figür geçmişi) kuruldu. Kapı: deney4 iki katlı kapı; walk-forward (her ay yalnız geçmişle eğitim). Sızıntı testi: "
+      "`python lab/at/deney6.py --sizinti`.")
+    if dj.get("hava_durumu"):
+        a(f"Open-Meteo hava (a6_hava): {dj['hava_durumu']}.")
+    a("")
+    a("| # | deney | sonuç | ort. LL / ilk seçim | B: LL / ilk | ΔLL birleşik [%95 GA] | ΔLL A | ΔLL B | harman ort. LL / ilk | ΔLL harman |")
+    a("|---|---|---|---|---|---|---|---|---|---|")
+    for s_ in dj["adimlar"]:
+        sonuc = ("taban" if s_["gecti"] is None else "ℹ️ sağlamlık" if s_.get("saglamlik")
+                 else ("✅ kaldı" if s_["gecti"] else "❌ elendi"))
+        fm, fh = s_.get("fark_model"), s_.get("fark_harman")
+        B_ = s_["katlar"]["B"]["model"]
+        a(f"| {s_['no']} | {s_['deney']} | {sonuc} | {s_['model']['ll']:.4f} / {_y(s_['model']['ilk'])} | "
+          f"{B_['ll']:.4f} / {_y(B_['ilk'])} | {_ga(fm) if fm else '–'} | {_ga(fm['A']) if fm else '–'} | "
+          f"{_ga(fm['B']) if fm else '–'} | {s_['harman']['ll']:.4f} / {_y(s_['harman']['ilk'])} | {_ga(fh) if fh else '–'} |")
+    a("")
+    sec = dj.get("secim") or {}
+    a(f"- Kapıdan geçen a6 grupları: **{', '.join(sec.get('gruplar') or []) or 'yok'}**; LambdaRank: "
+      f"{'geçti' if sec.get('m6_rank') else 'elendi'}. Yayındaki a6: {', '.join(at6.A6_SECILI) or 'yok'}. "
+      f"Deney kaydı: `data/at/deneyler_v6.json` ({dj.get('olusturma', '')}; süre {dj.get('sure_sn', '?')} sn).")
+    if dj.get("toplam"):
+        tp = dj["toplam"]
+        a(f"- Toplam (seçilenler − taban): yalnız model {_ga(tp['model'])}; harman {_ga(tp['harman'])}.")
+    ej = joku(V6_EK) or {}
+    if ej.get("adimlar"):
+        a("")
+        a("### v6b: Ek kaynak A (herkese açık hazır veri dosyaları; yalnız türetilmiş özellik, adres gizli)")
+        a("")
+        a("| # | deney | sonuç | ort. LL / ilk seçim | ΔLL birleşik [%95 GA] | ΔLL A | ΔLL B | ΔLL harman |")
+        a("|---|---|---|---|---|---|---|---|")
+        for s_ in ej["adimlar"]:
+            sonuc = ("taban" if s_["gecti"] is None else "ℹ️ sağlamlık" if s_.get("saglamlik")
+                     else ("✅ kaldı" if s_["gecti"] else "❌ elendi"))
+            fm, fh = s_.get("fark_model"), s_.get("fark_harman")
+            a(f"| {s_['no']} | {s_['deney']} | {sonuc} | {s_['model']['ll']:.4f} / {_y(s_['model']['ilk'])} | "
+              f"{_ga(fm) if fm else '–'} | {_ga(fm['A']) if fm else '–'} | {_ga(fm['B']) if fm else '–'} | "
+              f"{_ga(fh) if fh else '–'} |")
+        if ej.get("toplam"):
+            a("")
+            a(f"- Toplam (Ek kaynak A seçilenleri − v6 tabanı): yalnız model {_ga(ej['toplam']['model'])}; harman "
+              f"{_ga(ej['toplam']['harman'])}. Seçilen: {', '.join((ej.get('secim') or {}).get('gruplar') or []) or 'yok'}.")
+    pj = joku(V6_PIYASA) or {}
+    if pj.get("deneyler"):
+        a("")
+        a("Harman/yığma katmanı (aynanın git geçmişi + kendi oran izimiz `data/at/oran_izi/`; `lab/at/oran_izi.py`, "
+          "`lab/at/ucuncu_taraf.py`; taban `replay_kosular.json` sızıntısız olasılıkları, aylık walk-forward):")
+        a("")
+        a("| deney | koşu | ΔLL [%95 GA] | sonuç |")
+        a("|---|---|---|---|")
+        for d in pj["deneyler"]:
+            a(f"| {d['ad']} | {d['kosu']:,} | {d['dll']:+.4f} [{d['ga95'][0]:+.4f}, {d['ga95'][1]:+.4f}] | "
+              f"{'✅' if d['gecti'] else '❌ elendi'} |")
+        a("")
+        a("- Oran hareketi nihai piyasa oranına bilgi katmıyor: nihai oran erken parayı zaten içeriyor (erken oranın kendi "
+          "LL'si çok daha kötü). Aynadaki üçüncü taraf tahminleri bizim sabah modelimizden belirgin zayıf.")
+    a("")
+
+
 def _global_bolum(a):
     """🌍 Küresel tur: yabancı literatür / kamu tablolarından aktarılan katkılar (lab/at/deney_global.py, deney4 kapısı)."""
     dj = joku(GLOBAL_DOSYA)
@@ -498,7 +575,8 @@ def _global_bolum(a):
     a("")
     a("66 küresel aday tarandı (`lab/at/global/KURESEL_KAYNAKLAR.md`). Sınananlar: piyasa olasılığında kayırma–uzun atış "
       "düzeltmesi (Shin / odds-ratio), Benter 2. aşamasına eğrilik terimi, ARCI yaşa göre kilo (WFA) önseli, LambdaMART "
-      "amacı ve indirimli Harville (γ, δ) denetimi. Kapı deney4 iki katlı kapı; sızıntı testi: "
+      "amacı ve indirimli Harville (γ, δ) denetimi. Taban: v6b yayın tarifi. Sabah kilidi yalnız modeldir; piyasa yönlü "
+      "adaylar yalnız koşuya ≤ 15 dk kala devreye giren harman tarafında sınandı. Kapı deney4 iki katlı kapı; sızıntı testi: "
       "`python lab/at/deney_global.py --sizinti`.")
     a("")
     a("| # | deney | sonuç | ort. LL / ilk seçim | ΔLL model [%95 GA] | ΔLL harman [%95 GA] |")
@@ -509,7 +587,7 @@ def _global_bolum(a):
         a(f"| {s_['no']} | {s_['deney']} | {sonuc} | {s_['model']['ll']:.4f} / {_y(s_['model']['ilk'])} | "
           f"{_ga(fm) if fm else '–'} | {_ga(fh) if fh else '–'} |")
     hv = dj.get("harville")
-    if hv:
+    if hv and hv.get("ogrenilen"):
         a(f"- İndirimli Harville denetimi ({hv.get('kosu')} koşu, 2.+3. sıra LL; Harville {hv.get('harville_ll')}): öğrenilen γ/δ "
           f"{_ga(hv['ogrenilen'])}, sabit literatür üssü {_ga(hv['lbs'])} → {'öğrenilen üsler korunuyor' if hv.get('gecti') else 'üstünlük yok'}.")
     a(f"- Yayındaki küresel katkılar (GLOBAL_SECILI): **{', '.join(ozellik._gl.GLOBAL_SECILI) or 'yok'}**. "
@@ -758,6 +836,7 @@ def rapor_yaz(mj, karne, bugun, ayna_durumu):
     _replay_ozet(a, mj)
     _v4_ozet(a, mj)
     _jokey_bolum(a)
+    _v6_bolum(a)
     _v5_bolum(a)
     _global_bolum(a)
     _v3_ozet(a, mj)
@@ -813,7 +892,9 @@ def rapor_yaz(mj, karne, bugun, ayna_durumu):
     a(f"- Zaman sıralı ölçüm: ısınma (yalnız geçmiş biriktirme) < {b['isinma_bitis']}; **sınama (son %30) {b['sinama'][0]}→{b['sinama'][1]} "
       f"({d['kosu_sayisi']['sinama']} tam oranlı koşu)**. {d.get('protokol', '')}.")
     a("- Piyasa olasılığı q: **nihai** ganyan oranından (1/oran, marj ayrılmış). Bu, \"son koşu öncesi\" piyasayı temsil eder; "
-      "sabah programında oran yoktur. Yani harman ancak koşudan hemen önce kullanılabilir; sabah kilitlenen tahminler yalnız modeldir. "
+      "sabah programındaki oranlar erken havuzdandır (işlem görmeyen at 999.99 yer tutucusuyla gelir). Bu yüzden harman ancak "
+      "koşudan hemen önce, oran olgunluk kapısı geçince (`lab/at/kilit.py`) kullanılır; sabah kilitleri 27 Ekim 2026'dan beri "
+      "her zaman yalnız modeldir. 26 Ekim kilitleri erken oranla 'model+piyasa' modunda atıldı ve karnede `mod_hatali` işaretlidir. "
       "Geçmiş koşuların oranları ise (o koşular bittiği için) sabah da bilinir ve modelde \"piyasa hafızası\" olarak kullanılır.")
     a("- Kullanılmayanlar: aynanın memory/*.json özetleri (geleceği içerir → sızıntı), gün içi oran görüntüleri (yalnız 57 gün), "
       "hava/nem ve form dizileri (yalnız 2026-04 sonrası programlarda).")
@@ -902,13 +983,8 @@ def rapor_yaz(mj, karne, bugun, ayna_durumu):
     a("")
     a("## Canlı karne (kilitlenmiş tahminler, sonuç gelince)")
     a("")
-    if karne.get("toplam"):
-        tp = karne["toplam"]
-        a(f"- Koşudan önce kilitlenmiş toplam {tp['kosu']} koşu: log-loss {tp['log_loss']}, ilk seçim isabeti {_y(tp['ilk_secim_isabet'])}, ikili isabeti {_y(tp['ikili_isabet'])}.")
-        for t, g in sorted(karne["gunler"].items())[-7:]:
-            a(f"  - {t}: {g['kosu']} koşu, ilk seçim {_y(g['ilk_secim_isabet'])}, log-loss {g['log_loss']}")
-    else:
-        a("- Henüz puanlanmış kilitli tahmin yok (sonuçlar aynaya düştükçe her gece puanlanır).")
+    for s in kilit.karne_satirlari(karne):   # iki sütun: mod_hatali kilitler hariç / dahil
+        a(s)
     a("")
     a(f"## Gösteri: {bugun} İstanbul tahminleri")
     a("")
@@ -971,7 +1047,12 @@ def rapor_yaz(mj, karne, bugun, ayna_durumu):
       "katlar arasında işaret değiştiren sonuçlar (ör. üst kova kalibrasyonu) dönemsel dalgalanmadır. İlk seçim isabetinin standart "
       "hatası kat başına ≈ ±0,8–1,0 puan; \"ilk seçim düşmemeli\" kuralı bu yüzden bazı gerçek log-loss kazançlarını da eler (bilerek temkinli).")
     a("- GBM katmanı `lightgbm` paketine dayanır (iş akışı kurar). Kurulamazsa model doğrusal yedeğe düşer; gerekçeler yalnız doğrusal katmandan üretilir.")
-    a("- Sabah kilitleri yalnız model olasılığıdır; piyasa harmanı için koşu öncesi oran gerekir (ayna gün içi oranları düzenli yayınlamıyor).")
+    a("- Sabah kilitleri 27 Ekim 2026'dan beri her zaman yalnız model olasılığıdır (mod `model`; kilit anındaki geçerli oranlar ve "
+      "yakalama zamanı `oran_an` alanına yalnız kayıt için yazılır). 26 Ekim kilitleri bu kural yokken erken havuz oranıyla "
+      "'model+piyasa' modunda atıldı; karnede `mod_hatali: true` işaretlidir ve iki sütunlu karnede ayrı gösterilir. "
+      f"Gün içi piyasa harmanı yalnız oran kapısı geçince kullanılır: oran yakalandığında koşuya ≤{kilit.KAPI_DK} dk kalmış, "
+      f"koşan atların ≥%{round(100 * kilit.KAPSAM_MIN)}'inde geçerli oran, toplam olasılık {kilit.OV_ALT}–{kilit.OV_UST}; havuz "
+      f"küçük ya da bilinmiyorsa hiçbir atın olasılığı modelden {kilit.SAPMA_MAX:.2f}'tan fazla sapamaz.")
     a("- Uygulamadaki üst özet kutusu `degerlendirme.metrik.harman` isabetini gösteriyor; sabah tahmininin kendi isabeti (yalnız model) daha düşüktür.")
     a("")
     a("## Sonraki deneyler")
@@ -1004,6 +1085,7 @@ def tarif():
             **({"jk": {"gruplar": list(jokey.JK_SECILI), "onsel": jokey.JK_ONSEL, "surukle": jokey.JK_SURUKLE,
                        "kademe": list(jokey.JK_KADEME)}} if jokey.JK_SECILI else {}),
             **({"a5": {"gruplar": list(at5.A5_SECILI), "k_uyum": at5.K_UYUM, "ant_k": at5.ANT_K}} if at5.A5_SECILI else {}),
+            **({"a6": {"gruplar": list(at6.A6_SECILI), "k_r": at6.K_R, "k_q": at6.K_Q, "g_k": at6.G_K}} if at6.A6_SECILI else {}),
             **({"gl": list(ozellik._gl.GLOBAL_SECILI)} if ozellik._gl.GLOBAL_SECILI else {})}
 
 
@@ -1064,6 +1146,7 @@ def main():
     bugun = ar.bugun or (datetime.now(timezone.utc) + timedelta(hours=3)).date().isoformat()
     yarin = (date.fromisoformat(bugun) + timedelta(days=1)).isoformat()
 
+    at6.hava_hazirla()   # v6: a6_hava yayındaysa Open-Meteo hava tablosu (_hava/, depoya yazılmaz)
     kosular, atilan = veri.sonuclari_yukle()
     T, durum = ozellik.tablo_kur(kosular, adlar=ozellik.TUM_ADLAR)
     sec = [ozellik.TUM_ADLAR.index(a) for a in ozellik.ADLAR]
@@ -1111,7 +1194,7 @@ def main():
         # aynı tarif: ölçüm güncel tutulur (aynı tarifin bu geceki walk-forward sonucu), yayın katsayıları korunur
         mj = eski
         mj["degerlendirme"] = sonuc
-        jyaz(IZ_DOSYA, dict(eski_iz, iz=iz), sikisik=True)
+        jyaz(IZ_DOSYA, dict(eski_iz or {"surum": (eski or {}).get("surum"), "tarif": trf}, iz=iz), sikisik=True)   # iz arşivden inemediyse yeniden kurulur
         m_uretim = model_yukle(mj["uretim_modeli"])
     else:
         mj = eski
@@ -1135,6 +1218,12 @@ def main():
          "neden": "veri tjkbulten.atyarisi.com / tjkgw.atyarisi.com API'lerinden geliyor ve robots.txt tüm robotlara "
                   "Disallow: / diyor; llms.txt izni yalnız www için ve www sayfalarında veri yok; kullanım şartları da "
                   "robots-kapalı help alanından yükleniyor."}]
+    if any(g.startswith("a6_ek_") for g in at6.A6_SECILI):
+        mj["kaynaklar"].append({"ad": "Ek kaynak A", "durum": "bağlı", "lisans": "herkese açık hazır veri dosyaları (yalnız model eğitimi)",
+                                "kullanim": "start, handikap puanı, idman/galop — yalnız türetilmiş özellikler (data/at/ek_ozellik)"})
+    if "a6_hava" in at6.A6_SECILI:
+        mj["kaynaklar"].append({"ad": "Open-Meteo (open-meteo.com)", "durum": "bağlı", "lisans": "CC BY 4.0",
+                                "kullanim": "hipodrom yağış/sıcaklık (a6_hava); atıf: Hava verisi Open-Meteo.com"})
     mj["uyari"] = "Hobi amaçlıdır; tahmin garanti değildir · 18+"
     mj["gbm_kurulu"] = M.lgb is not None
 
@@ -1167,6 +1256,11 @@ def main():
         print("kariyer:", kariyer.yaz(kosular, [bugun, yarin]), "at")
     except Exception as e:   # arayüz özeti yayın modelini asla durdurmaz
         print("kariyer.json üretilemedi:", type(e).__name__, e)
+    try:   # 🔍 arama dizini (arayüz At › Ara, OXX "X bugün koşuyor mu"): ad → son koşu özeti, jokey/antrenör 90 gün
+        import dizin
+        print("dizin:", *dizin.yaz(kosular), "(at, bayt)")
+    except Exception as e:   # arayüz özeti yayın modelini asla durdurmaz
+        print("dizin.json üretilemedi:", type(e).__name__, e)
     jyaz(os.path.join(CIKTI, "model.json"), mj)
     rapor_yaz(mj, karne, bugun, ayna)
     print("tamam")
