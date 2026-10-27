@@ -2098,6 +2098,89 @@ details.sx>.sx-in>.panel,details.sx>.sx-in>.pw-card{margin-top:0}
   };
 })();
 </script>
+<script id="istek-v124">
+// =====================================================================
+// OXXai v124 · Dış istekleri azalt (denetim P1 #10: açılışta ESPN'e 62–124 istek)
+// ESPN (site.api.espn.com) istekleri tek kapıdan geçer; çağıran kod değişmez, yanıt biçimi aynıdır:
+//  1) Aynı adres = tek istek: aynı anda gelenler birleşir, sonuç paylaşılır (Canlı + Sıradaki maçlar + Bülten aynı ligin
+//     scoreboard'unu bir kez çeker).
+//  2) Önbellek: ligde canlı maç ya da 15 dk içinde başlayacak maç varsa 20 sn (gizliyken 60 sn); yoksa (boş gün, bitmiş ya da ileri tarihli maçlar)
+//     10 dk. Maç özeti (summary) zaten yalnız açık maçta "Güncel tahmin"e basınca istenir; 20 sn (mevcut "az önce güncellendi" kilidi).
+//  3) Sayfa gizliyken ağa çıkılmaz: önbellekte varsa (eski de olsa) o döner, yoksa istek hata verir (çağıranlar hatayı zaten tolere eder).
+//     Böylece arka planda kalan sekme ESPN'i yoklamaz (perf-v118 planlayıcısıyla aynı kural).
+//  4) Aynı anda en çok 4 ESPN isteği (açılışta ani yük yok).
+//  5) 10 dk'lık sonuçlar Cache Storage'da ("oxx-istek-v124") tutulur: uygulama kısa süre içinde yeniden açılınca yeniden indirilmez.
+// iddaa canlı çağrıları DEĞİŞMEZ (Canlı sekmesi açıkken gerekli; perf-v118 planlayıcısı gizliyken zaten durduruyor).
+// Ölçüm: window.istekV124.say → {ag, onbellek, birlesik, gizli, hata}
+// =====================================================================
+(function(){
+  "use strict";
+  const W=window; if(!W.fetch||W.istekV124) return;
+  const nf=W.fetch.bind(W), nST=W.setTimeout;
+  const RX=/^https:\/\/site\.api\.espn\.com\//;
+  const KISA=20e3, GZ=60e3, UZUN=10*60e3, OZET=20e3, ESKI=24*3600e3, PAR=4, CN="oxx-istek-v124";
+  const M=new Map(), IN=new Map(), Q=[]; let akt=0;
+  const say={ag:0,onbellek:0,birlesik:0,gizli:0,hata:0};
+  const ozetMi=u=>/\/summary\?/.test(u);
+  const gizli=()=>document.hidden===true;
+  // önbellek süresi: sonuç yakında değişebilir mi?
+  function ttlOf(u,txt){
+    if(ozetMi(u)) return OZET;
+    try{
+      const j=JSON.parse(txt), now=Date.now();
+      for(const e of ((j&&j.events)||[])){
+        const st=(e&&e.status&&e.status.type&&e.status.type.state)||"pre", t=Date.parse(e&&e.date);
+        if(st==="in") return KISA;
+        if(st==="pre"&&(!isFinite(t)||t<now+15*60e3)) return KISA;   // başlamak üzere ya da gecikmiş
+      }
+      return UZUN;
+    }catch(e){ return KISA; }
+  }
+  const yanit=e=>new Response(e.s===204||e.s===304?null:e.b,{status:e.s,statusText:e.st||"",headers:{"content-type":e.ct||"application/json"}});
+  // ---- kalıcı önbellek (Cache Storage; yoksa yalnız bellek) ----
+  let CP=null;
+  function kasa(){ if(CP) return CP; try{ CP=Promise.resolve(W.caches&&W.isSecureContext?W.caches.open(CN):null).catch(()=>null); }catch(e){ CP=Promise.resolve(null); } return CP; }
+  async function diskOku(u){
+    try{ const c=await kasa(); if(!c) return null; const r=await c.match(u); if(!r) return null;
+      const t=+r.headers.get("x-oxx-t")||0, ttl=+r.headers.get("x-oxx-ttl")||0; if(!t||Date.now()-t>ESKI) return null;
+      return {t,ttl,s:r.status,st:r.statusText,ct:r.headers.get("content-type"),b:await r.text()}; }catch(e){ return null; }
+  }
+  function diskYaz(u,e){
+    kasa().then(c=>{ if(!c) return; return c.put(u,new Response(e.b,{status:e.s,headers:{"content-type":e.ct||"application/json","x-oxx-t":String(e.t),"x-oxx-ttl":String(e.ttl)}})); }).catch(()=>{});
+  }
+  nST.call(W,()=>{ kasa().then(async c=>{ if(!c) return; for(const k of await c.keys()){ const r=await c.match(k); const t=r&&+r.headers.get("x-oxx-t"); if(!t||Date.now()-t>ESKI) await c.delete(k); } }).catch(()=>{}); },45e3);
+  // ---- sıra (en çok PAR eşzamanlı) ----
+  function sira(fn){ return new Promise((ok,no)=>{ Q.push([fn,ok,no]); pompa(); }); }
+  function pompa(){ while(akt<PAR&&Q.length){ const [fn,ok,no]=Q.shift(); akt++; Promise.resolve().then(fn).then(ok,no).finally(()=>{ akt--; pompa(); }); } }
+  async function getir(u){
+    let e=M.get(u);
+    if(!e&&!ozetMi(u)){ e=await diskOku(u); if(e&&!M.has(u)) M.set(u,e); e=M.get(u)||e; }
+    if(e&&Date.now()-e.t<e.ttl){ say.onbellek++; return e; }
+    if(gizli()){ const canli=e&&e.ttl===KISA&&Date.now()-e.t>GZ; if(e&&!canli){ say.onbellek++; return e; } if(!e){ say.gizli++; throw new TypeError("istek-v124: sayfa gizli, ağ isteği yapılmadı"); } }   // canlı ligler gizliyken de dakikada bir (gol bildirimi)
+    if(IN.has(u)){ say.birlesik++; return IN.get(u); }
+    const p=sira(async()=>{
+      if(gizli()){ const x=M.get(u); if(x&&!(x.ttl===KISA&&Date.now()-x.t>GZ)) return x; if(!x){ say.gizli++; throw new TypeError("istek-v124: sayfa gizli, ağ isteği yapılmadı"); } }
+      say.ag++;
+      const r=await nf(u,{cache:"no-store"}); const b=await r.text();
+      const x={t:Date.now(),s:r.status,st:r.statusText,ct:r.headers.get("content-type")||"application/json",b,ttl:r.ok?ttlOf(u,b):KISA};
+      M.set(u,x); if(r.ok&&!ozetMi(u)) diskYaz(u,x);
+      return x;
+    });
+    IN.set(u,p); p.catch(()=>{}).finally(()=>{ if(IN.get(u)===p) IN.delete(u); });
+    try{ return await p; }catch(err){ say.hata++; const x=M.get(u)||e; if(x) return x; throw err; }
+  }
+  W.fetch=function(input,init){
+    try{
+      const url=typeof input==="string"?input:(input&&input.url)||"";
+      const get=!init||((!init.method||String(init.method).toUpperCase()==="GET")&&!init.signal&&!init.body);
+      if(get&&typeof input==="string"&&RX.test(url)) return getir(url).then(yanit);
+    }catch(e){}
+    return nf(input,init);
+  };
+  W.istekV124={say, liste:()=>[...M.entries()].map(([u,e])=>({u,yas_sn:Math.round((Date.now()-e.t)/1000),ttl_sn:e.ttl/1000,s:e.s})),
+    temizle(){ M.clear(); try{ kasa().then(c=>c&&W.caches.delete(CN)); }catch(e){} CP=null; }};
+})();
+</script>
 <script id="ui-v92">
 // v92: (1) aynı ESPN adresine aynı anda gelen istekleri tek ağ isteğinde birleştir (açılışta her lig 3 kez çekiliyordu)
 //      (2) erişilebilirlik: ekran okuyucu etiketleri, role=button öğelerine klavye erişimi, Esc ile sohbeti kapatma
