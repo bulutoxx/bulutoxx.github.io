@@ -109,12 +109,12 @@ async function run(vw, vh, tag) {
   const DR = await p.evaluate(() => { const h1 = (MODEL && MODEL.params && MODEL.params.h1) || .4428, Z = CDR.ZDEF, R = [];
     const T = [0, 10, 30, 44.5, 45, 46, 47, 48.5, 50, 60, 75, 85, 89.9, 90, 91, 93, 95, 97, 100];
     for (const z of [null, Z]) for (const pd of [null, 0, 1, 2]) for (const t of T) R.push({ t, pd, z: !!z, v: CDR.remShare(t, pd, z) });
-    const C = []; const save = DAILY.canli.zaman;
+    const C = []; const save = DAILY.canli.zaman; const gOn = CGT.G && CGT.G.on; if (CGT.G) CGT.G.on = false;   // eski yol paritesi (CG ayrı sınanır: lab/canli_guc_test.cjs)
     const cases = [[30, 2, 0, 0, [0, 0]], [47, 2, 1, 0, [0, 0]], [45, 49, 1, 1, [0, 0]], [63, 3, 2, 0, [0, 1]], [88, 3, 1, 1, [0, 0]], [93, 3, 0, 1, [1, 0]], [96, 3, 2, 2, [0, 0]]];
     for (const kab of [false, true]) { DAILY.canli.zaman = Object.assign({}, Z, { kabul: kab });
       for (const [min, stc, hs, as, rc] of cases) { IDL.lam["7999"] = [1.6, 1.1]; const m = { sp: 1, id: 7999, hs, as, rc, min, st: stc, odds: {} };
         const P = CGT.core(m, 1, 1); C.push({ min, st: stc, hs, as, rc, kab, H: P.H, D: P.D, A: P.A, LT: P.LH + P.LA, none: P.none, nh: P.nextH }); } }
-    DAILY.canli.zaman = save; delete IDL.lam["7999"];
+    DAILY.canli.zaman = save; delete IDL.lam["7999"]; if (CGT.G) CGT.G.on = gOn;
     return { h1, Z, R, C, cur: CDR.zaman(), m93: fbMinute("90'+3'"), m45: fbMinute("45'+2'"), m63: fbMinute("63'") }; });
   const pyDR = JSON.parse(require("child_process").execFileSync("python3", ["-c", `
 import sys,json; sys.path.insert(0,"scripts"); import canli_istat as CI, collector as CO
