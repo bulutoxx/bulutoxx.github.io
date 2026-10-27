@@ -152,6 +152,23 @@ def esle(fx, api_fx, sim):
 
 
 # ------------------------------------------------------------------ türetme
+def ilk11_paket(I, OB, ids, durum):
+    """20'lik /fixtures?ids= paketi; ücretsiz plan 'ids' açmıyorsa maç başı /fixtures/lineups'a düşer."""
+    if not ids: return
+    if not OB.get("ids_yok"):
+        try:
+            j = I.al("fixtures", ids="-".join(str(x) for x in ids))
+            ilk11_isle(OB, j.get("response") or []); return
+        except Durdur as e:
+            if str(e) == "api" and "Ids" in (I.D.get("son_hata") or ""):
+                OB["ids_yok"] = True; I.D["son_hata"] = None
+            else: raise
+    for x in ids:
+        if I.kalan() <= 2: break
+        j = I.al("fixtures/lineups", fixture=x)
+        ilk11_isle(OB, [{"fixture": {"id": x, "date": "", "status": {"short": durum}}, "lineups": j.get("response") or []}])
+
+
 def ilk11_isle(OB, fx_yanit):
     """/fixtures?ids= yanıtındaki ilk 11'leri takım→oyuncu ilk 11 sayısına işle (yalnız önbellek; kimlikler, ad yok)."""
     T = OB.setdefault("takim", {})
@@ -253,15 +270,13 @@ def calis(kuru=False, istemci=None, fx=None, an=None):
                  and str(ES[mac_anahtari(f)]["id"]) not in (OB.get("ilk11_mac") or {})]
         for i in range(0, len(yakin), 20):
             if I.kalan() <= 2: break
-            j = I.al("fixtures", ids="-".join(str(x) for x in yakin[i:i + 20]))
-            ilk11_isle(OB, j.get("response") or [])
+            ilk11_paket(I, OB, yakin[i:i + 20], "NS")
         # 4) kalan bütçe: biten öncelikli maçların ilk 11'i (kilit oyuncu birikimi)
         biten = [ES[k]["id"] for k in sorted(ES, key=lambda k: -(ES[k].get("ts") or 0))
                  if ES[k].get("ts") and now_ts - ES[k]["ts"] > 2.5 * 3600 and str(ES[k]["id"]) not in OB.get("islenen", {})]
         for i in range(0, len(biten), 20):
             if I.kalan() <= 2: break
-            j = I.al("fixtures", ids="-".join(str(x) for x in biten[i:i + 20]))
-            ilk11_isle(OB, j.get("response") or [])
+            ilk11_paket(I, OB, biten[i:i + 20], "FT")
     except Durdur as e:
         nedeni = str(e)
     # türetilmiş özet (yalnız sayılar; oyuncu kimliği / adı yazılmaz)
