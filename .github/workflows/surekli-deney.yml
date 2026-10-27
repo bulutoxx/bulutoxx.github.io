@@ -3,6 +3,7 @@ name: OXXai sürekli deney
 #  • deney (matris, paralel en çok 4 iş): futbol / basket / at → OXXai deney kuyruğu (lab/oxx_ogren.py: sinyal → aday → ileriye dönük
 #    sanal oynatma; kapı = zaman sıralı seçim/sınama + gün bootstrap'ı + alfa yatırımı α_t + Altın/güçlü koruması). at hafif modda
 #    (yalnız data/at/replay_kosular.json; ayna ve eğitim yok). autolab → lab/auto_lab.py dönen lig alt kümesiyle (yalnız ölçüm).
+#    fbguc → oransız maç model yolu (Poisson ayarı, Elo, pi-rating, topluluk) yeniden ölçümü (lab/fb_guc_kapi.py; yalnız numpy).
 #    Her iş sonucunu data/deney/<iş>/<zaman>.json'a yazar, commit atmaz; dosya yapıt olarak karar işine geçer.
 #  • karar: kapıyı geçen adayı önce GÖLGEYE alır (data/deney/golge.json), sonraki çalışmalar onu yeni veriyle paralel ölçer;
 #    en az 3 gün / 3 ölçüm kötüleşmezse data/oxx_ayar.json'a uygular (lab/oxx_ogren.uygula → 14 gün izleme, canlı gölge kupon,
@@ -27,7 +28,7 @@ jobs:
       fail-fast: false
       max-parallel: 4
       matrix:
-        is: [futbol, basket, at, autolab]
+        is: [futbol, basket, at, autolab, fbguc]
     env:
       ADIM_ALT: ${{ matrix.is }}
       DENEY_BUDGET: "1080"
@@ -76,8 +77,10 @@ jobs:
           path: ${{ runner.temp }}/deney
       - name: ⚖️ Karar (kapı + gölge A/B; yalnız geçen uygulanır)
         run: python3 lab/adim.py karar -- python3 lab/surekli_deney.py karar --kaynak "$RUNNER_TEMP/deney"
+      - name: ⚖️ Oransız model yolu kararı (güç puanları + topluluk; alfa yatırımı kapısı, 14 gün kilitli gölge A/B, otomatik geri alma)
+        run: python3 lab/adim.py fbguc-karar -- python3 lab/fb_guc_kapi.py karar --kaynak "$RUNNER_TEMP/deney"
       - name: Kaydet (uzak dal ilerlediyse karar güncel uçta yeniden üretilir)
         run: |
           python3 lab/gonder.py -m "Sürekli deney kararı $(date -u +%FT%H:%M) [skip ci]" \
-            --yeniden "python3 lab/surekli_deney.py karar --kaynak '$RUNNER_TEMP/deney'" \
-            data/deney data/oxx_ayar.json data/deney_kuyrugu.json data/ogrenme_gunlugu.json data/gelisim.json data/saglik
+            --yeniden "python3 lab/surekli_deney.py karar --kaynak '$RUNNER_TEMP/deney' && python3 lab/fb_guc_kapi.py karar --kaynak '$RUNNER_TEMP/deney'" \
+            data/deney data/oxx_ayar.json data/deney_kuyrugu.json data/ogrenme_gunlugu.json data/gelisim.json data/saglik data/fb_guc.json
