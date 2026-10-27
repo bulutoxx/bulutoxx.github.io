@@ -1,6 +1,6 @@
 # OXXai 🐎 At Yarışı Laboratuvarı — Rapor
 
-_Otomatik üretildi: 2026-10-27T00:28:57+00:00 · model sürümü `20261026T1431` · hobi amaçlıdır, garanti değildir · 18+_
+_Otomatik üretildi: 2026-10-27T01:50:16+00:00 · model sürümü `20261027T0111` · hobi amaçlıdır, garanti değildir · 18+_
 
 ## Yeniden oynatma (replay): 2026-03-16 → 2026-10-23
 
@@ -251,15 +251,15 @@ Kapılı deneyler (aynı 3.282 sınama koşusu; ΔLL = yeni − önceki kabul, k
 
 - Piyasa keskinleştirme kontrolü (q^β tek başına): keskin − piyasa -0.0009 [-0.0035, +0.0019]; **harman − keskin piyasa -0.0122 [-0.0185, -0.0061]** (model ancak bu negatifse piyasaya bilgi katıyor demektir); harman − piyasa -0.0131 [-0.0195, -0.0066]; yalnız model − piyasa +0.0889 [+0.0704, +0.1074].
 - Hız figürü gün değişkeni: Beyer projeksiyonu (atların önceki figürleri) yerine kazanan − par − sınıf ofseti kullanılsaydı yalnız-model LL +0.0101 [+0.0054, +0.0149] kötüleşirdi (cins/sınıf karışımı yüzünden); projeksiyon yayında.
-- İndirimli Harville (ikili/üçlü sıralı log-loss, sınama): yalnız model γ,δ öğrenilmiş 3.7454 / 5.5200 vs düz Harville 3.7561 / 5.5605; harman 3.6230 / 5.3860 vs 3.6340 / 5.4324 (3263 koşu).
+- İndirimli Harville (ikili/üçlü sıralı log-loss, sınama): yalnız model γ,δ öğrenilmiş 3.7365 / 5.5074 vs düz Harville 3.7479 / 5.5479; harman 3.6202 / 5.3806 vs 3.6313 / 5.4263 (3263 koşu).
 - Sızıntı testi (`lab/at/test_sizinti.py`, her gece): aynı (at, gün) satırları özdeş; rastgele günlerde yalnız geçmişten yeniden kurulan durum tam tabloyla birebir aynı; gün içi koşu sırası özellikleri değiştirmiyor.
 
 ## Özet: v2 güncellemesi (25.10.2026)
 
 Uygulamadaki **sabah tahminleri yalnız modeldir** (sabah programında ganyan oranı yok). Bu yüzden bu turda hedef, oransız (yalnız geçmişe dayalı) tahmini güçlendirmekti. Yapılanlar:
 
-- **Yalnız model (sabah) sınama log-loss'u 2.0057 → 1.8943; ilk seçim isabeti %26.7 → %30.9** (aynı 3,279 sınama koşusu). Piyasa favorisi hâlâ önde: %35.1, piyasa log-loss 1.8334.
-- Model + piyasa harmanı: log-loss 1.8262 → 1.8146 (piyasaya göre -0.0188 ± 0.0040; anlamlı iyileşme).
+- **Yalnız model (sabah) sınama log-loss'u 2.0057 → 1.8876; ilk seçim isabeti %26.7 → %30.7** (aynı 3,279 sınama koşusu). Piyasa favorisi hâlâ önde: %35.1, piyasa log-loss 1.8334.
+- Model + piyasa harmanı: log-loss 1.8262 → 1.8125 (piyasaya göre -0.0209 ± 0.0043; anlamlı iyileşme).
 - Yeni bilgiler: atın **geçmiş koşulardaki piyasa değerlendirmesi** (oran hafızası: üstel ortalama, piyasa sırası, yenilen favori, piyasanın beklediğinden iyi/kötü koşma, rakiplere göre aktarılan "piyasa reytingi"), her koşudan sonra güncellenen **Plackett-Luce reytingleri** (at + jokey + antrenör), **sayısal sınıf** (koşu türü, alanın reyting düzeyi, handikapta kilo), **zaman sönümlü form**.
 - Eğitim: sınamada her ay **yalnız o aydan önceki veriyle yeniden eğitim** (walk-forward; gece akışı da her gün böyle eğitir), eski koşulara daha az ağırlık (yarı ömür 180 gün), ve doğrusal modelin yanına **LightGBM** (koşu içi softmax amacıyla) eklendi; ikisinin karışımı, sıcaklık ve %25 üstü olasılıklar için ayrı bir "üst uç" eğimi son 90 günde kalibre edilir.
 - Kapı artık **yalnız-model** ölçülerine bakıyor (sabah ekranı bunu gösteriyor), harman da kötüleşmemeli; tarif değişince eski ve yeni tahminler aynı sınama koşularında kıyaslanıyor (bkz. Kapı).
@@ -268,10 +268,10 @@ Uygulamadaki **sabah tahminleri yalnız modeldir** (sabah programında ganyan or
 
 ## Kısa sonuç (dürüst)
 
-- Yalnız geçmiş verilerle kurulan model (sabah tahmini) **tek başına piyasadan zayıf**: sınama log-loss 1.8943 (piyasa 1.8334), ilk seçim isabeti %30.9 (piyasa favorisi %35.1). Fark model − piyasa = +0.0609 ± 0.0096.
-- Model + piyasa harmanı log-loss'u 1.8146: piyasaya göre fark **-0.0188 ± 0.0040** (std. hata). Bu fark istatistiksel olarak anlamlı bir iyileşme (2 std. hatadan büyük).
+- Yalnız geçmiş verilerle kurulan model (sabah tahmini) **tek başına piyasadan zayıf**: sınama log-loss 1.8876 (piyasa 1.8334), ilk seçim isabeti %30.7 (piyasa favorisi %35.1). Fark model − piyasa = +0.0541 ± 0.0097.
+- Model + piyasa harmanı log-loss'u 1.8125: piyasaya göre fark **-0.0209 ± 0.0043** (std. hata). Bu fark istatistiksel olarak anlamlı bir iyileşme (2 std. hatadan büyük).
 - Harmanın ilk seçim isabeti %34.3, piyasa favorisi %35.1. Yayın modu: **model+piyasa** (kural: harman sınama log-loss'u piyasadan düşükse model+piyasa yayınlanır).
-- Kalibrasyon, en yüksek kova: yalnız model 0.50-1.00 aralığında ortalama tahmin %58.1, gerçek %52.5 (219 at); harman %58.6 / %54.4 (414 at). Yani %50+ verilen atlarda model hâlâ biraz iyimser; bu atlar gerçekte yaklaşık yarı yarıya kazanıyor.
+- Kalibrasyon, en yüksek kova: yalnız model 0.50-1.00 aralığında ortalama tahmin %58.6, gerçek %52.9 (225 at); harman %58.5 / %54.5 (422 at). Yani %50+ verilen atlarda model hâlâ biraz iyimser; bu atlar gerçekte yaklaşık yarı yarıya kazanıyor.
 
 ## Veri kapsamı
 
@@ -286,37 +286,37 @@ Uygulamadaki **sabah tahminleri yalnız modeldir** (sabah programında ganyan or
 
 | | log-loss ↓ | Brier ↓ | ilk seçim | ikili (sıralı) | ilk iki → ilk 2 | p≥.30 seçim / isabet (ort. p) | p≥.50 seçim / isabet (ort. p) |
 |---|---|---|---|---|---|---|---|
-| **Yalnız model (sabah)** | 1.8943 | 0.8075 | %30.9 | %9.3 | %15.7 | 1848 / %37.6 (%39.5) | 219 / %52.5 (%58.1) |
+| **Yalnız model (sabah)** | 1.8876 | 0.8053 | %30.7 | %9.2 | %16.2 | 1890 / %37.8 (%39.7) | 225 / %52.9 (%58.6) |
 | Piyasa q | 1.8334 | 0.7863 | %35.1 | %11.0 | %18.8 | 2013 / %40.9 (%40.3) | 273 / %57.9 (%57.5) |
-| **Model + piyasa** | 1.8146 | 0.7829 | %34.3 | %11.0 | %19.1 | 2287 / %39.8 (%41.7) | 414 / %54.4 (%58.6) |
+| **Model + piyasa** | 1.8125 | 0.7822 | %34.3 | %10.9 | %19.0 | 2300 / %39.7 (%41.7) | 422 / %54.5 (%58.5) |
 | Favori tabanı | – | – | %35.1 | %11.0 | %18.8 | – | – |
 | Düzgün (1/N) | 2.2419 | 0.8874 | – | – | – | – | – |
 
-Eşleştirilmiş log-loss farkı (koşu başına, ± std. hata): harman − piyasa = -0.0188 ± 0.0040; model − piyasa = +0.0609 ± 0.0096.
+Eşleştirilmiş log-loss farkı (koşu başına, ± std. hata): harman − piyasa = -0.0209 ± 0.0043; model − piyasa = +0.0541 ± 0.0097.
 
-Parametreler (yayın modeli): birleşik puan = 0.55409 × doğrusal + 0.4453 × GBM (GBM açık); harman α = 0.4076, β = 0.7473; Henery üsleri γ(2.) = 0.84, δ(3.) = 0.76; L2 λ = 300.0. LightGBM kurulu değilse model doğrusal yedeğe (kendi kalibrasyonuyla) düşer.
+Parametreler (yayın modeli): birleşik puan = 0.54046 × doğrusal + 0.44044 × GBM (GBM açık); harman α = 0.4184, β = 0.728; Henery üsleri γ(2.) = 0.84, δ(3.) = 0.78; L2 λ = 300.0. LightGBM kurulu değilse model doğrusal yedeğe (kendi kalibrasyonuyla) düşer.
 
 ### Kalibrasyon (sınama, yalnız model (sabah tahmini))
 
 | tahmin aralığı | at | ort. tahmin | gerçek kazanma |
 |---|---|---|---|
-| 0.00-0.05 | 13428 | %2.3 | %2.4 |
-| 0.05-0.10 | 7295 | %7.3 | %7.9 |
-| 0.10-0.20 | 7245 | %14.2 | %14.6 |
-| 0.20-0.30 | 2790 | %24.3 | %22.9 |
-| 0.30-0.50 | 1629 | %37.0 | %35.6 |
-| 0.50-1.00 | 219 | %58.1 | %52.5 |
+| 0.00-0.05 | 13491 | %2.3 | %2.4 |
+| 0.05-0.10 | 7344 | %7.3 | %7.8 |
+| 0.10-0.20 | 7094 | %14.2 | %14.6 |
+| 0.20-0.30 | 2787 | %24.2 | %22.9 |
+| 0.30-0.50 | 1665 | %37.1 | %35.8 |
+| 0.50-1.00 | 225 | %58.6 | %52.9 |
 
 ### Kalibrasyon (sınama, model + piyasa)
 
 | tahmin aralığı | at | ort. tahmin | gerçek kazanma |
 |---|---|---|---|
-| 0.00-0.05 | 14910 | %2.3 | %2.3 |
-| 0.05-0.10 | 6705 | %7.2 | %8.0 |
-| 0.10-0.20 | 6155 | %14.2 | %14.5 |
-| 0.20-0.30 | 2549 | %24.5 | %23.5 |
-| 0.30-0.50 | 1873 | %37.9 | %36.6 |
-| 0.50-1.00 | 414 | %58.6 | %54.4 |
+| 0.00-0.05 | 14944 | %2.3 | %2.3 |
+| 0.05-0.10 | 6658 | %7.2 | %7.9 |
+| 0.10-0.20 | 6167 | %14.2 | %14.4 |
+| 0.20-0.30 | 2537 | %24.4 | %23.8 |
+| 0.30-0.50 | 1878 | %37.9 | %36.4 |
+| 0.50-1.00 | 422 | %58.5 | %54.5 |
 
 ## Deneyler (25.10.2026, yalnız model odaklı)
 
@@ -353,54 +353,57 @@ Doğrusal katmanın standartlaştırılmış katsayıları (en büyük 12; + kaz
 
 | özellik | katsayı |
 |---|---|
-| a5_sr_ort5 | +0.213 |
-| hz_alan | +0.162 |
-| jk_logp | +0.155 |
-| hz_son | +0.142 |
-| hz_ort3 | +0.141 |
-| jk_at_s | +0.128 |
-| jk_j | +0.114 |
-| r_jokey | +0.107 |
-| piyasa_reyting | +0.105 |
-| n_kosu | -0.100 |
-| hipodrom_uyum | +0.099 |
-| geri_en_iyi5 | -0.089 |
+| a5_sr_ort5 | +0.178 |
+| jk_logp | +0.153 |
+| jk_at_s | +0.123 |
+| jk_j | +0.112 |
+| geri_en_iyi5 | -0.107 |
+| r_jokey | +0.106 |
+| a6_k_sira | -0.104 |
+| a6_k_z | +0.102 |
+| hipodrom_uyum | +0.096 |
+| n_kosu | -0.096 |
+| piyasa_reyting | +0.090 |
+| mesafe_deg_y | -0.088 |
 
 Ablasyon — grup çıkarılınca sınama log-loss'u ne kadar kötüleşiyor (+ = grup faydalı; yalnız doğrusal katmanla, aylık walk-forward):
 
 | çıkarılan grup | yalnız model Δ | model+piyasa Δ |
 |---|---|---|
-| hiz3 | +0.0175 | +0.0041 |
-| a5_sinif | +0.0108 | +0.0026 |
-| jk_beceri | +0.0076 | +0.0008 |
-| pist_mesafe_hipodrom | +0.0073 | +0.0014 |
-| degisim | +0.0053 | +0.0017 |
-| piyasa_hafiza | +0.0025 | +0.0003 |
-| kilo | +0.0019 | +0.0009 |
-| form | +0.0013 | -0.0002 |
+| a5_sinif | +0.0079 | +0.0023 |
+| a6_kalman | +0.0078 | +0.0024 |
+| jk_beceri | +0.0073 | +0.0009 |
+| pist_mesafe_hipodrom | +0.0063 | +0.0014 |
+| degisim | +0.0053 | +0.0019 |
+| kilo | +0.0021 | +0.0011 |
+| piyasa_hafiza | +0.0017 | +0.0002 |
+| form | +0.0010 | -0.0002 |
+| a6_mesafe | +0.0009 | +0.0002 |
 | jk_uzman | +0.0008 | +0.0003 |
+| fark2 | +0.0007 | +0.0001 |
 | hp | +0.0007 | +0.0000 |
-| dinlenme | +0.0006 | +0.0001 |
-| sinif | +0.0006 | +0.0002 |
-| piyasa_gecmisi | +0.0004 | +0.0002 |
-| alan | +0.0003 | +0.0001 |
-| fark2 | +0.0003 | +0.0000 |
+| hiz3 | +0.0006 | +0.0002 |
+| sinif | +0.0005 | +0.0002 |
+| dinlenme | +0.0003 | +0.0001 |
 | jk_apr | +0.0003 | +0.0002 |
-| antrenor | +0.0000 | +0.0000 |
-| fark | -0.0003 | +0.0000 |
-| jokey | -0.0004 | -0.0001 |
-| reyting | -0.0004 | -0.0003 |
+| piyasa_gecmisi | +0.0003 | +0.0001 |
+| alan | +0.0002 | +0.0001 |
+| a6_gelisim | +0.0000 | +0.0000 |
+| antrenor | -0.0001 | +0.0000 |
+| fark | -0.0002 | +0.0000 |
+| jokey | -0.0003 | -0.0001 |
 | sinif2 | -0.0004 | +0.0000 |
+| reyting | -0.0005 | -0.0003 |
 | yas | -0.0006 | -0.0002 |
-| jokey_at | -0.0009 | -0.0007 |
+| jokey_at | -0.0011 | -0.0008 |
 
 Yorum: sabah tahmininde en çok taşıyan bilgiler reytingler (at/jokey/antrenör), pist/mesafe/hipodrom uyumu, atın geçmişte piyasada nasıl değerlendirildiği (piyasa hafızası) ve dinlenme. Jokeyin son 60 gün oranı artık jokey reytingiyle örtüştüğü için tek başına katkısı kalmadı. Grupların çoğu birbiriyle örtüştüğünden tek grup çıkarmak az fark yaratır; harmana katkıları ±0,001 düzeyinde.
 
 ## Kapı (sürekli öğrenme)
 
 - Kural: tarif (özellikler/ayarlar) değişirse yeni model ancak **aynı sınama koşularında** yalnız-model log-loss'u düşürür, ilk seçim isabetini düşürmez ve harman log-loss'unu 0,001'den fazla bozmazsa kabul edilir. Tarif aynıysa özellikler her gece yeni sonuçlarla güncellenir, katsayılar haftada bir yeniden eğitilir (KORU = bu gece yenileme günü değil); ortak koşularda belirgin bozulma (veri sorunu) olursa dünkü model korunur. İz: `data/at/sinama_izi.json`.
-- Son karar (2026-10-27T00:28:57+00:00): **KORU** — aynı tarif; katsayılar 0 günlük (haftalık yenileme), özellikler bu gece yeni sonuçlarla güncellendi
-- Yeni: yalnız model log-loss 1.8686, ilk seçim %31.6; harman 1.7960. Kıyas: yalnız model 1.8686, ilk seçim %31.6; harman 1.7960.
+- Son karar (2026-10-27T01:50:16+00:00): **KORU** — aynı tarif; katsayılar 0 günlük (haftalık yenileme), özellikler bu gece yeni sonuçlarla güncellendi
+- Yeni: yalnız model log-loss 1.8630, ilk seçim %31.8; harman 1.7946. Kıyas: yalnız model 1.8686, ilk seçim %31.6; harman 1.7960.
 
 ## Canlı karne (kilitlenmiş tahminler, sonuç gelince)
 

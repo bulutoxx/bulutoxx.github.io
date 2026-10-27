@@ -48,7 +48,9 @@ jobs:
       - name: 🎨 Tasarımcı / kalite
         run: |
           python3 lab/adim.py kalite-kurulum --onem bilgi -- "cd lab && npm init -y >/dev/null && npm i playwright@1.48.2 >/dev/null && npx playwright install --with-deps chromium >/dev/null"
-          python3 lab/adim.py kalite --onem bilgi -- node lab/qa.mjs   # alarm data/qa.json'da; kurtarıcı sağlık özetine taşır
+          # tam mod: ekranlar + düğmeler + yasak kelime + bütçe. Alarm → çıkış 1 → sağlık kaydında "hata" (data/saglik/otonom-ekip.json);
+          # ayrıntı data/qa.json'da, kurtarıcı ikisini de sağlık özetine taşır. Yayındaki site test edilir (tjk.org / atyarisi.com engelli).
+          python3 lab/adim.py kalite --onem bilgi -- timeout 1200 node lab/qa.mjs
       - name: 💬 Sohbet koçu (OXXai'ye yeni bilgi + test kapısı)
         run: python3 lab/adim.py sohbet-kocu --onem bilgi -- timeout 900 node lab/bot_coach.mjs
       - name: Kaydet
