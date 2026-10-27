@@ -19,6 +19,7 @@ os.environ.setdefault("AT_KAYNAK", os.path.join(KOK, "_tjk-data"))
 
 import veri, ozellik, model as M  # noqa: E402
 import at5  # noqa: E402  (v5 at özellikleri: a5_* grupları, lab/at/deney5.py)
+import at6  # noqa: E402  (v6 derin tarama: a6_* grupları, lab/at/deney6.py; kaynaklar lab/at/KAYNAKLAR.md)
 import jokey  # noqa: E402  (🏇 jokey/ahır uzmanı: data/at/jokeyler.json + jk_* özellik grupları)
 import kilit  # noqa: E402  (sabah kilidi yalnız model + oran olgunluk kapısı + karne mod_hatali)
 
@@ -43,6 +44,8 @@ def altin_kural(eski):
         return dict(r["kural"], donem=(joku(REPLAY_DOSYA) or {}).get("donem"))
     return dict(ALTIN_VARSAYILAN)
 V5_DOSYA = os.path.join(CIKTI, "deneyler_v5.json")     # v5 deney kaydı (a5_* grupları, harman hm_alan)
+V6_DOSYA = os.path.join(CIKTI, "deneyler_v6.json")     # v6 deney kaydı (derin tarama: a6_* grupları, m6_rank)
+V6_PIYASA = os.path.join(CIKTI, "oran_izi_v6.json")    # v6 harman katmanı ölçümleri (oran izi, üçüncü taraf)
 JOKEY_DOSYA = os.path.join(CIKTI, "jokeyler.json")    # arayüz: attan arındırılmış jokey/antrenör istatistikleri
 YENILEME_GUN = 7   # aynı tarifte yayın katsayılarının yenilenme aralığı (gün)
 TAKIP = [("2026-10-25", "İstanbul", 5)]   # raporda kalıcı izlenen örnek koşu(lar)
@@ -137,6 +140,7 @@ IFADE = {  # özellik -> (değeri koşu ortalamasından YÜKSEKSE, DÜŞÜKSE) �
 }
 IFADE.update(jokey.IFADE)   # jk_* özellikleri (yalnız seçilmişse gerekçede görünür)
 IFADE.update(at5.IFADE)     # a5_* özellikleri
+IFADE.update(at6.IFADE)     # a6_* özellikleri (v6)
 
 
 def jyaz(yol, veri_, sikisik=False):
@@ -491,6 +495,56 @@ def _v5_bolum(a):
     a("")
 
 
+def _v6_bolum(a):
+    """v6 turu (derin açık kaynak taraması): lab/at/KAYNAKLAR.md + lab/at/deney6.py + harman katmanı ölçümleri."""
+    dj = joku(V6_DOSYA)
+    if not dj or not dj.get("adimlar"):
+        return
+    a("## v6 turu: derin açık kaynak taraması (pist vekili, Kalman figür, mesafe profili, gelişim, LambdaRank)")
+    a("")
+    a("54 aday tarandı (tablo, sorgular ve yasal notlar: `lab/at/KAYNAKLAR.md`). TJK yasağına uyan, ücretsiz ve lisansı "
+      "uygun dış sinyal yalnız **hava** (Open-Meteo, CC BY 4.0); start/kulvar, ara derece, pedigri, idman/galop ve AGF için "
+      "yasal açık kaynak yok. Adaylar aynanın kullanılmayan boyutlarından (program havası, önceki günlerin pist durumu, "
+      "figür geçmişi) kuruldu. Kapı: deney4 iki katlı kapı; walk-forward (her ay yalnız geçmişle eğitim). Sızıntı testi: "
+      "`python lab/at/deney6.py --sizinti`.")
+    if dj.get("hava_durumu"):
+        a(f"Open-Meteo hava (a6_hava): {dj['hava_durumu']}.")
+    a("")
+    a("| # | deney | sonuç | ort. LL / ilk seçim | B: LL / ilk | ΔLL birleşik [%95 GA] | ΔLL A | ΔLL B | harman ort. LL / ilk | ΔLL harman |")
+    a("|---|---|---|---|---|---|---|---|---|---|")
+    for s_ in dj["adimlar"]:
+        sonuc = ("taban" if s_["gecti"] is None else "ℹ️ sağlamlık" if s_.get("saglamlik")
+                 else ("✅ kaldı" if s_["gecti"] else "❌ elendi"))
+        fm, fh = s_.get("fark_model"), s_.get("fark_harman")
+        B_ = s_["katlar"]["B"]["model"]
+        a(f"| {s_['no']} | {s_['deney']} | {sonuc} | {s_['model']['ll']:.4f} / {_y(s_['model']['ilk'])} | "
+          f"{B_['ll']:.4f} / {_y(B_['ilk'])} | {_ga(fm) if fm else '–'} | {_ga(fm['A']) if fm else '–'} | "
+          f"{_ga(fm['B']) if fm else '–'} | {s_['harman']['ll']:.4f} / {_y(s_['harman']['ilk'])} | {_ga(fh) if fh else '–'} |")
+    a("")
+    sec = dj.get("secim") or {}
+    a(f"- Kapıdan geçen a6 grupları: **{', '.join(sec.get('gruplar') or []) or 'yok'}**; LambdaRank: "
+      f"{'geçti' if sec.get('m6_rank') else 'elendi'}. Yayındaki a6: {', '.join(at6.A6_SECILI) or 'yok'}. "
+      f"Deney kaydı: `data/at/deneyler_v6.json` ({dj.get('olusturma', '')}; süre {dj.get('sure_sn', '?')} sn).")
+    if dj.get("toplam"):
+        tp = dj["toplam"]
+        a(f"- Toplam (seçilenler − taban): yalnız model {_ga(tp['model'])}; harman {_ga(tp['harman'])}.")
+    pj = joku(V6_PIYASA) or {}
+    if pj.get("deneyler"):
+        a("")
+        a("Harman/yığma katmanı (aynanın git geçmişi + kendi oran izimiz `data/at/oran_izi/`; `lab/at/oran_izi.py`, "
+          "`lab/at/ucuncu_taraf.py`; taban `replay_kosular.json` sızıntısız olasılıkları, aylık walk-forward):")
+        a("")
+        a("| deney | koşu | ΔLL [%95 GA] | sonuç |")
+        a("|---|---|---|---|")
+        for d in pj["deneyler"]:
+            a(f"| {d['ad']} | {d['kosu']:,} | {d['dll']:+.4f} [{d['ga95'][0]:+.4f}, {d['ga95'][1]:+.4f}] | "
+              f"{'✅' if d['gecti'] else '❌ elendi'} |")
+        a("")
+        a("- Oran hareketi nihai piyasa oranına bilgi katmıyor: nihai oran erken parayı zaten içeriyor (erken oranın kendi "
+          "LL'si çok daha kötü). Aynadaki üçüncü taraf tahminleri bizim sabah modelimizden belirgin zayıf.")
+    a("")
+
+
 def _jokey_bolum(a):
     """🏇 Jokey ve ahır uzmanı: kapılı jk_* deneyleri + jokeyler.json'dan ilk 5 (deney4 kapısı, lab/at/deney_jokey.py)."""
     jj = joku(JOKEY_DOSYA)
@@ -732,6 +786,7 @@ def rapor_yaz(mj, karne, bugun, ayna_durumu):
     _replay_ozet(a, mj)
     _v4_ozet(a, mj)
     _jokey_bolum(a)
+    _v6_bolum(a)
     _v5_bolum(a)
     _v3_ozet(a, mj)
     a("## Özet: v2 güncellemesi (25.10.2026)")
@@ -978,7 +1033,8 @@ def tarif():
             # jokey turu: Bayes PL ayarları yalnız jk_* grubu yayındaysa tarife girer (yoksa tarif değişmesin)
             **({"jk": {"gruplar": list(jokey.JK_SECILI), "onsel": jokey.JK_ONSEL, "surukle": jokey.JK_SURUKLE,
                        "kademe": list(jokey.JK_KADEME)}} if jokey.JK_SECILI else {}),
-            **({"a5": {"gruplar": list(at5.A5_SECILI), "k_uyum": at5.K_UYUM, "ant_k": at5.ANT_K}} if at5.A5_SECILI else {})}
+            **({"a5": {"gruplar": list(at5.A5_SECILI), "k_uyum": at5.K_UYUM, "ant_k": at5.ANT_K}} if at5.A5_SECILI else {}),
+            **({"a6": {"gruplar": list(at6.A6_SECILI), "k_r": at6.K_R, "k_q": at6.K_Q, "g_k": at6.G_K}} if at6.A6_SECILI else {})}
 
 
 def kapi_karari(yeni, iz, trf, eski, eski_iz, b_bas=None):
@@ -1038,6 +1094,7 @@ def main():
     bugun = ar.bugun or (datetime.now(timezone.utc) + timedelta(hours=3)).date().isoformat()
     yarin = (date.fromisoformat(bugun) + timedelta(days=1)).isoformat()
 
+    at6.hava_hazirla()   # v6: a6_hava yayındaysa Open-Meteo hava tablosu (_hava/, depoya yazılmaz)
     kosular, atilan = veri.sonuclari_yukle()
     T, durum = ozellik.tablo_kur(kosular, adlar=ozellik.TUM_ADLAR)
     sec = [ozellik.TUM_ADLAR.index(a) for a in ozellik.ADLAR]
@@ -1109,6 +1166,9 @@ def main():
          "neden": "veri tjkbulten.atyarisi.com / tjkgw.atyarisi.com API'lerinden geliyor ve robots.txt tüm robotlara "
                   "Disallow: / diyor; llms.txt izni yalnız www için ve www sayfalarında veri yok; kullanım şartları da "
                   "robots-kapalı help alanından yükleniyor."}]
+    if "a6_hava" in at6.A6_SECILI:
+        mj["kaynaklar"].append({"ad": "Open-Meteo (open-meteo.com)", "durum": "bağlı", "lisans": "CC BY 4.0",
+                                "kullanim": "hipodrom yağış/sıcaklık (a6_hava); atıf: Hava verisi Open-Meteo.com"})
     mj["uyari"] = "Hobi amaçlıdır; tahmin garanti değildir · 18+"
     mj["gbm_kurulu"] = M.lgb is not None
 

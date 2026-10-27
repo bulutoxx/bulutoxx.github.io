@@ -1,0 +1,647 @@
+{
+ "olusturma": "2026-10-27T03:53:59",
+ "katlar": {
+  "A": [
+   "2025-11-01",
+   "2026-03-16"
+  ],
+  "B": [
+   "2026-03-17",
+   "2026-10-25"
+  ]
+ },
+ "kapi": "deney4 iki katlı kapı",
+ "hava": {
+  "kosu": 10913,
+  "hava_var": 0,
+  "dosya": "gunluk.csv",
+  "son_tarih": null
+ },
+ "taban_gruplar": [
+  "form",
+  "fark",
+  "piyasa_gecmisi",
+  "dinlenme",
+  "pist_mesafe_hipodrom",
+  "sinif",
+  "kilo",
+  "yas",
+  "jokey",
+  "antrenor",
+  "jokey_at",
+  "alan",
+  "piyasa_hafiza",
+  "reyting",
+  "sinif2",
+  "fark2",
+  "hiz3",
+  "degisim",
+  "hp",
+  "jk_uzman",
+  "jk_apr",
+  "jk_beceri",
+  "a5_sinif"
+ ],
+ "adimlar": [
+  {
+   "no": 0,
+   "deney": "taban (yayındaki tarif: v4 + jk_uzman, jk_apr, jk_beceri + a5_sinif)",
+   "gecti": null,
+   "model": {
+    "ll": 1.8616,
+    "ilk": 0.3189
+   },
+   "harman": {
+    "ll": 1.7906,
+    "ilk": 0.3542
+   },
+   "piyasa": {
+    "ll": 1.8161,
+    "ilk": 0.3557
+   },
+   "katlar": {
+    "A": {
+     "kosu": 2175,
+     "model": {
+      "ll": 1.8295,
+      "ilk": 0.3297
+     },
+     "harman": {
+      "ll": 1.7688,
+      "ilk": 0.3655
+     },
+     "piyasa": {
+      "ll": 1.8018,
+      "ilk": 0.3591
+     }
+    },
+    "B": {
+     "kosu": 3278,
+     "model": {
+      "ll": 1.8937,
+      "ilk": 0.3081
+     },
+     "harman": {
+      "ll": 1.8124,
+      "ilk": 0.3429
+     },
+     "piyasa": {
+      "ll": 1.8305,
+      "ilk": 0.3523
+     }
+    }
+   }
+  },
+  {
+   "no": 1,
+   "deney": "a6_pist — ayna programından sabah bilinen pist/hava vekili: yağış bayrağı, nem, sıcaklık, aynı hipodrom+pistte önceki yarış gününün pist durumu (sönümlü); beklenen ıslaklık × (ıslak pist uyumu, kilo, reyting)",
+   "gecti": false,
+   "fark_model": {
+    "dll": -0.0,
+    "ga95": [
+     -0.0006,
+     0.0006
+    ],
+    "d_ilk": 0.0,
+    "A": {
+     "dll": -0.0,
+     "ga95": [
+      -0.0,
+      0.0
+     ],
+     "d_ilk": 0.0
+    },
+    "B": {
+     "dll": -0.0,
+     "ga95": [
+      -0.001,
+      0.0009
+     ],
+     "d_ilk": 0.0
+    }
+   },
+   "fark_harman": {
+    "dll": -0.0,
+    "ga95": [
+     -0.0003,
+     0.0002
+    ],
+    "d_ilk": 0.0002,
+    "A": {
+     "dll": 0.0,
+     "ga95": [
+      -0.0,
+      0.0
+     ],
+     "d_ilk": 0.0
+    },
+    "B": {
+     "dll": -0.0001,
+     "ga95": [
+      -0.0004,
+      0.0003
+     ],
+     "d_ilk": 0.0003
+    }
+   },
+   "model": {
+    "ll": 1.8615,
+    "ilk": 0.3189
+   },
+   "harman": {
+    "ll": 1.7906,
+    "ilk": 0.3543
+   },
+   "piyasa": {
+    "ll": 1.8161,
+    "ilk": 0.3557
+   },
+   "katlar": {
+    "A": {
+     "kosu": 2175,
+     "model": {
+      "ll": 1.8295,
+      "ilk": 0.3297
+     },
+     "harman": {
+      "ll": 1.7688,
+      "ilk": 0.3655
+     },
+     "piyasa": {
+      "ll": 1.8018,
+      "ilk": 0.3591
+     }
+    },
+    "B": {
+     "kosu": 3278,
+     "model": {
+      "ll": 1.8936,
+      "ilk": 0.3081
+     },
+     "harman": {
+      "ll": 1.8123,
+      "ilk": 0.3432
+     },
+     "piyasa": {
+      "ll": 1.8305,
+      "ilk": 0.3523
+     }
+    }
+   }
+  },
+  {
+   "no": 2,
+   "deney": "a6_kalman — Kalman hız figürü: at başına durum-uzay yetenek (gün başına süreç varyansı) − alan, belirsizlik, z, alan içi sıra, figür tutarlılığı",
+   "gecti": true,
+   "fark_model": {
+    "dll": -0.0037,
+    "ga95": [
+     -0.0065,
+     -0.0009
+    ],
+    "d_ilk": -0.0002,
+    "A": {
+     "dll": -0.002,
+     "ga95": [
+      -0.007,
+      0.0028
+     ],
+     "d_ilk": 0.0023
+    },
+    "B": {
+     "dll": -0.0049,
+     "ga95": [
+      -0.0083,
+      -0.0013
+     ],
+     "d_ilk": -0.0018
+    }
+   },
+   "fark_harman": {
+    "dll": -0.0011,
+    "ga95": [
+     -0.0023,
+     0.0002
+    ],
+    "d_ilk": -0.0022,
+    "A": {
+     "dll": -0.0002,
+     "ga95": [
+      -0.0023,
+      0.0019
+     ],
+     "d_ilk": -0.0009
+    },
+    "B": {
+     "dll": -0.0017,
+     "ga95": [
+      -0.0032,
+      -0.0001
+     ],
+     "d_ilk": -0.0031
+    }
+   },
+   "model": {
+    "ll": 1.8581,
+    "ilk": 0.3192
+   },
+   "harman": {
+    "ll": 1.7897,
+    "ilk": 0.3522
+   },
+   "piyasa": {
+    "ll": 1.8161,
+    "ilk": 0.3557
+   },
+   "katlar": {
+    "A": {
+     "kosu": 2175,
+     "model": {
+      "ll": 1.8274,
+      "ilk": 0.332
+     },
+     "harman": {
+      "ll": 1.7686,
+      "ilk": 0.3646
+     },
+     "piyasa": {
+      "ll": 1.8018,
+      "ilk": 0.3591
+     }
+    },
+    "B": {
+     "kosu": 3278,
+     "model": {
+      "ll": 1.8888,
+      "ilk": 0.3063
+     },
+     "harman": {
+      "ll": 1.8108,
+      "ilk": 0.3398
+     },
+     "piyasa": {
+      "ll": 1.8305,
+      "ilk": 0.3523
+     }
+    }
+   }
+  },
+  {
+   "no": 3,
+   "deney": "a6_mesafe — mesafe profili: ±%10 mesafedeki en iyi figür − genel en iyi, figür–log(mesafe) eğimi × sapma, en iyi figürün mesafesine uzaklık",
+   "gecti": true,
+   "fark_model": {
+    "dll": -0.001,
+    "ga95": [
+     -0.0028,
+     0.0008
+    ],
+    "d_ilk": 0.0006,
+    "A": {
+     "dll": -0.0008,
+     "ga95": [
+      -0.004,
+      0.0024
+     ],
+     "d_ilk": 0.0
+    },
+    "B": {
+     "dll": -0.0012,
+     "ga95": [
+      -0.0034,
+      0.0008
+     ],
+     "d_ilk": 0.0009
+    }
+   },
+   "fark_harman": {
+    "dll": -0.0001,
+    "ga95": [
+     -0.0008,
+     0.0007
+    ],
+    "d_ilk": 0.0033,
+    "A": {
+     "dll": 0.0001,
+     "ga95": [
+      -0.0012,
+      0.0015
+     ],
+     "d_ilk": -0.0023
+    },
+    "B": {
+     "dll": -0.0002,
+     "ga95": [
+      -0.0011,
+      0.0007
+     ],
+     "d_ilk": 0.007
+    }
+   },
+   "model": {
+    "ll": 1.8571,
+    "ilk": 0.3196
+   },
+   "harman": {
+    "ll": 1.7896,
+    "ilk": 0.3546
+   },
+   "piyasa": {
+    "ll": 1.8161,
+    "ilk": 0.3557
+   },
+   "katlar": {
+    "A": {
+     "kosu": 2175,
+     "model": {
+      "ll": 1.8267,
+      "ilk": 0.332
+     },
+     "harman": {
+      "ll": 1.7687,
+      "ilk": 0.3623
+     },
+     "piyasa": {
+      "ll": 1.8018,
+      "ilk": 0.3591
+     }
+    },
+    "B": {
+     "kosu": 3278,
+     "model": {
+      "ll": 1.8876,
+      "ilk": 0.3072
+     },
+     "harman": {
+      "ll": 1.8106,
+      "ilk": 0.3469
+     },
+     "piyasa": {
+      "ll": 1.8305,
+      "ilk": 0.3523
+     }
+    }
+   }
+  },
+  {
+   "no": 4,
+   "deney": "a6_gelisim — yaş × ara gelişim eğrisi: ardışık figür farkının (yaş, ara kovası) ortalaması, alana göre",
+   "gecti": true,
+   "fark_model": {
+    "dll": -0.0007,
+    "ga95": [
+     -0.0019,
+     0.0004
+    ],
+    "d_ilk": 0.0011,
+    "A": {
+     "dll": -0.0012,
+     "ga95": [
+      -0.0031,
+      0.0006
+     ],
+     "d_ilk": 0.0041
+    },
+    "B": {
+     "dll": -0.0004,
+     "ga95": [
+      -0.0018,
+      0.001
+     ],
+     "d_ilk": -0.0009
+    }
+   },
+   "fark_harman": {
+    "dll": -0.0002,
+    "ga95": [
+     -0.0007,
+     0.0003
+    ],
+    "d_ilk": -0.0015,
+    "A": {
+     "dll": -0.0003,
+     "ga95": [
+      -0.0011,
+      0.0005
+     ],
+     "d_ilk": 0.0018
+    },
+    "B": {
+     "dll": -0.0001,
+     "ga95": [
+      -0.0008,
+      0.0005
+     ],
+     "d_ilk": -0.0037
+    }
+   },
+   "model": {
+    "ll": 1.8563,
+    "ilk": 0.3212
+   },
+   "harman": {
+    "ll": 1.7894,
+    "ilk": 0.3537
+   },
+   "piyasa": {
+    "ll": 1.8161,
+    "ilk": 0.3557
+   },
+   "katlar": {
+    "A": {
+     "kosu": 2175,
+     "model": {
+      "ll": 1.8255,
+      "ilk": 0.3361
+     },
+     "harman": {
+      "ll": 1.7684,
+      "ilk": 0.3641
+     },
+     "piyasa": {
+      "ll": 1.8018,
+      "ilk": 0.3591
+     }
+    },
+    "B": {
+     "kosu": 3278,
+     "model": {
+      "ll": 1.8872,
+      "ilk": 0.3063
+     },
+     "harman": {
+      "ll": 1.8105,
+      "ilk": 0.3432
+     },
+     "piyasa": {
+      "ll": 1.8305,
+      "ilk": 0.3523
+     }
+    }
+   }
+  },
+  {
+   "no": 5,
+   "deney": "m6_rank — GBM amacı LambdaRank (ilk 3 kademeli alaka) — koşu içi softmax yerine",
+   "gecti": false,
+   "fark_model": {
+    "dll": 0.0006,
+    "ga95": [
+     -0.0017,
+     0.0029
+    ],
+    "d_ilk": 0.0007,
+    "A": {
+     "dll": 0.0008,
+     "ga95": [
+      -0.003,
+      0.0049
+     ],
+     "d_ilk": 0.0009
+    },
+    "B": {
+     "dll": 0.0004,
+     "ga95": [
+      -0.0024,
+      0.0032
+     ],
+     "d_ilk": 0.0006
+    }
+   },
+   "fark_harman": {
+    "dll": 0.0004,
+    "ga95": [
+     -0.0006,
+     0.0014
+    ],
+    "d_ilk": -0.0004,
+    "A": {
+     "dll": 0.0003,
+     "ga95": [
+      -0.0014,
+      0.0019
+     ],
+     "d_ilk": -0.0009
+    },
+    "B": {
+     "dll": 0.0005,
+     "ga95": [
+      -0.0008,
+      0.0018
+     ],
+     "d_ilk": 0.0
+    }
+   },
+   "model": {
+    "ll": 1.8569,
+    "ilk": 0.322
+   },
+   "harman": {
+    "ll": 1.7898,
+    "ilk": 0.3532
+   },
+   "piyasa": {
+    "ll": 1.8161,
+    "ilk": 0.3557
+   },
+   "katlar": {
+    "A": {
+     "kosu": 2175,
+     "model": {
+      "ll": 1.8263,
+      "ilk": 0.337
+     },
+     "harman": {
+      "ll": 1.7687,
+      "ilk": 0.3632
+     },
+     "piyasa": {
+      "ll": 1.8018,
+      "ilk": 0.3591
+     }
+    },
+    "B": {
+     "kosu": 3278,
+     "model": {
+      "ll": 1.8876,
+      "ilk": 0.3069
+     },
+     "harman": {
+      "ll": 1.8109,
+      "ilk": 0.3432
+     },
+     "piyasa": {
+      "ll": 1.8305,
+      "ilk": 0.3523
+     }
+    }
+   }
+  }
+ ],
+ "hava_durumu": "ölçülemedi: Open-Meteo bu ortamdan erişilemedi; lisanslı hava dosyası yok (üretim çekicisi lab/at/hava.py hazır)",
+ "secim": {
+  "gruplar": [
+   "a6_kalman",
+   "a6_mesafe",
+   "a6_gelisim"
+  ],
+  "m6_rank": false
+ },
+ "toplam": {
+  "model": {
+   "dll": -0.0055,
+   "ga95": [
+    -0.0084,
+    -0.0023
+   ],
+   "d_ilk": 0.0015,
+   "A": {
+    "dll": -0.004,
+    "ga95": [
+     -0.0095,
+     0.0014
+    ],
+    "d_ilk": 0.0064
+   },
+   "B": {
+    "dll": -0.0065,
+    "ga95": [
+     -0.0104,
+     -0.0026
+    ],
+    "d_ilk": -0.0018
+   }
+  },
+  "harman": {
+   "dll": -0.0013,
+   "ga95": [
+    -0.0027,
+    0.0001
+   ],
+   "d_ilk": -0.0004,
+   "A": {
+    "dll": -0.0004,
+    "ga95": [
+     -0.0027,
+     0.0019
+    ],
+    "d_ilk": -0.0014
+   },
+   "B": {
+    "dll": -0.002,
+    "ga95": [
+     -0.0037,
+     -0.0002
+    ],
+    "d_ilk": 0.0003
+   }
+  }
+ },
+ "model_vs_piyasa": {
+  "dll": 0.0435
+ },
+ "harman_vs_piyasa": {
+  "dll": -0.0254
+ },
+ "sure_sn": 3655
+}

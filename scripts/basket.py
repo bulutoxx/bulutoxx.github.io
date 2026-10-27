@@ -32,7 +32,7 @@ LEAGUES = {
 HIST_DAYS = 560          # yaklaşık iki sezon
 FIX_DAYS = 8
 KS = {}
-ENGINE_V = "2026-10-26.1"
+ENGINE_V = "2026-10-27.1"   # NCAAW ev avantajı ön bilgisi (HCA_K)
 STORE_V = 2              # veri biçimi sürümü             # kaç gün sonrasına kadar fikstür
 
 def fetch(url, tries=3):
@@ -64,6 +64,7 @@ def parse_espn_event(e, lg):
     h, a = side(cs["home"]), side(cs["away"])
     g = {"id": "e" + str(e["id"]), "lg": lg, "dt": e["date"], "h": h["n"], "a": a["n"], "neutral": bool(c.get("neutralSite")),
          "state": st.get("state", "pre"), "hl": h["logo"], "al": a["logo"], "hab": h["ab"], "aab": a["ab"]}
+    if "conferenceCompetition" in c: g["conf"] = bool(c.get("conferenceCompetition"))   # kolej: konferans içi maç (ileride ayrı ev avantajı için)
     if g["state"] == "post" and st.get("completed", True):
         if h["s"] + a["s"] == 0: return None
         g.update(hs=h["s"], as_=a["s"], hq=h["q"], aq=a["q"])
@@ -194,6 +195,41 @@ def days(g, ref):
 # liglerde etki yoktu, oralarda eski yol kalır. Geri almak için kümeyi boşaltmak yeter.
 HCA_JOINT = {"ncaa", "ncaaw"}
 
+# 🏠 Ev avantajı ön bilgisi (2026-10-27, denetim P1 "NCAA ev farkı sapması"). Ortak kestirimde ev avantajı cezasızdı; sezon
+# başında güçlü takımlar zayıfları evinde ağırladığı için (dengesiz takvim) ridge'in küçülttüğü takım farkını ev avantajı
+# emiyordu: tek sezonluk ileri yürüyüşte NCAA kestirimi 15 Kasım 14,3 → 10 Ocak 5,4 → sezon sonu 3,6 sayı; ocakta tahmin edilen
+# ev farkı 5,4, gerçek 2,5. Çözüm: ev avantajını EV-DEPLASMAN EŞLEŞMELERİNDEN öğrenilen değere doğru küçült. A–B hem A'nın hem
+# B'nin evinde oynadıysa iki maçın ev farkı ortalamasında takım gücü birbirini götürür (konferans maçları); zaman ağırlıklı
+# (HCA_HD) ve tarafsız sahalar hariç. Eşleşme azsa (sezonun ilk haftaları, geçmiş sezon yoksa) HCA_PRIOR kullanılır.
+# HCA_K: ön bilginin gücü (maç eşdeğeri). Seçim: haftalık ileri yürüyüş (her maç yalnız önceki maçlarla), κ DİĞER kolej liginde
+# seçildi, bu ligin tüm sezonunda bk_gelistir kapısı (gün kümeli bootstrap; tüm + iki zaman dilimi; LL GA üst < 0, Brier < 0,
+# isabet düşmez). NCAAW κ=6400: LL 0,4735 → 0,4713 (Δ −0,0023 [−0,0037, −0,0009]), iki dilimde de GA < 0, isabet +0,3 puan,
+# ev farkı sapması −0,47 → +0,03 sayı → KABUL. NCAA κ=1e6: LL 0,5628 → 0,5546 (Δ −0,0082 [−0,0127, −0,0038]), sapma −1,62 → +0,57,
+# ama ikinci dilimde Δ −0,0019 [−0,0055, +0,0017] ve isabet −0,4 puan → RET (yeni sezon verisiyle yeniden sınanmalı).
+# Kasım–Aralık/Ocak–Nisan ayrı ev avantajı (dönem vekili) iki ligde de tek ön bilgiden kötü çıktı, eklenmedi.
+HCA_K = {"ncaaw": 6400.0}
+HCA_PRIOR = {"ncaa": 3.0, "ncaaw": 3.0}      # yalnız eşleşme verisi yokken (NCAA uzun dönem ev avantajı ≈3 sayı)
+HCA_HD, HCA_MIN_PAIR = 0.0035, 100           # eşleşme zaman ağırlığı (yarı ömür ≈200 gün), en az eşleşme sayısı
+
+def hca_pairs(games, ref, hd=HCA_HD):
+    """Ev-deplasman eşleşmelerinden yalın ev avantajı: (kestirim, eşleşme sayısı)."""
+    by = {}
+    for g in games:
+        if g.get("neutral"): continue
+        w = math.exp(-hd * max(0, days(g, ref))); a = by.setdefault((g["h"], g["a"]), [0.0, 0.0])
+        a[0] += w * (g["hs"] - g["as_"]); a[1] += w
+    num = den = 0.0; npair = 0
+    for (h, a), (s1, w1) in by.items():
+        if h < a and (a, h) in by:
+            s2, w2 = by[(a, h)]; ww = 2.0 / (1.0 / w1 + 1.0 / w2)
+            num += ww * (s1 / w1 + s2 / w2) / 2.0; den += ww; npair += 1
+    return (num / den if den > 0 else None), npair
+
+def hca_prior(games, ref, lg):
+    h, npair = hca_pairs(games, ref)
+    if h is None or npair < HCA_MIN_PAIR: return HCA_PRIOR.get(lg, 3.0), npair, "varsayilan"
+    return h, npair, "eslesme"
+
 def fit(games, ref, P, joint=None):
     """Ağırlıklı ridge: ev sayısı = mu + hca + hücum(ev) + savunma(dep), dep sayısı = mu + hücum(dep) + savunma(ev)."""
     if len(games) < 20: return None
@@ -204,7 +240,7 @@ def fit(games, ref, P, joint=None):
     neu = np.array([g.get("neutral", False) for g in games])
     mu = float(np.sum(w * (hs + as_)) / (2 * np.sum(w)))
     hi = np.array([ix[g["h"]] for g in games]); ai = np.array([ix[g["a"]] for g in games])
-    if joint:   # bilinmeyenler: hücum(n), savunma(n), ev avantajı(1); ev avantajına yok denecek kadar küçük ceza
+    if joint:   # bilinmeyenler: hücum(n), savunma(n), ev avantajı(1); ev avantajına yok denecek kadar küçük ceza (HCA_K ligleri: ön bilgi)
         K = 2 * n + 1; M = np.zeros((K, K)); b = np.zeros(K); c = np.where(neu, 0.0, 0.5)
         for (o, d, y, s) in ((hi, ai, hs - mu, c), (ai, hi, as_ - mu, -c)):
             oi, di = o, n + d; hh = np.full(len(o), 2 * n)
@@ -213,8 +249,12 @@ def fit(games, ref, P, joint=None):
                 np.add.at(M, (r1, r2), v)
             np.add.at(b, oi, w * y); np.add.at(b, di, w * y); np.add.at(b, hh, w * s * y)
         M[np.diag_indices(2 * n)] += P["lam"]; M[2 * n, 2 * n] += 1e-3
+        lg = games[0].get("lg"); hk = HCA_K.get(lg, 0.0); hp = None
+        if hk > 0:   # ön bilgi: ½·hk·(hca − h0)²  (bir tarafsız olmayan maç ev avantajı denklemine 0,5·w katar)
+            h0, npair, src = hca_prior(games, ref, lg); M[2 * n, 2 * n] += 0.5 * hk; b[2 * n] += 0.5 * hk * h0
+            hp = {"h0": round(float(h0), 2), "eslesme": npair, "kaynak": src, "k": hk}
         x = np.linalg.solve(M, b)
-        return {"teams": teams, "ix": ix, "off": x[:n], "def": x[n:2 * n], "mu": mu, "hca": float(x[2 * n])}
+        return {"teams": teams, "ix": ix, "off": x[:n], "def": x[n:2 * n], "mu": mu, "hca": float(x[2 * n]), "hca_prior": hp}
     hca = float(np.sum(w[~neu] * (hs - as_)[~neu]) / max(1e-9, np.sum(w[~neu]))) if (~neu).any() else 0.0
     hcaH = np.where(neu, 0, hca / 2); hcaA = np.where(neu, 0, -hca / 2)
     yh = hs - mu - hcaH; ya = as_ - mu - hcaA
@@ -551,7 +591,7 @@ def main():
         m = metrics(rows, sm, stt, shares, halves)
         bt_all += rows
         out_lg[lg] = {"name": name, "qlen": qlen, "halves": halves, "n": len(games), "n_cur": len(cur), "asOf": store[lg].get("asOf", ""),
-                      "mu": round(F["mu"], 2), "hca": round(F["hca"], 2), "sm": round(sm, 2), "st": round(stt, 2), "shares": shares,
+                      "mu": round(F["mu"], 2), "hca": round(F["hca"], 2), "hca_prior": F.get("hca_prior"), "sm": round(sm, 2), "st": round(stt, 2), "shares": shares,
                       "params": P, "backtest": m, "dogrulama": guard, "kscale": ks, "kscale_test": kinfo, "uzun_vade": hz, "newp": P.get("newp"), "teams": team_table(games, cur, F, logos),
                       "recent": [{"dt": g["dt"], "h": g["h"], "a": g["a"], "s": [g["hs"], g["as_"]], "hq": g.get("hq"), "aq": g.get("aq")} for g in games[-60:]][::-1]}
         print(f"{lg}: {len(games)} maç, ayar {P}, test {m}, {time.time()-t0:.0f} sn", flush=True)
