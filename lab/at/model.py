@@ -339,7 +339,10 @@ class Model:
 
     def __init__(self, adlar, mu, sd, w, T, alfa, beta, gam, dlt, lam, cl=1.0, cg=0.0, gbm=None, yedek=None,
                  ku=1.0, cu=0.0, kal=None):
-        self.adlar, self.mu, self.sd, self.w = list(adlar), np.asarray(mu), np.asarray(sd), np.asarray(w)
+        self.adlar, self.mu, self.w = list(adlar), np.asarray(mu), np.asarray(w)
+        # eğitimde sabit kalan sütun (ölçek≈0; json'da 0'a yuvarlanır): tahminde değer değişirse 0'a bölme/NaN olmasın.
+        # Ağırlığı eğitimde zaten ~0'dır; ölçeği 1 almak puanı değiştirmez.
+        self.sd = np.where(np.asarray(sd, dtype=float) < 1e-6, 1.0, np.asarray(sd, dtype=float))
         self.T, self.alfa, self.beta, self.gam, self.dlt, self.lam = T, alfa, beta, gam, dlt, lam
         self.cl, self.cg, self.gbm, self.yedek = cl, cg, gbm, yedek
         # kalibrasyon adımları (v4): [["alan", a, b], ["beta", a, b], ["ust", k, c, eşik], ["izo", xs, ys, karışım]]
