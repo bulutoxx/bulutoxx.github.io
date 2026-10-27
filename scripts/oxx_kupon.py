@@ -474,7 +474,8 @@ def bk_canli_maclar(gun, simdi, A):
         bas = zaman(f["dt"])
         if bas.astimezone(TR).date().isoformat() != gun or bas <= simdi + timedelta(minutes=5): continue
         L = LG.get(e["lg"], {})
-        out.append(bk_mac(e["id"], e["lg"], L.get("name", e["lg"]), e["h"], e["a"], iso(bas), e["ph"], e["pa"], L.get("sm") or 12.0,
+        cp = e.get("cp") or {}       # piyasa çapalı tahmin: yalnız kapı + gölgeden geçmiş grupta basket.py yazar (scripts/bk_piyasa.py)
+        out.append(bk_mac(e["id"], e["lg"], L.get("name", e["lg"]), e["h"], e["a"], iso(bas), cp.get("ph", e["ph"]), cp.get("pa", e["pa"]), L.get("sm") or 12.0,
                           A["bk_en_olasi"].get("olcek", 1.0), f.get("io")))
     return out
 

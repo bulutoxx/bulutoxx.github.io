@@ -26,8 +26,8 @@ Karar: **BAĞLI** = üretimde · **DENEY** = ölçüldü (sonuç aşağıda) · 
 | 5 | aynanın `memory/horses|jockeys|trainers|tracks.json` | sonuçlardan türetilmiş özetler | bugünkü durum | ayna | aynı (1) | aynı (1) | RED | geleceği içerir (sızıntı); pedigri/sahip/orijin alanı YOK |
 | 6 | aynada kullanılmayan alanlar (27.10'da tüm 635 sonuç + 175 program dosyası yeniden sayıldı: sonuç atı alanları yalnız `position, no, name, jockey, trainer, weight, odds, finishTime, age, nonRunner` — **ara derece, start/kulvar, baba/anne YOK**; kilo ondalıklı (55,5 = aprantı indirimi, `jk_apr` zaten kullanıyor)): `nonRunners`, `unplaced` ("Derecesiz"), `ganyanSixPrizes`, `isGanyanStart`, `ekuriGroups`, `form` dizisi, `time` | koşmaz/derecesiz, 6'lı ikramiyesi, ekuri, eski form | 169 koşmaz + 43 derecesiz (tüm dönem); form/saat yalnız 2026-04+ | ayna | aynı (1) | aynı (1) | RED | olay sayısı çok az / geçmiş çok kısa; ekuri v2'de elendi. Start/kulvar, HP, sahip, yetiştirici, baba/anne, galop, AGF alanı aynada YOK |
 | 7 | **Open-Meteo** arşiv + tahmin API'si | günlük yağış, sıcaklık (ERA5 tabanlı), 1–2 gün tahmin | 1940 → bugün, her koordinat | HTTPS, anahtarsız (Actions'tan erişilir; bu oturumdan **engelli**: vekil 403, WebFetch izin listesinde değil) | **CC BY 4.0**, ücretsiz katman ticari olmayan kullanım; atıf + lisans bağlantısı | TJK ile ilgisi yok | YOL (ölçüm bekliyor) | `lab/at/hava.py` üretim çekicisi hazır; `a6_hava` yalnız bu çekicinin dosyasıyla ölçülür (`AT_HAVA=_hava/gunluk.csv python lab/at/deney6.py`, Actions'ta). Bu turda ölçülemedi |
-| 8 | github.com/dogankorkmaz-tjk/tjk-sistem — `data/hava/gunluk.csv` | (7)'nin 10 hipodrom için günlük kopyası (`tjk/hava_cek.py` Open-Meteo arşivinden çekiyor) | 2023-01-01 → 2026-10-12 | git clone | depo **lisanssız**; veri Open-Meteo'dan türediği söyleniyor ama atıf/lisans yok | aynı depo yasak alanları kazıyor (9) | RED (27.10 kararı) | önceki ekip çevrimdışı ölçüm için kullanmayı düşünmüştü; lisansı belirsiz ve yasak alan kazıyan bir depodan geldiği için **kullanılmadı**, ölçüm sonuçlarına girmedi. Hava ancak Open-Meteo'nun kendisinden (7) gelir |
-| 9 | aynı depo — `data/galop`, `idman.csv.gz`, `agf`, `agf_zaman`, `canli_oran`, `kosmaz`, `jokey_degisiklik` | idman/galop, AGF, canlı oran | 2026 | git clone | lisanssız | **tjkbulten.atyarisi.com API + tjk.org'dan kazınmış** (kodda açıkça)+ üçüncü taraf AGF sitesi | RED | yasaklı alanların dolaylı kopyası; açılmadı, okunmadı |
+| 8 | **Ek kaynak A** — günlük hava dosyası | (7)'nin 10 hipodrom için günlük kopyası (kaynakta Open-Meteo arşivinden çekildiği belirtiliyor) | 2023-01 → 2026-10 | sığ klon (yalnız veri dosyası okunur) | lisanssız hazır veri dosyası | – | DENEY (27.10 yeni kural) | kullanıcının 27.10 kuralı: herkese açık hazır veri dosyaları yalnız model eğitimi için okunabilir. Deneyde `a6_hava` bu kopyayla ölçüldü; üretimde hava yine Open-Meteo'nun kendisinden (7) çekilir |
+| 9 | **Ek kaynak A** — program (start, handikap puanı, baba), idman/galop, AGF zaman serisi, canlı oran, koşmaz, jokey değişikliği, sonuçlar | 2023-01 → bugün (program/sonuç), galop 2026-01+, idman 2026-08+, AGF zaman serisi yalnız 2026-10-10+ | sığ + seyrek klon; **kaynağın kodu çalıştırılmaz**, video/medya bağlantıları açılmaz | lisanssız hazır veri dosyaları; ham veri yeniden yayınlanmaz | dosyalar üçüncü kişi tarafından TJK kaynaklarından derlenmiş; bizden yasak alana istek gitmez | DENEY (27.10 yeni kural) | sonuçlar aşağıda ("Ek kaynak A deneyleri"); adres yalnız `AT_EK_KAYNAK` secret'ında |
 | 10 | npm `tjk-api` (bilaleren/tjk-api) | Node paketi: program, sonuç, AGF, muhtemeller | 2026-01 | npm | MIT (kod) | **tjk.org / vhs.tjk.org / medya-cdn'e istek atar** | RED | yasak alan |
 | 11 | SezerFidanci/TJK-API | TJK API sarmalayıcı | 2021 | git | yok | ebayi.tjk.org | RED | yasak alan |
 | 12 | ZehraK/TJK---Horse-Race-Scraping-Results | tjk.org kazıyıcı | 2021 | git | yok | tjk.org | RED | yasak alan, veri yok |
@@ -47,7 +47,7 @@ Karar: **BAĞLI** = üretimde · **DENEY** = ölçüldü (sonuç aşağıda) · 
 | 26 | cnszr71/tjk-racing-agent | ajan çerçevesi | 2026-10 | git | yok | – | RED | veri yok |
 | 27 | uruzgar/AtYarisi | "geçmiş yarışlar veri tabanı" | 2026-02 | git | yok | – | RED | depoda veri dosyası yok |
 | 28 | huseyinhim20-prog/TRAKUS96 | analiz | 2026-09 | git | yok | – | RED | boş |
-| 29 | dogankorkmaz-tjk/tjk-sistem — üçüncü taraf AGF/form sitelerinin yoklamaları (adları bilerek verilmedi) | üçüncü taraf AGF/form siteleri | – | erişilemedi | şartlar doğrulanamadı | içerik TJK'dan türemiş | RED | şart belirsiz; AGF ancak lisanslı kaynakla düşünülebilir |
+| 29 | Ek kaynak A'nın yokladığı üçüncü taraf AGF/form siteleri (adları bilerek verilmedi) | üçüncü taraf AGF/form siteleri | – | erişilemedi | şartlar doğrulanamadı | içerik TJK'dan türemiş | RED | sitelere doğrudan dokunulmaz |
 | 30 | sporx.com `at-yarisi-agf`, `muhtemeller`, `sonuclar` | AGF yüzdeleri, muhtemel oranlar ("TJK tarafından") | güncel | HTML | "Yasal Uyarı" sayfası; veri lisansı yok | TJK verisinin yeniden yayını | RED | kazıma izni yok/belirsiz; sabah AGF'si değerli olurdu ama yasal yol yok |
 | 31 | Kaggle "sanlian / Turkiye Horse Racing January 2024 Race Results" (baselight aynası) | 1 aylık sonuç | 2024-01 | Kaggle | doğrulanamadı | büyük olasılıkla tjk.org kazıması | RED | dönem aynanın dışında, tek ay, lisans belirsiz |
 | 32 | Kaggle/baselight Hong Kong (gdaley/hkracing, jeffreymuller 2013–2020) | HK sonuç + oran | 1997–2020 | Kaggle | çeşitli | – | RED | Türkiye değil (yalnız yöntem kıyası) |
@@ -119,15 +119,19 @@ PyPI/npm doğrudan ad sorgusu: yukarıdaki 13 PyPI adı; npm `tjk`, `tjk-api`, `
   kaynak, aynı şart — yalnız türetilmiş ölçüm, ham veri depoya girmez). **Open-Meteo** (CC BY 4.0): atıf "Hava verisi:
   Open-Meteo.com (CC BY 4.0)" + https://open-meteo.com/ bağlantısı; ücretsiz katman ticari olmayan kullanım içindir
   (bu proje hobi amaçlı). İndirilen hava dosyası `_hava/` altında, depoya yazılmaz.
-- **27.10 düzeltmesi:** önceki ekibin "çevrimdışı ölçüm istisnası" (tjk-sistem deposundaki `gunluk.csv`) geri alındı:
-  depo lisanssız ve aynı depo yasak alanları kazıyor → "lisansı belirsiz kaynağı yalnız raporla, kullanma" kuralı gereği
-  hiçbir ölçümde kullanılmadı. Hava sinyali (`a6_hava`) ancak Open-Meteo'nun kendisinden çekilen dosyayla ölçülecek
-  (GitHub Actions'tan erişilebilir): `python lab/at/hava.py && AT_HAVA=_hava/gunluk.csv python lab/at/deney6.py`.
-  Yerine aynanın kendi program havası/pist durumu ile **`a6_pist`** kuruldu ve ölçüldü.
-- **Yasak alan türevleri** (10–21, 9, 29–31): hepsi tjk.org / medya-cdn / vhs / ebayi.tjk.org / atyarisi API'lerine istek
+- **27.10 kural güncellemesi (kullanıcı):** üçüncü kişilerin herkese açık yayınladığı HAZIR VERİ DOSYALARI lisans olmasa
+  da yalnız model eğitimi için okunabilir; ham veri yeniden yayınlanmaz, depoya yalnız türetilmiş özellik/özet girer
+  (`data/at/ek_ozellik/<ay>.json.gz`). Hâlâ yasak: bizim adımıza tjk.org / medya-cdn / vhs*.tjk.org / atyarisi.com'a
+  bağlanan her kod (kaynak depoların kazıyıcıları ÇALIŞTIRILMAZ), ücretli/şifreli/girişli kaynaklar, kişisel veri (sahip
+  adı gibi alanlar okunmaz). Bu kuralla açılan kaynak belgede yalnız **"Ek kaynak A"** diye anılır; adresi yalnız GitHub
+  secret'ı `AT_EK_KAYNAK`'tadır (`lab/at/ek_kaynak.py` sığ+seyrek klonlar, türetir, ham veriyi siler; secret yoksa
+  "ek kaynak yok" deyip atlar). Bu belgenin önceki sürümlerinde geçen ad, git geçmişi yeniden yazılmadan bu sürümden
+  kaldırıldı.
+- **Yasak alan türevleri** (10–21, 29–31): hepsi tjk.org / medya-cdn / vhs / ebayi.tjk.org / atyarisi API'lerine istek
   atıyor ya da bunlardan kazınmış; bağlanmadı ve çalıştırılmadı.
-- **Bulunamayanlar:** start/kulvar, handikap puanı, sahip/yetiştirici, pedigri, idman/galop, AGF ve sabah oranları için
-  yasal + lisanslı + ücretsiz açık kaynak YOK. Bunlar ancak TJK'nın açık lisanslı bir veri yayını ya da aynanın bu alanları
+- **Bulunamayanlar (lisanslı):** start/kulvar, handikap puanı, sahip/yetiştirici, pedigri, idman/galop, AGF ve sabah
+  oranları için lisanslı + ücretsiz açık kaynak YOK; 27.10 kuralıyla start, handikap puanı, baba, idman/galop ve AGF
+  Ek kaynak A'nın hazır dosyalarından sınandı. Bunlar ancak TJK'nın açık lisanslı bir veri yayını ya da aynanın bu alanları
   eklemesiyle gelebilir (gece araştırmacısı izlemeye devam ediyor).
 
 ## Ölçüm sonuçları
@@ -147,3 +151,22 @@ testi 4 rastgele günde AYNI/AYNI/AYNI):
 | üçüncü taraf tahmin günlüğü | (4) | −0,0019 [−0,0055; +0,0015] (yığma) | ❌ elendi |
 
 Toplam (kalman + mesafe + gelişim − taban): −0,0055 [−0,0084; −0,0023]; ilk seçim %31,89 → %32,12.
+
+### Ek kaynak A deneyleri (27.10, yeni kural; taban = yukarıdaki seçilenler; `data/at/deneyler_v6_ek.json`)
+
+Sızıntı: türetici kendi testi (`ek_kaynak.sizinti_testi`: D'nin özellikleri, sonuçlar ve idmanlar D'den itibaren silinerek
+yeniden türetildiğinde birebir aynı; 4 gün, 650 koşan, fark 0) + `deney6.py --sizinti` (kesme / sonuç karıştırma / ters sıra
+AYNI). AGF ve oranlar sabah modeline GİRMEZ (sabah kilidi yalnız model; `lab/at/kilit.py`).
+
+| sinyal | ΔLL yalnız model [%95 GA] | sonuç |
+|---|---|---|
+| a6_ek_st (start/kulvar, × kısa mesafe, × çim) | −0,0006 [−0,0024; +0,0012] | ✅ yayında (kapı) |
+| a6_ek_hp (resmî handikap puanı, alan içi) | −0,0056 [−0,0095; −0,0017] (yeni tabanda) | ✅ yayında |
+| a6_ek_soy (baba tablosu, birikimli) | −0,0005 [−0,0028; +0,0021] | ❌ elendi (ilk seçim düştü) |
+| a6_ek_idman (idman/galop: gün, sayı, 400/600 m alan farkı) | −0,0041 [−0,0061; −0,0022] | ✅ yayında |
+| a6_hava (Ek kaynak A'nın hava kopyasıyla; üretimde Open-Meteo) | −0,0003 [−0,0015; +0,0010] | ✅ kapıdan sınırda geçti; yarış günü yağışsız sağlamlık −0,0001 |
+| AGF zaman serisi (≥15 dk önce, harman tarafı, 171 koşu) | +0,0056 [−0,0124; +0,0265] | ❌ elendi (veri 11 gün) |
+| canlı oran, koşmaz, jokey değişikliği | – | ölçülmedi: 8–37 dosya, çok az; aynada koşmaz zaten var |
+
+Toplam (Ek kaynak A + hava − v6 tabanı): −0,0106 [−0,0152; −0,0061]; ilk seçim %32,12 → %32,54. v5 tabanından bu yana
+toplam: 1,8616 → 1,8470.

@@ -124,7 +124,7 @@ const core = [
   [T("oran ne demek", "terim", { kw: /oran/i, kw2: /olasılık|kazanç|katı|çarp/i })],
   [T("iy ms ne demek", "terim", { kw: /ilk yarı/i, kw2: /maç sonu/i })],
   [T("ms 1 nedir", "terim", { kw: /ev sahibi/i })],
-  [T("banko ne demek", "terim", { kw: /banko/i, kw2: /güven|kesin|olasılı/i })],
+  [T("banko ne demek", "terim", { kw: /kesin/i, kw2: /güven|olasılı/i })],
   [T("altın tahmin nedir", "terim", { kw: /altın/i, kw2: /%\s?7\d|%\s?8\d/ })],
   [T("güçlü tahmin ne demek", "terim", { kw: /%\s?70/ })],
   [T("pas ne demek", "terim", { kw: /pas/i, kw2: /%\s?58|net (bir )?tahmin yok|dengeli/i })],

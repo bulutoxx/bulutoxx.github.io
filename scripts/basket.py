@@ -423,16 +423,28 @@ def pick_score(mh, ma, shares):
 
 # ---------------------------------------------------------------- tahmin günlüğü
 def lock_and_grade(plog, fixtures, fits, Ps, store_games, today):
+    import bk_piyasa as BP
     have = {e["id"] for e in plog}
     now_iso = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M")
+    fx = {f["id"]: f for f in fixtures}
+    # 📈 piyasa anlık görüntüsü (denetim U8): kilitli tahmin değişmez; piyasa oranı maç başlayana dek tazelenir (pz = son,
+    # pz0 = kilit anı). Ölçüm maç öncesi SON görüntüyle yapılır; maç başladıktan sonra hiç yazılmaz (sızıntı yok).
+    for e in plog:
+        f = fx.get(e["id"])
+        if e.get("r") is not None or not f or f.get("state") in ("in", "post") or f.get("live") or f["dt"][:16] <= now_iso: continue
+        pz = BP.pz_al(f)
+        if pz: e["pz"] = dict(pz, ts=now_iso + "Z"); e.setdefault("pz0", e["pz"])
+        e.setdefault("dt", f["dt"])
     for f in fixtures:
         if f["id"] in have or f.get("state") in ("in", "post") or f.get("live") or f["dt"][:16] <= now_iso: continue
         F = fits.get(f["lg"]); pm = pred_means(F, f["h"], f["a"], f.get("neutral", False), Ps.get(f["lg"], {}).get("newp")) if F else None
         if not pm: continue
         k_ = KS.get(f["lg"], 1.0); pm = (((pm[0] + pm[1]) + k_ * (pm[0] - pm[1])) / 2, ((pm[0] + pm[1]) - k_ * (pm[0] - pm[1])) / 2)
-        e = {"id": f["id"], "lg": f["lg"], "d": f["dt"][:10], "h": f["h"], "a": f["a"], "ph": round(pm[0], 1), "pa": round(pm[1], 1),
+        e = {"id": f["id"], "lg": f["lg"], "d": f["dt"][:10], "dt": f["dt"], "h": f["h"], "a": f["a"], "ph": round(pm[0], 1), "pa": round(pm[1], 1),
              "v": ENGINE_V, "ts": now_iso + "Z"}
         if f.get("odds"): e["odds"] = f["odds"]
+        pz = BP.pz_al(f)
+        if pz: e["pz"] = dict(pz, ts=now_iso + "Z"); e["pz0"] = e["pz"]
         plog.append(e); have.add(f["id"])
     res = {}
     for lg, st in store_games.items():
@@ -506,6 +518,7 @@ def iddaa_bk(fixtures, out_lg):
             used.add(best); f = fk[best][0]; nm += 1
             f["io"] = mk["ms"]; f["iid"] = e["iid"]
             if mk.get("tot"): f["itot"] = mk["tot"]
+            if mk.get("hnd"): f["ihnd"] = mk["hnd"]
             continue
         if tot is None: tot = 160.0
         sm = max(8.0, 0.075 * tot)                          # fark belirsizliği toplamla ölçeklenir (NBA ~15, Avrupa ~12)
@@ -596,9 +609,38 @@ def main():
                       "recent": [{"dt": g["dt"], "h": g["h"], "a": g["a"], "s": [g["hs"], g["as_"]], "hq": g.get("hq"), "aq": g.get("aq")} for g in games[-60:]][::-1]}
         print(f"{lg}: {len(games)} maç, ayar {P}, test {m}, {time.time()-t0:.0f} sn", flush=True)
 
+    # iddaa oranları KİLİTTEN ÖNCE eşlensin: kilitli kayda maç öncesi piyasa görüntüsü (MS, handikap, alt/üst) yazılır
+    if not offline:
+        try:
+            bx, syn = iddaa_bk([f for f in fixtures if f.get("state") != "post"], out_lg)
+            for k, v in syn.items(): out_lg.setdefault(k, v)
+            fixtures = fixtures + bx
+        except Exception as e:
+            print("iddaa basketbol alınamadı:", e.__class__.__name__, str(e)[:120], flush=True)
+    else:   # çevrimdışı: önceki çıktının sentetik iddaa yarışmaları korunur (fikstürleri zaten old["fixtures"]'tan gelir)
+        for lg, L in old.get("leagues", {}).items():
+            if L.get("syn"): out_lg.setdefault(lg, L)
+        fixtures = fixtures + [f for f in old.get("fixtures", []) if str(f.get("lg", "")).startswith("i")]
     plog = json.load(open(pp, encoding="utf-8")) if os.path.exists(pp) else []
     KS.clear(); KS.update({lg: L.get("kscale", 1.0) for lg, L in out_lg.items()})
     plog = lock_and_grade(plog, fixtures, fits, Ps, store, today)
+    # 📈 piyasa karnesi (data/bk_piyasa.json) + yalnız kapıdan ve gölgeden geçmiş gruplarda çapalı tahmin (cp)
+    cp_fx = {}
+    try:
+        import bk_piyasa as BP
+        PK, _ = BP.karne(plog, out_lg, fixtures)
+        U = PK.get("uretimde") or {}
+        now_iso = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M")
+        for e in plog:
+            g = BP.GRUP.get(e["lg"])
+            if e.get("r") is not None or not U.get(g) or not e.get("pz") or e.get("dt", e["d"])[:16] <= now_iso: continue
+            cp = BP.capala(e["ph"], e["pa"], e["pz"], out_lg.get(e["lg"]) or {}, (PK.get("agirlik") or {}).get(g))
+            if cp: e["cp"] = cp; cp_fx[e["id"]] = cp
+        t_ = PK.get("toplam") or {}
+        print(f"Basket piyasa karnesi: {t_.get('n')} maç · model LL {(t_.get('model') or {}).get('ll')} · piyasa {(t_.get('piyasa') or {}).get('ll')} "
+              f"· harman {(t_.get('harman') or {}).get('ll')} · üretimde {sorted(g for g, v in U.items() if v)}", flush=True)
+    except Exception as e:
+        print("basket piyasa karnesi atlandı:", e.__class__.__name__, str(e)[:160], flush=True)
     json.dump(plog, open(pp, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
     mw, mn = learn_market(plog)
     try:
@@ -613,18 +655,14 @@ def main():
                "mae_margin": round(float(np.mean([abs((r[0]["hs"] - r[0]["as_"]) - (r[1] - r[2])) for r in bt_all])), 2)}
     hist = old.get("history", [])
     if tot and not quick: hist = (hist + [{"t": now, "win": tot["win"], "n": tot["n"], "mae_total": tot["mae_total"]}])[-60:]
-    try:
-        bx, syn = iddaa_bk([f for f in fixtures if f.get("state") != "post"], out_lg)
-        for k, v in syn.items(): out_lg.setdefault(k, v)
-        fixtures = fixtures + bx
-    except Exception as e:
-        print("iddaa basketbol alınamadı:", e.__class__.__name__, str(e)[:120], flush=True)
-    fx_out = []
+    fx_out = []; seen_fx = set()
     for f in sorted(fixtures, key=lambda x: x["dt"]):
-        if f["lg"] not in out_lg: continue
+        if f["lg"] not in out_lg or f["id"] in seen_fx: continue
+        seen_fx.add(f["id"])
         x = {k: f[k] for k in ("id", "lg", "dt", "h", "a", "hl", "al", "neutral") if k in f}
-        for k in ("odds", "phase", "round", "clock", "io", "iid", "itot", "src"):
+        for k in ("odds", "phase", "round", "clock", "io", "iid", "itot", "ihnd", "src"):
             if f.get(k): x[k] = f[k]
+        if cp_fx.get(f["id"]): x["cp"] = cp_fx[f["id"]]          # çapalı tahmin (yalnız üretime alınmış gruplar; istemci henüz okumuyor)
         if f.get("state") == "in": x["live"] = True; x["hs"] = f.get("hs"); x["as"] = f.get("as_")
         fx_out.append(x)
     res = {"updated": now, "tuned": old.get("tuned", now) if quick else now, "fp": fp, "engine": ENGINE_V, "leagues": out_lg, "fixtures": fx_out, "backtest": tot, "history": hist,

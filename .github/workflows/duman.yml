@@ -1,0 +1,42 @@
+name: OXXai duman testi (dal / PR)
+# Uygulama dosyaları (index.html, sw.js, manifest, brain-worker.js, icons/) ya da test araçları değişince, main DIŞINDAKİ dallarda
+# ve PR'larda yerel kopya üzerinde lab/qa.mjs hızlı modunu koşar (birkaç dakika). main'e gelen değişiklik ayrıca update.yml
+# deploy işindeki yayın kapısından geçer. Depoya yazmaz; issue/mail/bildirim açmaz. Ücretsiz (genel depo, Actions).
+on:
+  push:
+    branches-ignore: [main]
+    paths: ["index.html", "sw.js", "manifest.webmanifest", "brain-worker.js", "icons/**", "lab/qa.mjs", "lab/duman.sh", "lab/yayin_kapisi.py", "lab/yayin_listesi.py", ".github/workflows/duman.yml"]
+  pull_request:
+    paths: ["index.html", "sw.js", "manifest.webmanifest", "brain-worker.js", "icons/**", "lab/qa.mjs", "lab/duman.sh", "lab/yayin_kapisi.py", "lab/yayin_listesi.py", ".github/workflows/duman.yml"]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: duman-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  duman:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "20" }
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: pw-chromium-1.48.2-${{ runner.os }}
+      - name: Playwright kur
+        run: bash lab/duman.sh kur
+      - name: 💨 Duman testi (yayınlanacak daraltılmış kopya, hızlı mod; 404 = alarm)
+        run: |
+          python3 lab/yayin_listesi.py kur "$RUNNER_TEMP/site_duman"
+          bash lab/duman.sh "$RUNNER_TEMP/site_duman" "$RUNNER_TEMP/qa_duman.json"
+      - name: Sonucu sakla
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qa-duman
+          path: ${{ runner.temp }}/qa_duman.json*
+          retention-days: 7
+          if-no-files-found: ignore

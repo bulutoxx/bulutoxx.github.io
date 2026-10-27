@@ -73,7 +73,8 @@ def temiz(s):
 
 
 # ------------------------------------------------------------------ deney: OXXai kuyruğu (futbol / basket / at)
-def _gunler(V, alan):
+def _gunler(V, alan, c=None):
+    if c is not None and c.get("tur") == "bk_piyasa": return list(V.bk_pz().keys())   # piyasa çapası: piyasalı kilitli maç günleri
     if alan == "futbol": return list(V.fb()[0].keys())
     if alan == "basket": return list(V.bk()[0].keys())
     return list(V.at().keys())
@@ -142,7 +143,7 @@ def deney_oxx(alan):
         try:
             ga = g.get("alfa")                     # gölge doğrulaması yeni harcama yapmaz: girişteki α ile ölçülür
             c1 = copy.deepcopy(g["aday"]); tam = O.sina(c1, V, J, A, g.get("m", 1), alfa=ga)
-            yeni_g = {d for d in _gunler(V, alan) if d >= g["baslangic_gun"]}
+            yeni_g = {d for d in _gunler(V, alan, g["aday"]) if d >= g["baslangic_gun"]}
             yeni = None
             if yeni_g:
                 c2 = copy.deepcopy(g["aday"]); yeni = O.sina(c2, V, J, A, g.get("m", 1), gunler_filtre=yeni_g, alfa=ga)
