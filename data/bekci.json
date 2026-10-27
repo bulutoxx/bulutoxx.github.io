@@ -1,10 +1,10 @@
 {
- "zaman": "2026-10-27T20:00Z",
+ "zaman": "2026-10-27T20:39Z",
  "deneme": false,
  "isler": [
   {
    "is": "Futbol motoru",
-   "son_basari_saat": 0.14,
+   "son_basari_saat": 0.8,
    "calisan": 0,
    "durum": "sağlık sorunu (bir kez tetiklendi, bekleniyor)",
    "saglik": [
@@ -13,43 +13,40 @@
   },
   {
    "is": "Canlı kayıt",
-   "son_basari_saat": 0.52,
+   "son_basari_saat": 0.35,
    "calisan": 1,
    "durum": "sağlıklı"
   },
   {
    "is": "At yarışı canlı",
-   "son_basari_saat": 0.2,
-   "calisan": 0,
-   "durum": "sağlık sorunu → yeniden tetiklendi",
-   "saglik": [
-    "bayat dosya: data/at/canli/2026-10-27.json (1.89 sa > 1.5 sa)"
-   ]
+   "son_basari_saat": 0.12,
+   "calisan": 1,
+   "durum": "sağlıklı"
   },
   {
    "is": "At yarışı gece",
-   "son_basari_saat": 4.75,
+   "son_basari_saat": 5.41,
    "calisan": 0,
-   "durum": "sağlık sorunu (bir kez tetiklendi, bekleniyor)",
+   "durum": "sağlık sorunu → yeniden tetiklendi",
    "saglik": [
     "adım başarısız: arsiv-yukle (çıkış 1, 1/1 tur)"
    ]
   },
   {
    "is": "Otonom ekip",
-   "son_basari_saat": 4.13,
+   "son_basari_saat": 4.78,
    "calisan": 0,
    "durum": "sağlıklı"
   },
   {
    "is": "Otomatik laboratuvar",
-   "son_basari_saat": 4.91,
+   "son_basari_saat": 5.57,
    "calisan": 0,
    "durum": "sağlıklı"
   },
   {
    "is": "Sürekli deney",
-   "son_basari_saat": 2.19,
+   "son_basari_saat": 0.61,
    "calisan": 0,
    "durum": "sağlık sorunu (bir kez tetiklendi, bekleniyor)",
    "saglik": [
@@ -59,14 +56,22 @@
  ],
  "eylem": [
   {
-   "is": "At yarışı canlı",
+   "is": "At yarışı gece",
    "eylem": "sağlık kaydında sorun → bir kez yeniden tetiklendi",
    "neden": [
-    "bayat dosya: data/at/canli/2026-10-27.json (1.89 sa > 1.5 sa)"
+    "adım başarısız: arsiv-yukle (çıkış 1, 1/1 tur)"
    ]
   }
  ],
  "gecmis": [
+  {
+   "zaman": "2026-10-27T20:39Z",
+   "is": "At yarışı gece",
+   "eylem": "sağlık kaydında sorun → bir kez yeniden tetiklendi",
+   "neden": [
+    "adım başarısız: arsiv-yukle (çıkış 1, 1/1 tur)"
+   ]
+  },
   {
    "zaman": "2026-10-27T20:00Z",
    "is": "At yarışı canlı",
@@ -148,7 +153,7 @@
  "saglik_tetik": {
   "at-lab.yml": {
    "imza": "adım başarısız: arsiv-yukle (çıkış 1, 1/1 tur)",
-   "zaman": "2026-10-27T14:14Z"
+   "zaman": "2026-10-27T20:39Z"
   },
   "update.yml": {
    "imza": "adım başarısız: arsiv-yukle (çıkış 1, 1/1 tur)",
@@ -157,10 +162,6 @@
   "surekli-deney.yml": {
    "imza": "adım başarısız: deney (çıkış 1, 1/1 tur)",
    "zaman": "2026-10-27T17:47Z"
-  },
-  "at-canli.yml": {
-   "imza": "bayat dosya: data/at/canli/2026-10-27.json (1.89 sa > 1.5 sa)",
-   "zaman": "2026-10-27T20:00Z"
   }
  }
 }
