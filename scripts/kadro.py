@@ -29,7 +29,8 @@ CIKTI = os.path.join(DATA, "kadro.json")
 ONBELLEK = os.environ.get("KADRO_ONBELLEK") or os.path.join(ROOT, ".kadro_onbellek")
 API = "https://v3.football.api-sports.io"
 GUNLUK_TAVAN = int(os.environ.get("KADRO_TAVAN", "90"))
-CALISMA_TAVAN = int(os.environ.get("KADRO_CALISMA_TAVAN", "14"))   # tek çalışmada en çok istek (saatlik iş; günü dengeler)
+CALISMA_TAVAN = int(os.environ.get("KADRO_CALISMA_TAVAN", "14"))
+YEDEK_TAVAN = int(os.environ.get("KADRO_YEDEK", "40"))   # gün içinde sonra başlayacak maçların ilk 11'i için ayrılan istek   # tek çalışmada en çok istek (saatlik iş; günü dengeler)
 ARALIK_SN = float(os.environ.get("KADRO_ARALIK", "6.5"))            # ücretsiz katman dakikada ~10 istek
 KILIT_PAY, KILIT_MIN_MAC = 0.6, 4
 KAYIP_KATSAYI = 0.05     # kilit oyuncu başına (ilk 11 payı 1 iken) gol beklentisi kaybı; başlangıç tahmini, kapı öğrenir
@@ -274,8 +275,15 @@ def calis(kuru=False, istemci=None, fx=None, an=None):
         # 4) kalan bütçe: biten öncelikli maçların ilk 11'i (kilit oyuncu birikimi)
         biten = [ES[k]["id"] for k in sorted(ES, key=lambda k: -(ES[k].get("ts") or 0))
                  if ES[k].get("ts") and now_ts - ES[k]["ts"] > 2.5 * 3600 and str(ES[k]["id"]) not in OB.get("islenen", {})]
+        # Akşam maçlarının ilk 11'i için gün sonuna kadar yedek bırak (biten maçlar yedeğe dokunamaz)
+        gun_sonu = datetime(an.year, an.month, an.day, tzinfo=timezone.utc).timestamp() + 86400
+        sonraki = sum(1 for k in ES if ES[k].get("ts") and now_ts + 75 * 60 < ES[k]["ts"] < gun_sonu
+                      and str(ES[k]["id"]) not in (OB.get("ilk11_mac") or {}))
+        yedek = min(YEDEK_TAVAN, sonraki)
+        D["yedek"] = yedek
+        biten = biten[:max(0, GUNLUK_TAVAN - D["istek_bugun"] - yedek - 2)] if OB.get("ids_yok") else biten
         for i in range(0, len(biten), 20):
-            if I.kalan() <= 2: break
+            if I.kalan() <= 2 or GUNLUK_TAVAN - D["istek_bugun"] - yedek <= 2: break
             ilk11_paket(I, OB, biten[i:i + 20], "FT")
     except Durdur as e:
         nedeni = str(e)
@@ -301,7 +309,7 @@ def calis(kuru=False, istemci=None, fx=None, an=None):
     OB["esleme"] = {k: v for k, v in ES.items() if k.split("|")[1] >= sinir}
     OB["islenen"] = {k: v for k, v in (OB.get("islenen") or {}).items() if v >= (an - timedelta(days=60)).date().isoformat()}
     OB["ilk11_mac"] = {k: v for k, v in L11.items() if k in OB["islenen"]}
-    cik["durum"] = {"guncelleme": z(an), "istek_bugun": D["istek_bugun"], "tavan": GUNLUK_TAVAN, "bu_calisma": I.calisma,
+    cik["durum"] = {"guncelleme": z(an), "istek_bugun": D["istek_bugun"], "tavan": GUNLUK_TAVAN, "bu_calisma": I.calisma, "yedek": D.get("yedek"),
                     "eslesen_mac": len(OB["esleme"]), "takim_birikimi": len(OB.get("takim", {})),
                     "kilit_hazir_takim": sum(1 for s in (OB.get("takim") or {}).values() if s["mac"] >= KILIT_MIN_MAC),
                     "ozet_yazilan": n_yaz, "durma_nedeni": nedeni, "son_hata": D.get("son_hata"),
