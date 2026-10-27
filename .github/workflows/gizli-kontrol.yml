@@ -1,18 +1,28 @@
 name: OXXai gizli değer kontrolü
-# Yalnız elle çalıştırılır: AT_EK_KAYNAK gizli değeri tanımlı mı ve adres erişilebilir mi? Değeri asla yazdırmaz.
+# Yalnız elle çalıştırılır: gizli değerler tanımlı mı? Değerleri asla yazdırmaz (her biri ayrı iş; tanımlı değilse o iş başarısız olur).
 on:
   workflow_dispatch:
 permissions:
   contents: read
 jobs:
-  kontrol:
+  at_ek_kaynak:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - name: Gizli değer var mı
-        env:
-          K: ${{ secrets.AT_EK_KAYNAK }}
+      - env: { K: "${{ secrets.AT_EK_KAYNAK }}" }
         run: |
-          if [ -z "$K" ]; then echo "AT_EK_KAYNAK tanımlı değil"; exit 1; fi
-          echo "AT_EK_KAYNAK tanımlı (uzunluk ${#K})"
-          git ls-remote --heads "$K" >/dev/null 2>&1 && echo "adres erişilebilir" || { echo "adres erişilemiyor"; exit 2; }
+          [ -n "$K" ] || { echo "tanımlı değil"; exit 1; }
+          git ls-remote --heads "$K" >/dev/null 2>&1 || { echo "adres erişilemiyor"; exit 2; }
+          echo "tamam"
+  odds_api_key:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - env: { K: "${{ secrets.ODDS_API_KEY }}" }
+        run: '[ -n "$K" ] && echo "tanımlı (uzunluk ${#K})" || { echo "tanımlı değil"; exit 1; }'
+  apisports_key:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - env: { K: "${{ secrets.APISPORTS_KEY }}" }
+        run: '[ -n "$K" ] && echo "tanımlı (uzunluk ${#K})" || { echo "tanımlı değil"; exit 1; }'
