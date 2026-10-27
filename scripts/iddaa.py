@@ -1,6 +1,6 @@
 """Resmi iddaa bülteni (iddaa.com; robots.txt herkese açık izin verir).
 Bilyoner, Nesine, Misli gibi siteler aynı resmi bülteni satar: maç listesi ve oranlar buradan gelir.
-Yalnızca maç, saat, lig ve temel oranlar (MS 1X2, 2,5 alt/üst, KG; basketbolda MS, handikap, toplam) alınır.
+Yalnızca maç, saat, lig ve temel oranlar (MS 1X2, 2,5 alt/üst, KG; basketbolda MS, handikap (mk["hnd"]), toplam) alınır.
 Futbolda ek pazarlar (çifte şans, 1,5/3,5 A/Ü, İY/2Y sonucu ve A/Ü, İY/MS, MS+2,5, MS+KG, daha gollü yarı) mk["px"]'e
 pazar motoru kodlarıyla eklenir (bkz. extra_markets; tanınmayan pazar sessizce atlanır).
 Sanal/e-spor yarışmaları alınmaz."""
@@ -158,7 +158,8 @@ def fetch(sport, days=7):
         c = comps.get(e.get("ci"), {})
         cname = c.get("n") or ""
         if SKIP.search(cname) or SKIP.search(e.get("hn", "")) or SKIP.search(e.get("an", "")): continue
-        mk = {}; tots = []
+        mk = {}; tots = []; hnds = []
+        cfg = market_config() if sport != 1 else {}
         for m in e.get("m") or []:
             st, sov, o = m.get("st"), m.get("sov"), _mk(m)
             if sport == 1:
@@ -168,14 +169,21 @@ def fetch(sport, days=7):
             else:
                 if st == 2 and o.get("1", 0) > 1.01 and o.get("2", 0) > 1.01: mk["ms"] = [o["1"], o["2"]]
                 elif sov not in (None, ""):
-                    try: line = float(sov)
+                    try: line = float(str(sov).replace(",", "."))
                     except ValueError: continue
                     if "Alt" in o and "Üst" in o: tots.append((line, o["Üst"], o["Alt"]))
+                    elif set(o) == {"1", "2"} and o["1"] > 1.01 and o["2"] > 1.01 and 0 < abs(line) <= 40:
+                        # handikap (2 yollu, çizgili). Ad biliniyorsa yarı/çeyrek handikapları elenir; işaret, kullanılırken
+                        # MS oranıyla tutarlılıktan çözülür (scripts/bk_piyasa.piyasa)
+                        ad = _low(cfg.get(f"{m.get('t')}_{st}") or "")
+                        if ad and ("handikap" not in ad or re.search(r"(yarı|çeyrek|periyot|ev sahibi|deplasman)", ad)): continue
+                        hnds.append((line, o["1"], o["2"]))
         if sport != 1:
             bal = lambda x: abs(x[1] - x[2])
             if tots:
                 mx = max(t[0] for t in tots); c_ = [t for t in tots if t[0] >= 0.85 * mx and t[0] >= 110]   # maç toplamı (yarı/çeyrek değil)
                 if c_: mk["tot"] = list(min(c_, key=bal))
+            if hnds: mk["hnd"] = list(min(hnds, key=bal))          # ana çizgi: oranları en dengeli olan
         if "ms" not in mk: continue
         if sport == 1:
             try:

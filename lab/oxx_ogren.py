@@ -184,6 +184,18 @@ def sinyaller(bugun, A):
             C.append({"anahtar": f"bk_olcek:{yeni}", "tur": "bk_olcek", "alan": "basket", "yol": ["bk_en_olasi", "olcek"], "deger": yeni, "stratejiler": ["bk_en_olasi"],
                       "sinyal": {"n": n, "tutan": int(h), "beklenen": round(e, 2), "z": round(z, 2), "kaynak": "bk_predlog (kilitli basket tahmini)"},
                       "aciklama": f"basket favori olasılığı {'fazla' if z < 0 else 'az'} güvenli → σ ölçeği {cur} → {yeni}"})
+    # f) basket piyasa çapası (scripts/bk_piyasa.py karnesi): grup kapısını geçen (n, gün, ΔLL GA üst < 0, ΔBrier < 0, isabet)
+    #    ve henüz üretimde olmayan grup aday olur. Bu kapıdan (alfa yatırımı) ve surekli_deney gölgesinden geçerse
+    #    params.bk_piyasa.<grup> = true yazılır → basket.py çapalı tahmini (cp) üretir.
+    PKR = K.jl(os.path.join(DATA, "bk_piyasa.json"), {}) or {}
+    for g, G in (PKR.get("gruplar") or {}).items():
+        if (G.get("kapi") or {}).get("durum") != "gecti" or (A.get("bk_piyasa") or {}).get(g): continue
+        fk = G.get("fark_harman_model") or {}; ga = fk.get("ll_ga") or [None, None]
+        se = (ga[1] - ga[0]) / 3.92 if ga[0] is not None and ga[1] is not None and ga[1] > ga[0] else None
+        z = round((fk.get("ll") or 0) / se, 2) if se else -1.5
+        C.append({"anahtar": f"bk_piyasa:{g}", "tur": "bk_piyasa", "alan": "basket", "yol": ["bk_piyasa", g], "deger": True, "stratejiler": ["bk_en_olasi"],
+                  "sinyal": {"n": G.get("n"), "z": z, "fark_ll": fk.get("ll"), "ga": ga, "kaynak": "data/bk_piyasa.json (kilitli basket tahmini × maç öncesi piyasa)"},
+                  "aciklama": f"basket {G.get('ad', g)}: model + piyasa harmanı log-kaybını {fk.get('ll')} düşürüyor → piyasa çapası üretime"})
     # e) at: gece robotunun kilitli karnesi (favori kalibrasyonu) → τ (ikili/sıralı ikili/çifte)
     AK = K.jl(os.path.join(DATA, "at", "karne.json"), {}) or {}
     L = []
@@ -253,6 +265,13 @@ class Veri:
                     gun[d].append((g["id"], lg, ph, pa, L.get("sm") or 12.0)); son[g["id"]] = (g["hs"], g["as_"])
             self._bk = (dict(sorted(gun.items())), son)
         return self._bk
+
+    def bk_pz(self):
+        """Basket piyasa çapası: gün → [(LL model, LL harman, grup)] (ileri yürüyüş, scripts/bk_piyasa.gunluk_ll)."""
+        if getattr(self, "_bkpz", None) is None:
+            import bk_piyasa as BP
+            self._bkpz = BP.gunluk_ll()
+        return self._bkpz
 
     def at(self):
         if self._at is None:
@@ -389,6 +408,7 @@ def sina(c, V, J, A, m_deneme, gunler_filtre=None, alfa=None):
     """Aday c'yi taban ayarla karşılaştır. Dönüş: kayıt sözlüğü (karar alanı dahil).
     alfa: alfa yatırımından gelen düzey (verilmezse eski Bonferroni 0,05/m; yalnız geriye uyum)."""
     alfa = ALFA / max(1, m_deneme) if alfa is None else alfa
+    if c["tur"] == "bk_piyasa": return sina_bk_piyasa(c, V, m_deneme, gunler_filtre, alfa)
     Ab = A
     # pazar düzeltmesi: Platt seçim diliminde öğrenilir (yalnız o koddaki tüm maçlarla)
     if c["tur"] == "pazar":
@@ -465,6 +485,41 @@ def sina(c, V, J, A, m_deneme, gunler_filtre=None, alfa=None):
     return rap
 
 
+def bk_pz_gunler(V, g, gunler_filtre=None):
+    D = {d: [x for x in L if x[2] == g] for d, L in V.bk_pz().items()}
+    return {d: L for d, L in D.items() if L and (gunler_filtre is None or d in gunler_filtre)}
+
+
+def sina_bk_piyasa(c, V, m_deneme, gunler_filtre, alfa):
+    """Basket piyasa çapası: taban = model, aday = Benter harmanı; ölçüt maç başına log-kaybı iyileşmesi.
+    Aynı kapı: zaman sıralı seçim (ilk 2/3 gün) / sınama (son 1/3) dilimi, gün bootstrap'ı, alfa yatırımı."""
+    g = c["yol"][-1]
+    D = bk_pz_gunler(V, g, gunler_filtre); gun = sorted(D)
+    lb = {d: (0, len(D[d]), 0, sum(x[0] for x in D[d])) for d in gun}
+    lc = {d: (0, len(D[d]), 0, sum(x[1] for x in D[d])) for d in gun}
+    secim, sinama = (_bol(gun) if gunler_filtre is None else ([], gun))
+    sec_n = brier_farki(lb, lc, secim)(np.arange(len(secim))) if secim else None
+    nokta, alt, B = boot_alt(sinama, brier_farki(lb, lc, sinama), alfa) if alfa > 0 and sinama else (None, None, 0)
+    def oz(T, gl):
+        n = sum(T[d][1] for d in gl); return {"n": n, "ll": r4(sum(T[d][3] for d in gl) / n) if n else None}
+    gecerli = alt is not None and bool(np.isfinite(alt)) and alfa > 0
+    rap = {"olcut": "log-kaybı iyileşmesi (model → model+piyasa harmanı)", "alfa": r4(alfa), "alfa_ham": alfa, "deneme_no": m_deneme,
+           "test_yapildi": gecerli, "istatistik_gecti": gecerli and alt > 0,
+           "secim": {"gun": [secim[0], secim[-1]] if secim else None, "fark": r4(sec_n) if sec_n is not None and np.isfinite(sec_n) else None,
+                     "taban": oz(lb, secim), "aday": oz(lc, secim)},
+           "sinama": {"gun": [sinama[0], sinama[-1]] if sinama else None, "fark": r4(nokta) if nokta is not None and np.isfinite(nokta) else None,
+                      "alt_sinir": r4(alt), "bootstrap_B": B, "taban": oz(lb, sinama), "aday": oz(lc, sinama)}, "koruma": {}}
+    neden = []
+    n_s = sum(lb[d][1] for d in sinama)
+    if gunler_filtre is None and (sec_n is None or not np.isfinite(sec_n) or sec_n <= 0): neden.append("seçim diliminde iyileşme yok")
+    if n_s < 50: neden.append(f"sınamada maç az ({n_s} < 50)")
+    if alfa <= 0: neden.append("alfa yatırımı serveti bitti (bu yıl bu alanda yeni kabul yok)")
+    elif not gecerli or alt <= 0: neden.append(f"sınama alt sınırı ≤ 0 (α={alfa:.4f})")
+    rap["karar"] = "kabul" if not neden else ("veri_yetersiz" if n_s < 50 and gunler_filtre is None else "ret")
+    rap["neden"] = "; ".join(neden) if neden else "tüm kapılar geçildi"
+    return rap
+
+
 # ------------------------------------------------------------------ 4–5) uygulama, izleme, geri alma
 def uygula(J, c, bugun):
     yol = c["yol"]; once = al(J.get("params", {}), yol, "__yok__")
@@ -497,6 +552,29 @@ def golge_karsilastir(iz):
 
 def yeniden_sina(J, iz, V, bugun, rb):
     """Kabulden sonraki günler: sanal oynatma (önceki ↔ yeni) + canlı gölge. Kötüleşme → geri al."""
+    if iz.get("tur") == "bk_piyasa":
+        D = bk_pz_gunler(V, iz["anahtar_yol"][-1]); L = [x for d, xs in D.items() if d >= iz["kabul_tarihi"] for x in xs]
+        ob = {"n": len(L), "ll": r4(np.mean([x[0] for x in L])) if L else None}; oc = {"n": len(L), "ll": r4(np.mean([x[1] for x in L])) if L else None}
+        kayit = {"tarih": bugun.isoformat(), "anahtar": iz["anahtar"], "tur": "yeniden_sinama", "kabulden_sonra_gun": len([d for d in D if d >= iz["kabul_tarihi"]]),
+                 "sanal": {"onceki": ob, "yeni": oc}}
+        if len(L) >= 30 and oc["ll"] > ob["ll"] + 0.002:
+            neden = f"kabulden sonra log-kaybı {ob['ll']} → {oc['ll']} (n {len(L)})"
+            koy(J["params"], iz["anahtar_yol"], iz["onceki"] if iz["onceki"] != "__yok__" else False)
+            J["surum"] = f"{bugun.isoformat()}.geri{len(J.get('gecmis', [])) + 1}"
+            J.setdefault("gecmis", []).append({"tarih": bugun.isoformat(), "olay": "geri_alindi", "anahtar": iz["anahtar"], "yol": iz["anahtar_yol"],
+                                              "onceki": iz["yeni"], "yeni": False, "neden": neden})
+            rb["aktif"] = True; rb["baslangic"] = bugun.isoformat(); rb["bitis"] = (bugun + timedelta(days=BEKLEME)).isoformat()
+            rb["neden"] = f"{iz['kabul_tarihi']} tarihli OXXai değişikliği ({iz['anahtar']}) sonrası kötüleşme: {neden}"
+            rb["params"] = {"/".join(iz["anahtar_yol"]): False}
+            rb.setdefault("donmus", {})[iz["anahtar"]] = rb["bitis"]
+            rb["gecmis"] = (rb.get("gecmis") or [])[-10:] + [iz["anahtar"]]
+            kayit["karar"] = "GERİ ALINDI"; kayit["neden"] = neden; return "geri", kayit
+        if len(L) < 30 and iz.get("uzatma", 0) < 2:
+            iz["uzatma"] = iz.get("uzatma", 0) + 1; iz["yeniden_sinama"] = (bugun + timedelta(days=7)).isoformat()
+            kayit["karar"] = "uzatıldı"; kayit["neden"] = "kabulden sonra yeterli maç yok, 7 gün daha izlenecek"; return "uzat", kayit
+        J.setdefault("gecmis", []).append({"tarih": bugun.isoformat(), "olay": "kalici", "anahtar": iz["anahtar"]})
+        kayit["karar"] = "kalıcı"; kayit["neden"] = "kötüleşme yok" if len(L) >= 30 else "yeterli veri yok, kabul"
+        return "kalici", kayit
     Ay = K.ayar_yukle(J); Jo = aday_ayar(J, iz["anahtar_yol"], iz["onceki"]); Ao = K.ayar_yukle(Jo)
     yeni_gun = None
     if iz["alan"] == "futbol": G = V.fb()[0]
