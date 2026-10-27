@@ -5661,7 +5661,7 @@ if((location.hash||"")==="#sonuclar") setTimeout(()=>$("navRes").click(),200);
 // =====================================================================
 // OXXai v35: Otomatik sürüm güncelleme — yeni sürüm yayınlanınca uygulama kendini yeniler
 // =====================================================================
-const APP_V="2026-10-27.118";
+const APP_V="2026-10-27.119";
 (function autoUpdate(){
   let shown=false;
   async function check(auto){
@@ -11536,7 +11536,7 @@ small>.tvar.d:first-child{margin-left:0;margin-right:2px}
   function chg(pts){ if(!pts.length) return `<span class="a3-ov">–</span>`; const f=pts[0][1], l=pts[pts.length-1][1];
     if(pts.length<2) return `<span class="a3-ov"><b>${fx(l)}</b>tek ölçüm</span>`;
     const dn=l<f-.005, up=l>f+.005; return `<span class="a3-ov"><b class="${dn?"up":up?"dn":""}">${fx(l)} ${dn?"▼":up?"▲":"="}</b>ilk ${fx(f)}</span>`; }
-  const noIz=(r,z)=>`<p class="a2-note" style="margin:0">${z&&z.t.length===1?`Henüz iz yok: bu koşu için tek ölçüm var (${E(z.t[0])}). Oran değiştikçe yeni nokta eklenir ve çizgi oluşur.`:`Henüz iz yok. Laboratuvar gün içinde yaklaşık 30 dakikada bir koşu öncesi ganyan oranlarını kaydeder; yalnız oran değişince nokta eklenir.`}</p>`;
+  const noIz=(r,z)=>`<p class="a2-note" style="margin:0">${z&&z.t.length===1?`Henüz iz yok: bu koşu için tek ölçüm var (${E(z.t[0])}). Oran değiştikçe yeni nokta eklenir ve çizgi oluşur.`:`Henüz iz yok. Laboratuvar gün içinde yaklaşık 30 dakikada bir koşu öncesi piyasa oranlarını kaydeder; yalnız oran değişince nokta eklenir.`}</p>`;
   function cardOran(r){ const d=dayOf(r.kosu_id); if(!izLoaded(d)) return `<div class="a2-card" data-a3d><div class="a2-ch"><h2>📈 Gün içi piyasa oranı</h2></div><div class="a2-sk" style="height:56px;margin:0"></div></div>`;
     const z=izOf(r); let h=`<div class="a2-card" data-a3d="oran"><div class="a2-ch"><h2>📈 Gün içi piyasa oranı</h2><small>${z?`${z.t.length} ölçüm · ${E(z.t[0])}${z.t.length>1?"–"+E(z.t[z.t.length-1]):""}`:""}</small></div>`;
     if(!z||z.t.length<2) return h+noIz(r,z)+`</div>`;
