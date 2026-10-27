@@ -5888,7 +5888,7 @@ if((location.hash||"")==="#sonuclar") setTimeout(()=>$("navRes").click(),200);
 // =====================================================================
 // OXXai v35: Otomatik sürüm güncelleme — yeni sürüm yayınlanınca uygulama kendini yeniler
 // =====================================================================
-const APP_V="2026-10-27.128";
+const APP_V="2026-10-27.129";
 (function autoUpdate(){
   let shown=false;
   async function check(auto){
@@ -10334,6 +10334,7 @@ html[data-v122-ctx="at"] nav.tabs button[aria-current]{color:var(--ink3,#8893AB)
   const _cs=cpSave; cpSave=function(){ try{ const c=act(); c.upd=NOW(); saveL(); }catch(e){} const r=_cs.apply(this,arguments); try{ settle(); }catch(e){} return r; };
   function kxRefresh(){ try{ hdrPaint(); kxPaint(); if(UI.edit) return; const v=$("v-kupon"); if(v&&!v.hidden){ if(KP.tab==="eski") renderOld(); else kxRenderCp(); } }catch(e){} }
   window.kxRefresh=kxRefresh;
+  window.kxShareText=c=>shareText(c);   // v129: KUPO paylaş listesi (tek tek / çoklu seçim)
   window.addEventListener("storage",e=>{ if(e.key===LSK||e.key===LSA||e.key==="bx-kuponlar-sil"){ try{ if(e.key==="bx-kuponlar-sil"){ JSON.parse(e.newValue||"[]").forEach(x=>DEL.add(x)); } load(); kxRefresh(); }catch(_){} } });
   try{ const _ct=cpToggle; cpToggle=function(m,mk,odd,p){ try{ const k=cpKey(m), I=CP.items, had=I.find(x=>x.k===k&&x.mk===mk);
         if(!had){ const t=tms(m.dt);
@@ -10793,6 +10794,7 @@ html[data-v122-ctx="at"] nav.tabs button[aria-current]{color:var(--ink3,#8893AB)
   function shareText(c){ const s=stAt(c);
     return `🏆 OXXai · ${c.ad}${s==="g"||s==="x"?" · "+ST[s]:""}\n`+c.at.map((x,i)=>`${i+1}) 🐎 ${x.hip} ${x.tur==="altili"?x.kosu+".–"+(x.kosu+5)+". koşular":x.tur==="cifte"?x.kosu+".+"+(x.kosu+1)+". koşu":x.kosu+". koşu"} ${x.saat} · ${TUR[x.tur].ad}: ${x.sec.map(c=>c.join(",")).join(" / ")} · ${fN(x.komb)} komb. · OXXai ${fP(x.p)}${x.ok===true?" ✓":x.ok===false?(x.srz?" ✗ (sırasız)":" ✗"):x.iade?" ↺ iade":""}${x.res?" (sonuç "+x.res+")":""}`).join("\n")
       +`\nToplam ${fN(c.at.reduce((a,x)=>a+(+x.komb||0),0))} kombinasyon · birlikte tutma olasılığı ${fP(c.at.reduce((a,x)=>a*(x.p||0),1))}\nHobi amaçlı olasılık; garanti değildir · 18+`; }
+  window.atkShareText=c=>shareText(c);   // v129: at KUPO paylaş listesi
   // Eski KUPO'larım: at kuponları ayrı bölüm + istatistik
   function statsAt(P){ const D=P.filter(c=>{ const s=stAt(c); return s==="g"||s==="x"; }), W=D.filter(c=>stAt(c)==="g"), R=P.flatMap(c=>c.at).filter(x=>x.ok!=null);
     const by={}; for(const x of R){ const b=by[x.tur]||(by[x.tur]={n:0,h:0,e:0}); b.n++; if(x.ok) b.h++; b.e+=x.p||0; }
@@ -14043,6 +14045,169 @@ html[data-v122-ctx="at"] nav.tabs button[aria-current]{color:var(--ink3,#8893AB)
   if(sh) new MutationObserver(()=>{ const bx=sh.querySelector('.box[aria-label="Ayarlar"]'); if(!bx||bx.querySelector("#sesSet")) return;
       const g=bx.querySelector(":scope > .group"); if(!g) return; g.insertAdjacentHTML("afterend",setHtml()); wire(bx); }).observe(sh,{childList:true});
   W.OXX_SES={olay,names:()=>Object.keys(R),log:LOG};
+})();
+</script>
+<style id="kpaylas-v129">
+/* v129 · KUPO paylaş — her KUPO'nun altında Paylaş + çoklu seçim (futbol/basket #kpF, at #kpA/#kpAt ayrı) */
+.kp-pan{margin:14px 0 4px;padding:12px;border-radius:16px;background:var(--kx-sf);border:1px solid var(--kx-bd);color:var(--ink);min-width:0;max-width:100%;box-sizing:border-box}
+.kp-pan[hidden]{display:none}
+.kp-pan *{box-sizing:border-box}
+.kp-hd{display:flex;align-items:center;gap:10px;min-width:0}
+.kp-hd>div{flex:1;min-width:0}
+.kp-hd b{display:block;font:700 15px/1.25 var(--font);color:var(--ink)}
+.kp-hd small{display:block;margin-top:2px;font:500 12px/1.35 var(--font);color:var(--ink3)}
+.kp-pan button{font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.kp-tg{flex:none;min-height:40px;padding:0 14px;border-radius:99px;border:1px solid var(--line2);background:rgba(255,255,255,.04);color:var(--ink);font:600 13px/1 var(--font)!important}
+.kp-tg[aria-pressed="true"]{border-color:rgba(233,199,102,.55);color:var(--c-gold)}
+.kp-bar{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 2px}
+.kp-bar button{flex:1 1 130px;min-height:44px;padding:0 12px;border-radius:12px;border:1px solid var(--line2);background:rgba(255,255,255,.04);color:var(--ink);font:600 13px/1.2 var(--font)!important}
+.kp-bar .kp-go{background:linear-gradient(135deg,var(--c-gold-md),var(--c-gold-lt));border-color:transparent;color:var(--c-gold-ink2)}
+.kp-bar .kp-go:disabled{opacity:.45;cursor:default}
+.kp-r{margin-top:10px;padding:10px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid var(--line);min-width:0}
+.kp-r.on{border-color:rgba(233,199,102,.55);background:rgba(233,199,102,.06)}
+.kp-rt{display:flex;align-items:flex-start;gap:10px;min-width:0}
+.kp-ck{flex:none;width:28px;height:28px;margin-top:1px;border-radius:8px;border:2px solid var(--line3);background:none;display:grid;place-items:center;color:var(--c-gold-ink2);padding:0}
+.kp-ck[aria-checked="true"]{background:var(--c-gold);border-color:var(--c-gold)}
+.kp-ck svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;opacity:0}
+.kp-ck[aria-checked="true"] svg{opacity:1}
+.kp-tx{flex:1;min-width:0}
+.kp-tx b{display:block;font:700 14px/1.3 var(--font);color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.kp-tx small{display:block;margin-top:2px;font:500 12px/1.35 var(--font);color:var(--ink2)}
+.kp-tx i{display:block;margin-top:3px;font:500 12px/1.35 var(--font);font-style:normal;color:var(--ink3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.kp-sh{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:44px;margin-top:8px;border-radius:12px;border:1px solid rgba(233,199,102,.35);background:rgba(233,199,102,.08);color:var(--c-gold)!important;font:600 13.5px/1 var(--font)!important;padding:0 12px}
+.kp-sh svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.kp-nt{margin:10px 2px 0;font:500 11.5px/1.4 var(--font);color:var(--ink3)}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]) .kp-pan{background:rgba(0,0,0,.03)}}
+</style>
+<script id="kpaylas-v129">
+// =====================================================================
+// v129 · KUPO PAYLAŞ (futbol + basket) — KUPO ekranında her KUPO'nun altında "Paylaş", ayrıca "Seç" → Tümünü seç → seçilenleri tek metin olarak paylaş.
+// • KUPO'lar ekranındayken açık KUPO'lar, Eski KUPO'larım'dayken biten/arşivlenen KUPO'lar listelenir. At KUPO'ları burada değil (kpaylas-at-v129).
+// • Metin kuponum-v95'in kendi paylaş metni (window.kxShareText). navigator.share varsa o; yoksa panoya kopyalanır + bildirim.
+// • Veri yalnız telefonda (localStorage "bx-kuponlar"); hiçbir sunucuya gönderilmez.
+// =====================================================================
+(function(){
+  const $$=id=>document.getElementById(id);
+  const SHI='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M8 7l4-4 4 4"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg>';
+  const CKI='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5 10 17 19 7"/></svg>';
+  // ortak paylaşım (at bloğu da kullanır): önce telefonun paylaşım menüsü, yoksa panoya kopyala
+  async function kpShare(title,text){ let url=""; try{ url=appLink(); }catch(e){}
+    if(navigator.share){ try{ await navigator.share(url?{title,text,url}:{title,text}); return true; }catch(e){ if(e&&e.name==="AbortError") return false; } }
+    const full=text+(url?"\n"+url:"");
+    try{ await navigator.clipboard.writeText(full); toast("Kopyalandı · istediğin yere yapıştır"); return true; }catch(e){}
+    try{ const ta=document.createElement("textarea"); ta.value=full; ta.setAttribute("readonly",""); ta.style.cssText="position:fixed;top:0;left:0;opacity:0"; document.body.appendChild(ta); ta.select(); const ok=document.execCommand("copy"); ta.remove(); if(ok){ toast("Kopyalandı · istediğin yere yapıştır"); return true; } }catch(e){}
+    toast("Paylaşılamadı · KUPO'yu açıp tekrar dene"); return false; }
+  window.kpShare=kpShare;
+  window.kpJoin=function(T,legal){ const L=T.map(t=>String(t).replace(/\n[^\n]*$/,"")); return L.length===1?T[0]:`🏆 OXXai · ${L.length} KUPO\n\n`+L.join("\n\n")+`\n\n${legal}`; };
+  const isAt=c=>!!c&&c.spor==="at";
+  const tab=()=>{ try{ return KP.tab||"cp"; }catch(e){ return "cp"; } };
+  const S={sel:false,pick:new Set()};
+  function list(){ const K=(window.KX&&window.KX.L)||[], t=tab(), L=K.filter(c=>c&&!isAt(c)&&Array.isArray(c.items)&&c.items.length);
+    if(t==="cp") return L.filter(c=>c.durum==="acik").sort((a,b)=>a.olusturma-b.olusturma);
+    if(t==="eski") return L.filter(c=>c.durum!=="acik").sort((a,b)=>(b.bitti||b.arsivAt||b.olusturma)-(a.bitti||a.arsivAt||a.olusturma));
+    return []; }
+  function st(c){ const I=c.items; if(I.some(x=>x.ok===false)) return "Tutmadı"; if(I.every(x=>x.ok===true)) return "Tuttu"; return c.durum==="arsiv"?"Arşivde":"Bekliyor"; }
+  function meta(c){ const bk=c.items.filter(x=>x.sp==="bk").length, fb=c.items.length-bk;
+    return [fb?`⚽ ${fb} maç`:"",bk?`🏀 ${bk} maç`:"",st(c)].filter(Boolean).join(" · "); }
+  const pv=c=>c.items.slice(0,2).map(x=>`${x.h} – ${x.a}`).join(", ")+(c.items.length>2?` +${c.items.length-2}`:"");
+  function html(L){ const n=[...S.pick].filter(id=>L.some(c=>c.id===id)).length, all=L.length&&n===L.length, t=tab();
+    return `<div class="kp-hd"><div><b>${t==="eski"?"Eski KUPO'larını paylaş":"KUPO'larını paylaş"}</b><small>${S.sel?`${n} / ${L.length} KUPO seçili`:"Her KUPO'yu tek tek paylaş ya da seçip birlikte gönder"}</small></div>
+      ${L.length>1||S.sel?`<button type="button" class="kp-tg" data-kpf="sel" aria-pressed="${S.sel}">${S.sel?"Vazgeç":"Seç"}</button>`:""}</div>
+      ${S.sel?`<div class="kp-bar"><button type="button" data-kpf="all">${all?"Seçimi kaldır":"Tümünü seç"}</button><button type="button" class="kp-go" data-kpf="go" ${n?"":"disabled"}>${SHI.replace('aria-hidden','style="width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;vertical-align:-3px;margin-right:4px" aria-hidden')}Seçilenleri paylaş (${n})</button></div>`:""}
+      ${L.map(c=>{ const on=S.pick.has(c.id); return `<div class="kp-r${S.sel&&on?" on":""}" data-c="${esc(c.id)}"><div class="kp-rt">${S.sel?`<button type="button" class="kp-ck" role="checkbox" aria-checked="${on}" data-kpf="ck" data-c="${esc(c.id)}" aria-label="${esc(c.ad)} seç">${CKI}</button>`:""}
+        <div class="kp-tx"><b>${esc(c.ad)}</b><small>${esc(meta(c))}</small><i>${esc(pv(c))}</i></div></div>
+        <button type="button" class="kp-sh" data-kpf="one" data-c="${esc(c.id)}" aria-label="${esc(c.ad)} KUPO'sunu paylaş">${SHI}Paylaş</button></div>`; }).join("")}
+      <p class="kp-nt">Paylaşılan metin yalnızca tahminleri içerir. KUPO'ların bu telefonda kalır; hiçbir yere yüklenmez.</p>`; }
+  const sig=L=>tab()+"|"+S.sel+"|"+[...S.pick].join(",")+"|"+L.map(c=>c.id+":"+c.ad+":"+(c.upd||0)+":"+c.items.map(x=>x.ok==null?"-":x.ok?1:0).join("")).join(",");
+  function place(p){ const t=tab(), cb=$$("cpBox"), od=$("kxOld");
+    if(t==="cp"&&cb){ if(cb.nextElementSibling!==p) cb.after(p); } else if(t==="eski"&&od){ if(od.previousElementSibling!==p) od.before(p); } }
+  function $(id){ return $$(id); }
+  function paint(){ try{ const v=$$("v-kupon"); if(!v||!$$("cpBox")) return; let p=$$("kpF");
+      if(!p){ p=document.createElement("section"); p.id="kpF"; p.className="kp-pan"; p.setAttribute("aria-label","KUPO paylaş"); }
+      const L=list(); place(p); if(!p.isConnected) return;
+      if(!L.length){ if(!p.hidden) p.hidden=true; p.dataset.s=""; return; }
+      if(p.hidden) p.hidden=false; const s=sig(L); if(p.dataset.s===s) return; p.dataset.s=s; p.innerHTML=html(L);
+    }catch(e){ console.error(e); } }
+  let T=null; const later=()=>{ clearTimeout(T); T=setTimeout(paint,60); };
+  window.kpPaintF=paint;
+  document.addEventListener("click",e=>{ const b=e.target.closest("[data-kpf]"); if(!b||!b.closest("#kpF")) return; e.preventDefault(); e.stopPropagation(); try{ buzz(6); }catch(_){}
+    const a=b.dataset.kpf, L=list(), K=(window.KX&&window.KX.L)||[];
+    if(a==="sel"){ S.sel=!S.sel; S.pick.clear(); paint(); return; }
+    if(a==="ck"){ const id=b.dataset.c; S.pick.has(id)?S.pick.delete(id):S.pick.add(id); paint(); return; }
+    if(a==="all"){ const all=L.length&&L.every(c=>S.pick.has(c.id)); S.pick.clear(); if(!all) L.forEach(c=>S.pick.add(c.id)); paint(); return; }
+    if(a==="one"){ const c=K.find(x=>x.id===b.dataset.c); if(!c||typeof window.kxShareText!=="function") return; kpShare(`${c.ad} · OXXai`,window.kxShareText(c)); return; }
+    if(a==="go"){ const C=L.filter(c=>S.pick.has(c.id)); if(!C.length){ toast("Önce paylaşmak istediğin KUPO'ları seç"); return; } if(typeof window.kxShareText!=="function") return;
+      kpShare(C.length===1?`${C[0].ad} · OXXai`:`${C.length} KUPO · OXXai`,window.kpJoin(C.map(c=>window.kxShareText(c)),LEGAL_SHARE)); return; }
+  },true);
+  // sekme değişince seçim sıfırlanır
+  document.addEventListener("click",e=>{ if(e.target.closest("#kxSeg [data-kt]")){ S.sel=false; S.pick.clear(); } later(); },true);
+  let mo=null; function hook(){ const v=$$("v-kupon"); if(!v||mo) return; mo=new MutationObserver(R=>{ if(R.every(r=>r.target.closest&&r.target.closest(".kp-pan"))) return; later(); }); mo.observe(v,{childList:true,subtree:true,attributes:true,attributeFilter:["hidden"]}); later(); }
+  hook(); setTimeout(hook,1500);
+  try{ const _s=window.kxSave; if(typeof _s==="function") window.kxSave=function(){ const r=_s.apply(this,arguments); later(); return r; }; }catch(e){}
+})();
+</script>
+<script id="kpaylas-at-v129">
+// =====================================================================
+// v129 · AT KUPO PAYLAŞ — futbol paylaş listesinden ayrı. Her at KUPO'sunun altında "Paylaş" + çoklu seçim.
+// • KUPO ekranı (#kpA: KUPO'larım = açık, Eski KUPO'larım = biten) ve At › KUPO sekmesi (#kpAt: açık + eski).
+// • Metin atkupon-v98'in paylaş metni (window.atkShareText). Veri yalnız telefonda; sunucuya gönderilmez.
+// =====================================================================
+(function(){
+  const $$=id=>document.getElementById(id);
+  const SHI='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M8 7l4-4 4 4"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg>';
+  const CKI='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5 10 17 19 7"/></svg>';
+  const LEGAL="Hobi amaçlı olasılık; garanti değildir · 18+";
+  const isAt=c=>!!c&&c.spor==="at";
+  const share=(t,x)=>window.kpShare?window.kpShare(t,x):(navigator.share?navigator.share({title:t,text:x}).catch(()=>{}):navigator.clipboard.writeText(x).then(()=>toast("Kopyalandı")).catch(()=>{}));
+  const join=T=>window.kpJoin?window.kpJoin(T,LEGAL):T.join("\n\n");
+  const ST={}; const S=k=>ST[k]||(ST[k]={sel:false,pick:new Set()});
+  const all=()=>((window.KX&&window.KX.L)||[]).filter(c=>isAt(c)&&Array.isArray(c.at)&&c.at.length);
+  const opens=()=>all().filter(c=>c.durum==="acik").sort((a,b)=>a.olusturma-b.olusturma);
+  const pasts=()=>all().filter(c=>c.durum!=="acik").sort((a,b)=>(b.bitti||b.arsivAt||b.olusturma)-(a.bitti||a.arsivAt||a.olusturma));
+  const ktab=()=>{ try{ return KP.tab||"cp"; }catch(e){ return "cp"; } };
+  function list(k){ if(k==="kpAt") return opens().concat(pasts().slice(0,30)); const t=ktab(); return t==="cp"?opens():t==="eski"?pasts():[]; }
+  function st(c){ const I=c.at; if(I.some(x=>x.ok===false)) return "Tutmadı"; const L=I.filter(x=>!x.iade); if(L.length&&L.every(x=>x.ok===true)) return "Tuttu"; return c.durum==="arsiv"?"Arşivde":c.durum!=="acik"?"Bitti":"Bekliyor"; }
+  const ks=x=>x.tur==="altili"?`${x.kosu}.–${(+x.kosu||0)+5}. koşular`:x.tur==="cifte"?`${x.kosu}.+${(+x.kosu||0)+1}. koşu`:`${x.kosu}. koşu`;
+  const pv=c=>c.at.slice(0,2).map(x=>`${x.hip||""} ${ks(x)}`.trim()).join(", ")+(c.at.length>2?` +${c.at.length-2}`:"");
+  function html(k,L){ const s=S(k), n=[...s.pick].filter(id=>L.some(c=>c.id===id)).length, al=L.length&&n===L.length;
+    return `<div class="kp-hd"><div><b>🐎 At KUPO'larını paylaş</b><small>${s.sel?`${n} / ${L.length} KUPO seçili`:"Her at KUPO'sunu tek tek paylaş ya da seçip birlikte gönder"}</small></div>
+      ${L.length>1||s.sel?`<button type="button" class="kp-tg" data-kpa="sel" aria-pressed="${s.sel}">${s.sel?"Vazgeç":"Seç"}</button>`:""}</div>
+      ${s.sel?`<div class="kp-bar"><button type="button" data-kpa="all">${al?"Seçimi kaldır":"Tümünü seç"}</button><button type="button" class="kp-go" data-kpa="go" ${n?"":"disabled"}>Seçilenleri paylaş (${n})</button></div>`:""}
+      ${L.map(c=>{ const on=s.pick.has(c.id); return `<div class="kp-r${s.sel&&on?" on":""}" data-c="${esc(c.id)}"><div class="kp-rt">${s.sel?`<button type="button" class="kp-ck" role="checkbox" aria-checked="${on}" data-kpa="ck" data-c="${esc(c.id)}" aria-label="${esc(c.ad)} seç">${CKI}</button>`:""}
+        <div class="kp-tx"><b>${esc(c.ad)}</b><small>🐎 ${c.at.length} satır · ${esc(st(c))}</small><i>${esc(pv(c))}</i></div></div>
+        <button type="button" class="kp-sh" data-kpa="one" data-c="${esc(c.id)}" aria-label="${esc(c.ad)} KUPO'sunu paylaş">${SHI}Paylaş</button></div>`; }).join("")}
+      <p class="kp-nt">Paylaşılan metin yalnızca tahminleri içerir. KUPO'ların bu telefonda kalır; hiçbir yere yüklenmez.</p>`; }
+  const sig=(k,L)=>(k==="kpA"?ktab():"")+"|"+S(k).sel+"|"+[...S(k).pick].join(",")+"|"+L.map(c=>c.id+":"+c.ad+":"+c.durum+":"+(c.upd||0)+":"+c.at.map(x=>x.ok==null?"-":x.ok?1:0).join("")).join(",");
+  function fill(p,k){ const L=list(k); if(!L.length){ if(!p.hidden) p.hidden=true; p.dataset.s=""; return; } if(p.hidden) p.hidden=false; const s=sig(k,L); if(p.dataset.s===s) return; p.dataset.s=s; p.innerHTML=html(k,L); }
+  function mk(id){ let p=$$(id); if(!p){ p=document.createElement("section"); p.id=id; p.className="kp-pan"; p.setAttribute("aria-label","At KUPO paylaş"); } return p; }
+  // KUPO ekranı: futbol panelinin hemen altı (yoksa cpBox / kxOld komşusu)
+  function paintK(){ try{ const v=$$("v-kupon"), cb=$$("cpBox"); if(!v||!cb) return; const p=mk("kpA"), t=ktab(), f=$$("kpF"), od=$$("kxOld");
+      const anc=f&&f.isConnected?f:t==="eski"?null:cb;
+      if(anc){ if(anc.nextElementSibling!==p) anc.after(p); } else if(od){ if(od.previousElementSibling!==p) od.before(p); }
+      if(p.isConnected) fill(p,"kpA"); }catch(e){ console.error(e); } }
+  // At › KUPO sekmesi: KUPO kartının altı
+  function paintAt(){ try{ const box=$$("at2Box"), v=$$("v-at"); if(!box) return; const on=/^#at\/kupon(\/|$)/.test(location.hash||"")&&v&&!v.hidden&&box.querySelector(":scope > .a3-k");
+      let p=$$("kpAt"); if(!on){ if(p) p.remove(); return; } p=mk("kpAt");
+      const anc=box.querySelector(":scope > .a3-cp")||box.querySelector(":scope > .a2-empty")||box.querySelector(":scope > .a3-sw");
+      if(anc){ if(anc.nextElementSibling!==p) anc.after(p); } else if(p.parentNode!==box) box.appendChild(p);
+      fill(p,"kpAt"); }catch(e){ console.error(e); } }
+  let T=null; const later=()=>{ clearTimeout(T); T=setTimeout(()=>{ paintK(); paintAt(); },70); };
+  document.addEventListener("click",e=>{ const b=e.target.closest("[data-kpa]"); const p=b&&b.closest("#kpA,#kpAt"); if(!p) return; e.preventDefault(); e.stopPropagation(); try{ buzz(6); }catch(_){}
+    const k=p.id, s=S(k), a=b.dataset.kpa, L=list(k), redo=()=>{ p.dataset.s=""; fill(p,k); };
+    if(a==="sel"){ s.sel=!s.sel; s.pick.clear(); redo(); return; }
+    if(a==="ck"){ const id=b.dataset.c; s.pick.has(id)?s.pick.delete(id):s.pick.add(id); redo(); return; }
+    if(a==="all"){ const al=L.length&&L.every(c=>s.pick.has(c.id)); s.pick.clear(); if(!al) L.forEach(c=>s.pick.add(c.id)); redo(); return; }
+    if(typeof window.atkShareText!=="function"){ toast("At KUPO'su henüz yüklenmedi; birazdan tekrar dene"); return; }
+    if(a==="one"){ const c=all().find(x=>x.id===b.dataset.c); if(c) share(`${c.ad} · OXXai`,window.atkShareText(c)); return; }
+    if(a==="go"){ const C=L.filter(c=>s.pick.has(c.id)); if(!C.length){ toast("Önce paylaşmak istediğin KUPO'ları seç"); return; }
+      share(C.length===1?`${C[0].ad} · OXXai`:`${C.length} at KUPO'su · OXXai`,join(C.map(c=>window.atkShareText(c)))); return; }
+  },true);
+  document.addEventListener("click",e=>{ if(e.target.closest("#kxSeg [data-kt]")){ const s=S("kpA"); s.sel=false; s.pick.clear(); } later(); },true);
+  window.addEventListener("hashchange",later);
+  const obs=(el,o)=>new MutationObserver(R=>{ if(R.every(r=>r.target.closest&&r.target.closest(".kp-pan"))&&R.every(r=>![...r.addedNodes].some(n=>n.classList&&n.classList.contains("kp-pan")))) return; later(); }).observe(el,o);
+  let h1=0,h2=0; function hook(){ const v=$$("v-kupon"), b=$$("at2Box"); if(v&&!h1){ h1=1; obs(v,{childList:true,subtree:true,attributes:true,attributeFilter:["hidden"]}); } if(b&&!h2){ h2=1; obs(b,{childList:true}); } later(); }
+  hook(); setTimeout(hook,1500); setTimeout(hook,4500);
+  try{ const _s=window.kxSave; if(typeof _s==="function") window.kxSave=function(){ const r=_s.apply(this,arguments); later(); return r; }; }catch(e){}
 })();
 </script>
 </body>
