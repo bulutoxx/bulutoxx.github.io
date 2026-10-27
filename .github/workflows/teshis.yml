@@ -1,10 +1,14 @@
 name: OXXai teşhis (elle)
 on: workflow_dispatch
-permissions: { contents: read }
+permissions: { contents: write }
 jobs:
   t:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
-      - run: python3 lab/teshis_bulten.py | head -40 | while IFS= read -r l; do echo "::notice::$l"; done
+      - run: |
+          python3 lab/teshis_bulten.py > /tmp/teshis.txt 2>&1 || true
+          git config user.name "OXXai teşhis"; git config user.email "actions@users.noreply.github.com"
+          git checkout -B teshis-cikti
+          cp /tmp/teshis.txt teshis.txt && git add teshis.txt && git commit -m "teşhis" -q && git push -f -q origin teshis-cikti
