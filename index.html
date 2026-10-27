@@ -4289,6 +4289,8 @@ const MKT_N={"1":"MS 1","X":"MS X","2":"MS 2","U":"2.5 Üst","A":"2.5 Alt"};
 function mkName(k){ if(MKT_N[k]) return MKT_N[k]; const m=/^([UA])(\d+(?:\.\d+)?)$/.exec(k||""); if(m) return `${m[2].replace(".",",")} ${m[1]==="U"?"Üst":"Alt"}`;
   return {G0:"Başka gol olmaz",GG:"Başka gol olur",G1:"Sıradaki gol ev",G2:"Sıradaki gol dep."}[k]||k; }
 function cpKey(m){ return m.lg+"|"+m.h+"|"+m.a; }
+// v133: canlı kalemlerin anahtarı benzersizdir (temel anahtar|pazar|dakika, bk=temel anahtar); "listede mi?" kontrolü ikisini de tanır
+function cpHas(m,mk){ const k=cpKey(m); return CP.items.some(c=>c.mk===mk&&(c.k===k||(c.live&&(c.bk===k||(typeof tmEq==="function"&&tmEq(c.h,m.h)&&tmEq(c.a,m.a)))))); }
 function cpToggle(m,mk,odd,p){
   const k=cpKey(m), i=CP.items.findIndex(x=>x.k===k);
   if(i>=0 && CP.items[i].mk===mk){ CP.items.splice(i,1); toast("KUPO'dan çıkarıldı"); }
@@ -5223,8 +5225,26 @@ function idlPick(m,P){
            {k:"G1",n:"Sıradaki gol ev",p:P.nextH,o:ng&&ng[0]},{k:"G0",n:"Başka gol olmaz",p:P.none,o:ng&&ng[1]},{k:"G2",n:"Sıradaki gol dep.",p:P.nextA,o:ng&&ng[2]}];
   c.forEach(x=>x.val=!!(x.o&&x.p*x.o>1.08));
   const best=c.slice().sort((a,b)=>b.p-a.p)[0];
-  return {all:c, best};
+  // v133: ek canlı pazarlar (öneri seçiminde yer almaz; pencereden / KUPO'dan eklenebilir): başka gol olur + ilk yarı 0,5 / 1,5
+  const ext=[], H=idlH1(m,P), ok=v=>v>.005&&v<.995;
+  if(ok(1-P.none)) ext.push({k:"GG",n:"Başka gol olur",p:1-P.none,o:null});
+  if(H){ if(H.g<1&&ok(H.o05)) ext.push({k:"IO05",n:"İY 0,5 Üst",p:H.o05,o:null},{k:"IU05",n:"İY 0,5 Alt",p:1-H.o05,o:null});
+    if(H.g<2&&ok(H.o15)) ext.push({k:"IO15",n:"İY 1,5 Üst",p:H.o15,o:null},{k:"IU15",n:"İY 1,5 Alt",p:1-H.o15,o:null}); }
+  return {all:c, best, ext, h1:H};
 }
+// v133 · ilk yarı devam ederken İY gol olasılığı: kalan maç gol beklentisinin (canlı model LH+LA) ilk yarıya düşen payı,
+// pay = (kalan pay − ikinci yarı payı) / kalan pay (fbRemShare: uzatma + yoğunluk modeli); Poisson, İY'de şu ana kadarki gol = skor.
+function idlH1(m,P){ try{ if(!m||m.sp!==1||!P) return null;
+  if(m.st===3||m.st===49) return null;                                   // ikinci yarı / devre arası
+  const t=P.t!=null?P.t:(()=>{ const s=idlSecs(m); return s==null?null:s/60; })(); if(t==null) return null;
+  if(m.st!==2&&t>=45) return null;                                       // devre bilgisi yoksa 45' sonrası ilk yarı sayılmaz
+  const h1=(typeof MODEL!=="undefined"&&MODEL&&MODEL.params&&MODEL.params.h1)||.4428;
+  const rem=fbRemShare(t,m), part=Math.max(0,rem-(1-h1)); if(!(rem>0)) return null;
+  const tot=(P.LH!=null&&P.LA!=null)?P.LH+P.LA:(1.45+1.15)*rem;          // kalan maç toplam gol beklentisi
+  let lam=tot*part/rem; if(m.st===2&&t>=45) lam=Math.max(lam,tot*.004);    // ilk yarı uzatması
+  const g=(+m.hs||0)+(+m.as||0), e=Math.exp(-lam);
+  const o05=g>=1?1:1-e, o15=g>=2?1:g===1?1-e:1-e*(1+lam);
+  return {lam,g,t,o05,o15}; }catch(e){ return null; } }
 function lnF(l){ return String(l).replace(".",","); }
 function pc9(p){ return Math.min(99,Math.max(1,Math.round(p*100))); }
 function idlRow(m){
@@ -5620,7 +5640,7 @@ function fullPred(m,f){
 }
 const fair=p=>p>0.005?fO(1/p):"–";
 function mOpt(key,name,p,o,m){
-  const inCp=CP.items.some(c=>c.k===cpKey(m)&&c.mk===key), val=o&&p*o>1.08, t=ptier(p);
+  const inCp=cpHas(m,key), val=o&&p*o>1.08, t=ptier(p);
   return `<button type="button" class="mo ${inCp?"sel":""} ${val?"val":""} ${t}" data-mk="${key}" data-o="${o||(p>0.005?(1/p).toFixed(2):"")}" data-p="${p}" ${o?"":'data-fair="1"'}>
     <span class="mo-n">${t==="t3"?"🔥 ":""}${esc(name)}</span><b>${o?fO(o):fair(p)}</b><small>%${pc9(p)}${o?"":" · adil"}</small></button>`;
 }
@@ -5702,7 +5722,8 @@ function msTahmin(m,f,r,lv){
       ${mGroup(`${lnF(P.line)} Alt / Üst`,[mOpt(kA,"Alt",1-P.pOver,ou&&ou.alt,mm),mOpt(kU,"Üst",P.pOver,ou&&ou.ust,mm)])}
       ${mGroup("Maçta başka gol",[mOpt("GG","Olur",1-P.none,null,mm),mOpt("G0","Olmaz",P.none,ng&&ng[1],mm)])}
       ${mGroup("Sıradaki golü kim atar",[mOpt("G1",shortTeam(lv.h),P.nextH,ng&&ng[0],mm),mOpt("G2",shortTeam(lv.a),P.nextA,ng&&ng[2],mm)])}
-      <p class="note">Kalın sayı iddaa canlı oranı; "adil" yazanlar iddaa'da şu an açık olmayan seçeneklerde OXXai olasılığından hesaplanan orandır. Yeşil: kazanma olasılığı yüksek (🔥 %70+, açık yeşil %55+). Dokun → listene ekle.</p></div>
+      ${lvH1Group(K,mm)}
+      <p class="note">Kalın sayı iddaa canlı oranı; "adil" yazanlar iddaa'da şu an açık olmayan seçeneklerde OXXai olasılığından hesaplanan orandır. Yeşil: kazanma olasılığı yüksek (🔥 %70+, açık yeşil %55+). Dokun → listene ekle. Aynı maça farklı seçeneklerle birden çok canlı tahmin ekleyebilirsin.</p></div>
       <button type="button" class="btn ghost" id="msDetail">Ayrıntılı tahmin et (kadro, eksik, senaryo)</button>`; }
   if(!r) return `<p class="note">Bu maç için tahmin hesaplanamadı.</p>`;
   const R=recOf(r,f), mm=m.sp?{lg:"i"+m.ci,h:m.h,a:m.a}:m, inCp=R&&CP.items.some(c=>c.k===cpKey(mm)&&c.mk===R.k);
@@ -5719,11 +5740,18 @@ function msTahmin(m,f,r,lv){
     <p class="note">Beklenen gol ${fO(r.lh)} – ${fO(r.la)}${f&&f.odds?" · iddaa oranlarıyla birleştirildi":""}.</p></div></details>
     <button type="button" class="btn ghost" id="msDetail">Ayrıntılı analiz (kadro, eksik, senaryo)</button>`;
 }
+// v133: ilk yarı sürerken İY 0,5 / 1,5 Alt-Üst (kesinleşmiş seçenek gösterilmez; oran yoksa adil oran)
+const H1_N={IO05:"İlk yarı 0,5 Üst (İY'de gol olur)",IU05:"İlk yarı 0,5 Alt (İY golsüz biter)",IO15:"İlk yarı 1,5 Üst (İY'de 2+ gol)",IU15:"İlk yarı 1,5 Alt (İY'de en çok 1 gol)"};
+function lvH1Group(K,mm){ if(!K||!K.h1) return ""; const E=(K.ext||[]).filter(x=>/^I[OU](05|15)$/.test(x.k)); if(!E.length) return "";
+  const lab={IU05:"0,5 Alt · golsüz",IO05:"0,5 Üst · 1+ gol",IU15:"1,5 Alt · en çok 1",IO15:"1,5 Üst · 2+ gol"};
+  const g=K.h1.g, o=["IU05","IO05","IU15","IO15"].map(k=>E.find(x=>x.k===k)).filter(Boolean);
+  return mGroup(`İlk yarı gol · devre sonuna kadar${g?` (İY'de ${g} gol oldu)`:""}`,o.map(x=>mOpt(x.k,lab[x.k],x.p,x.o,mm)),2); }
 function msOran(m,f,r,lv){
   const mm=m.sp?{lg:"i"+m.ci,h:m.h,a:m.a}:m;
   if(lv){ const P=idlPred(lv), od=lv.odds||{}; if(!P) return `<p class="note">Canlı oran yok.</p>`; const G=[];
     if(od.ms&&!od.ms.lock) G.push(mGroup("Maç sonucu (canlı)",[mOpt("1","1",P.H,od.ms.v[0],mm),mOpt("X","X",P.D,od.ms.v[1],mm),mOpt("2","2",P.A,od.ms.v[2],mm)]));
     if(od.ou&&!od.ou.lock){ const kA="A"+od.ou.l, kU="U"+od.ou.l; MKT_N[kA]=`${lnF(od.ou.l)} Alt`; MKT_N[kU]=`${lnF(od.ou.l)} Üst`; G.push(mGroup(`${lnF(od.ou.l)} Alt/Üst (canlı)`,[mOpt(kA,"Alt",1-P.pOver,od.ou.alt,mm),mOpt(kU,"Üst",P.pOver,od.ou.ust,mm)])); }
+    const hg=lvH1Group(idlPick(lv,P),mm); if(hg) G.push(hg);
     return G.join("")||`<p class="note">Şu an açık canlı oran yok (piyasa bu dakikada oranları kapatmış olabilir).</p>`; }
   if(!r) return `<p class="note">Oran hesaplanamadı.</p>`;
   const o=f&&f.odds||[], ou=f&&f.ou||[], kg=f&&f.ikg||[];
@@ -5892,7 +5920,7 @@ if((location.hash||"")==="#sonuclar") setTimeout(()=>$("navRes").click(),200);
 // =====================================================================
 // OXXai v35: Otomatik sürüm güncelleme — yeni sürüm yayınlanınca uygulama kendini yeniler
 // =====================================================================
-const APP_V="2026-10-27.132";
+const APP_V="2026-10-27.133";
 (function autoUpdate(){
   let shown=false;
   async function check(auto){
@@ -6609,7 +6637,8 @@ function mkHit(mk,hs,as,h1,a1,s0){ const t=hs+as, h=h1!=null&&a1!=null, ht=h?h1+
     case "U": return t>2.5; case "A": return t<2.5; case "O15": return t>1.5; case "U15": return t<1.5; case "O35": return t>3.5; case "U35": return t<3.5;
     case "KGV": return hs>0&&as>0; case "KGY": return !(hs>0&&as>0);
     case "IY1": return h?h1>a1:null; case "IYX": return h?h1===a1:null; case "IY2": return h?h1<a1:null;
-    case "IO05": return h?ht>0.5:null; case "IU05": return h?ht<0.5:null; case "IO15": return h?ht>1.5:null; case "IU15": return h?ht<1.5:null;
+    // İY skoru yoksa: maç sonu toplam gol İY eşiğinin altındaysa İY'de de altındadır (kesin); değilse null (sonuç bekleniyor / elle)
+    case "IO05": return h?ht>0.5:(t<1?false:null); case "IU05": return h?ht<0.5:(t<1?true:null); case "IO15": return h?ht>1.5:(t<2?false:null); case "IU15": return h?ht<1.5:(t<2?true:null);
     case "GG": return s0t!=null?t>s0t:null; case "G0": return s0t!=null?t===s0t:null;
   } return null; }
 let oynBusy=false;
@@ -10064,7 +10093,7 @@ html[data-v122-ctx="at"] nav.tabs button[aria-current]{color:var(--ink3,#8893AB)
     try{ if(m.sp===1){ const P=idlPred(m), K=idlPick(m,P); if(!K) return null; const mm={lg:"i"+m.ci,h:m.h,a:m.a,dt:new Date(m.ts)};
         const lc=v=>{ try{ return typeof liveCal==="function"?Math.min(.99,liveCal(v).p):v; }catch(e){ return v; } };
         const fx=x=>({k:(x.k==="U"||x.k==="A")?x.k+String(P.line):x.k,n:x.n,o:x.o||null,p:lc(x.p)});
-        return {mm,ex:{live:1,s0:`${m.hs}-${m.as}`,iid:m.id},opts:K.all.filter(x=>x.o&&x.p>0).map(fx),rec:fx(K.best)}; } }catch(e){ return null; }
+        return {mm,ex:{live:1,s0:`${m.hs}-${m.as}`,iid:m.id},opts:K.all.concat(K.ext||[]).filter(x=>x.p>0).map(fx),rec:fx(K.best)}; } }catch(e){ return null; }
     if(m.sp) return null;
     if(m.bk) return bkOpts(m.bk);
     try{ const t0=tms(m.dt); if(m.live||(t0&&t0<NOW()-5*60e3&&t0>NOW()-150*60e3)){ const lv=(typeof IDL!=="undefined"&&IDL.live&&IDL.live[1]||[]).find(x=>tmEq(x.h,m.h)&&tmEq(x.a,m.a));
@@ -10089,7 +10118,10 @@ html[data-v122-ctx="at"] nav.tabs button[aria-current]{color:var(--ink3,#8893AB)
   function kxAdd(O,opt,quiet){ if(!O||!opt) return false; const mm=O.mm, ex=O.ex||{}, t=tms(mm.dt), c=act();
     if(!ex.live&&t&&t<NOW()-5*60e3){ toast(t<NOW()-110*60e3?"Bu maç bitmiş; KUPO'ya eklenemez":"Bu maç başladı; maç öncesi tahmini KUPO'ya eklenemez"); return false; }
     const I=CP.items, k=cpKey(mm);
-    const dup=I.findIndex(x=>x.k!==k&&tmEq(x.h,mm.h)&&tmEq(x.a,mm.a)); let repl=dup>=0; if(dup>=0) I.splice(dup,1);
+    // v133: canlı seçim → canlı cpToggle yolu (aynı maça ek canlı tahmin; ekleme/çıkarma bildirimini o verir)
+    if(ex.live){ const odd=opt.o?+opt.o:+(1/Math.max(.02,opt.p||.5)).toFixed(2), nz=v=>{ v=String(v); return v==="U"||v==="A"?v+"2.5":v; };
+      cpToggle(mm,opt.k,odd,opt.p); kxPaint(); return CP.items.some(x=>x.live&&tmEq(x.h,mm.h)&&tmEq(x.a,mm.a)&&nz(x.mk)===nz(opt.k)); }
+    const dup=I.findIndex(x=>x.k!==k&&!x.live&&tmEq(x.h,mm.h)&&tmEq(x.a,mm.a)); let repl=dup>=0; if(dup>=0) I.splice(dup,1);
     const had=I.find(x=>x.k===k); if(had&&had.mk!==opt.k) repl=true;
     const odd=opt.o?+opt.o:+(1/Math.max(.02,opt.p||.5)).toFixed(2);
     cpToggle(mm,opt.k,odd,opt.p);
@@ -10155,6 +10187,7 @@ html[data-v122-ctx="at"] nav.tabs button[aria-current]{color:var(--ink3,#8893AB)
     kxAdd(O,O.rec); },true);
   // bülten oran hücresi / maç sayfası kutusu ile ekleme → kısa bilgi
   document.addEventListener("click",e=>{ const ob=e.target.closest(".ib-od span[data-mk],#msheet .mo"); if(!ob) return;
+    if(!ob.closest(".ib-r")&&MS.m&&(MS.live||MS.m.sp)) return;   // v133: canlı pencere → bildirim canlı cpToggle'dan
     const row=ob.closest(".ib-r"); let key=null; try{ if(row){ const x=IB.rows[+row.dataset.i]; key=x&&cpKey(x.m); } else if(MS.m) key=cpKey(MS.m.sp?{lg:"i"+MS.m.ci,h:MS.m.h,a:MS.m.a}:MS.m); }catch(_){} const mk=ob.dataset.mk;
     setTimeout(()=>{ try{ const c=act(); const on=key?c.items.some(z=>z.k===key&&z.mk===mk):ob.classList.contains("sel"); toast(on?`${sfx(c.ad)} eklendi · ${c.items.length} maç`:`${sfx(c.ad,1)} çıkarıldı · ${c.items.length} maç`); kxPaint(); }catch(_){} },0); });
   // ---------- Hangi KUPO'ya? ----------
@@ -10340,30 +10373,40 @@ html[data-v122-ctx="at"] nav.tabs button[aria-current]{color:var(--ink3,#8893AB)
   window.kxRefresh=kxRefresh;
   window.kxShareText=c=>shareText(c);   // v129: KUPO paylaş listesi (tek tek / çoklu seçim)
   window.addEventListener("storage",e=>{ if(e.key===LSK||e.key===LSA||e.key==="bx-kuponlar-sil"){ try{ if(e.key==="bx-kuponlar-sil"){ JSON.parse(e.newValue||"[]").forEach(x=>DEL.add(x)); } load(); kxRefresh(); }catch(_){} } });
+  // v133: canlı maçta aynı maça birden çok canlı tahmin (farklı pazar) eklenebilir; her canlı kalemin anahtarı benzersizdir
+  //   (temel anahtar|pazar|dakika, bk = temel anahtar). Maç öncesi "aynı maçtan tek seçim" kuralı yalnız maç öncesi kalemlerde geçerli.
+  //   Canlı oran kapalıysa / hiç yoksa (ör. lig modeli ve canlı oranı olmayan kupa maçı) OXXai olasılığından adil oranla eklenir.
+  const LVN={IO05:"İlk yarı 0,5 Üst (İY'de gol olur)",IU05:"İlk yarı 0,5 Alt (İY golsüz biter)",IO15:"İlk yarı 1,5 Üst (İY'de 2+ gol)",IU15:"İlk yarı 1,5 Alt (İY'de en çok 1 gol)"};
+  const lvNz=v=>{ v=String(v); return v==="U"||v==="A"?v+"2.5":v; };
   try{ const _ct=cpToggle; cpToggle=function(m,mk,odd,p){ try{ const k=cpKey(m), I=CP.items, had=I.find(x=>x.k===k&&x.mk===mk);
         if(!had){ const t=tms(m.dt);
-          if(!m.live&&m.sp!==1&&t&&t<NOW()-5*60e3){
-            // başlamış maç: canlı eşi varsa aynı seçim canlı oran + canlı OXXai olasılığıyla eklenir
-            const lv=(typeof IDL!=="undefined"&&IDL.live&&IDL.live[1]||[]).find(x=>tmEq(x.h,m.h)&&tmEq(x.a,m.a));
+          const lv=!m.live&&m.sp!==1&&t&&t<NOW()?((typeof IDL!=="undefined"&&IDL.live&&IDL.live[1]||[]).find(x=>tmEq(x.h,m.h)&&tmEq(x.a,m.a))||null):null;
+          if(!m.live&&m.sp!==1&&t&&(t<NOW()-5*60e3||lv)){
+            // başlamış maç: canlı eşi varsa seçim canlı oran (yoksa adil oran) + canlı OXXai olasılığıyla eklenir
             if(!lv){ toast(t<NOW()-150*60e3?"Bu maç bitmiş; KUPO'ya eklenemez":"Bu maç başladı: canlı tahmini Canlı sekmesinden ya da ＋ KUPO ile ekleyebilirsin"); return; }
             try{ const P=idlPred(lv), K=idlPick(lv,P); if(!K){ toast("Canlı tahmin şu an hesaplanamadı"); return; }
-              const smk=String(mk), base=/^[UA][\d.]+$/.test(smk)?smk.charAt(0):smk, ou=base==="U"||base==="A", nz=v=>{ v=String(v); return v==="U"||v==="A"?v+"2.5":v; };
+              const smk=String(mk), base=/^[UA][\d.]+$/.test(smk)?smk.charAt(0):smk, ou=base==="U"||base==="A";
               const mm={lg:"i"+lv.ci,h:lv.h,a:lv.a,dt:new Date(lv.ts)}, k2=cpKey(mm), fl=v=>String(v).replace(".",",");
-              // ikinci dokunuş: aynı canlı seçim (canlı anahtar k2 / canlı kod) zaten kuponda → çıkar, "eklendi" deme
-              const hi=I.findIndex(x=>(x.k===k2||(x.live&&tmEq(x.h,mm.h)&&tmEq(x.a,mm.a)))&&nz(x.mk)===nz(smk));
+              const sameM=x=>x.k===k2||x.bk===k2||(x.live&&tmEq(x.h,mm.h)&&tmEq(x.a,mm.a));
+              // ikinci dokunuş: aynı canlı seçim zaten KUPO'da → yalnız o çıkar (aynı maçın diğer canlı tahminleri kalır)
+              const hi=I.findIndex(x=>sameM(x)&&lvNz(x.mk)===lvNz(smk));
               if(hi>=0){ I.splice(hi,1); cpSave(); try{ Sound.toggle(false); }catch(_){} toast("Canlı seçim KUPO'dan çıkarıldı"); return; }
               // Üst/Alt: istenen çizgi canlı çizgiyle aynı değilse sessizce başka çizgiye çevirme
               if(ou){ const want=smk.length>1?+smk.slice(1):2.5, line=+P.line;
                 if(!isFinite(line)){ toast("Bu seçim canlı bültende yok"); return; }
                 if(line!==want){ toast(`Canlı çizgi şu an ${fl(line)}; ${fl(want)} ${base==="U"?"Üst":"Alt"} canlı bültende yok`); return; } }
-              const c=K.all.find(z=>z.k===base);
-              if(!c){ toast("Bu seçim canlı bültende yok"); return; }
-              if(!c.o){ toast("Bu seçimin canlı oranı şu an kapalı"); return; }
-              const pp=typeof liveCal==="function"?Math.min(.99,liveCal(c.p).p):c.p;
-              const d=I.findIndex(x=>x.k!==k2&&tmEq(x.h,mm.h)&&tmEq(x.a,mm.a)); if(d>=0) I.splice(d,1);
-              const r=_ct.call(this,mm,smk,+c.o,pp); const it=CP.items.find(x=>x.k===k2); if(it){ it.live=1; it.s0=`${lv.hs}-${lv.as}`; it.iid=lv.id; cpSave(); }
-              toast(`Canlı eklendi · ${mkName(smk)} %${Math.round(pp*100)} · oran ${fO(c.o)}`); return r; }catch(e){ toast("Canlı tahmin şu an hesaplanamadı"); return; } }
-          const d=I.findIndex(x=>x.k!==k&&tmEq(x.h,m.h)&&tmEq(x.a,m.a)); if(d>=0) I.splice(d,1); } }catch(e){}
+              const c=K.all.concat(K.ext||[]).find(z=>z.k===base);
+              if(!c){ toast(/^I[OU](05|15)$/.test(base)?"İlk yarı bitti ya da bu seçim kesinleşti; artık eklenemez":"Bu seçim canlı bültende yok"); return; }
+              const pp=Math.max(.01,Math.min(.99,typeof liveCal==="function"?liveCal(c.p).p:c.p)), fair=!c.o, o=fair?+(1/pp).toFixed(2):+c.o;
+              const mn=(()=>{ try{ const s=idlSecs(lv); return s==null?(+lv.min||0):Math.floor(s/60); }catch(_){ return +lv.min||0; } })();
+              // eski sürümden kalan (benzersiz anahtarsız) canlı kalem temel cpToggle'da yer değiştirmesin diye taşınır
+              I.forEach(x=>{ if(x.k===k2&&x.live){ x.bk=k2; x.k=k2+"|"+x.mk+"|"+(x.mn!=null?x.mn:"e"); } });
+              const r=_ct.call(this,mm,smk,o,pp); const it=CP.items.find(x=>x.k===k2&&x.mk===smk);
+              if(it){ it.live=1; it.bk=k2; it.mn=mn; it.k=k2+"|"+smk+"|"+mn; it.s0=`${lv.hs}-${lv.as}`; it.iid=lv.id; if(fair) it.fair=1; else delete it.fair; cpSave(); }
+              const n=CP.items.filter(x=>tmEq(x.h,mm.h)&&tmEq(x.a,mm.a)).length, nm=LVN[smk]||mkName(smk);
+              toast(`${n>1?n+". canlı tahmin eklendi":"Canlı eklendi"} · ${nm} %${Math.round(pp*100)} · ${fair?"adil oran":"oran"} ${fO(o)}`); return r; }catch(e){ toast("Canlı tahmin şu an hesaplanamadı"); return; } }
+          // maç öncesi seçim: aynı maçtan tek maç öncesi seçim (canlı tahminlere dokunulmaz)
+          const d=I.findIndex(x=>x.k!==k&&!x.live&&tmEq(x.h,m.h)&&tmEq(x.a,m.a)); if(d>=0) I.splice(d,1); } }catch(e){}
       return _ct.apply(this,arguments); }; }catch(e){}
   // ---------- adlar: Menü, sekme, Power Now, Kayıtlı ----------
   try{ TAB_NAMES.kupon="KUPO"; }catch(e){}
@@ -12192,6 +12235,7 @@ html[data-v122-ctx="at"] nav.tabs button[aria-current]{color:var(--ink3,#8893AB)
   // ---------- çekirdek: skor/zaman/kart modeli + isteğe bağlı istatistik çarpanı ----------
   function lamOf(m){ let L=IDL.lam[String(m.id)], src="iddaa";
     if(!L){ const f=(typeof FIXTURES!=="undefined"?FIXTURES:[]).find(x=>x.iid===m.id); if(f){ try{ const p=quickPred({lg:f.lg,h:f.h,a:f.a},f); if(p&&p.lh!=null) L=[p.lh,p.la]; src="model"; }catch(e){} } }
+    if(!L){ try{ const q=typeof window.lvOranL==="function"?window.lvOranL(m):null; if(q){ L=q; src="canli-oran"; } }catch(e){} }   // v133
     if(!L){ L=[1.45,1.15]; src="ort"; } return {L,src}; }
   function tOf(m){ const s=idlSecs(m); return s==null?(m.h1!=null?46:30):Math.min(120,s/60); }
   function core(m,mH,mA){
@@ -14027,8 +14071,8 @@ html[data-v122-ctx="at"] nav.tabs button[aria-current]{color:var(--ink3,#8893AB)
     ePr=true; }
 
   // ---------- KUPO seçim ekle / çıkar ----------
-  try{ const _ct=cpToggle; cpToggle=function(m,mk){ let had=false; try{ had=CP.items.some(c=>c.k===cpKey(m)&&c.mk===mk); }catch(e){}
-      const r=_ct.apply(this,arguments); try{ const now=CP.items.some(c=>c.k===cpKey(m)&&c.mk===mk); if(now!==had) olay(now?"kupoEkle":"kupoCikar"); }catch(e){} return r; }; }catch(e){}
+  try{ const _ct=cpToggle; cpToggle=function(m,mk){ let had=false, n0=0; try{ had=cpHas(m,mk); n0=CP.items.length; }catch(e){}
+      const r=_ct.apply(this,arguments); try{ const now=cpHas(m,mk); if(now!==had) olay(now?"kupoEkle":"kupoCikar"); else if(CP.items.length!==n0) olay(CP.items.length>n0?"kupoEkle":"kupoCikar"); }catch(e){} return r; }; }catch(e){}
 
   // ---------- arayüz kancaları ----------
   D.addEventListener("click",e=>{ const t=e.target; if(t&&t.closest&&t.closest("#navPow")) olay("power"); },true);
@@ -14249,6 +14293,42 @@ html[data-v122-ctx="at"] nav.tabs button[aria-current]{color:var(--ink3,#8893AB)
   if(typeof quickPred==="function"){ const _q=quickPred; quickPred=function(m,f){ if(bos(f)) return null; return _q.apply(this,arguments); }; }
   if(typeof fullPred==="function"){ const _f=fullPred; fullPred=function(m,f){ if(bos(f)) return null; return _f.apply(this,arguments); }; }
 }catch(e){} })();
+</script>
+<script id="canli-coklu-v133">
+// v133 · Canlı maçta 2. (ve sonraki) tahmin + ilk yarı gol tahmini
+// • Maç öncesi modeli ve maç öncesi oranı olmayan maç (ör. Azerbaycan Kupası, lig "i"+ci): canlı gol beklentisi artık
+//   iddaa canlı oranlarından (MS 1/X/2, Alt/Üst; marj ayıklanır) geri çözülür; canlı oran da yoksa lig ortalaması (1,45 / 1,15).
+//   Hesap dakika, skor ve kırmızı kartla canlı modelde (canli-gt-v107 core) yapılır.
+// • Başlamış maç penceresi canlı eşini takım adından da bulur (fikstür kaydında iid yoksa "tahmin hesaplanamadı" kalmaz).
+(function(){ "use strict";
+  const C=new Map();
+  function pois(l,K){ const o=[]; let p=Math.exp(-l); for(let k=0;k<=K;k++){ o.push(p); p*=l/(k+1); } return o; }
+  // kalan sürede (rem payı) LH/LA ile 1/X/2 ve Üst olasılığı; skor durumu etkisi yok (geri çözüm için yeterli)
+  function fwd(lh,la,hs,as,rem,line){ const PH=pois(lh*rem,8), PA=pois(la*rem,8); let H=0,D=0,A=0,O=0; const tot=hs+as;
+    for(let i=0;i<=8;i++) for(let j=0;j<=8;j++){ const p=PH[i]*PA[j], a=hs+i, b=as+j; if(a>b)H+=p; else if(a===b)D+=p; else A+=p; if(line!=null&&tot+i+j>line) O+=p; }
+    const z=H+D+A||1; return {H:H/z,D:D/z,A:A/z,O}; }
+  window.lvOranL=function(m){ try{ if(!m||m.sp!==1) return null; const od=m.odds||{};
+      const ms=od.ms&&!od.ms.lock&&od.ms.v&&od.ms.v.length===3&&od.ms.v.every(x=>x>1)?od.ms.v:null, ou=od.ou&&!od.ou.lock&&od.ou.alt>1&&od.ou.ust>1?od.ou:null;
+      if(!ms&&!ou) return null;
+      const s=idlSecs(m), t=s==null?30:Math.min(120,s/60), rem=fbRemShare(t,m); if(!(rem>.02)) return null;   // maç sonuna çok az kala oran bilgisi geri çözülmez
+      const hs=+m.hs||0, as=+m.as||0, key=[m.id,Math.round(t),hs,as,ms&&ms.join(),ou&&[ou.l,ou.alt,ou.ust].join()].join("|");
+      if(C.has(key)) return C.get(key);
+      let q=null; if(ms){ const r=ms.map(x=>1/x), z=r[0]+r[1]+r[2]; q=r.map(x=>x/z); }
+      let po=null; if(ou){ const a=1/ou.alt, b=1/ou.ust; po=b/(a+b); }
+      let best=null;
+      for(let T=1.2;T<=4.61;T+=.1) for(let sh=.2;sh<=.801;sh+=.025){ if(!ms&&Math.abs(sh-.56)>.013) continue;
+        const F=fwd(T*sh,T*(1-sh),hs,as,rem,ou?ou.l:null); let e=0;
+        if(q) e+=(F.H-q[0])**2+(F.D-q[1])**2+(F.A-q[2])**2; if(po!=null) e+=(F.O-po)**2;
+        if(!best||e<best.e) best={e,L:[+(T*sh).toFixed(3),+(T*(1-sh)).toFixed(3)]}; }
+      const L=best&&best.e<.05?best.L:null; if(C.size>400) C.clear(); C.set(key,L); return L; }catch(e){ return null; } };
+  // başlamış maç penceresi: canlı eş iid ile bulunamadıysa takım adlarıyla
+  try{ const _om=openMatch; openMatch=function(m,tab){ const r=_om.apply(this,arguments);
+      try{ if(MS.m===m&&!MS.live&&m&&!m.sp){ const t=m.dt&&m.dt.getTime?m.dt.getTime():NaN;
+          if(isFinite(t)&&t<Date.now()&&t>Date.now()-3*3600e3){ const find=()=>(IDL.live&&IDL.live[1]||[]).find(x=>tmEq(x.h,m.h)&&tmEq(x.a,m.a))||null;
+            const go=()=>{ const lv=find(); if(lv&&MS.m===m&&!MS.live){ MS.live=lv; msRender(); } };
+            if(find()) go(); else if(typeof IDL.load==="function"&&Date.now()-(IDL.at[1]||0)>15000) IDL.load(1).then(go).catch(()=>{}); } } }catch(e){}
+      return r; }; }catch(e){}
+})();
 </script>
 </body>
 </html>
