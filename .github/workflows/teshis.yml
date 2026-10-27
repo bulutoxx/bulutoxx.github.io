@@ -7,4 +7,4 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
-      - run: python3 lab/teshis_bulten.py
+      - run: python3 lab/teshis_bulten.py | head -40 | while IFS= read -r l; do echo "::notice::$l"; done
