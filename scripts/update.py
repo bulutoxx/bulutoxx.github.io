@@ -1891,9 +1891,22 @@ def main():
     lg_tk = {lg: {t for m in ms for t in (m["h"], m["a"])} for lg, ms in all_ms.items()}
     ok_src = lambda f: f.get("src") != "iddaa" or (f.get("lgk") and f["h"] in lg_tk.get(f["lg"], ()) and f["a"] in lg_tk.get(f["lg"], ()))
     fx_lock = [f for f in fx if ok_src(f) and kickoff(f) > now_utc and (f["lg"], f["h"], f["a"], f["d"]) not in played]
+    model_yolu = {}
     for e in predict_fixtures(fx_lock, all_ms, P, today, pzmap=pzmap, PL=PL, golge=GOLGE_T):
+        model_yolu[e["id"]] = (e["p"], e.get("o"))       # model yolu (oranlı maçta piyasadan bağımsız Poisson)
         if e["id"] not in have:                           # maçtan önceki ilk tahmin kilitlenir, sonradan değiştirilmez
             e["v"] = ENGINE_V; e["ts"] = now_utc.strftime("%Y-%m-%dT%H:%MZ"); plog.append(e); have.add(e["id"])
+    try:   # 🌱 taze veri gölge kaydı (scripts/tazeveri.py): kadro / oran hareketi / karışım ayarlı ve ayarsız tahmin; kapı açıksa fixtures çıktısına
+        import tazeveri as TZV
+        TZA = TZV.ayar(); TZG = TZV.jl(TZV.GOLGE, None) or {}
+        nt_ = TZV.golge_guncelle(fx, lambda f_: kickoff(f_).timestamp(), model=model_yolu, now=now_utc, A=TZA, G=TZG, yaz=False)
+        nr_ = TZV.sonuc_isle(TZG, all_ms, now=now_utc, yaz=False)
+        TZV._yaz(TZG, now_utc)
+        fx_c, nz_ = TZV.cikti_uygula(fx, TZA, TZG)
+        if nz_:
+            json.dump([{k: v for k, v in f.items() if k != "xg"} for f in fx_c], open(fxp, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
+        print(f"Taze veri gölge kaydı: {nt_} maç güncellendi, {nr_} sonuç, yayında ayarlı {nz_} maç", flush=True)
+    except Exception as e: print("taze veri atlandı:", e.__class__.__name__, e, flush=True)
     try:   # 🩹 kadro özeti (scripts/kadro.py, türetilmiş): maç başlamadan önceki son hali kd alanına (p kilitli kalır)
         import kadro
         nk_ = kadro.predlog_isle(plog)

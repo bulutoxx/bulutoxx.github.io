@@ -79,8 +79,10 @@ jobs:
         run: python3 lab/adim.py karar -- python3 lab/surekli_deney.py karar --kaynak "$RUNNER_TEMP/deney"
       - name: ⚖️ Oransız model yolu kararı (güç puanları + topluluk; alfa yatırımı kapısı, 14 gün kilitli gölge A/B, otomatik geri alma)
         run: python3 lab/adim.py fbguc-karar -- python3 lab/fb_guc_kapi.py karar --kaynak "$RUNNER_TEMP/deney"
+      - name: 🌱 Taze veri kararı (kadro / oran hareketi / piyasa+model karışımı; gölge kayıttan zaman sıralı sınama, alfa yatırımı kapısı, 14 gün izleme, otomatik geri alma; ağ yok, istek yok)
+        run: python3 lab/adim.py taze-karar --onem bilgi -- python3 lab/tazeveri_kapi.py karar
       - name: Kaydet (uzak dal ilerlediyse karar güncel uçta yeniden üretilir)
         run: |
           python3 lab/gonder.py -m "Sürekli deney kararı $(date -u +%FT%H:%M) [skip ci]" \
-            --yeniden "python3 lab/surekli_deney.py karar --kaynak '$RUNNER_TEMP/deney' && python3 lab/fb_guc_kapi.py karar --kaynak '$RUNNER_TEMP/deney'" \
-            data/deney data/oxx_ayar.json data/deney_kuyrugu.json data/ogrenme_gunlugu.json data/gelisim.json data/saglik data/fb_guc.json
+            --yeniden "python3 lab/surekli_deney.py karar --kaynak '$RUNNER_TEMP/deney' && python3 lab/fb_guc_kapi.py karar --kaynak '$RUNNER_TEMP/deney' && python3 lab/tazeveri_kapi.py karar" \
+            data/deney data/oxx_ayar.json data/deney_kuyrugu.json data/ogrenme_gunlugu.json data/gelisim.json data/saglik data/fb_guc.json data/tazeveri_ayar.json

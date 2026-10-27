@@ -88,6 +88,8 @@ Futbolda tek maçın sonucu doğası gereği belirsizdir; hiçbir model her maç
 | saglik/<iş akışı>.json | Her iş akışı adımı (`lab/adim.py`) | Kurtarıcı | Adım çıkış kodu, süre, tur/hata sayısı (çalışma kimliğiyle); `imza` = durum özeti |
 | saglik.json | Kurtarıcı (`lab/kurtarici.py`) | Uygulama (isteğe bağlı), insan | Sağlık özeti: başarısız adımlar, ana dosyaların tazeliği (fixtures, model, daily, predlog, health, bugünkü at canlı), kalite alarmları (qa*.json), `sorunlar` |
 | deney/<iş>/<zaman>.json, deney/golge.json, deney/durum.json | Sürekli deney (`lab/surekli_deney.py`, surekli-deney.yml) | Sürekli deney karar işi, OXXai öğrenme döngüsü | Her 3 saatte bir deney sonuçları (son 7 gün), gölge ölçümdeki adaylar, işlenen dosyalar |
+| tazeveri.json | Motor (`scripts/tazeveri.py`, update.py içinde) | Taze veri kapısı | Gölge kayıt: maç başına açılış/son oran (o0/o1, u0/u1), temel (sunulan) tahmin b/bo, model yolu pm/pmo, kadro özeti kd, kadro / oran hareketi / karışım ayarlı gölge tahminler g, yayında uygulanan adaylar s, sonuç r (120 gün; yalnız türetilmiş) |
+| tazeveri_ayar.json | Taze veri kapısı (`lab/tazeveri_kapi.py`, sürekli deney karar işi) | Motor | Aday durumları (kadro_1x2/ou, hareket_1x2/ou, karisim_1x2/ou; varsayılan gölge), parametreler, son ölçüm, alfa yatırımı, 14 gün izleme / geri alma. Aktif aday yalnız fixtures.json çıktısında kp/ko'ya uygulanır (tz alanı) |
 
 ## 🩺 Sağlık sinyali, sürekli döngü ve sürekli deney (2026-10-27)
 
