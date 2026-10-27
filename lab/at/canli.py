@@ -287,6 +287,7 @@ def main():
     progs = {t: p for t, p in progs.items() if p}
     print("program:", {t: len(p) for t, p in progs.items()})
 
+    import at6; at6.hava_hazirla()   # v6: a6_hava yayındaysa hava tablosu (yoksa özellik "hava yok")
     kosular, _ = veri.sonuclari_yukle(kaynak)
     print(f"sonuçlar yüklendi: {len(kosular)} koşu ({time.time() - t0:.1f} sn)")
     mj = gece.joku(os.path.join(gece.CIKTI, "model.json"))
