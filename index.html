@@ -1945,6 +1945,132 @@ details.sx>.sx-in>.panel,details.sx>.sx-in>.pw-card{margin-top:0}
 <div id="goal" class="goal" hidden></div>
 <div class="toast" id="toast" hidden></div>
 
+<script id="perf-v118">
+// =====================================================================
+// OXXai v118 · Performans (P0)
+// 1) Tek zamanlayıcı: tüm setInterval'lar ortak bir planlayıcıya bağlanır. Sayfa gizliyken durur; görünür olunca vadesi gelenler bir kez çalışır.
+//    İstisna (arka planda sürer): 5 dk ve üstü seyrek işler (ör. sonuç bildirimi), fn.oxxBg=true olanlar ve koşulu "document.hidden||…" diye
+//    kendisi yazanlar (ör. at hatırlatma bildirimi). Yeni kod için: everyVisible(fn, ms).
+// 2) Açılış: lig güçleri robotun data/ratings.json dosyasından gelir (telefonda yeniden eğitim yok);
+//    data/season.json (3,8 MB) yalnız puan durumu, aralarındaki maçlar, maç tahmini ve Motor sayfasında, gerekince arka planda yüklenir.
+// 3) Sürüm kontrolü: 1,25 MB index.html yerine data/version.json ({"v":"<APP_V>"}).
+// =====================================================================
+(function(){
+  "use strict";
+  const W=window, nSI=W.setInterval, nCI=W.clearInterval, nST=W.setTimeout, nCT=W.clearTimeout;
+  // ---------- 1) Planlayıcı ----------
+  const T=new Map(); let seq=5e8, tmr=0, at=Infinity;
+  const BG=5*60e3, hid=()=>document.hidden===true;
+  function nextOf(t,now){ return t.al ? (Math.floor(now/t.al)+1)*t.al+40 : now+t.ms; }
+  function arm(){
+    let nx=Infinity; const h=hid();
+    for(const t of T.values()) if(!h||t.bg) if(t.next<nx) nx=t.next;
+    if(tmr&&nx===at) return;
+    if(tmr){ nCT.call(W,tmr); tmr=0; } at=nx;
+    if(nx<Infinity) tmr=nST.call(W,run,Math.max(0,nx-Date.now()));
+  }
+  function run(){
+    tmr=0; at=Infinity; const t0=Date.now(), h=hid();
+    const due=[...T.values()].filter(t=>(!h||t.bg)&&t.next<=t0+5).sort((a,b)=>a.next-b.next);
+    for(const t of due){
+      if(Date.now()-t0>12) break;   // tek uzun görev olmasın: kalanlar bir sonraki turda
+      if(!T.has(t.id)) continue;
+      t.next=nextOf(t,Date.now());
+      try{ t.fn.apply(W,t.args); }catch(e){ nST.call(W,()=>{ throw e; },0); }
+    }
+    arm();
+  }
+  function add(fn,ms,o){ o=o||{}; ms=Math.max(10,+ms||0); const id=++seq, now=Date.now();
+    const t={id,fn,ms,args:o.args||[],bg:!!o.bg,al:o.align?Math.max(1000,+o.align):0}; t.next=nextOf(t,now); T.set(id,t); arm(); return id; }
+  W.everyVisible=function(fn,ms,o){ return add(fn,ms,Object.assign({},o,{bg:false})); };
+  // Arka planda da çalışacaklar: 5 dk ve üstü, fn.oxxBg=true ya da gizliyken çalışma koşulunu kendisi yazan (ör. "!document.hidden||PR().sys" → at hatırlatma bildirimi)
+  const bgOf=(fn,ms)=>{ if((+ms||0)>=BG||fn.oxxBg===true) return true; try{ return /document\.hidden\s*\|\|/.test(Function.prototype.toString.call(fn)); }catch(e){ return false; } };
+  W.setInterval=function(fn,ms,...a){ if(typeof fn!=="function") return nSI.call(W,fn,ms,...a); return add(fn,ms,{args:a,bg:bgOf(fn,ms)}); };
+  W.clearInterval=function(id){ if(T.has(id)){ T.delete(id); arm(); return; } return nCI.call(W,id); };
+  W.clearTimeout=function(id){ if(T.has(id)){ T.delete(id); arm(); return; } return nCT.call(W,id); };
+  document.addEventListener("visibilitychange",arm);
+  W.OXX_T={ list:()=>[...T.values()].map(t=>({ms:t.ms,bg:t.bg,al:t.al})) };
+
+  // ---------- 2) Sezon: küçük özet + tembel tam veri ----------
+  const PK=["decay","prior","mkt","h1"];
+  W.oxxRatingsSeason=function(r,m){ try{
+    if(!r||r.v!==1||!r.leagues) return null;
+    const P=(m&&m.params)||{}, R=r.params||{};
+    for(const k of PK) if((P[k]==null?null:P[k])!==(R[k]==null?null:R[k])) return null;   // ayarlar uyuşmazsa eski yol
+    const S={};
+    for(const [lg,L] of Object.entries(r.leagues)){
+      const tm=L.tm||[];
+      const d={name:L.name, asOf:L.asOf, season:L.season, _lite:true, _n:L.n,
+        matches:(L.m||[]).map(x=>({d:x[0],h:tm[x[1]],a:tm[x[2]],ft:[x[3],x[4]],season:x[5]}))};
+      if(L.cup) d.cup=true; if(L.espn) d.espn=L.espn; if(L.src) d.src=L.src;
+      d._o=L.o?L.o.map(i=>tm[i]):(L.cup?tm:undefined);   // takım sırası tam veriyle aynı kalsın
+      if(L.fit){ const F=L.fit, t={}; tm.forEach((n,i)=>{ if(F.a[i]!=null) t[n]={att:F.a[i],def:F.d[i],n:F.c[i]}; });
+        d._fit={t,mu:F.mu,gamma:F.gamma,h1:F.h1,n:F.n,avg:F.avg}; }
+      S[lg]=d; }
+    return S; }catch(e){ return null; } };
+  let full=null, fullP=null, wanted=false;
+  const lite=()=>{ try{ return Object.values(SEASON).some(d=>d&&d._lite); }catch(e){ return false; } };
+  function merge(s){
+    let n=0;
+    for(const [lg,d] of Object.entries(SEASON)){ const f=s&&s[lg]; if(!d||!d._lite||!f) continue;
+      const ms=(f.matches||[]).filter(m=>m&&m.ft&&m.ft.length===2);
+      if(d._n!=null&&ms.length!==d._n) continue;   // farklı sürüm: bu lig özetle kalır
+      d.matches=ms.sort((a,b)=>a.d<b.d?-1:1);
+      for(const k of Object.keys(f)) if(k!=="matches"&&!(k in d)) d[k]=f[k];
+      delete d._lite; n++; }
+    return n;
+  }
+  function refresh(){
+    const vis=id=>{ const v=document.getElementById(id); return v&&!v.hidden; };
+    try{ if(vis("v-ligler")&&typeof renderLigler==="function") renderLigler(); }catch(e){}
+    try{ if(vis("v-karne")&&typeof renderKarne==="function") renderKarne(); }catch(e){}
+    try{ if(typeof autoGrade==="function"&&typeof S!=="undefined"&&Object.values(S.matches||{}).some(m=>!m.result)) autoGrade(); }catch(e){}
+    try{ document.dispatchEvent(new CustomEvent("oxx:season")); }catch(e){}
+  }
+  function ensure(){
+    if(typeof SEASON==="undefined"||!Object.keys(SEASON).length) return Promise.resolve(false);
+    wanted=true;
+    if(!lite()) return Promise.resolve(true);
+    if(fullP) return fullP;
+    fullP=fetch("data/season.json",{cache:"no-cache"}).then(r=>r.ok?r.json():null).then(s=>{ fullP=null; if(!s) return false; full=s; if(merge(s)) refresh(); return !lite(); })
+      .catch(()=>{ fullP=null; return false; });
+    return fullP;
+  }
+  W.oxxSeason={ ensure, isLite:lite,
+    after(){ if(full&&lite()) merge(full); if(wanted&&lite()) ensure(); } };   // yenilemeden sonra: değişmeyen ligler bellekten, gerekiyorsa arka planda tazele
+  // Maç tahmini: tam veri (aralarındaki maçlar, puan durumu, trend) hazır olmadan sonuç çizilmesin
+  let gate=false;
+  document.addEventListener("submit",e=>{ const f=e.target; if(!f||f.id!=="f"||gate||!lite()) return;
+    e.preventDefault(); e.stopImmediatePropagation();
+    const b=f.querySelector("button[type=submit]"); if(b) b.disabled=true;
+    const go=()=>{ if(b) b.disabled=false; gate=true; try{ f.requestSubmit(); }finally{ gate=false; } };
+    Promise.race([ensure(),new Promise(r=>nST.call(W,r,10000))]).then(go,go);
+  },true);
+  // Önden yükle: tahmin formuna dokunulunca
+  document.addEventListener("focusin",e=>{ if(e.target&&e.target.closest&&e.target.closest("#f")&&lite()) ensure(); },true);
+  // Puan durumu / Motor sayfası açılınca tam veri gerekir (sekme dinleyicileri eski işlev referansını tuttuğu için tıklamadan sonra da bakılır)
+  const need=()=>{ if(!lite()) return; for(const id of ["v-ligler","v-karne"]){ const v=document.getElementById(id); if(v&&!v.hidden){ ensure(); return; } } };
+  document.addEventListener("click",()=>nST.call(W,need,0),true);
+  W.addEventListener("hashchange",()=>nST.call(W,need,0));
+  document.addEventListener("DOMContentLoaded",()=>{
+    for(const [fn,vid] of [["renderLigler","v-ligler"],["renderKarne","v-karne"]]){ try{ const o=W[fn]; if(typeof o!=="function") continue;
+      W[fn]=function(){ const v=document.getElementById(vid); if(v&&!v.hidden&&lite()) ensure(); return o.apply(this,arguments); }; }catch(e){} }
+    try{ const o=W.autoGrade; if(typeof o==="function") W.autoGrade=function(){ if(lite()&&typeof S!=="undefined"&&Object.values(S.matches||{}).some(m=>!m.result)) ensure(); return o.apply(this,arguments); }; }catch(e){}
+  });
+
+  // ---------- 3) Sürüm ----------
+  let vc={t:0,v:null}, fb=false;
+  W.oxxLatestV=async function(force){
+    if(!force&&Date.now()-vc.t<20e3) return vc.v;
+    try{ const r=await fetch("data/version.json?t="+Date.now(),{cache:"no-store"});
+      if(r.ok){ const j=await r.json(); const v=j&&typeof j.v==="string"?j.v:null; vc={t:Date.now(),v}; return v; }
+      if(r.status===404&&!fb){ fb=true;   // eski yayın (version.json yok): bir kez eski yöntem
+        const q=await fetch("index.html?vchk="+Date.now(),{cache:"no-store"}); if(!q.ok) return null; const m=(await q.text()).match(/const APP_V="([^"]+)"/); const v=m?m[1]:null; vc={t:Date.now(),v}; return v; }
+    }catch(e){}
+    return null;
+  };
+})();
+</script>
 <script id="ui-v92">
 // v92: (1) aynı ESPN adresine aynı anda gelen istekleri tek ağ isteğinde birleştir (açılışta her lig 3 kez çekiliyordu)
 //      (2) erişilebilirlik: ekran okuyucu etiketleri, role=button öğelerine klavye erişimi, Esc ile sohbeti kapatma
@@ -1997,7 +2123,9 @@ const $ = id => document.getElementById(id);
 const pct = (p, d=0) => (p*100).toFixed(d) + "%";
 const clamp = (x,a,b) => Math.max(a, Math.min(b, x));
 const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const slug = s => s.toLocaleLowerCase("tr").trim()
+const _slugC=new Map();   // v118: slug önbelleği (sıcak döngülerde her çağrıda yeniden hesaplanıyordu)
+const slug = s => { let v=_slugC.get(s); if(v===undefined){ v=_slug0(s); if(_slugC.size>30000) _slugC.clear(); _slugC.set(s,v); } return v; };
+const _slug0 = s => s.toLocaleLowerCase("tr").trim()
   .replace(/ç/g,"c").replace(/ğ/g,"g").replace(/ı/g,"i").replace(/ö/g,"o").replace(/ş/g,"s").replace(/ü/g,"u")
   .normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,80) || "takim";
 function toast(msg){ const t=$("toast"); t.textContent=msg; t.hidden=false; clearTimeout(toast._t); toast._t=setTimeout(()=>t.hidden=true,Math.max(2600,String(msg).length*60)); }
@@ -2412,9 +2540,9 @@ const curTeams = new Set();
 function MP(k, d){ return MODEL && MODEL.params && MODEL.params[k]!=null ? MODEL.params[k] : d; }
 function isCup(lg){ return !!(SEASON[lg] && SEASON[lg].cup) || lg==="eu"; }
 function buildSeason(){
-  const core=s=>norm(s).split(" ").filter(w=>!["fc","sc","sv","ac","as","afc","cf","rc","ssc","1"].includes(w)).join(" ");
-  const findOrAdd=(name, lg)=>{
-    let t=TEAMS.find(x=>x.keys.includes(norm(name))) || TEAMS.find(x=>x.keys.some(k=>core(k)===core(name)));
+  const coreC=new Map(), core=s=>{ let v=coreC.get(s); if(v===undefined){ v=norm(s).split(" ").filter(w=>!["fc","sc","sv","ac","as","afc","cf","rc","ssc","1"].includes(w)).join(" "); coreC.set(s,v); } return v; };   // v118: önbellekli
+  const findOrAdd=(name, lg)=>{ const nn=norm(name), cn=core(name);
+    let t=TEAMS.find(x=>x.keys.includes(nn)) || TEAMS.find(x=>x.keys.some(k=>core(k)===cn));
     if(!t){ t={name, lg, keys:[norm(name)]}; TEAMS.push(t); }
     return t;
   };
@@ -2432,18 +2560,18 @@ function buildSeason(){
     if(d.cup) continue;
     const ms=d.matches, lastSeason=ms.reduce((a,m)=>Math.max(a,m.season||0),0);
     const cur=ms.filter(m=>!m.season || m.season===lastSeason);
-    for(const name of new Set(cur.flatMap(m=>[m.h,m.a]))){
+    for(const name of (d._o||new Set(cur.flatMap(m=>[m.h,m.a])))){
       curTeams.add(name);
       const t=findOrAdd(name, lg); t.lg=lg; t.name=name; t.cur=true; if(!t.keys.includes(norm(name))) t.keys.push(norm(name));
       FORM.set(slug(name), {lg, list:lastFive(ms,name), asOf:d.asOf});
     }
-    const fit=fitLeague(ms);
-    if(fit){ fit.avg = cur.length ? cur.reduce((s,m)=>s+m.ft[0]+m.ft[1],0)/cur.length : fit.avg; FIT[lg]=fit; LEAGUES[lg].g=+fit.avg.toFixed(2); }
+    const fit=d._fit||fitLeague(ms);   // v118: d._fit = robotun data/ratings.json'a yazdığı aynı hesap
+    if(fit){ if(!d._fit) fit.avg = cur.length ? cur.reduce((s,m)=>s+m.ft[0]+m.ft[1],0)/cur.length : fit.avg; FIT[lg]=fit; LEAGUES[lg].g=+fit.avg.toFixed(2); }
   }
   // 3) Avrupa kupaları: ligi olmayan takımları da tanı
   for(const [lg, d] of Object.entries(SEASON)){
     if(!d.cup) continue;
-    for(const name of new Set(d.matches.flatMap(m=>[m.h,m.a]))){
+    for(const name of (d._o||new Set(d.matches.flatMap(m=>[m.h,m.a])))){
       const t=findOrAdd(name, null);
       if(!t.cur){ t.cupOnly=true; t.cur=true; if(!FORM.has(slug(t.name))) FORM.set(slug(t.name), {lg, list:lastFive(d.matches,name), asOf:d.asOf}); }
     }
@@ -2466,11 +2594,14 @@ let LOGOS={};
 async function loadData(fresh){
   const q=fresh?("?t="+Date.now()):"";
   const get=async (u)=>{ try{ const r=await fetch(u+q,{cache:fresh?"no-store":"no-cache"}); return r.ok? await r.json() : null; }catch(e){ return null; } };
-  const [s,m,h,l]=await Promise.all([get("data/season.json"), get("data/model.json"), get("data/history.json"), get("data/logos.json")]);
+  const [rt,m,h,l]=await Promise.all([get("data/ratings.json"), get("data/model.json"), get("data/history.json"), get("data/logos.json")]);
+  let s=(typeof oxxRatingsSeason==="function")?oxxRatingsSeason(rt,m):null;   // v118: season.json (3,8 MB) yalnız gerekince, arka planda
+  if(!s) s=await get("data/season.json");
   if(fresh && !s) return false;
   SEASON=s||{}; MODEL=m; HISTORY=Array.isArray(h)?h:[]; LOGOS=l||LOGOS||{};
   if(MODEL && MODEL.params){ S.params.rho = MODEL.params.rho; }
   buildSeason();
+  try{ if(typeof oxxSeason!=="undefined") oxxSeason.after(); }catch(e){}
   return true;
 }
 function formFor(name){ const t=findTeam(name); return t ? FORM.get(slug(t.name)) || null : null; }
@@ -2959,12 +3090,13 @@ const Live=(()=>{
 })();
 
 // Canlı listeden tek dokunuşla tahmin
+const _bwC=new Map();   // v118: anahtar kelimeleri bir kez böl
 function bestTeamName(n){
   const t=findTeam(n); if(t) return t.name;
   const q=norm(n), words=q.split(" ").filter(w=>w.length>2);
   let best=null, bs=0;
   for(const t of allTeams()){ for(const k of t.keys){ let s=0;
-    if(k===q) s=10; else if(k.includes(q)||q.includes(k)) s=6; else s=words.filter(w=>k.split(" ").includes(w)).length*2;
+    if(k===q) s=10; else if(k.includes(q)||q.includes(k)) s=6; else if(words.length){ let kw=_bwC.get(k); if(!kw){ kw=k.split(" "); _bwC.set(k,kw); } s=words.filter(w=>kw.includes(w)).length*2; }
     if(s>bs){ bs=s; best=t; } } }
   return bs>=2 ? best.name : n;
 }
@@ -3821,7 +3953,8 @@ function pickMatch(m){
   form.parentNode.insertBefore(b, form);
   b.onclick=openPicker;
   const upd=()=>{ const L=Pick.list(); const live=L.filter(m=>m.live).length; $("pickSub").textContent=(live?`🔴 ${live} canlı · `:"")+`${L.length} maç · tüm ligler`; };
-  setTimeout(upd,1500); setInterval(upd,30000);
+  setTimeout(upd,1500); setInterval(()=>{ const v=$("v-tahmin"); if(!v||!v.hidden) upd(); },30000);   // v118: yalnız Tahmin sayfası açıkken
+  document.querySelector('nav.tabs button[data-v="tahmin"]')?.addEventListener("click",()=>setTimeout(upd,0));
   Pick.loadEspn().then(upd);
 })();
 // Bugün şeridi: başlamış/bitmiş fikstürleri gösterme, saatleri İstanbul'a çevir
@@ -4645,10 +4778,11 @@ async function doRefresh(btn){
   const paintSort=()=>document.querySelectorAll(".sortsw button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.s===TL.get()));
   paintSort();
   let lastMin=-1;
-  const tick=()=>{ const d=new Date(); document.querySelectorAll(".clkv").forEach(x=>x.textContent=ist(d,{weekday:"short",day:"numeric",month:"short",hour:"2-digit",minute:"2-digit",second:"2-digit"}));
+  const tick=()=>{ const d=new Date(); document.querySelectorAll(".clkv").forEach(x=>{ const t=ist(d,{weekday:"short",day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}); if(x.textContent!==t) x.textContent=t; });
     // her dakika "şu an" çizgisini ve kalan süreleri tazele
     if(d.getMinutes()!==lastMin){ lastMin=d.getMinutes(); if(!document.hidden){ if(!$("v-bulten").hidden&&TL.get()==="saat") renderBulten(); if(!$("v-basket").hidden&&TL.get()==="saat") renderBasket(); } } };
-  tick(); setInterval(tick,1000);
+  tick(); if(typeof everyVisible==="function") everyVisible(tick,60000,{align:60000}); else setInterval(tick,60000);   // v118: dakikada bir, yalnız görünürken
+  document.addEventListener("click",e=>{ if(e.target.closest&&e.target.closest("nav.tabs button")) setTimeout(tick,0); },true);
 })();
 
 // =====================================================================
@@ -5666,8 +5800,7 @@ const APP_V="2026-10-27.119";
   let shown=false;
   async function check(auto){
     try{
-      const r=await fetch("index.html?vchk="+Date.now(),{cache:"no-store"}); if(!r.ok) return;
-      const t=await r.text(); const m=t.match(/const APP_V="([^"]+)"/); if(!m||m[1]===APP_V) return;
+      const nv=await oxxLatestV(false); if(!nv||nv===APP_V) return;   // v118: data/version.json (birkaç bayt)
       if(navigator.serviceWorker&&navigator.serviceWorker.getRegistration){ const reg=await navigator.serviceWorker.getRegistration(); if(reg) reg.update().catch(()=>{}); }
       if(auto){ apply(); return; }
       if(shown) return; shown=true;
@@ -5684,6 +5817,7 @@ const APP_V="2026-10-27.119";
   let hiddenAt=0;
   document.addEventListener("visibilitychange",()=>{ if(document.hidden){ hiddenAt=Date.now(); return; } check(Date.now()-hiddenAt>60e3); });
   setTimeout(()=>check(false),5000); setInterval(()=>{ if(!document.hidden) check(false); },3*60e3);
+  window.addEventListener("focus",()=>{ if(!document.hidden) check(false); });   // v118: odaklanınca da (önbellekli, en sık 20 sn'de bir)
   // Güncelle düğmesi: yeni sürüm varsa onu da getirir
   const _dr=doRefresh; doRefresh=function(){ check(true); return _dr.apply(this,arguments); };
 })();
@@ -7482,7 +7616,7 @@ setTimeout(()=>{ try{ renderTP(); }catch(e){} },1500);
     lbl(bot,"OXXai"); lbl(mode,"Ses"); lbl(rf,"Yenile");
     rf.onclick=v70Refresh;
   }
-  async function verCheck(){ try{ const r=await fetch("index.html?vchk="+Date.now(),{cache:"no-store"}); if(!r.ok) return null; const t=await r.text(); const m=t.match(/const APP_V="([^"]+)"/); return m&&m[1]!==APP_V?m[1]:null; }catch(e){ return null; } }
+  async function verCheck(){ try{ const v=await oxxLatestV(true); return v&&v!==APP_V?v:null; }catch(e){ return null; } }   // v118: data/version.json
   let busy=false;
   async function v70Refresh(){
     if(busy) return; busy=true; const rf=$("hdrRefresh"); if(rf){ rf.classList.remove("ok"); rf.classList.add("spin"); }
@@ -8212,8 +8346,16 @@ setTimeout(()=>{ try{ renderTP(); }catch(e){} },1500);
     fr.appendChild(document.createTextNode(v.slice(i))); tn.parentNode.replaceChild(fr,tn); }
   function tagAll(root){ try{ const w=document.createTreeWalker(root||document.body,NodeFilter.SHOW_TEXT,{acceptNode:n=>{ const p=n.parentNode; if(!p||SKIP.test(p.nodeName)||p.closest(".tvar,[contenteditable],#botQ,.bt-in")) return 2; return /\(K\)|U ?(1[5-9]|2[0-3])|Women|Kadın/.test(n.nodeValue)?1:2; }});
       const L=[]; while(w.nextNode()) L.push(w.currentNode); L.forEach(tagNode); }catch(e){} }
-  let tq=0; const tsched=()=>{ if(tq) return; tq=1; requestAnimationFrame(()=>{ tq=0; tagAll(document.querySelector("main")||document.body); const bl=document.getElementById("botLog"); if(bl) tagAll(bl); const sh=document.getElementById("sheet"); if(sh) tagAll(sh); }); };
-  try{ new MutationObserver(tsched).observe(document.body,{childList:true,subtree:true,characterData:true}); }catch(e){} tsched();
+  // v118: gözlemci artık yalnız eklenen/değişen düğümleri işler (eskiden her değişimde <main>'in tüm metin düğümleri taranıyordu)
+  const inScope=n=>{ const e=n.nodeType===1?n:n.parentNode; return !!(e&&e.closest&&e.closest("main,#botLog,#sheet")); };
+  const PEND=new Set(); let tq=0;
+  const flush=()=>{ tq=0; const L=[...PEND]; PEND.clear(); for(const n of L){ if(!n.isConnected||!inScope(n)) continue;
+      if(n.nodeType===3){ const p=n.parentNode; if(p&&!SKIP.test(p.nodeName)&&!p.closest(".tvar,[contenteditable],#botQ,.bt-in")&&/\(K\)|U ?(1[5-9]|2[0-3])|Women|Kadın/.test(n.nodeValue)) tagNode(n); }
+      else if(n.nodeType===1&&!SKIP.test(n.nodeName)) tagAll(n); } };
+  const tsched=recs=>{ for(const r of recs){ if(r.type==="characterData") PEND.add(r.target); else r.addedNodes.forEach(n=>{ if(n.nodeType===1||n.nodeType===3) PEND.add(n); }); }
+    if(PEND.size&&!tq){ tq=1; requestAnimationFrame(flush); } };
+  try{ new MutationObserver(tsched).observe(document.body,{childList:true,subtree:true,characterData:true}); }catch(e){}
+  requestAnimationFrame(()=>{ tagAll(document.querySelector("main")||document.body); const bl=document.getElementById("botLog"); if(bl) tagAll(bl); const sh=document.getElementById("sheet"); if(sh) tagAll(sh); });
   // öneri düğmesi: önümüzdeki 36 saatte oranı ≥1,20 olan, bülten/Power Now ile aynı (harmanlı + kalibre) olasılığı en yüksek 3 seçim, farklı maçlardan
   suggestCoupon=function(){ window.QP_FORCE=true;
     try{ const now=Date.now(), picks=[];
@@ -12842,6 +12984,28 @@ nav.tabs .pw-btn .pw-lb{background:linear-gradient(180deg,#FFE9A3,#F7CD55 45%,#C
   if(typeof botAnswer==="function"){ const _ba=botAnswer; botAnswer=async function(raw){ try{ const r=await a5Bot(raw); if(r) return r; }catch(e){ console.error(e); } return _ba.apply(this,arguments); }; }
   enhance(); setTimeout(refresh,1200);
 })();
+</script>
+<style id="perf-v118">
+/* v118 · Sonsuz "nabız" animasyonları box-shadow ile çiziliyordu: her karede ana iş parçacığında boyama (CPU ×4'te 60 sn'nin ~40 sn'si).
+   Aynı görünüm, yalnız transform/opacity (ekran kartında, ana iş parçacığı boş) ile yeniden kuruldu. */
+@keyframes pfRip{0%{transform:scale(1);opacity:1}70%{transform:scale(3.29);opacity:0}100%{transform:scale(1);opacity:0}}
+@keyframes pfGlow{0%,100%{opacity:0}50%{opacity:1}}
+nav.tabs button[data-v="canli"]:not(#q)::after{animation:none!important;box-shadow:none!important}
+nav.tabs button[data-v="canli"] .pf-rip{position:absolute;top:8px;left:calc(50% - 17px);width:7px;height:7px;border-radius:50%;background:rgba(43,212,107,.7);pointer-events:none;animation:pfRip 1.6s infinite;will-change:transform,opacity}
+nav.tabs button[data-v="canli"].nolive .pf-rip{display:none}
+.o1-st.live i:not(#q){position:relative;background:none!important;animation:none!important;display:inline-block}
+.o1-st.live i::before,.o1-st.live i::after{content:"";position:absolute;inset:0;border-radius:50%}
+.o1-st.live i::before{background:rgba(43,212,107,.7);animation:pfRip 1.6s infinite;will-change:transform,opacity}
+.o1-st.live i::after{background:#FF453A}
+nav.tabs .pw-btn .pw-logo:not(#q){animation:none!important}
+nav.tabs .pw-btn .pw-logo::after{content:"";position:absolute;inset:0;border-radius:50%;pointer-events:none;box-shadow:0 0 0 2.5px #F7CD55,0 0 0 6px var(--bg),0 8px 26px -4px rgba(45,140,255,.75);opacity:0;animation:pfGlow 2.6s ease-in-out infinite;will-change:opacity}
+@media (prefers-reduced-motion:reduce){nav.tabs button[data-v="canli"] .pf-rip,.o1-st.live i::before,nav.tabs .pw-btn .pw-logo::after{animation:none;opacity:0}}
+</style>
+<script id="perf-v118-nabiz">
+// v118: Canlı sekmesindeki yeşil noktanın dalgası (yukarıdaki stil). Düğme yeniden çizilirse dalga geri eklenir.
+(function(){ const b=document.querySelector('nav.tabs button[data-v="canli"]'); if(!b) return;
+  const put=()=>{ if(!b.querySelector(":scope > .pf-rip")){ const r=document.createElement("span"); r.className="pf-rip"; r.setAttribute("aria-hidden","true"); b.prepend(r); } };
+  put(); try{ new MutationObserver(put).observe(b,{childList:true}); }catch(e){} })();
 </script>
 </body>
 </html>
