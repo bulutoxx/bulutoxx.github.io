@@ -103,6 +103,13 @@ workout data`. Bu oturumdan ek GitHub arama API'si denemesi (tjk, tjk data/scrap
 hipodrom, veliefendi, at yarışı/yarisi, agf, handikap puanı, galop, idman, pedigri, safkan arap, İngiliz atı, jokey,
 antrenör, tay, kısrak, sprinter, horse racing lambdarank/benter/speed figure …) oturum politikasıyla engellendi (403).
 
+27.10 ek tur (WebSearch): `DergiPark at yarışı safkan İngiliz performans derece tahmin makale` · `Veliefendi hipodromu pist
+durumu yağış etkisi derece analiz` · `github turkish horse racing open data license CC BY results jockey` · `TİGEM safkan Arap
+aygır katalog pedigri açık liste haralar` · `at yarışı yapay zeka tahmin yüksek lisans tezi YÖK Tez Merkezi jokey kulübü veri`.
+Doğrudan erişim denemeleri (27.10, bu oturum): Open-Meteo arşiv/tahmin, Meteostat toplu, NASA POWER, NOAA (S3 GHCN/GSOD),
+ERA5 (Google Cloud), Hugging Face, Kaggle, Zenodo, DergiPark → vekil 403; GitHub arama API'si → 403; yalnız git protokolü,
+PyPI ve npm açık.
+
 PyPI/npm doğrudan ad sorgusu: yukarıdaki 13 PyPI adı; npm `tjk`, `tjk-api`, `ganyan`, `altili`, `hipodrom`, `atyarisi`,
 `tjk-scraper` + npm arama `tjk`, `horse racing turkey`.
 
@@ -112,9 +119,11 @@ PyPI/npm doğrudan ad sorgusu: yukarıdaki 13 PyPI adı; npm `tjk`, `tjk-api`, `
   kaynak, aynı şart — yalnız türetilmiş ölçüm, ham veri depoya girmez). **Open-Meteo** (CC BY 4.0): atıf "Hava verisi:
   Open-Meteo.com (CC BY 4.0)" + https://open-meteo.com/ bağlantısı; ücretsiz katman ticari olmayan kullanım içindir
   (bu proje hobi amaçlı). İndirilen hava dosyası `_hava/` altında, depoya yazılmaz.
-- **Çevrimdışı ölçüm istisnası:** tjk-sistem deposundaki `gunluk.csv` yalnız Open-Meteo verisinin kopyası olduğu için
-  ölçümde kullanıldı (veri CC BY 4.0); depo lisanssız olduğundan üretime **bağlanmadı**, üretim veriyi Open-Meteo'dan
-  kendisi çeker. Aynı depodaki galop/idman/AGF/canlı oran dosyaları atyarisi/tjk kazımasıdır → açılmadı.
+- **27.10 düzeltmesi:** önceki ekibin "çevrimdışı ölçüm istisnası" (tjk-sistem deposundaki `gunluk.csv`) geri alındı:
+  depo lisanssız ve aynı depo yasak alanları kazıyor → "lisansı belirsiz kaynağı yalnız raporla, kullanma" kuralı gereği
+  hiçbir ölçümde kullanılmadı. Hava sinyali (`a6_hava`) ancak Open-Meteo'nun kendisinden çekilen dosyayla ölçülecek
+  (GitHub Actions'tan erişilebilir): `python lab/at/hava.py && AT_HAVA=_hava/gunluk.csv python lab/at/deney6.py`.
+  Yerine aynanın kendi program havası/pist durumu ile **`a6_pist`** kuruldu ve ölçüldü.
 - **Yasak alan türevleri** (10–21, 9, 29–31): hepsi tjk.org / medya-cdn / vhs / ebayi.tjk.org / atyarisi API'lerine istek
   atıyor ya da bunlardan kazınmış; bağlanmadı ve çalıştırılmadı.
 - **Bulunamayanlar:** start/kulvar, handikap puanı, sahip/yetiştirici, pedigri, idman/galop, AGF ve sabah oranları için
@@ -123,4 +132,18 @@ PyPI/npm doğrudan ad sorgusu: yukarıdaki 13 PyPI adı; npm `tjk`, `tjk-api`, `
 
 ## Ölçüm sonuçları
 
-Bkz. `lab/at/RAPOR.md` → "v6 turu: derin tarama" bölümü ve `data/at/deneyler_v6.json`.
+Bkz. `lab/at/RAPOR.md` → "v6 turu" bölümü ve `data/at/deneyler_v6.json` (27.10.2026, deney4 iki katlı kapı, sızıntı
+testi 4 rastgele günde AYNI/AYNI/AYNI):
+
+| sinyal | kaynak | ΔLL yalnız model [%95 GA] | sonuç |
+|---|---|---|---|
+| a6_pist (sabah pist/hava vekili) | ayna programı (47) | −0,0000 [−0,0006; +0,0006] | ❌ elendi |
+| a6_kalman (durum-uzay hız figürü) | ayna sonuçları | −0,0037 [−0,0065; −0,0009] | ✅ yayında |
+| a6_mesafe (mesafe profili) | ayna sonuçları | −0,0010 [−0,0028; +0,0008] | ✅ yayında |
+| a6_gelisim (yaş × ara gelişim) | ayna sonuçları | −0,0007 [−0,0019; +0,0004] | ✅ yayında |
+| m6_rank (LambdaRank amacı) | yöntem (23) | +0,0006 [−0,0017; +0,0029] | ❌ elendi |
+| a6_hava (Open-Meteo) | (7) | – | ölçülemedi (erişim yok) |
+| oran izi (erken→nihai) | (2), (3), (48) | +0,0003 [−0,0023; +0,0029] (harman) | ❌ elendi |
+| üçüncü taraf tahmin günlüğü | (4) | −0,0019 [−0,0055; +0,0015] (yığma) | ❌ elendi |
+
+Toplam (kalman + mesafe + gelişim − taban): −0,0055 [−0,0084; −0,0023]; ilk seçim %31,89 → %32,12.

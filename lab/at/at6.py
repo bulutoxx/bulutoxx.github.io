@@ -42,7 +42,9 @@ A6_OZELLIKLER = [
 A6_ADLAR = [o[0] for o in A6_OZELLIKLER]
 A6_GRUPLAR = list(dict.fromkeys(g for _, g in A6_OZELLIKLER))
 # Kapıdan geçen gruplar (lab/at/deney6.py ile seçilir; yayın tarifine eklenir — bkz. ozellik.SECILI_GRUPLAR)
-A6_SECILI = []
+# 27.10.2026 deney6: a6_kalman ΔLL −0,0037 [−0,0065; −0,0009], a6_mesafe −0,0010, a6_gelisim −0,0007 kapıyı geçti;
+# toplam −0,0055 [−0,0084; −0,0023]. a6_pist (±0,0000) ve m6_rank (+0,0006) elendi; a6_hava ölçülemedi.
+A6_SECILI = ["a6_kalman", "a6_mesafe", "a6_gelisim"]
 
 IFADE = {
     "a6_h_uyum": ("ıslak pistte formu iyi", "ıslak pistte formu zayıf"),

@@ -167,6 +167,39 @@ Kapılı deneyler (v4 iki katlı kapı; ΔLL = yeni − önceki kabul, yalnız m
 | AHMET ÇELİK | 56 | %14.3 | %48.2 | +10.7 | 7.0 | yukseliyor | Çim / kısa / Adana |
 | SELİM KAYA | 47 | %17.0 | %44.7 | +9.7 | 4.2 | sabit | Kum / orta / Adana |
 
+## v6 turu: derin açık kaynak taraması (pist vekili, Kalman figür, mesafe profili, gelişim, LambdaRank)
+
+54 aday tarandı (tablo, sorgular ve yasal notlar: `lab/at/KAYNAKLAR.md`). TJK yasağına uyan, ücretsiz ve lisansı uygun dış sinyal yalnız **hava** (Open-Meteo, CC BY 4.0); start/kulvar, ara derece, pedigri, idman/galop ve AGF için yasal açık kaynak yok. Adaylar aynanın kullanılmayan boyutlarından (program havası, önceki günlerin pist durumu, figür geçmişi) kuruldu. Kapı: deney4 iki katlı kapı; walk-forward (her ay yalnız geçmişle eğitim). Sızıntı testi: `python lab/at/deney6.py --sizinti`.
+Open-Meteo hava (a6_hava): ölçülemedi: Open-Meteo bu ortamdan erişilemedi; lisanslı hava dosyası yok (üretim çekicisi lab/at/hava.py hazır).
+
+| # | deney | sonuç | ort. LL / ilk seçim | B: LL / ilk | ΔLL birleşik [%95 GA] | ΔLL A | ΔLL B | harman ort. LL / ilk | ΔLL harman |
+|---|---|---|---|---|---|---|---|---|---|
+| 0 | taban (yayındaki tarif: v4 + jk_uzman, jk_apr, jk_beceri + a5_sinif) | taban | 1.8616 / %31.9 | 1.8937 / %30.8 | – | – | – | 1.7906 / %35.4 | – |
+| 1 | a6_pist — ayna programından sabah bilinen pist/hava vekili: yağış bayrağı, nem, sıcaklık, aynı hipodrom+pistte önceki yarış gününün pist durumu (sönümlü); beklenen ıslaklık × (ıslak pist uyumu, kilo, reyting) | ❌ elendi | 1.8615 / %31.9 | 1.8936 / %30.8 | -0.0000 [-0.0006, +0.0006] | -0.0000 [-0.0000, +0.0000] | -0.0000 [-0.0010, +0.0009] | 1.7906 / %35.4 | -0.0000 [-0.0003, +0.0002] |
+| 2 | a6_kalman — Kalman hız figürü: at başına durum-uzay yetenek (gün başına süreç varyansı) − alan, belirsizlik, z, alan içi sıra, figür tutarlılığı | ✅ kaldı | 1.8581 / %31.9 | 1.8888 / %30.6 | -0.0037 [-0.0065, -0.0009] | -0.0020 [-0.0070, +0.0028] | -0.0049 [-0.0083, -0.0013] | 1.7897 / %35.2 | -0.0011 [-0.0023, +0.0002] |
+| 3 | a6_mesafe — mesafe profili: ±%10 mesafedeki en iyi figür − genel en iyi, figür–log(mesafe) eğimi × sapma, en iyi figürün mesafesine uzaklık | ✅ kaldı | 1.8571 / %32.0 | 1.8876 / %30.7 | -0.0010 [-0.0028, +0.0008] | -0.0008 [-0.0040, +0.0024] | -0.0012 [-0.0034, +0.0008] | 1.7896 / %35.5 | -0.0001 [-0.0008, +0.0007] |
+| 4 | a6_gelisim — yaş × ara gelişim eğrisi: ardışık figür farkının (yaş, ara kovası) ortalaması, alana göre | ✅ kaldı | 1.8563 / %32.1 | 1.8872 / %30.6 | -0.0007 [-0.0019, +0.0004] | -0.0012 [-0.0031, +0.0006] | -0.0004 [-0.0018, +0.0010] | 1.7894 / %35.4 | -0.0002 [-0.0007, +0.0003] |
+| 5 | m6_rank — GBM amacı LambdaRank (ilk 3 kademeli alaka) — koşu içi softmax yerine | ❌ elendi | 1.8569 / %32.2 | 1.8876 / %30.7 | +0.0006 [-0.0017, +0.0029] | +0.0008 [-0.0030, +0.0049] | +0.0004 [-0.0024, +0.0032] | 1.7898 / %35.3 | +0.0004 [-0.0006, +0.0014] |
+
+- Kapıdan geçen a6 grupları: **a6_kalman, a6_mesafe, a6_gelisim**; LambdaRank: elendi. Yayındaki a6: a6_kalman, a6_mesafe, a6_gelisim. Deney kaydı: `data/at/deneyler_v6.json` (2026-10-27T03:53:59; süre 3655 sn).
+- Toplam (seçilenler − taban): yalnız model -0.0055 [-0.0084, -0.0023]; harman -0.0013 [-0.0027, +0.0001].
+
+Harman/yığma katmanı (aynanın git geçmişi + kendi oran izimiz `data/at/oran_izi/`; `lab/at/oran_izi.py`, `lab/at/ucuncu_taraf.py`; taban `replay_kosular.json` sızıntısız olasılıkları, aylık walk-forward):
+
+| deney | koşu | ΔLL [%95 GA] | sonuç |
+|---|---|---|---|
+| oran izi: log q_nihai − log q_erken (≥30 dk önce), p_oran'a ek | 1,313 | +0.0003 [-0.0023, +0.0029] | ❌ elendi |
+| oran izi, 3 terim (hareket, × favori, yalnız kısalma) | 1,313 | +0.0106 [+0.0038, +0.0177] | ❌ elendi |
+| oran izi: eşik ≥60 dk | 1,001 | +0.0014 [-0.0016, +0.0047] | ❌ elendi |
+| erken piyasa (q_erken) p_oran'a ek | 1,313 | +0.0003 [-0.0023, +0.0029] | ❌ elendi |
+| üçüncü taraf tahmin günlüğü (memory/predictions, sabah sürümü) p_sabah'a yığma | 1,265 | -0.0019 [-0.0055, +0.0015] | ❌ elendi |
+
+- Oran hareketi nihai piyasa oranına bilgi katmıyor: nihai oran erken parayı zaten içeriyor (erken oranın kendi LL'si çok daha kötü). Aynadaki üçüncü taraf tahminleri bizim sabah modelimizden belirgin zayıf.
+- Sızıntı testi (`python lab/at/deney6.py --sizinti`, 4 rastgele gün): kesme, sonuç karıştırma, ters gün içi sıra → hepsi AYNI; **SIZINTI YOK**.
+- Robota bağlantı: `at6.A6_SECILI = [a6_kalman, a6_mesafe, a6_gelisim]` → `ozellik.SECILI_GRUPLAR` ve gece tarifi (`a6`). Gece akışının kendi kapısı yine geçerlidir: 27.10 yerel sınamasında (bugün=2026-10-27) yeni tarif "ilk seçim isabeti 0,3086 → 0,3063" nedeniyle RED aldı ve dünkü model korundu; gece kapısı geçtiği ilk gece yayına girer.
+- Gece akışı süresi (yerel, 2 çekirdek, başka işlerle paylaşımlı makine, a6 dahil): **562 sn (≈9,4 dk)** ≤ 25 dk.
+- Open-Meteo hava ölçümü için yol (Actions'ta, ağ açık): `python lab/at/hava.py && AT_HAVA=_hava/gunluk.csv python lab/at/deney6.py`. Lisansı belirsiz üçüncü taraf hava kopyaları kullanılmaz.
+
 ## v5 turu: sınıf-ayarlı form, kilo, dinlenme, harman
 
 Aynada start/kulvar numarası ve koşu içi pozisyon (tempo) yok; kulvar yanlılığı ve koşu stili kurulamadı. Aynı gün pist yanlılığı sabah kilidinde bilinemediği için denenmedi. Adaylar `lab/at/at5.py`; kapı deney4 iki katlı kapı (hm_alan için harmanın kendi kapısı). Sızıntı testi: `python lab/at/deney5.py --sizinti`.

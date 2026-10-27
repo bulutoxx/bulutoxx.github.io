@@ -140,6 +140,7 @@ IFADE = {  # özellik -> (değeri koşu ortalamasından YÜKSEKSE, DÜŞÜKSE) �
 }
 IFADE.update(jokey.IFADE)   # jk_* özellikleri (yalnız seçilmişse gerekçede görünür)
 IFADE.update(at5.IFADE)     # a5_* özellikleri
+IFADE.update(at6.IFADE)     # a6_* özellikleri (v6)
 
 
 def jyaz(yol, veri_, sikisik=False):
@@ -1033,7 +1034,7 @@ def tarif():
             **({"jk": {"gruplar": list(jokey.JK_SECILI), "onsel": jokey.JK_ONSEL, "surukle": jokey.JK_SURUKLE,
                        "kademe": list(jokey.JK_KADEME)}} if jokey.JK_SECILI else {}),
             **({"a5": {"gruplar": list(at5.A5_SECILI), "k_uyum": at5.K_UYUM, "ant_k": at5.ANT_K}} if at5.A5_SECILI else {}),
-            **({"a6": {"gruplar": list(at6.A6_SECILI), "k_r": at6.K_R, "k_q": at6.K_Q}} if at6.A6_SECILI else {})}
+            **({"a6": {"gruplar": list(at6.A6_SECILI), "k_r": at6.K_R, "k_q": at6.K_Q, "g_k": at6.G_K}} if at6.A6_SECILI else {})}
 
 
 def kapi_karari(yeni, iz, trf, eski, eski_iz, b_bas=None):
