@@ -156,7 +156,7 @@ def durum_yaz(yoklama):
         d["dosya"] = len(fs)
         d["ad_bicimi"] = sorted({re.sub(r"\d", "9", os.path.basename(f)) for f in fs})[:6]
         if fs:
-            son = max(fs, key=os.path.getmtime)
+            son = max(fs, key=os.path.basename)   # aylık dosyalar (YYYY-MM): en yeni ay
             try:
                 g = _oku(son)
                 ilk = next(g, None)
