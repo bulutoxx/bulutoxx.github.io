@@ -2104,7 +2104,7 @@ details.sx>.sx-in>.panel,details.sx>.sx-in>.pw-card{margin-top:0}
 // ESPN (site.api.espn.com) istekleri tek kapıdan geçer; çağıran kod değişmez, yanıt biçimi aynıdır:
 //  1) Aynı adres = tek istek: aynı anda gelenler birleşir, sonuç paylaşılır (Canlı + Sıradaki maçlar + Bülten aynı ligin
 //     scoreboard'unu bir kez çeker).
-//  2) Önbellek: ligde canlı maç ya da 15 dk içinde başlayacak maç varsa 60 sn; yoksa (boş gün, bitmiş ya da ileri tarihli maçlar)
+//  2) Önbellek: ligde canlı maç ya da 15 dk içinde başlayacak maç varsa 20 sn (gizliyken 60 sn); yoksa (boş gün, bitmiş ya da ileri tarihli maçlar)
 //     10 dk. Maç özeti (summary) zaten yalnız açık maçta "Güncel tahmin"e basınca istenir; 20 sn (mevcut "az önce güncellendi" kilidi).
 //  3) Sayfa gizliyken ağa çıkılmaz: önbellekte varsa (eski de olsa) o döner, yoksa istek hata verir (çağıranlar hatayı zaten tolere eder).
 //     Böylece arka planda kalan sekme ESPN'i yoklamaz (perf-v118 planlayıcısıyla aynı kural).
@@ -2118,7 +2118,7 @@ details.sx>.sx-in>.panel,details.sx>.sx-in>.pw-card{margin-top:0}
   const W=window; if(!W.fetch||W.istekV124) return;
   const nf=W.fetch.bind(W), nST=W.setTimeout;
   const RX=/^https:\/\/site\.api\.espn\.com\//;
-  const KISA=60e3, UZUN=10*60e3, OZET=20e3, ESKI=24*3600e3, PAR=4, CN="oxx-istek-v124";
+  const KISA=20e3, GZ=60e3, UZUN=10*60e3, OZET=20e3, ESKI=24*3600e3, PAR=4, CN="oxx-istek-v124";
   const M=new Map(), IN=new Map(), Q=[]; let akt=0;
   const say={ag:0,onbellek:0,birlesik:0,gizli:0,hata:0};
   const ozetMi=u=>/\/summary\?/.test(u);
@@ -2156,10 +2156,10 @@ details.sx>.sx-in>.panel,details.sx>.sx-in>.pw-card{margin-top:0}
     let e=M.get(u);
     if(!e&&!ozetMi(u)){ e=await diskOku(u); if(e&&!M.has(u)) M.set(u,e); e=M.get(u)||e; }
     if(e&&Date.now()-e.t<e.ttl){ say.onbellek++; return e; }
-    if(gizli()){ if(e){ say.onbellek++; return e; } say.gizli++; throw new TypeError("istek-v124: sayfa gizli, ağ isteği yapılmadı"); }
+    if(gizli()){ const canli=e&&e.ttl===KISA&&Date.now()-e.t>GZ; if(e&&!canli){ say.onbellek++; return e; } if(!e){ say.gizli++; throw new TypeError("istek-v124: sayfa gizli, ağ isteği yapılmadı"); } }   // canlı ligler gizliyken de dakikada bir (gol bildirimi)
     if(IN.has(u)){ say.birlesik++; return IN.get(u); }
     const p=sira(async()=>{
-      if(gizli()){ const x=M.get(u); if(x) return x; say.gizli++; throw new TypeError("istek-v124: sayfa gizli, ağ isteği yapılmadı"); }
+      if(gizli()){ const x=M.get(u); if(x&&!(x.ttl===KISA&&Date.now()-x.t>GZ)) return x; if(!x){ say.gizli++; throw new TypeError("istek-v124: sayfa gizli, ağ isteği yapılmadı"); } }
       say.ag++;
       const r=await nf(u,{cache:"no-store"}); const b=await r.text();
       const x={t:Date.now(),s:r.status,st:r.statusText,ct:r.headers.get("content-type")||"application/json",b,ttl:r.ok?ttlOf(u,b):KISA};
