@@ -1,4 +1,4 @@
-# BULUTOXX at yarışı laboratuvarı — KÜRESEL katkılar (yabancı literatür / kamu düzenleyici tablolarından aktarılan önseller
+# OXXai at yarışı laboratuvarı — KÜRESEL katkılar (yabancı literatür / kamu düzenleyici tablolarından aktarılan önseller
 # ve yöntemler). Gece akışına doğrudan bağlı DEĞİL; kapıdan geçenler oncul.json → GLOBAL_SECILI üzerinden bağlanır.
 #
 # Adaylar (deney masası: lab/at/deney_global.py, deney4 iki katlı kapı):

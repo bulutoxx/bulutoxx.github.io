@@ -136,6 +136,8 @@ IFADE = {  # özellik -> (değeri koşu ortalamasından YÜKSEKSE, DÜŞÜKSE) �
 }
 IFADE.update(jokey.IFADE)   # jk_* özellikleri (yalnız seçilmişse gerekçede görünür)
 IFADE.update(at5.IFADE)     # a5_* özellikleri
+IFADE.update(ozellik._gl.IFADE)   # 🌍 gl_* küresel özellikler (lab/at/global/kuresel.py; yalnız seçilmişse gerekçede görünür)
+GLOBAL_DOSYA = os.path.join(BURA, "global", "deneyler_global.json")   # küresel deney kaydı (lab/at/deney_global.py)
 
 
 def jyaz(yol, veri_, sikisik=False):
@@ -487,6 +489,34 @@ def _v5_bolum(a):
     a("")
 
 
+def _global_bolum(a):
+    """🌍 Küresel tur: yabancı literatür / kamu tablolarından aktarılan katkılar (lab/at/deney_global.py, deney4 kapısı)."""
+    dj = joku(GLOBAL_DOSYA)
+    if not dj or not dj.get("adimlar"):
+        return
+    a("## 🌍 Küresel tur: dünya literatürü ve açık tablolar")
+    a("")
+    a("66 küresel aday tarandı (`lab/at/global/KURESEL_KAYNAKLAR.md`). Sınananlar: piyasa olasılığında kayırma–uzun atış "
+      "düzeltmesi (Shin / odds-ratio), Benter 2. aşamasına eğrilik terimi, ARCI yaşa göre kilo (WFA) önseli, LambdaMART "
+      "amacı ve indirimli Harville (γ, δ) denetimi. Kapı deney4 iki katlı kapı; sızıntı testi: "
+      "`python lab/at/deney_global.py --sizinti`.")
+    a("")
+    a("| # | deney | sonuç | ort. LL / ilk seçim | ΔLL model [%95 GA] | ΔLL harman [%95 GA] |")
+    a("|---|---|---|---|---|---|")
+    for s_ in dj["adimlar"]:
+        sonuc = "taban" if s_["gecti"] is None else ("✅ kaldı" if s_["gecti"] else "❌ elendi")
+        fm, fh = s_.get("fark_model"), s_.get("fark_harman")
+        a(f"| {s_['no']} | {s_['deney']} | {sonuc} | {s_['model']['ll']:.4f} / {_y(s_['model']['ilk'])} | "
+          f"{_ga(fm) if fm else '–'} | {_ga(fh) if fh else '–'} |")
+    hv = dj.get("harville")
+    if hv:
+        a(f"- İndirimli Harville denetimi ({hv.get('kosu')} koşu, 2.+3. sıra LL; Harville {hv.get('harville_ll')}): öğrenilen γ/δ "
+          f"{_ga(hv['ogrenilen'])}, sabit literatür üssü {_ga(hv['lbs'])} → {'öğrenilen üsler korunuyor' if hv.get('gecti') else 'üstünlük yok'}.")
+    a(f"- Yayındaki küresel katkılar (GLOBAL_SECILI): **{', '.join(ozellik._gl.GLOBAL_SECILI) or 'yok'}**. "
+      f"Deney kaydı: `lab/at/global/deneyler_global.json` ({dj.get('olusturma', '')}; süre {dj.get('sure_sn', '?')} sn).")
+    a("")
+
+
 def _jokey_bolum(a):
     """🏇 Jokey ve ahır uzmanı: kapılı jk_* deneyleri + jokeyler.json'dan ilk 5 (deney4 kapısı, lab/at/deney_jokey.py)."""
     jj = joku(JOKEY_DOSYA)
@@ -729,6 +759,7 @@ def rapor_yaz(mj, karne, bugun, ayna_durumu):
     _v4_ozet(a, mj)
     _jokey_bolum(a)
     _v5_bolum(a)
+    _global_bolum(a)
     _v3_ozet(a, mj)
     a("## Özet: v2 güncellemesi (25.10.2026)")
     a("")
@@ -972,7 +1003,8 @@ def tarif():
             # jokey turu: Bayes PL ayarları yalnız jk_* grubu yayındaysa tarife girer (yoksa tarif değişmesin)
             **({"jk": {"gruplar": list(jokey.JK_SECILI), "onsel": jokey.JK_ONSEL, "surukle": jokey.JK_SURUKLE,
                        "kademe": list(jokey.JK_KADEME)}} if jokey.JK_SECILI else {}),
-            **({"a5": {"gruplar": list(at5.A5_SECILI), "k_uyum": at5.K_UYUM, "ant_k": at5.ANT_K}} if at5.A5_SECILI else {})}
+            **({"a5": {"gruplar": list(at5.A5_SECILI), "k_uyum": at5.K_UYUM, "ant_k": at5.ANT_K}} if at5.A5_SECILI else {}),
+            **({"gl": list(ozellik._gl.GLOBAL_SECILI)} if ozellik._gl.GLOBAL_SECILI else {})}
 
 
 def kapi_karari(yeni, iz, trf, eski, eski_iz, b_bas=None):

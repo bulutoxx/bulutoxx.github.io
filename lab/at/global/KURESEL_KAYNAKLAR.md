@@ -1,4 +1,4 @@
-# Küresel at yarışı kaynakları — tarama, yasal durum, robota aktarım (26.10.2026)
+# Küresel at yarışı kaynakları — tarama, yasal durum, robota aktarım (26–27.10.2026)
 
 Kapsam: Türkiye dışı veri setleri, açık veri portalları, akademik yöntemler, pedigri kaynakları ve kamuya açık
 hız/handikap/kilo metodolojileri. Türkiye'ye özgü kaynaklar (TJK aynaları, Open-Meteo, aynadaki kullanılmayan alanlar)
@@ -21,7 +21,7 @@ aygır/baba önseli (“baba gücü / mesafe eğilimi / pist eğilimi”) aynayl
 ve uluslararası açık pedigri kaynakları (Wikipedia/Wikidata) yalnız ünlü atları içerir — Türkiye'de koşan atların
 çok küçük bir bölümü. Pedigri alanı başka bir yasal kaynaktan gelirse, aşağıdaki P-satırları hazır yöntemdir.
 
-## Aday tablosu (55 aday)
+## Aday tablosu (66 aday)
 
 Değer: **V** = doğrudan veri, **Ö** = önsel (sabit tablo/katsayı), **Y** = yöntem. Karar: ✅ uygulandı/sınandı,
 📘 yalnız yöntem notu, ⏸ yasal ama ortamda erişilemez / eşleşme yok, ⛔ kullanım şartı/ücret nedeniyle kullanılmaz.
@@ -96,6 +96,36 @@ Değer: **V** = doğrudan veri, **Ö** = önsel (sabit tablo/katsayı), **Y** = 
 | 54 | Wikipedia “Leading sire in GB&IRE / North America / Japan” | lider aygır listeleri (CC BY-SA) | Ö | ⏸ aynada baba yok |
 | 55 | WAHO / Arap stud book'ları; allbreedpedigree, pedigreequery | Arap/safkan pedigri | — | ⛔ üyelik/şart; ⏸ eşleşme yok |
 
+### Ek tarama (27.10.2026: pedigri, sıralama kütüphaneleri, ayna/kazıyıcı türevleri)
+
+| # | Kaynak | İçerik | Erişim | Lisans / şart | Değer | Karar |
+|---|---|---|---|---|---|---|
+| 56 | **Wikidata** (P22 baba, P25 anne, P31=Q726 “at”, yarış atı alt sınıfları) | ünlü safkan/Arap atların ebeveynleri, SPARQL | query.wikidata.org (ortamda 403) | **CC0** | Ö (aygır önseli) | ⏸ yasal; ama aynada baba adı yok → eşleşecek alan yok |
+| 57 | DBpedia (`dbo:sire`, `dbo:dam`, Wikipedia bilgi kutularından) | ünlü atların pedigrisi | dbpedia.org | CC BY-SA 3.0 | Ö | ⏸ aynı neden (eşleşme alanı yok) |
+| 58 | WAHO (World Arabian Horse Organization) üye stud book listesi | Arap ırkı kayıt kurumları (TJK dahil) | waho.org | site şartları | Ö (yalnız kurum listesi) | 📘 koşu/pedigri verisi açık değil |
+| 59 | `PlackettLuce` R paketi (Turner vd. 2020) | PL sıralama modeli, eşitlik/kısmi sıralama | CRAN (ortamda kapalı) | GPL-3 | Y | 📘 (ozellik.reyting zaten PL) |
+| 60 | `hyper2` R paketi, “Generalized Plackett-Luce Likelihoods” (Hankin) | genelleştirilmiş PL, at yarışı örnekleri | CRAN | GPL-2 | Y | 📘 |
+| 61 | `choix` (Python, Maystre) | PL/Bradley-Terry çıkarımı (ILSR) | PyPI (ortamda açık) | MIT | Y | 📘 (bağımlılık eklemeye değmez; PL zaten var) |
+| 62 | baselight.app Kaggle aynaları (`gdaley_hkracing`, `jeffreymuller_…2013_to_2020`) | HKJC setlerinin SQL aynası | site (hesap) | Kaggle/HKJC şartları | V | ⛔ hesap + türev şartı |
+| 63 | Apify netkeiba aktörleri (`jpmarketdata/netkeiba-race-checker`, `datamill/netkeiba-race-scraper`) | JRA program/sonuç kazıyıcı | ücretli/hesap | netkeiba şartları | V | ⛔ |
+| 64 | Georgetown öğrenci projesi “Data Gathering” (HK at yarışı) | HKJC veri toplama + modelleme notları | web | belirsiz | Y | 📘 |
+| 65 | “Predicting horse racing results with deep learning” (TDS, HK) | HK verisinde sinir ağı + Benter kıyası | web | — | Y | 📘 (GBM katmanı benzer; ayrı ağ gereksiz) |
+| 66 | `lightgbm` `lambdarank` / `rank_xendcg` amaçları | LambdaMART uygulaması | PyPI (kurulu) | MIT | Y | ✅ `gl_lambdarank` |
+
+Kaynak bağlantıları (yalnız bilgi; veri indirilmedi): https://www.rdocumentation.org/packages/PlackettLuce ·
+https://cran.uni-muenster.de/web/packages/hyper2/vignettes/hyper3.html ·
+https://baselight.app/u/kaggle/dataset/gdaley_hkracing ·
+https://mail.mattcarswell.georgetown.domains/gathering/gathering.html ·
+https://towardsdatascience.com/predicting-horse-racing-results-with-deep-learning-7942846287bf/
+
+### Aygır önseli neden sınanamadı (ölçüldü, 27.10.2026)
+
+Aynanın hem `results/*.json` hem `daily/*.json` at satırları: `no, name, jockey, trainer, weight, age, form, odds,
+position, finishTime` — **baba/anne adı hiçbir dosyada yok**. Wikidata/DBpedia'daki aygırlarla eşleştirmenin tek yolu
+baba adı olurdu; at adının kendisi Wikidata'da yalnız ünlü (çoğu yabancı) atlarda var. Bu yüzden aygır önseli
+deney masasına alınmadı; pedigri alanı yasal bir kaynaktan aynaya eklenirse (Türkiye ekibinin işi) #53/#56 yöntemi hazır:
+baba başına küçültmeli kazanma/mesafe eğilimi (h²≈0,1–0,3 → k≈20 sanal koşu önseli).
+
 ## Sorgu listesi (kullanılan)
 
 İngilizce: “Kaggle Hong Kong horse racing dataset HKJC races runs csv”, “github horse racing dataset csv open license
@@ -111,7 +141,8 @@ logit”, “Wikidata thoroughbred leading sire”, “horse racing results Zeno
 Japonca: “競馬 データセット github JRA 機械学習 オープンデータ”, “keiba 競馬 データ csv LightGBM”, “netkeiba 利用規約
 スクレイピング”. Çince: “賽馬 香港 數據 預測”. Fransızca: “data.gouv.fr courses hippiques PMU données ouvertes”,
 “courses hippiques prediction données github”. Almanca: “pferderennen daten vorhersage”. İspanyolca/İtalyanca:
-“carreras de caballos datos github predicción”, “corse di cavalli dati github”. Türkçe: “Arap atı yarış performansı
+“carreras de caballos datos github predicción”, “corse di cavalli dati github”. Ek (27.10): “Kaggle horse racing dataset Australia OR Japan JRA OR Hong Kong csv”,
+“github Plackett-Luce horse racing Benter conditional logit python”, “Wikidata thoroughbred racehorse sire property P22 SPARQL”. Türkçe: “Arap atı yarış performansı
 kalıtım TJK çalışma”.
 
 ## Yasal notlar
