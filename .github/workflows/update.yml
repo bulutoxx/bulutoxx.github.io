@@ -33,10 +33,19 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: python3 lab/adim.py arsiv-indir --onem bilgi -- python3 lab/arsiv.py indir data/bk_games.json data/at/replay_kosular.json
+      - name: 🩹 Kadro önbelleği (ham API-Football yanıtları ve oyuncu birikimi yalnız burada; depoya ve siteye girmez)
+        uses: actions/cache@v4
+        with:
+          path: .kadro_onbellek
+          key: kadro-${{ github.run_id }}
+          restore-keys: kadro-
+      - name: 🩹 Kadro sinyali (ilk 11 / sakat / cezalı; API-Football ücretsiz, günde ≤90 istek; yalnız türetilmiş özet data/kadro.json)
+        run: python3 lab/adim.py kadro --onem bilgi -- timeout 240 python3 scripts/kadro.py
+        env:
+          APISPORTS_KEY: ${{ secrets.APISPORTS_KEY }}   # API-Football (ücretsiz üyelik, günde 100 istek)
       - name: Verileri indir ve modeli eğit
         run: python3 lab/adim.py motor -- python scripts/update.py   # hata → data/engine_error.txt ve sağlık kaydı
         env:
-          APISPORTS_KEY: ${{ secrets.APISPORTS_KEY }}   # API-Football / API-Basketball (ücretsiz üyelik, günde 100 istek)
           ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}     # The Odds API (ücretsiz üyelik, ayda 500 kredi)
       - name: Açık veri (Club Elo → kupa güçleri; bayrak data/acik/elo_kupa.json, geri alınabilir)
         run: python3 lab/adim.py acik-veri --onem bilgi -- timeout 120 python scripts/acik_veri.py

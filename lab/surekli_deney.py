@@ -2,7 +2,7 @@
 """🧪 Sürekli deney (2–3 saatte bir, .github/workflows/surekli-deney.yml). Robotlar gece beklemeden kendini sınar.
 
 İKİ AŞAMA:
-  deney <iş>   Paralel matris işleri (futbol, basket, at, autolab). Her biri kendi deneyini çalıştırır ve sonucu yalnız
+  deney <iş>   Paralel matris işleri (futbol, basket, at, autolab, fbguc). Her biri kendi deneyini çalıştırır ve sonucu yalnız
                data/deney/<iş>/<zaman>.json'a yazar (commit atmaz; karar işine yapıt olarak geçer).
                  futbol / basket / at : OXXai deney kuyruğu (lab/oxx_ogren.py: sinyal → aday → ileriye dönük sanal oynatma).
                    Kapı lab/oxx_ogren.sina'nın kendisidir (kopya yok): zaman sıralı seçim/sınama dilimi, eşleştirilmiş gün
@@ -10,6 +10,8 @@
                    Ayrıca gölgedeki adaylar en güncel veriyle yeniden ölçülür (tam veri + yalnız gölge başladıktan sonraki günler).
                    at işi hafif moddadır: yalnız data/at/replay_kosular.json (ayna/eğitim gerekmez).
                  autolab : lab/auto_lab.py, dönen lig alt kümesiyle (her çalışmada farklı 4 lig) ve kısa bütçeyle; yalnız ölçüm.
+                 fbguc   : oransız maç model yolu (Poisson ayarı, Elo, pi-rating, topluluk) yeniden ölçümü (lab/fb_guc_kapi.py olc);
+                           karar ayrı adımda lab/fb_guc_kapi.py karar (kapı + 14 gün kilitli gölge A/B + geri alma).
   karar        Toplayıcı iş. Yapıtları içeri alır ve:
                  • kapıyı geçen aday hemen UYGULANMAZ, GÖLGEYE alınır (data/deney/golge.json): sonraki çalışmalar onu yeni
                    veriyle paralel ölçer. En az GOLGE_GUN gün ve GOLGE_OLCUM ölçüm boyunca kötüleşmezse uygulanır; herhangi bir
@@ -33,7 +35,7 @@ DURUM = os.path.join(DENEY, "durum.json")
 GELISIM = os.path.join(DATA, "gelisim.json")
 sys.path.insert(0, LAB); sys.path.insert(0, os.path.join(ROOT, "scripts"))
 
-ISLER = ("futbol", "basket", "at", "autolab")
+ISLER = ("futbol", "basket", "at", "autolab", "fbguc")
 GOLGE_GUN, GOLGE_OLCUM, GOLGE_AZAMI_GUN, SAKLA_GUN = 3, 3, 10, 7
 BUDGET = float(os.environ.get("DENEY_BUDGET", "900"))
 ADAY_N = int(os.environ.get("DENEY_N", "1"))
@@ -191,11 +193,21 @@ def deney_autolab():
                    "laboratuvarı (auto-lab.yml) ve koruyucu yönetir; burada bir şey uygulanmaz."}
 
 
+# ------------------------------------------------------------------ deney: oransız model yolu (lab/fb_guc_kapi.py)
+def deney_fbguc():
+    """⚖️ Güç puanları + topluluk: zaman sıralı yeniden ölçüm (son 180 gün sınama, lig×gün blok bootstrap'ı). Karar ve
+    14 günlük gölge A/B izlemesi karar işinde lab/fb_guc_kapi.py karar ile verilir (gölgedeki adaylar her çalışmada yeniden ölçülür)."""
+    import fb_guc_kapi as FK
+    k = FK.olc()
+    if not k: return {"hata": "oransız lig verisi yok", "_rc": 1}
+    return {"karne": k}
+
+
 def deney(is_):
     if is_ not in ISLER: raise SystemExit(f"bilinmeyen iş: {is_}")
     t = utc_damga()
     try:
-        sonuc = deney_autolab() if is_ == "autolab" else deney_oxx(is_)
+        sonuc = deney_autolab() if is_ == "autolab" else deney_fbguc() if is_ == "fbguc" else deney_oxx(is_)
         rc = sonuc.pop("_rc", 0)
     except Exception as e:
         import traceback; traceback.print_exc()
@@ -281,6 +293,7 @@ def karar(kaynak, kuru=False):
         if is_ == "autolab":
             if D.get("sonuc"): son_autolab = D
             continue
+        if is_ == "fbguc": continue          # karar: lab/fb_guc_kapi.py karar (ayrı adım; kendi kapısı ve izlemesi)
         tarih = D.get("bugun") or bugun.isoformat()
         for d in D.get("denenen", []):
             c, rap = d["aday"], d.get("rap") or {}

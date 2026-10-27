@@ -1451,25 +1451,39 @@ def merge_iddaa(fx, season, today):
     except Exception as ex: print("iddaa pazar teşhisi atlandı:", ex.__class__.__name__, flush=True)
     return out_fx
 
-def predict_fixtures(fx, all_ms, P, today, pzmap=None):
-    """Her yaklaşan maç için model ve piyasa tahminini önceden kaydet (gerçek ileriye dönük test için)."""
-    fits = {}
+def predict_fixtures(fx, all_ms, P, today, pzmap=None, PL=None, golge=None):
+    """Her yaklaşan maç için model ve piyasa tahminini önceden kaydet (gerçek ileriye dönük test için).
+    ⚖️ PL(lg) → lig ayarı (oransız liglerde kapıyı geçen Poisson ayarı); golge: guc.tahmin gölge çıktısı.
+    Oransız maçta yeni yol yayındaysa eski üretim yolu g0/g0o olarak kilitlenir (14 günlük gölge A/B izlemesi, lab/fb_guc_kapi.py)."""
+    PL = PL or (lambda lg: P)
+    fits = {}; fits0 = {}
     for lg, ms in all_ms.items():
         if len(ms) >= 40:
-            try: fits[lg] = fit(ms, today, P)
+            try:
+                fits[lg] = fit(ms, today, PL(lg))
+                if PL(lg) is not P: fits0[lg] = fit(ms, today, P)
             except Exception: pass
     market_xg(fx)
-    rows = []
+    rows = []; rows0 = {}
     for f in fx:
         F = fits.get(f["lg"])
         if not F: continue
         (ah, dh), (aa, da) = F["t"].get(f["h"], NEW_TEAM), F["t"].get(f["a"], NEW_TEAM)
         rows.append((f, F["mu"] * F["gamma"] * ah * da, F["mu"] * aa * dh))
+        F0 = fits0.get(f["lg"])
+        if F0:
+            (ah, dh), (aa, da) = F0["t"].get(f["h"], NEW_TEAM), F0["t"].get(f["a"], NEW_TEAM)
+            rows0[len(rows) - 1] = (F0["mu"] * F0["gamma"] * ah * da, F0["mu"] * aa * dh)
     if not rows: return []
     lh = np.array([r[1] for r in rows]); la = np.array([r[2] for r in rows])
     gs_ = P.get("gscale", 1.0)
     p, pO, pB, g = outcome_probs(lh * gs_, la * gs_, P["rho"]); kk = g.shape[1]
     p = apply_cal(p, P)
+    g0 = {}
+    if rows0:
+        ix = sorted(rows0); l0 = np.array([rows0[i] for i in ix])
+        q0, qO0, _, _ = outcome_probs(l0[:, 0] * gs_, l0[:, 1] * gs_, P["rho"]); q0 = apply_cal(q0, P)
+        g0 = {i: (q0[j], float(qO0[j])) for j, i in enumerate(ix)}
     CS = pick_scores(g, p, pO) if P.get("scoreMode", "tutarli") == "tutarli" else None
     out = []
     for i, (f, a, b) in enumerate(rows):
@@ -1479,6 +1493,19 @@ def predict_fixtures(fx, all_ms, P, today, pzmap=None):
              "p": [round(float(x), 4) for x in p[i]], "o": round(float(pO[i]), 4), "ft": f"{k // kk}-{k % kk}"}
         if f.get("odds"):
             inv = [1 / x for x in f["odds"]]; s_ = sum(inv); e["mp"] = [round(x / s_, 4) for x in inv]
+        else:   # ⚖️ oransız maç: topluluk / yeni Poisson yayındaysa eski yol gölgede kilitlenir
+            try:
+                yeni_pois = i in g0
+                if yeni_pois: e["pv"] = 1; e["pk"] = "pois"
+                if f.get("kpy") == "guc" and isinstance(f.get("kp"), list):
+                    e["gp"] = e["p"]; e["p"] = [round(float(x), 4) for x in f["kp"]]; e["pk"] = "guc"
+                    if isinstance(f.get("ko"), (int, float)) and f.get("kpo") == "guc": e["o"] = round(float(f["ko"]), 4); e["ok_"] = "guc"
+                if yeni_pois or e.get("pk") == "guc":
+                    q, qo = g0[i] if yeni_pois else (p[i], float(pO[i]))
+                    e["g0"] = [round(float(x), 4) for x in q]; e["g0o"] = round(float(qo), 4)
+                z = (golge or {}).get((f["lg"], f["d"], f["h"], f["a"]))
+                if z and e.get("pk") != "guc": e["gk"] = z["p"]; e["gko"] = z["o"]
+            except Exception: pass
         try:   # 🧮 sunulan tüm pazar olasılıkları (binde, pazar.PZ_KAYIT sırası) + iddaa oranları; sonuçla puanlanır
             z = (pzmap or {}).get((f["lg"], f["d"], f["h"], f["a"]))
             if z:
@@ -1742,6 +1769,17 @@ def main():
         nk = konsey.apply(fx, season, P, today)
         if nk: print(f"Konsey tahmini eklenen maç: {nk}", flush=True)
     except Exception as e: print("konsey atlandı:", e.__class__.__name__, e, flush=True)
+    # ⚖️ Oransız maçlar: kapıyı geçen topluluk (Poisson + Elo + pi) → kp/ko (lab/fb_guc_kapi.py; bayrak data/fb_guc.json, geri alınabilir)
+    PL, GOLGE_T = (lambda lg: P), {}
+    try:
+        import guc
+        GA_ = guc.ayar()
+        PL = lambda lg, _A=GA_: guc.lig_parametre(P, lg, season, _A)
+        ng = guc.uygula(fx, season, P, today, sys.modules[__name__])
+        if ng: print(f"Topluluk tahmini eklenen oransız maç: {ng}", flush=True)
+        if GA_ and not GA_.get("aktif"):
+            GOLGE_T = guc.tahmin([f for f in fx if f.get("src") != "iddaa"], season, P, today, sys.modules[__name__], GA_, golge=True)
+    except Exception as e: print("topluluk atlandı:", e.__class__.__name__, e, flush=True)
     # 🧮 Pazar motoru: tüm pazarlar tek skor ızgarasından (scripts/pazar.py). Karne tam öğrenmede (veya yoksa) yeniden kurulur.
     pzmap, PK = {}, None
     kp_ = os.path.join(DATA, "pazar_karne.json")
@@ -1755,7 +1793,7 @@ def main():
         need = {f["lg"] for f in fx if not f.get("odds") and f["lg"] in all_ms and len(all_ms[f["lg"]]) >= 40}
         fits_ = {}
         for lg_ in need:
-            try: fits_[lg_] = fit(all_ms[lg_], today, P)
+            try: fits_[lg_] = fit(all_ms[lg_], today, PL(lg_))
             except Exception: pass
         pzmap = PZM.enrich(fx, season, P, PK, fits=fits_, today=today, U=sys.modules[__name__])
         print(f"Pazar olasılığı eklenen maç: {len(pzmap)} / {len(fx)}", flush=True)
@@ -1775,9 +1813,14 @@ def main():
         except Exception:
             return datetime.fromisoformat(f["d"] + "T23:59:00+00:00")
     fx_lock = [f for f in fx if f.get("src") != "iddaa" and kickoff(f) > now_utc and (f["lg"], f["h"], f["a"], f["d"]) not in played]
-    for e in predict_fixtures(fx_lock, all_ms, P, today, pzmap=pzmap):
+    for e in predict_fixtures(fx_lock, all_ms, P, today, pzmap=pzmap, PL=PL, golge=GOLGE_T):
         if e["id"] not in have:                           # maçtan önceki ilk tahmin kilitlenir, sonradan değiştirilmez
             e["v"] = ENGINE_V; e["ts"] = now_utc.strftime("%Y-%m-%dT%H:%MZ"); plog.append(e); have.add(e["id"])
+    try:   # 🩹 kadro özeti (scripts/kadro.py, türetilmiş): maç başlamadan önceki son hali kd alanına (p kilitli kalır)
+        import kadro
+        nk_ = kadro.predlog_isle(plog)
+        if nk_: print(f"Kadro özeti eklenen kilitli tahmin: {nk_}", flush=True)
+    except Exception as e: print("kadro özeti atlandı:", e.__class__.__name__, e, flush=True)
     plog = grade_predlog(plog, all_ms, today)
     json.dump(plog, open(plp, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
     live = live_report(plog, today)
@@ -1812,7 +1855,12 @@ def main():
                                "derin_dosya": dx.get("dosya", 0), "arsiv": arsiv.ozet(DATA)}
     except Exception as e: print("veritabanı özeti atlandı:", e, flush=True)
     json.dump(clean_nan(model), open(mp, "w", encoding="utf-8"), ensure_ascii=False, indent=1, allow_nan=False)
-    try: write_ratings(season, clean_nan(model).get("params") or {})
+    try:
+        try:
+            import guc
+            _GA = guc.ayar(); _lp = lambda lg: guc.lig_parametre(clean_nan(model).get("params") or {}, lg, season, _GA)
+        except Exception: _lp = None
+        write_ratings(season, clean_nan(model).get("params") or {}, lig_param=_lp)
     except Exception as e: print("ratings.json atlandı:", e, flush=True)
     hp =os.path.join(DATA, "history.json")
     hist = json.load(open(hp, encoding="utf-8")) if os.path.exists(hp) else []
@@ -1859,7 +1907,7 @@ def fit_league_js(ms, MP):
     cnt = collections.Counter(x for m in use for x in (m["h"], m["a"]))
     return {"mu": mu, "gamma": gamma, "h1": h1, "n": len(use), "t": {n: [round(att[n], 6), round(dfn[n], 6), cnt[n]] for n in names}}
 
-def write_ratings(season, params):
+def write_ratings(season, params, lig_param=None):
     """⚡ v118: data/ratings.json — uygulamanın açılışta ihtiyaç duyduğu küçük özet: lig güçleri (fitLeague sonucu) ve
     her takımın son 5 maçı. season.json (3,8 MB) artık yalnız puan durumu / aralarındaki maçlar gibi ekranlarda, gerekince yüklenir.
     Biçim: tm = takım adları; m = [tarih, ev no, dep no, ev gol, dep gol, sezon]; fit.a/fit.d/fit.c = tm sırasıyla hücum/savunma/maç;
@@ -1876,7 +1924,8 @@ def write_ratings(season, params):
         L = {k: d[k] for k in ("name", "cup", "espn", "asOf", "season", "src") if d.get(k) is not None}
         L.update(n=len(ms), tm=tm, m=[[ms[i]["d"], ix[ms[i]["h"]], ix[ms[i]["a"]], ms[i]["ft"][0], ms[i]["ft"][1], ms[i].get("season")] for i in keep])
         if not d.get("cup"):
-            f = fit_league_js(ms, MP)
+            lp = lig_param(lg) if lig_param else params      # ⚖️ oransız ligde kapıyı geçen Poisson ayarı (yoksa motor ayarı)
+            f = fit_league_js(ms, (lambda k, dflt, _p=lp: _p[k] if _p.get(k) is not None else dflt) if lp is not params else MP)
             if f:
                 last = max((m.get("season") or 0) for m in ms)
                 cur = [m for m in ms if not m.get("season") or m.get("season") == last]
