@@ -13161,5 +13161,133 @@ html[data-v122-ctx="at"] nav.tabs button[aria-current]{color:var(--ink3,#8893AB)
   modalBak();
 })();
 </script>
+<script id="bot-v123">
+// =====================================================================
+// OXXai v123 · Sohbet: takım ve gün sorularında sağlamlık
+// 1) Takım adı: bültende (fikstür, 8 gün) Türkçe harf / ek / yazım toleransıyla aranır. Eski eşleştirici tek kelimenin puanına baktığı için
+//    "psg" (paris saint germain) sorusu "Saint Louis"e gidiyor, rakibi U21 olan "Tallinna Kal" ya da yalnız gençler maçı olan "Levante"
+//    hiç bulunamıyordu. Artık sorudaki kelimelerin kaçını karşıladığına bakılır; aynı kulübün iki yazımı ("Flamengo" / "Flamengo RJ")
+//    varsa en yakın maç gelir.
+// 2) Gün adı: "pazartesi maçları" bugün pazartesiyse ve bugünün kalan maçı yoksa gelecek pazartesi gösterilir.
+// 3) Takımın 8 gün içinde maçı yoksa genel liste yerine bunu açıkça söyler (sonraki maç tarihi biliniyorsa onu da).
+// 4) Veri hazır değilse (açılışın ilk saniyeleri) cevap vermeden önce bülten beklenir: "Bir saniye…". Puan durumu / form / aralarındaki
+//    maçlar sorulursa tembel yüklenen tam sezon verisi (season.json) de tetiklenip beklenir.
+// =====================================================================
+(function(){
+  "use strict";
+  const V=window.BOT69, X=window.BOT70; if(!V||typeof V.teams!=="function") return;
+  const D=864e5, N=s=>String(s||"").toLocaleLowerCase("tr").replace(/ç/g,"c").replace(/ğ/g,"g").replace(/ı/g,"i").replace(/ö/g,"o").replace(/ş/g,"s").replace(/ü/g,"u")
+    .normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^a-z0-9]+/g," ").trim();
+  const GX=/\(k\)|\(frw\)|\bwomen\b|\bkadin\b|\bu ?1\d\b|\bu ?2\d\b|\bii\b|\breserves?\b| b$/;
+  const TOP=new Set(["tr1","tr2","en","es","it","de","fr","pt","nl","ucl","uel","uecl","be"]);
+  const tok=n=>{ try{ return tmTok(n); }catch(e){ return N(n).split(" ").filter(w=>w.length>=3); } };
+  const lev=(a,b)=>{ try{ return qLev(a,b); }catch(e){ return 9; } };
+  const SUF=["nin","nun","in","un","ndan","nden","dan","den","tan","ten","nda","nde","da","de","ta","te","yla","yle","la","le","yi","yu","ya","ye","na","ne","ni","nu","i","u","a","e"];
+  // Türkçe ek atılmış kök yalnız tam ada, adın başına ya da (uzun kökte) tek harf yazım farkıyla eşleşir: "flamengonun" → flamengo
+  function ws(w,t){ let b=ws1(w,t); if(b<3) for(const x of SUF){ if(w.length-x.length<4||!w.endsWith(x)) continue; const st=w.slice(0,-x.length);
+      if(st===t) return 3; if(t.startsWith(st)&&st.length/t.length>=.55) b=Math.max(b,2); else if(st.length>=7&&lev(st,t.slice(0,st.length+1))<=1) b=Math.max(b,1); }
+    return b; }
+  function ws1(w,t){ if(w===t) return 3;
+    if(w.length>=4&&t.startsWith(w)&&w.length/t.length>=.55) return 2;           // "lyon" → "lyonnes", "tallin" → "tallinna"
+    if(t.length>=4&&w.startsWith(t)&&t.length/w.length>=.6) return 2;            // Türkçe ek: "tallinnanin", "flamengonun"
+    if(w.length>=5&&t.length>=5&&lev(w,t.slice(0,w.length+1))<=(w.length>=8?2:1)) return 1;   // yazım hatası
+    return 0; }
+  // soru kelimeleri (takım adı adayları): bot sözlüğündeki dolgu kelimeleri ve "maçlara", "tahminlerine" gibi ekli halleri dışarıda
+  const FILL=/^(mac|tahmin|bugun|yarin|aksam|oyna|takim|lig|gol|skor|sonuc|analiz|kupo|liste|oran|yuzde|hafta|bak|goster|soyle|nasil|neler|hangi|kazan|yener|bulten|program|fikstur|karsilas|altin|banko|guven|sagla|kesin|hazir|surpriz|canli|oner|risk|sistem|garanti|ilk|ikinci|devre|kombin)/;
+  const words=s=>{ const S=V._stop||new Set(); return String(s||"").split(" ").filter(w=>w.length>=3&&!S.has(w)&&!/^\d+$/.test(w)&&!FILL.test(w)); };
+  const youthQ=s=>/\bkadin|\(k\)|women|\bu ?\d\d\b|genc/.test(s);
+  // bir maçın soru kelimelerini karşılama puanı
+  function cover(W,m){ const H=tok(m.h), A=tok(m.a); let sum=0, full=true, hs=0, as=0, hw=new Set(), aw=new Set();
+    for(const w of W){ let bh=0, ba=0; for(const t of H) bh=Math.max(bh,ws(w,t)); for(const t of A) ba=Math.max(ba,ws(w,t));
+      const b=Math.max(bh,ba); sum+=b; if(b<2&&!(b===1&&w.length>=6)) full=false;
+      if(bh) { hs=Math.max(hs,bh); hw.add(w); } if(ba){ as=Math.max(as,ba); aw.add(w); } }
+    const both=hs>0&&as>0&&[...hw].some(w=>!aw.has(w))&&[...aw].some(w=>!hw.has(w));
+    return {sum,full,hs,as,both}; }
+  function pool(){ const now=Date.now(); try{ return Pick.list().filter(m=>{ const t=m.dt.getTime(); return t<=now+8*D&&!(m.started&&!m.live)&&(t>=now-3*3600e3); }); }catch(e){ return []; } }
+  const gt=(x,y)=>{ for(let i=0;i<x.length;i++) if(x[i]!==y[i]) return x[i]>y[i]; return false; };
+  function best(s,needFull){ const W=words(s); if(!W.length) return null; const yq=youthQ(s); let b=null;
+    for(const m of pool()){ const c=cover(W,m); if((c.sum<2&&!(c.full&&c.sum>=1&&W.every(w=>w.length>=6)))||(needFull&&!c.full)) continue;
+      const g=!yq&&(isGX(m.h)||isGX(m.a))?1:0;
+      const k=[c.sum,-g,TOP.has(m.lg)?1:0,-m.dt.getTime()];
+      if(!b||gt(k,b.k)) b={m,k,c}; }
+    return b; }
+  const res=(b)=>({m:b.m,v:b.c.sum+(b.c.both?1:0),both:b.c.both,hs:b.c.hs,as:b.c.as,t:b.m.dt.getTime()});
+  // aynı kulübün yazım çeşitleri: "Flamengo" / "Flamengo RJ" (kısa ek), ikisi de büyükler takımı
+  const variant=(x,y)=>{ const a=N(x), b=N(y); if(a===b) return true; const [s,l]=a.length<b.length?[a,b]:[b,a]; return l.startsWith(s+" ")&&l.slice(s.length+1).length<=3&&!isGX(x)&&!isGX(y); };
+  const T3X=new Set(["fc","afc","cf","sc","ac","club","the","esw","frw"]);
+  const t3=x=>N(x).split(" ").filter(w=>w.length>=3&&!T3X.has(w));
+  // a: aranan takım (kanonik ad), b: bültendeki ad. a'nın kelimeleri b'de olmalı ("Flamengo" ⊂ "Flamengo RJ"); tersi yalnız b en az 2 kelimeyse
+  const same=(a,b)=>{ const A=t3(a), B=t3(b); if(!A.length||!B.length) return false; return A.every(w=>B.includes(w))||(B.length>=2&&B.every(w=>A.includes(w))); };
+  const isGX=n=>GX.test(N(n)+" ")||/\((k|w|[a-z]{2}w|wsl)\)/i.test(String(n||""));
+  let gxNote=null;   // son cevapta büyükler maçı olmadığı için kadın / genç takımı maçı seçildiyse
+  const _teams=V.teams;
+  V.teams=function(s){ const old=_teams.apply(this,arguments);
+    try{
+      if(!old){ const b=best(s,true); if(b&&!youthQ(s)&&(isGX(b.m.h)||isGX(b.m.a))){ const W=words(s), sd=W.every(w=>tok(b.m.h).some(t=>ws(w,t)>=2))?b.m.h:b.m.a; if(isGX(sd)) gxNote={name:sd.replace(/\s*\([^)]*\)\s*$/,"").replace(/\s+(u ?\d\d|ii|b|reserves?|youth)$/i,""),m:b.m}; } return b?res(b):null; }
+      const W=words(s); if(!W.length) return old;
+      // soru bilinen bir takımın tam adıysa ("real madrid") ama bulunan maçta o takım yoksa ("Atlético Madrid") yanlış eşleşmedir
+      let ft=null; try{ ft=W.length>=2?findTeam(W.join(" ")):null; }catch(e){}
+      if(ft&&ft.name&&!same(ft.name,old.m.h)&&!same(ft.name,old.m.a)){
+        // önce büyükler maçı; yoksa (yalnız kadın / genç takımı oynuyorsa) o maç
+        const yq=youthQ(s); let hit=null, hitG=null;
+        for(const m of pool()) if(same(ft.name,m.h)||same(ft.name,m.a)){ if(yq||!(isGX(m.h)||isGX(m.a))){ if(!hit||m.dt<hit.dt) hit=m; } else if(!hitG||m.dt<hitG.dt) hitG=m; }
+        if(!hit&&hitG) gxNote={name:ft.name,m:hitG};
+        hit=hit||hitG;
+        return hit?{m:hit,v:4,both:false,hs:same(ft.name,hit.h)?3:0,as:same(ft.name,hit.a)?3:0,t:hit.dt.getTime()}:null; }
+      const b=best(s,false); if(!b||b.m===old.m) return old;
+      const oc=cover(W,old.m);
+      if(b.c.full&&b.c.sum>=oc.sum+2) return res(b);                       // sorudaki kelimelerin çoğunu karşılayan maç (psg → Paris Saint-Germain)
+      // aynı takımın daha yakın maçı (farklı kaynaktan farklı yazım)
+      const side=o=>o.hs>=o.as?"h":"a", on=old.m[side(oc)];
+      if(b.c.sum>=oc.sum&&b.m.dt<old.m.dt&&(variant(on,b.m.h)||variant(on,b.m.a))) return res(b);
+    }catch(e){}
+    return old; };
+  // ---------- gün adı: bugünün kalan maçı yoksa gelecek hafta ----------
+  const WDRE=/\b(pazartesi|sali|carsamba|persembe|cumartesi|cuma|pazar)\b/;
+  const _day=V.day;
+  V.day=function(s,raw){ const r=_day.apply(this,arguments);
+    try{ if(r&&r.key==="d"&&WDRE.test(s)&&r.d===istDay(new Date())){
+        const now=Date.now(), left=Pick.list().some(m=>{ const t=m.dt.getTime(); return !m.started&&t>=now&&t<r.to; });
+        if(!left){ const d=istDay(new Date(Date.parse(r.d+"T12:00:00+03:00")+7*D)), f=Date.parse(d+"T00:00:00+03:00");
+          if(Pick.list().some(m=>{ const t=m.dt.getTime(); return t>=f&&t<f+D; })) return {key:"d",d,from:f,to:f+D,label:ist(new Date(f+12*3600e3),{day:"numeric",month:"long",weekday:"long"})}; } } }catch(e){}
+    return r; };
+  // ---------- veri hazır mı? ----------
+  const ready=()=>{ try{ return FIXTURES.length>0&&Pick.list().length>0; }catch(e){ return false; } };
+  const SEAS=/\b(puan durumu|puan tablosu|siralama\w*|kacinci|form\w*|son maclar\w*|son \d+ mac|aralarinda\w*|h2h|gecmis maclar\w*)\b/;
+  function wait(msg){ try{ const d=[...document.querySelectorAll("#botLog .bt-msg.bot")].pop(); if(d&&d.querySelector(".bt-dots")&&!d.querySelector(".v123-w")) d.insertAdjacentHTML("beforeend",`<small class="v123-w"> ${msg}</small>`); }catch(e){} }
+  // sayaçla (saat dondurulmuş olsa bile en çok ms/200 tur)
+  async function until(fn,ms){ for(let i=0;i<ms/200&&!fn();i++) await new Promise(r=>setTimeout(r,200)); return fn(); }
+  // ---------- takımın yakında maçı yok ----------
+  const GEN=/^(Önümüzdeki saatlerde|Önümüzdeki günlerde)/;
+  function noMatch(raw,R){ try{
+      const txt=String(R&&R.html||"").replace(/<[^>]+>/g,""); if(!GEN.test(txt)) return null;
+      const s=V.rewrite(X&&X.rewrite?X.rewrite(raw):raw).s; if(!s) return null;
+      if(_teams(s)||V.teams(s)) return null;
+      const W=words(s); if(!W.length||W.length>3) return null;
+      const name=V.isTeamWord(s); if(!name) return null;
+      const T=tok(name).concat(t3(name)); if(!W.every(w=>T.some(t=>ws(w,t)>=2))) return null;          // sorunun tüm kelimeleri o takımın adı
+      let nx=null; try{ const now=Date.now(); for(const m of Pick.list()){ const t=m.dt.getTime(); if(t<now) continue; if(same(m.h,name)||same(m.a,name)) if(!nx||t<nx.dt.getTime()) nx=m; } }catch(e){}
+      const when=nx?` Bir sonraki maçı: <b>${esc(nx.h)} - ${esc(nx.a)}</b>, ${esc(ist(nx.dt,{day:"numeric",month:"long",weekday:"long"}))}.`:" Maç bültene eklenince sorarsan hemen analiz ederim.";
+      return {html:`<b>${esc(name)}</b> için önümüzdeki 8 günde bültende maç bulamadım 🤷${when}`,chips:["Bugün hangi maçlar var","Yarın","En güvenli maçlar"]};
+    }catch(e){ return null; } }
+  if(typeof botAnswer==="function"){ const _ba=botAnswer;
+    botAnswer=async function(raw){
+      try{ if(!ready()){ wait("Bir saniye, bülteni açıyorum…"); await until(ready,8000); }
+        const n=N(raw); if(SEAS.test(n)&&window.oxxSeason&&oxxSeason.isLite()){ wait("Bir saniye, sezon verisine bakıyorum…"); await Promise.race([oxxSeason.ensure(),new Promise(r=>setTimeout(r,6000))]); } }catch(e){}
+      gxNote=null;
+      const R=await _ba.apply(this,arguments);
+      const Y=noMatch(raw,R); if(Y) return Y;
+      // gün söylenmemişse ("maç programı") ve bugünün başlamamış maçı kalmadıysa (gece geç saat) yarının programı
+      try{ const txt=String(R&&R.html||"").replace(/<[^>]+>/g,""), s=V.rewrite(X&&X.rewrite?X.rewrite(raw):raw).s||"";
+        if(/^Bugün için .*bulamadım/.test(txt)&&!/\b(bugun\w*|bu gun|aksam\w*|gece\w*)\b/.test(s)&&!/(saglam|guvenli|banko|kesin|emin)/.test(s)){
+          const R2=await _ba.call(this,"yarın "+raw); const t2=String(R2&&R2.html||"");
+          if(/class="bt-card/.test(t2)) return Object.assign({},R2,{html:`<small class="v123-n">🌙 Bugün için önerebileceğim maç kalmadı; yarının programına baktım:</small><br>${t2}`}); } }catch(e){}
+      try{ const g=gxNote; gxNote=null;
+        if(g&&R&&typeof R.html==="string"&&R.html.includes(esc(g.m.h))&&R.html.includes(esc(g.m.a)))
+          return Object.assign({},R,{html:`<small class="v123-n">ℹ️ <b>${esc(g.name)}</b> büyükler takımının önümüzdeki 8 günde bültende maçı yok; bulduğum en yakın maç:</small><br>${R.html}`}); }catch(e){}
+      return R; };
+  }
+})();
+</script>
 </body>
 </html>
