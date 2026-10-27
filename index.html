@@ -4087,6 +4087,9 @@ function fxOdds(m){
   const f=FIXTURES.find(x=>x.lg===m.lg && H && A && x.h===H.name && x.a===A.name) || FIXTURES.find(x=>H&&A&&x.h===H.name&&x.a===A.name);
   return f||null;
 }
+// v130: Motor fixtures.json'a güç modeli olasılığı (kp: [1,X,2], ko: 2,5 Üst) eklediyse ekranlar bunu gösterir (recOf ile aynı)
+function kpFix(r,f){ if(!r||!f) return r; const k=f.kp&&f.kp.length===3, u=f.ko!=null; if(!k&&!u) return r;
+  return Object.assign({},r,k?{H:f.kp[0],D:f.kp[1],A:f.kp[2]}:{},u?{o25:f.ko}:{}); }
 function quickPred(m, f){
   const k=m.lg+"|"+m.h+"|"+m.a+"|"+(MODEL&&MODEL.updated);
   if(BT.cache.has(k)) return BT.cache.get(k);
@@ -4097,9 +4100,10 @@ function quickPred(m, f){
     h:{ma:0,md:0,gk:false,mo:0,fa:false}, a:{ma:0,md:0,gk:false,mo:0,fa:false}, odds:{}};
   let out=null;
   try{
-    const r0=predict(base);                                   // yalnız model
+    let r0=predict(base);                                     // yalnız model
     const odds=f&&f.odds?{o1:f.odds[0],ox:f.odds[1],o2:f.odds[2],oo:f.ou?f.ou[0]:null,ou:f.ou?f.ou[1]:null}:{};
-    const r1=f&&f.odds?predict(Object.assign({},base,{odds})):r0;   // model + piyasa
+    let r1=f&&f.odds?predict(Object.assign({},base,{odds})):r0;   // model + piyasa
+    r0=kpFix(r0,f); r1=kpFix(r1,f);
     out={p:[r0.H,r0.D,r0.A], o25:r0.o25, pm:[r1.H,r1.D,r1.A], o25m:r1.o25, lh:r1.lh, la:r1.la, ft:r1.topFT[0].s, ht:r1.topH1[0].s, best:markets(r1,odds).filter(x=>!/daha gollü/.test(x.n))[0], known:r0.source!=="form", r:r1};
   }catch(e){ out=null; }
   BT.cache.set(k,out); return out;
@@ -5638,7 +5642,7 @@ function msRender(){
   const lg=m.sp?m.comp:(LEAGUES[m.lg]?LEAGUES[m.lg].n:""), flag=m.sp?ccFlag(m.cc):(FLAG[m.lg]||"⚽");
   const dt=m.sp?new Date(m.ts):m.dt, lv=MS.live;
   const pm=m.sp?{lg:"i"+m.ci,h:m.h,a:m.a,dt}:m;
-  const FP=fullPred(pm,f), r=FP&&FP.r;
+  const FP=fullPred(pm,f), r=FP&&kpFix(FP.r,f);
   const left=dt-Date.now(), rel=left>0&&left<72*3600e3?(left<3600e3?`${Math.round(left/60e3)} dk sonra`:`${Math.floor(left/3600e3)} sa ${Math.round(left%3600e3/60e3)} dk sonra`):"";
   const im=n=>{ const u=logoFor(n); return u?`<img src="${esc(u)}" alt="" onerror="this.replaceWith(Object.assign(document.createElement('i'),{className:'ni',textContent:'${esc(initials(n))}'}))">`:`<i class="ni">${esc(initials(n))}</i>`; };
   const k=fkey(m.sp?{sp:1,id:m.id}:m);
@@ -5888,7 +5892,7 @@ if((location.hash||"")==="#sonuclar") setTimeout(()=>$("navRes").click(),200);
 // =====================================================================
 // OXXai v35: Otomatik sürüm güncelleme — yeni sürüm yayınlanınca uygulama kendini yeniler
 // =====================================================================
-const APP_V="2026-10-27.129";
+const APP_V="2026-10-27.130";
 (function autoUpdate(){
   let shown=false;
   async function check(auto){
