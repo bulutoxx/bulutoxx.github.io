@@ -13373,5 +13373,141 @@ html[data-v122-ctx="at"] nav.tabs button[aria-current]{color:var(--ink3,#8893AB)
   }
 })();
 </script>
+<style id="ui-v125">
+/* v125 · At koşu kartı sinyal rozetleri (idman, handikap puanı, start, hava, mesafe, hız eğilimi, gelişim, yaşa göre kilo)
+   + futbol Altın karnesi satırı. Yalnız yeni sınıflar (u125-*); mevcut kurallara dokunmaz. */
+#at2Box .u125-sg{display:flex;flex-wrap:wrap;gap:5px;margin:7px 0 0 42px;min-width:0}
+#at2Box .a2-miss .u125-sg{margin:6px 0 8px}
+#at2Box .u125-r{display:inline-flex;align-items:center;gap:4px;max-width:100%;min-height:22px;padding:3px 8px;border-radius:99px;background:var(--a2-s3);color:var(--a2-ink2);font:600 11.5px/1.25 var(--font);white-space:normal;overflow-wrap:anywhere}
+#at2Box .u125-r i{font-style:normal;font-weight:500;color:var(--a2-ink3)}
+#at2Box .u125-r.g{background:rgba(59,234,126,.10);color:var(--a2-ok)}
+#at2Box .u125-r.b{background:rgba(255,107,120,.10);color:#FF9AA4}
+#at2Box .u125-h{display:block;font:650 12px/1.3 var(--font);color:var(--a2-ink2);margin:0}
+#at2Box .u125-n{display:block;margin:2px 0 0;font-size:11.5px;color:var(--a2-ink3)}
+#at2Box .u125-m{display:block;margin-top:8px}
+@media (max-width:370px){#at2Box .u125-sg{margin-left:0}}
+.u125-ak{margin:8px 0 0;font:500 12px/1.45 var(--font);color:var(--ink3,#8893AB)}
+.u125-ak b{color:var(--ink2,#B6C0D3)}
+</style>
+<script id="ui-v125">
+// =====================================================================
+// v125 · (1) At koşu kartı Meraklı görünümü ve at profili: yeni model sinyalleri küçük rozetlerle.
+//   Kaynak: kilitli tahmin dosyasındaki "sinyal" alanı (lab/at/sinyal.py — yalnız koşu içi göreli ifade: sıra, iç/dış, var/yok)
+//   ve yoksa gerekçe metni. Ham derece / ham puan gösterilmez. Verisi olmayan öğe görünmez.
+// (2) Futbol Altın karnesi: sabit ya da geri test kaynaklı iddia yerine kilitli tahminlerin gerçek isabeti + örnek sayısı +
+//   %95 güven aralığı (data/model.json → backtest.kalibrasyon.kilitli.mevcut_tum_arsiv.altin). goldKarne artık uygulamanın
+//   GÖSTERDİĞİ öneriyle (sk/sp/sok) sayar; ham rp kullanılmaz.
+// =====================================================================
+(function(){
+  const esc2=s=>s==null?"":(typeof esc==="function"?esc(s):String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])));
+  // ---------------- (1) AT SİNYALLERİ ----------------
+  try{ (function(){
+    const X=window.BX_AT, A2=window.BX_AT2, box=document.getElementById("at2Box"); if(!X||!X.AT||!A2||!box) return;
+    const dec=s=>{ try{ return decodeURIComponent(s); }catch(e){ return s; } };
+    const unK=s=>String(s).split("~").map(dec).join("/"), dayOf=kid=>String(kid||"").split("/")[0];
+    function raceById(id){ const D=X.AT.data&&X.AT.data[dayOf(id)]; return D&&(D.kosular||[]).find(r=>r.kosu_id===id)||null; }
+    // Türkçe sıra eki (birincisi, üçüncüsü, altıncısı, dokuzuncusu, onuncusu): 1.'si, 3.'sü, 6.'sı, 9.'su, 10.'su
+    const SUF={1:"si",2:"si",3:"sü",4:"sü",5:"si",6:"sı",7:"si",8:"si",9:"su"}, SUF0={1:"su",2:"si",3:"su",4:"sı",5:"si",6:"sı",7:"si",8:"si",9:"su"};
+    const sira=n=>`${n}.'${n%10?SUF[n%10]:(SUF0[Math.floor(n/10)%10]||"si")}`;
+    const ok=s=>Array.isArray(s)&&s.length===2&&s[0]>=1&&s[1]>=3&&s[0]<=s[1];
+    const yuzde=(s,lbl)=>{ const q=s[0]/s[1]; if(s[0]===1) return [`${lbl}en iyisi`,"g"]; if(q<=.2) return ["koşudakilerin en iyi %20'si","g"]; if(q<=.4) return ["koşudakilerin en iyi %40'ı","g"]; if(q>.8) return ["alanın gerisinde","b"]; return ["alanın ortasında",""]; };
+    const rankT=s=>{ const q=s[0]/s[1]; return [`alanın ${sira(s[0])}`, q<=1/3?"g":q>2/3?"b":""]; };
+    // gerekçe metni → (anahtar, değer, ton); yalnız v6 sinyalleri ve yaşa göre kilo
+    const GR=[["id",/son idmanda alanın en hızlılarından/,"alanın en hızlılarından","g"],["id",/son idman derecesi alanın gerisinde/,"alanın gerisinde","b"],
+      ["hp",/handikap puanı alanın üstünde/,"alanın üstünde","g"],["hp",/handikap puanı alanın altında/,"alanın altında","b"],
+      ["st",/dış kulvardan çıkıyor/,"dış kulvar",""],["st",/iç kulvardan çıkıyor/,"iç kulvar",""],
+      ["hv",/(ıslak pistte|ağır\/ıslak pist beklentisinde) formu iyi/,"ıslak pistte formu iyi","g"],["hv",/(ıslak pistte|ağır\/ıslak pist beklentisinde) formu zayıf/,"ıslak pistte formu zayıf","b"],
+      ["km",/hız figürü eğilimi \(Kalman\) alanın üstünde/,"alanın üstünde","g"],["km",/hız figürü eğilimi \(Kalman\) alanın altında/,"alanın altında","b"],
+      ["ms",/bu mesafede en iyi derecelerini yapıyor/,"en iyi dereceleri bu mesafede","g"],["ms",/en iyi dereceleri başka mesafede/,"en iyi dereceleri başka mesafede","b"],
+      ["wfa",/yaşına göre kilo avantajı olmalı/,"avantajlı","g"],["wfa",/yaşına göre etkin kilosu hafif/,"etkin kilosu hafif","g"],["wfa",/yaşına göre etkin kilosu ağır/,"etkin kilosu ağır","b"],
+      ["wfa",/uzun mesafede yaş avantajı/,"uzun mesafede avantajlı","g"],["wfa",/uzun mesafede yaş dezavantajı/,"uzun mesafede dezavantajlı","b"]];
+    const LBL={id:"İdman",hp:"Handikap puanı",st:"Start",hv:"Pist/hava",km:"Hız eğilimi",ms:"Mesafe",gl:"Gelişim",wfa:"Yaşa göre kilo"};
+    const ORDER=["id","hp","st","km","ms","gl","wfa","hv"];
+    function sig(h){ const S=(h&&h.sinyal&&typeof h.sinyal==="object")?h.sinyal:{}, G=String(h&&h.gerekce||""), o={};
+      if(ok(S.id)) o.id=yuzde(S.id,"alanın ");
+      if(ok(S.hp)) o.hp=rankT(S.hp);
+      if(S.st==="ic"||S.st==="orta"||S.st==="dis") o.st=[{ic:"iç kulvar",orta:"orta kulvar",dis:"dış kulvar"}[S.st],""];
+      if(ok(S.km)) o.km=rankT(S.km);
+      if(S.ms==="uygun") o.ms=["en iyi dereceleri bu mesafeye yakın","g"]; else if(S.ms==="uzak") o.ms=["alışık olmadığı mesafe","b"];
+      if(S.gl==="ust") o.gl=["beklenti alanın üstünde","g"]; else if(S.gl==="alt") o.gl=["beklenti alanın altında","b"];
+      if(S.wfa==="avantaj") o.wfa=["avantajlı","g"];
+      if(S.hv==="iyi") o.hv=["ıslak pistte formu iyi","g"]; else if(S.hv==="zayif") o.hv=["ıslak pistte formu zayıf","b"];
+      for(const [k,re,t,c] of GR) if(!o[k]&&re.test(G)) o[k]=[t,c];
+      return o; }
+    const hava=r=>{ const s=r&&r.sinyal&&r.sinyal.hava; return s==="yagisli"?["yağışlı tahmin","b"]:s==="kuru"?["kuru tahmin",""]:null; };
+    const chip=(k,v)=>`<span class="u125-r${v[1]?" "+v[1]:""}"><i>${esc2(LBL[k])}:</i>${esc2(v[0])}</span>`;
+    const chips=o=>ORDER.filter(k=>o[k]).map(k=>chip(k,o[k])).join("");
+    function rowNo(mk){ const a=mk.querySelector("a.a2-mk-a"), m=a&&/#at\/at\/[^/]+\/([^/?#]+)/.exec(a.getAttribute("href")||""); return m?dec(m[1]):null; }
+    function decoKosu(r){ const miss=box.querySelector(":scope > .a2-miss"); if(!miss||miss.dataset.u125) return;
+      const by={}; for(const h of r.atlar||[]) by[String(h.no)]=h;
+      const var_=new Set(); let n=0;
+      box.querySelectorAll(".a2-mk").forEach(mk=>{ if(mk.querySelector(".u125-sg")) return; const no=rowNo(mk), h=no!=null&&by[no]; if(!h) return;
+        const o=sig(h); Object.keys(o).forEach(k=>var_.add(k)); const c=chips(o); if(!c) return; n++;
+        const ref=mk.querySelector(".a2-mk-b")||mk.querySelector("a.a2-mk-a"); ref.insertAdjacentHTML("afterend",`<div class="u125-sg" aria-label="Sinyaller">${c}</div>`); });
+      const hv=hava(r); miss.dataset.u125="1";
+      if(!n&&!hv) return;
+      let t=miss.innerHTML;
+      if(var_.has("st")) t=t.replace("start/kulvar, ","");
+      if(var_.has("hp")) t=t.replace("handikap puanı, ","");
+      if(var_.has("id")) t=t.replace("idman/galop, ","");
+      const ozet=ORDER.filter(k=>var_.has(k)&&k!=="hv").map(k=>LBL[k].toLocaleLowerCase("tr")).join(", ");
+      miss.innerHTML=`<span class="u125-h">Bu koşuda yeni sinyaller</span>${hv?`<div class="u125-sg">${chip("hv",hv)}</div>`:""}${ozet?`<span class="u125-n">${esc2(ozet.charAt(0).toLocaleUpperCase("tr")+ozet.slice(1))}: verisi olan atlarda satırın altında, koşudakilere göre.</span>`:""}<span class="u125-m">${t}</span>`; }
+    function decoAt(r,no){ const miss=box.querySelector(":scope > .a2-miss"); if(!miss||miss.dataset.u125) return;
+      const h=(r.atlar||[]).find(y=>String(y.no)===String(no)); if(!h) return; miss.dataset.u125="1";
+      const o=sig(h), hv=hava(r); if(hv&&!o.hv) o.hv=hv; const c=chips(o); if(!c) return;
+      let t=miss.innerHTML; if(o.id) t=t.replace(/pedigri, sahip ve idman(\/galop)? verisi/,"pedigri ve sahip verisi");
+      miss.innerHTML=`<span class="u125-h">Bu at için sinyaller</span><div class="u125-sg">${c}</div><span class="u125-n">Koşudakilere göre; tahmin anında bilinen bilgiden.</span><span class="u125-m">${t}</span>`; }
+    function run(){ try{ const rt=A2.route(); if(!rt||(rt.v!=="kosu"&&rt.v!=="at")) return; const r=raceById(unK(rt.a[0]||"")); if(!r) return;
+        if(rt.v==="kosu"){ if(box.querySelector(".a2-sortb")) decoKosu(r); } else decoAt(r,rt.a[1]); }catch(e){ console.error(e); } }
+    new MutationObserver(run).observe(box,{childList:true});
+    // at3 deco'su .a2-miss'i yerinde yeniden yazabilir (kariyer gelince): metin değişirse yeniden işle
+    new MutationObserver(ms=>{ for(const m of ms){ const el=m.target.nodeType===1?m.target:m.target.parentElement, mi=el&&el.closest&&el.closest(".a2-miss");
+        if(mi&&mi.dataset.u125&&!mi.querySelector(".u125-h")){ delete mi.dataset.u125; run(); return; } } }).observe(box,{subtree:true,childList:true,characterData:true});
+    run();
+    window.BX_AT_SIG={sig,sira};
+  })(); }catch(e){ console.error(e); }
+
+  // ---------------- (2) FUTBOL ALTIN KARNESİ ----------------
+  try{ (function(){
+    if(typeof GOLD==="undefined") return;
+    const wilson=(h,n)=>{ if(!n) return null; const z=1.96, p=h/n, d=1+z*z/n, c=(p+z*z/(2*n))/d, w=z*Math.sqrt(p*(1-p)/n+z*z/(4*n*n))/d; return [Math.max(0,c-w),Math.min(1,c+w)]; };
+    const pc=x=>Math.round(x*100);
+    // kilitli gerçek isabet: önce laboratuvarın kilitli arşiv ölçümü (uygulamanın sunduğu öneri yolu, Altın kuralı), yoksa uygulamanın sayımı
+    function gk(){ let A=null; try{ A=MODEL&&MODEL.backtest&&MODEL.backtest.kalibrasyon&&MODEL.backtest.kalibrasyon.kilitli&&MODEL.backtest.kalibrasyon.kilitli.mevcut_tum_arsiv&&MODEL.backtest.kalibrasyon.kilitli.mevcut_tum_arsiv.altin; }catch(e){}
+      if(A&&A.n>0&&A.tutan!=null){ const ci=Array.isArray(A.ci95)&&A.ci95[0]!=null?A.ci95:wilson(A.tutan,A.n); return {n:A.n,h:A.tutan,ci}; }
+      const K=GOLD.karne; if(K&&K.n>0) return {n:K.n,h:K.h,ci:wilson(K.h,K.n)}; return null; }
+    function txt(){ const g=gk(); if(!g) return null;
+      return `Kilitli tahminlerde ${g.h}/${g.n} (%${pc(g.h/g.n)})${g.ci?` · aralık %${pc(g.ci[0])}–${pc(g.ci[1])}`:""}${g.n<30?" · örnek az, kesin değil":""}`; }
+    window.oxxAltinKarneTxt=txt;
+    const BOS="Kilitli tahminlerde henüz yeterli sonuçlanmış örnek yok; maçlar bittikçe burada görünür.";
+    function fix(s){ if(typeof s!=="string"||!/geçmiş tahminler|%82|yeterli puanlanmış örneği/.test(s)) return s; const t=txt();
+      return s.replace(/Kurala uyan geçmiş tahminler: <b>\d+\/\d+<\/b> \(%\d+\)\./g,(t||BOS).replace(/\.$/,"")+".")
+        .replace(/Kilitli arşivde henüz yeterli örnek yok; geçmiş sınamada bu güvendeki öneriler %82 tuttu\./g,t?t+".":BOS)
+        .replace(/Altın kuralına uyan geçmiş tahminler: <b>\d+\/\d+<\/b> tuttu \(%\d+\)( — örnek az, temkinli oku)?/g,`Altın: ${t||BOS.replace(/\.$/,"")}`)
+        .replace(/ Kurala uyan geçmiş tahminler: \d+\/\d+ tuttu\./g,t?` ${t}.`:"")
+        .replace(/Altın tahminlerin kilitli arşivde henüz yeterli puanlanmış örneği yok\./g,t?`Altın: ${t}.`:"Altın tahminlerin kilitli arşivde henüz yeterli puanlanmış örneği yok."); }
+    // goldKarne: uygulamanın gösterdiği öneri (sk → sp olasılık, sok sonuç; oran sk'nin oranı) ile say
+    if(typeof goldKarne==="function"){
+      const odd=(v,k)=>{ if(k==="1"||k==="X"||k==="2"){ const i="1X2".indexOf(k); return Array.isArray(v.ms)?+v.ms[i]:null; } if(k==="U"||k==="A") return Array.isArray(v.ou)?+v.ou[k==="U"?0:1]:null; return null; };
+      goldKarne=async function(){ try{ const days=(DAILY&&DAILY.gunler||[]).filter(g=>g.n>0).map(g=>g.d).slice(-30); let n=0,h=0;
+          for(const d of days){ let A=null; try{ const r=await fetch(`data/archive/${d}.json`,{cache:"no-cache"}); if(r.ok) A=await r.json(); }catch(e){} if(!A) continue;
+            for(const v of Object.values(A)){ if(!v||!v.sk||v.sp==null||v.sok==null) continue; const o=odd(v,String(v.sk));
+              if(+v.sp>=.78&&o&&o>=GOLD.omin&&o<=GOLD.omax){ n++; if(v.sok) h++; } } }
+          GOLD.karne={n,h,src:"sunulan"}; const thr=n>=20&&h/n<.72?.82:.78; if(thr!==GOLD.thr){ GOLD.thr=thr; GOLD.set=null; }
+        }catch(e){} };
+    }
+    if(typeof karneOzetHtml==="function"){ const _k=karneOzetHtml; karneOzetHtml=function(){ return fix(_k.apply(this,arguments)); }; }
+    if(typeof botAnswer==="function"){ const _b=botAnswer; botAnswer=async function(){ const R=await _b.apply(this,arguments); try{ if(R&&typeof R.html==="string"){ const h=fix(R.html); if(h!==R.html) return Object.assign({},R,{html:h}); } }catch(e){} return R; }; }
+    if(typeof renderPower==="function"){ const _p=renderPower; renderPower=function(){ const r=_p.apply(this,arguments);
+        try{ const v=document.getElementById("v-power"); if(v) v.querySelectorAll("p.note").forEach(p=>{ if(/Altın kuralına uyan geçmiş tahminler/.test(p.textContent)){ const t=txt(); p.textContent=t?`📒 Altın · ${t}.`:`📒 ${BOS}`; } }); }catch(e){} return r; }; }
+    // OXXai KUPO karnesi: Altın bloğuna tek tek seçimlerin kilitli isabeti
+    function oxk(){ try{ const b=document.getElementById("oxkBox"); if(!b) return; const t=txt(); if(!t) return;
+        b.querySelectorAll(".oxk-k").forEach(k=>{ const h3=k.querySelector("h3"); if(!h3||h3.textContent.trim()!=="Altın"||k.querySelector(".u125-ak")) return;
+          k.insertAdjacentHTML("beforeend",`<p class="u125-ak">🥇 Tek tek Altın seçimler · <b>${esc2(t)}</b>. Tahmindir, garanti değildir.</p>`); }); }catch(e){} }
+    let oT=null; const kv=document.getElementById("v-kupon");
+    if(kv) new MutationObserver(()=>{ clearTimeout(oT); oT=setTimeout(oxk,80); }).observe(kv,{childList:true,subtree:true});
+  })(); }catch(e){ console.error(e); }
+})();
+</script>
 </body>
 </html>

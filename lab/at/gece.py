@@ -22,6 +22,7 @@ import at5  # noqa: E402  (v5 at özellikleri: a5_* grupları, lab/at/deney5.py)
 import at6  # noqa: E402  (v6 derin tarama: a6_* grupları, lab/at/deney6.py; kaynaklar lab/at/KAYNAKLAR.md)
 import jokey  # noqa: E402  (🏇 jokey/ahır uzmanı: data/at/jokeyler.json + jk_* özellik grupları)
 import kilit  # noqa: E402  (sabah kilidi yalnız model + oran olgunluk kapısı + karne mod_hatali)
+import sinyal  # noqa: E402  (arayüz: koşu içi göreli sinyal özeti — ham değer yazılmaz)
 
 CIKTI = os.path.join(KOK, "data", "at")
 TAHMIN = os.path.join(CIKTI, "tahmin")
@@ -215,6 +216,10 @@ def kosu_tahmini(m, kosu, durum, yayin_modu):
     def ifade(i, k):
         e = IFADE.get(m.adlar[k], ("", ""))
         return e[0] if sapma[i, k] > 0 else e[1]
+    try:   # arayüz rozetleri (idman, handikap, start, hava, mesafe, Kalman, gelişim, WFA): yalnız göreli ifade
+        sny, sny_k = sinyal.ozet(X, m.adlar)
+    except Exception:   # noqa: BLE001  (özet yayını asla durdurmaz)
+        sny, sny_k = [{} for _ in kosu["atlar"]], {}
     atlar = []
     for i, a in enumerate(kosu["atlar"]):
         o = np.argsort(-katki[i])
@@ -233,12 +238,14 @@ def kosu_tahmini(m, kosu, durum, yayin_modu):
                       # ek (isteğe bağlı) alanlar: programdaki herkese açık sportif bilgiler
                       "jokey": a.get("jokey") or None, "kilo": a.get("kilo"), "yas": _tam(a.get("yas")),
                       "form": a.get("form") or None})
+        if i < len(sny) and sny[i]:
+            atlar[-1]["sinyal"] = sny[i]
     E = so["ikili"]
     i, j = np.unravel_index(np.argmax(E), E.shape)
     atlar.sort(key=lambda d: -d["p_kazanma"])
     return {"kosu_id": f'{kosu["tarih"]}/{kosu["hipodrom"]}/{kosu["kosu"]}', "hipodrom": kosu["hipodrom"],
             "kosu": kosu["kosu"], "saat": kosu.get("saat"), "mesafe": kosu["mesafe"], "pist": kosu["pist"],
-            "sinif": kosu["sinif"], "mod": mod, "atlar": atlar,
+            "sinif": kosu["sinif"], "mod": mod, "atlar": atlar, **({"sinyal": sny_k} if sny_k else {}),
             "ikili_onerisi": {"sira": [kosu["atlar"][i]["no"], kosu["atlar"][j]["no"]], "p": round(float(E[i, j]), 4)}}
 
 
