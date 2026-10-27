@@ -1,0 +1,18 @@
+name: OXXai gizli değer kontrolü
+# Yalnız elle çalıştırılır: AT_EK_KAYNAK gizli değeri tanımlı mı ve adres erişilebilir mi? Değeri asla yazdırmaz.
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  kontrol:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Gizli değer var mı
+        env:
+          K: ${{ secrets.AT_EK_KAYNAK }}
+        run: |
+          if [ -z "$K" ]; then echo "AT_EK_KAYNAK tanımlı değil"; exit 1; fi
+          echo "AT_EK_KAYNAK tanımlı (uzunluk ${#K})"
+          git ls-remote --heads "$K" >/dev/null 2>&1 && echo "adres erişilebilir" || { echo "adres erişilemiyor"; exit 2; }
