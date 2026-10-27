@@ -1,6 +1,6 @@
 # OXXai 🐎 At Yarışı Laboratuvarı — Rapor
 
-_Otomatik üretildi: 2026-10-27T01:50:16+00:00 · model sürümü `20261027T0111` · hobi amaçlıdır, garanti değildir · 18+_
+_Otomatik üretildi: 2026-10-27T02:56:19+00:00 · model sürümü `20261027T0111` · hobi amaçlıdır, garanti değildir · 18+_
 
 ## Yeniden oynatma (replay): 2026-03-16 → 2026-10-23
 
@@ -379,7 +379,7 @@ Yorum: sabah tahmininde en çok taşıyan bilgiler reytingler (at/jokey/antrenö
 ## Kapı (sürekli öğrenme)
 
 - Kural: tarif (özellikler/ayarlar) değişirse yeni model ancak **aynı sınama koşularında** yalnız-model log-loss'u düşürür, ilk seçim isabetini düşürmez ve harman log-loss'unu 0,001'den fazla bozmazsa kabul edilir. Tarif aynıysa özellikler her gece yeni sonuçlarla güncellenir, katsayılar haftada bir yeniden eğitilir (KORU = bu gece yenileme günü değil); ortak koşularda belirgin bozulma (veri sorunu) olursa dünkü model korunur. İz: `data/at/sinama_izi.json`.
-- Son karar (2026-10-27T01:50:16+00:00): **KORU** — aynı tarif; katsayılar 0 günlük (haftalık yenileme), özellikler bu gece yeni sonuçlarla güncellendi
+- Son karar (2026-10-27T02:56:19+00:00): **KORU** — aynı tarif; katsayılar 0 günlük (haftalık yenileme), özellikler bu gece yeni sonuçlarla güncellendi
 - Yeni: yalnız model log-loss 1.8630, ilk seçim %31.8; harman 1.7946. Kıyas: yalnız model 1.8686, ilk seçim %31.6; harman 1.7960.
 
 ## Canlı karne (kilitlenmiş tahminler, sonuç gelince)
