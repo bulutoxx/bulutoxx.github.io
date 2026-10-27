@@ -1,6 +1,6 @@
 {
  "surum": "2026-10-27.1",
- "guncelleme": "2026-10-27 06:38",
+ "guncelleme": "2026-10-27 06:52",
  "aciklama": "Basket piyasa karnesi: kilitli model tahmini ile maç öncesi son piyasa oranı (marjı Shin ile ayrılmış) aynı maçlarda. Harman = Benter iki aşama (lig grubu, zaman sıralı ağırlık). Çapalı = model fark/toplamının handikap ve alt/üst çizgisine çekilmesi. GA: gün blokları bootstrap %95. Üretime yalnız OXXai kapısı + gölge sonrası girer.",
  "kurallar": {
   "kapi": "n ≥ 150, gün ≥ 20, ΔLL GA üst < 0, ΔBrier < 0, isabet düşmez",
@@ -15,49 +15,49 @@
   "uretim": "data/oxx_ayar.json params.bk_piyasa.<grup> = true (oxx_ogren kapısı + surekli_deney gölgesi)"
  },
  "toplam": {
-  "n": 36,
+  "n": 38,
   "gun": 4,
   "model": {
-   "n": 36,
-   "ll": 0.6879,
-   "brier": 0.2482,
-   "isabet": 0.5556
+   "n": 38,
+   "ll": 0.6851,
+   "brier": 0.2468,
+   "isabet": 0.5526
   },
   "piyasa": {
-   "n": 36,
-   "ll": 0.5989,
-   "brier": 0.2095,
-   "isabet": 0.6111
+   "n": 38,
+   "ll": 0.5959,
+   "brier": 0.2077,
+   "isabet": 0.6316
   },
   "piyasa_power": {
-   "n": 36,
-   "ll": 0.6001,
-   "brier": 0.2109,
-   "isabet": 0.6111
+   "n": 38,
+   "ll": 0.5962,
+   "brier": 0.2087,
+   "isabet": 0.6316
   },
   "harman": {
-   "n": 36,
-   "ll": 0.614,
-   "brier": 0.2144,
-   "isabet": 0.6111
+   "n": 38,
+   "ll": 0.6115,
+   "brier": 0.213,
+   "isabet": 0.6316
   },
   "capali": {
-   "n": 36,
-   "ll": 0.6144,
-   "brier": 0.2146,
-   "isabet": 0.6389
+   "n": 38,
+   "ll": 0.6117,
+   "brier": 0.2131,
+   "isabet": 0.6579
   },
   "uretim": {
-   "n": 36,
-   "ll": 0.636,
-   "brier": 0.2237,
-   "isabet": 0.6111
+   "n": 38,
+   "ll": 0.6336,
+   "brier": 0.2224,
+   "isabet": 0.6316
   }
  },
  "gruplar": {
   "pro": {
    "ad": "NBA · WNBA · G League · NBL",
-   "n": 36,
+   "n": 38,
    "gun": 4,
    "ligler": [
     "nba",
@@ -65,106 +65,113 @@
     "wnba"
    ],
    "model": {
-    "n": 36,
-    "ll": 0.6879,
-    "brier": 0.2482,
-    "isabet": 0.5556
+    "n": 38,
+    "ll": 0.6851,
+    "brier": 0.2468,
+    "isabet": 0.5526
    },
    "piyasa": {
-    "n": 36,
-    "ll": 0.5989,
-    "brier": 0.2095,
-    "isabet": 0.6111
+    "n": 38,
+    "ll": 0.5959,
+    "brier": 0.2077,
+    "isabet": 0.6316
    },
    "piyasa_power": {
-    "n": 36,
-    "ll": 0.6001,
-    "brier": 0.2109,
-    "isabet": 0.6111
+    "n": 38,
+    "ll": 0.5962,
+    "brier": 0.2087,
+    "isabet": 0.6316
    },
    "harman": {
-    "n": 36,
-    "ll": 0.614,
-    "brier": 0.2144,
-    "isabet": 0.6111
+    "n": 38,
+    "ll": 0.6115,
+    "brier": 0.213,
+    "isabet": 0.6316
    },
    "capali": {
-    "n": 36,
-    "ll": 0.6144,
-    "brier": 0.2146,
-    "isabet": 0.6389
+    "n": 38,
+    "ll": 0.6117,
+    "brier": 0.2131,
+    "isabet": 0.6579
    },
    "uretim": {
-    "n": 36,
-    "ll": 0.636,
-    "brier": 0.2237,
-    "isabet": 0.6111
+    "n": 38,
+    "ll": 0.6336,
+    "brier": 0.2224,
+    "isabet": 0.6316
    },
    "fark_harman_model": {
-    "ll": -0.0739,
+    "ll": -0.0737,
     "ll_ga": null,
     "brier": -0.0337,
     "brier_ga": null,
-    "isabet": 0.0556
+    "isabet": 0.0789
    },
    "fark_piyasa_model": {
-    "ll": -0.089,
+    "ll": -0.0893,
     "ll_ga": null,
-    "brier": -0.0387,
+    "brier": -0.0391,
     "brier_ga": null,
-    "isabet": 0.0556
+    "isabet": 0.0789
    },
    "fark_capali_model": {
-    "ll": -0.0735,
+    "ll": -0.0734,
     "ll_ga": null,
-    "brier": -0.0336,
+    "brier": -0.0337,
     "brier_ga": null,
-    "isabet": 0.0833
+    "isabet": 0.1053
    },
    "fark_uretim_model": {
-    "ll": -0.0519,
+    "ll": -0.0516,
     "ll_ga": null,
-    "brier": -0.0245,
+    "brier": -0.0244,
     "brier_ga": null,
-    "isabet": 0.0556
+    "isabet": 0.0789
    },
    "skor": {
     "fark_mse": {
-     "model": 211.7497,
-     "piyasa": 172.0823,
-     "capali": 177.6102,
-     "n": 36,
+     "model": 202.6287,
+     "piyasa": 164.1437,
+     "capali": 169.5242,
+     "n": 38,
      "capali_eksi_model": [
-      -34.1395,
+      -33.1045,
       null
      ]
     },
     "toplam_mae": {
-     "model": 16.5139,
-     "piyasa": 14.8385,
-     "capali": 15.2402,
-     "n": 36,
+     "model": 16.1289,
+     "piyasa": 14.6537,
+     "capali": 15.0343,
+     "n": 38,
      "capali_eksi_model": [
-      -1.2737,
+      -1.0947,
       null
      ]
     }
    },
    "agirlik": {
-    "a": 0.2753,
-    "b": 0.7313,
-    "w_m": 0.8394,
+    "a": 0.2771,
+    "b": 0.7371,
+    "w_m": 0.8512,
     "w_t": 1.0,
-    "n_ogrenme": 36
+    "n_ogrenme": 38
    },
    "kapi": {
     "durum": "veri_az",
-    "neden": "maç az (36 < 150); gün az (4 < 20); ΔLL GA üst sınırı ≥ 0 (None)"
+    "neden": "maç az (38 < 150); gün az (4 < 20); ΔLL GA üst sınırı ≥ 0 (None)"
    },
    "uretimde": false
   }
  },
  "agirlik": {
+  "pro": {
+   "a": 0.2771,
+   "b": 0.7371,
+   "w_m": 0.8512,
+   "w_t": 1.0,
+   "n_ogrenme": 38
+  },
   "avrupa": {
    "a": 0.3,
    "b": 0.7,
@@ -178,13 +185,6 @@
    "w_m": 0.6,
    "w_t": 0.6,
    "n_ogrenme": 0
-  },
-  "pro": {
-   "a": 0.2753,
-   "b": 0.7313,
-   "w_m": 0.8394,
-   "w_t": 1.0,
-   "n_ogrenme": 36
   }
  },
  "uretimde": {},
@@ -192,9 +192,9 @@
   "nba": {
    "kilitli": 91,
    "oranli": 41,
-   "sonuclu_oranli": 32,
+   "sonuclu_oranli": 34,
    "iddaa_ms": 23,
-   "iddaa_hnd": 0,
+   "iddaa_hnd": 3,
    "iddaa_au": 23,
    "espn": 41
   },
@@ -203,7 +203,7 @@
    "oranli": 10,
    "sonuclu_oranli": 0,
    "iddaa_ms": 10,
-   "iddaa_hnd": 0,
+   "iddaa_hnd": 10,
    "iddaa_au": 8,
    "espn": 0
   },
@@ -212,7 +212,7 @@
    "oranli": 14,
    "sonuclu_oranli": 0,
    "iddaa_ms": 14,
-   "iddaa_hnd": 0,
+   "iddaa_hnd": 12,
    "iddaa_au": 14,
    "espn": 0
   },
@@ -220,9 +220,9 @@
    "kilitli": 4,
    "oranli": 3,
    "sonuclu_oranli": 2,
-   "iddaa_ms": 2,
-   "iddaa_hnd": 0,
-   "iddaa_au": 2,
+   "iddaa_ms": 3,
+   "iddaa_hnd": 1,
+   "iddaa_au": 3,
    "espn": 3
   },
   "nbl": {
@@ -230,7 +230,7 @@
    "oranli": 4,
    "sonuclu_oranli": 2,
    "iddaa_ms": 4,
-   "iddaa_hnd": 0,
+   "iddaa_hnd": 2,
    "iddaa_au": 4,
    "espn": 0
   },
@@ -254,24 +254,24 @@
   }
  },
  "sentetik_yarismalar": {
+  "European North Basketball Leag": 1,
+  "Uruguay Basketbol Ligi": 2,
+  "Arjantin LNB": 4,
+  "Euroleague": 2,
+  "Europe Kupası": 4,
+  "Şampiyonlar Ligi": 3,
+  "Avrupa Kuzey Basket Ligi, Gr.B": 1,
+  "İsveç Basketbol Ligi": 3,
+  "Çin CBA": 6,
+  "Almanya Pro A": 1,
+  "İtalya Serie B": 1,
+  "Macaristan NB I": 1,
+  "Çekya NBL": 3,
+  "Slovakya Extraliga": 1,
+  "G. Kore Güney Kore Basketbol Ligi": 1,
   "Filipinler PBA, Governors Kupas, Playoffs": 3,
   "VTB Birleşik Ligi": 1,
-  "G. Kore Güney Kore Basketbol Ligi": 1,
-  "Çin CBA": 6,
-  "Şampiyonlar Ligi": 3,
-  "Slovakya Extraliga": 1,
-  "Europe Kupası": 4,
-  "European North Basketball Leag": 1,
-  "İsveç Basketbol Ligi": 3,
-  "Avrupa Kuzey Basket Ligi, Gr.B": 1,
-  "Euroleague": 2,
-  "Fransa Pro A": 1,
-  "Uruguay Basketbol Ligi": 1,
-  "Arjantin LNB": 3,
-  "Çekya NBL": 3,
-  "Macaristan NB I": 1,
-  "Almanya Pro A": 1,
-  "İtalya Serie B": 1
+  "Fransa Pro A": 1
  },
  "gunluk": [
   {
@@ -297,10 +297,10 @@
   },
   {
    "gun": "2026-10-27",
-   "n": 7,
-   "ll_model": 0.6141,
-   "ll_piyasa": 0.6408,
-   "ll_harman": 0.632
+   "n": 9,
+   "ll_model": 0.6187,
+   "ll_piyasa": 0.6189,
+   "ll_harman": 0.6172
   }
  ]
 }
