@@ -1,31 +1,31 @@
 {
- "zaman": "2026-10-27T16:09Z",
+ "zaman": "2026-10-27T17:47Z",
  "deneme": false,
  "isler": [
   {
    "is": "Futbol motoru",
-   "son_basari_saat": 0.2,
+   "son_basari_saat": 0.81,
    "calisan": 0,
-   "durum": "sağlık sorunu (bir kez tetiklendi, bekleniyor)",
+   "durum": "sağlık sorunu → yeniden tetiklendi",
    "saglik": [
     "adım başarısız: arsiv-yukle (çıkış 1, 1/1 tur)"
    ]
   },
   {
    "is": "Canlı kayıt",
-   "son_basari_saat": 0.24,
-   "calisan": 0,
-   "durum": "sağlıklı"
-  },
-  {
-   "is": "At yarışı canlı",
-   "son_basari_saat": 0.41,
+   "son_basari_saat": 0.97,
    "calisan": 1,
    "durum": "sağlıklı"
   },
   {
+   "is": "At yarışı canlı",
+   "son_basari_saat": 0.05,
+   "calisan": 0,
+   "durum": "sağlıklı"
+  },
+  {
    "is": "At yarışı gece",
-   "son_basari_saat": 0.9,
+   "son_basari_saat": 2.53,
    "calisan": 0,
    "durum": "sağlık sorunu (bir kez tetiklendi, bekleniyor)",
    "saglik": [
@@ -34,28 +34,59 @@
   },
   {
    "is": "Otonom ekip",
-   "son_basari_saat": 0.28,
+   "son_basari_saat": 1.91,
    "calisan": 0,
    "durum": "sağlıklı"
   },
   {
    "is": "Otomatik laboratuvar",
-   "son_basari_saat": 1.07,
+   "son_basari_saat": 2.7,
    "calisan": 0,
    "durum": "sağlıklı"
   },
   {
    "is": "Sürekli deney",
-   "son_basari_saat": 1.07,
+   "son_basari_saat": 0.5,
    "calisan": 0,
-   "durum": "sağlık sorunu (bir kez tetiklendi, bekleniyor)",
+   "durum": "sağlık sorunu → yeniden tetiklendi",
    "saglik": [
     "adım başarısız: deney (çıkış 1, 1/1 tur)"
    ]
   }
  ],
- "eylem": [],
+ "eylem": [
+  {
+   "is": "Sürekli deney",
+   "eylem": "sağlık kaydında sorun → bir kez yeniden tetiklendi",
+   "neden": [
+    "adım başarısız: deney (çıkış 1, 1/1 tur)"
+   ]
+  },
+  {
+   "is": "Futbol motoru",
+   "eylem": "sağlık kaydında sorun → bir kez yeniden tetiklendi",
+   "neden": [
+    "adım başarısız: arsiv-yukle (çıkış 1, 1/1 tur)"
+   ]
+  }
+ ],
  "gecmis": [
+  {
+   "zaman": "2026-10-27T17:47Z",
+   "is": "Sürekli deney",
+   "eylem": "sağlık kaydında sorun → bir kez yeniden tetiklendi",
+   "neden": [
+    "adım başarısız: deney (çıkış 1, 1/1 tur)"
+   ]
+  },
+  {
+   "zaman": "2026-10-27T17:47Z",
+   "is": "Futbol motoru",
+   "eylem": "sağlık kaydında sorun → bir kez yeniden tetiklendi",
+   "neden": [
+    "adım başarısız: arsiv-yukle (çıkış 1, 1/1 tur)"
+   ]
+  },
   {
    "zaman": "2026-10-27T15:12Z",
    "is": "At yarışı canlı",
@@ -117,7 +148,11 @@
   },
   "update.yml": {
    "imza": "adım başarısız: arsiv-yukle (çıkış 1, 1/1 tur)",
-   "zaman": "2026-10-27T07:32Z"
+   "zaman": "2026-10-27T17:47Z"
+  },
+  "surekli-deney.yml": {
+   "imza": "adım başarısız: deney (çıkış 1, 1/1 tur)",
+   "zaman": "2026-10-27T17:47Z"
   }
  }
 }
