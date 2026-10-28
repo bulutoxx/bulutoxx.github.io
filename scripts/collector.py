@@ -570,6 +570,10 @@ def main():
     except Exception: pass
     try: import guvenilirlik as GV; out["guvenilirlik"] = GV.karne_futbol_oneri(allg)   # YH-09: Brier ayrışımı + ECE
     except Exception as ex: print("güvenilirlik atlandı:", ex.__class__.__name__, ex, flush=True)
+    try:   # 🔒 yeni alan: kilitli tahmin günlüğünde açılış ve kapanış kilidi karnesi (scripts/kilit.py)
+        import kilit
+        out["kilit"] = kilit.kilit_karne(json.load(open(os.path.join(DATA, "predlog.json"), encoding="utf-8")))
+    except Exception as ex: print("kilit karnesi atlandı:", ex.__class__.__name__, ex, flush=True)
     try: live_snapshot()
     except Exception as ex: print("canlı kayıt atlandı:", ex.__class__.__name__, ex, flush=True)
     try: out["canli"] = live_grade()

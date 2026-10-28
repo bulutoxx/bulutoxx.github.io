@@ -1596,6 +1596,113 @@ def predict_fixtures(fx, all_ms, P, today, pzmap=None, PL=None, golge=None):
         out.append(e)
     return out
 
+# ------------------------------------------------------------------ 🔒 kapanış kilidi ve karne (2026-10-28)
+# Kilitli ilk tahmin (p) maçtan ortanca 4,4 gün önce yazılıyordu; karne bayat tahmini ölçüyordu. p DEĞİŞMEZ; maça ≤ KAPANIS_DK
+# kala ilk çalışmada bir kez ikinci kilit yazılır (pc/pco = aynı yol, kapanıştaki; mpc/mpco = piyasa kapanışı; psc/psco = uygulamanın
+# oranlı maçta gösterdiği; pcts/pcdk = yazıldığı an ve maça kalan dakika). Saatlik iş :17'de çalışır; 75 dk pencere gecikmeye pay bırakır.
+KAPANIS_DK = 75
+
+def _oran_pay(o):
+    try:
+        inv = [1 / x for x in o]; s = sum(inv); return [round(x / s, 4) for x in inv]
+    except Exception: return None
+
+def sunulan_olasilik(odds_list, ou_list, P, lg_list=None):
+    """Uygulamanın oranlı maçta gösterdiği MS 1X2 ve 2,5 Üst (index.html predict → dist, marketW=1; collector.served_pick ile aynı)."""
+    if not odds_list: return []
+    rho, h1 = P.get("rho", -0.06), P.get("h1", .4442)
+    T, g, dk = P.get("calT", 1.0), P.get("gscale", 1.0), P.get("dk", 1.0)
+    lam = ui_market_lam(odds_list, ou_list, rho)
+    p, O = served_probs(lam[:, 0], lam[:, 1], g, rho, h1); q = _cal3(p, T, dk)
+    return [([round(float(x), 4) for x in q[i]], round(float(O[i]), 4)) for i in range(len(q))]
+
+def kapanis_kilidi(plog, tahmin, fx_id, kickoff, now_utc, P):
+    """Kilitli kayda (p'ye dokunmadan) kapanış alanlarını bir kez yaz. Dönüş: yazılan kayıt sayısı."""
+    hedef = []
+    for e in plog:
+        if "pc" in e or e.get("r") is not None: continue
+        t, f = tahmin.get(e["id"]), fx_id.get(e["id"])
+        if not t or not f: continue
+        dk = (kickoff(f) - now_utc).total_seconds() / 60
+        if 0 < dk <= KAPANIS_DK: hedef.append((e, t, f, dk))
+    if not hedef: return 0
+    ts = now_utc.strftime("%Y-%m-%dT%H:%MZ")
+    od = [(e, f) for e, t, f, dk in hedef if f.get("odds") and len(f["odds"]) == 3]
+    srv = {}
+    try:
+        for (e, f), (q, o) in zip(od, sunulan_olasilik([f["odds"] for _, f in od], [f.get("ou") if f.get("ou") and len(f["ou"]) == 2 else None for _, f in od], P)):
+            srv[e["id"]] = (q, o if f.get("ou") else None)
+    except Exception as ex: print("kapanış sunulan olasılık atlandı:", ex.__class__.__name__, ex, flush=True)
+    for e, t, f, dk in hedef:
+        e["pc"] = list(t["p"]); e["pco"] = t.get("o"); e["pcts"] = ts; e["pcdk"] = int(round(dk))
+        if f.get("odds"):
+            e["mpc"] = _oran_pay(f["odds"])
+            if f.get("ou") and len(f["ou"]) == 2: e["mpco"] = _oran_pay(f["ou"])[0]
+        if e["id"] in srv:
+            e["psc"] = srv[e["id"]][0]
+            if srv[e["id"]][1] is not None: e["psco"] = srv[e["id"]][1]
+    return len(hedef)
+
+def acilis_sunulan(yeni, fx_id, P):
+    """Yeni kilitlenen oranlı maçlara açılıştaki uygulama olasılığı (ps/pso) ve piyasa 2,5 Üst payı (mo). p değişmez."""
+    od = [(e, fx_id[e["id"]]) for e in yeni if e["id"] in fx_id and fx_id[e["id"]].get("odds") and len(fx_id[e["id"]]["odds"]) == 3]
+    for e, f in od:
+        if f.get("ou") and len(f["ou"]) == 2: e["mo"] = _oran_pay(f["ou"])[0]
+    if not od: return 0
+    for (e, f), (q, o) in zip(od, sunulan_olasilik([f["odds"] for _, f in od], [f.get("ou") if f.get("ou") and len(f["ou"]) == 2 else None for _, f in od], P)):
+        e["ps"] = q
+        if f.get("ou") and len(f["ou"]) == 2: e["pso"] = o
+    return len(od)
+
+from kilit import kilit_karne   # açılış / kapanış kilidi karnesi (scripts/kilit.py; collector ve oxx_kupon da kullanır)
+
+# ------------------------------------------------------------------ 📉 drift bayrağı (lab/drift.py → data/drift.json)
+def drift_ayar():
+    """{lig: {"1x2": a, "ou": a}} (a < 1 olan ligler; a = model ağırlığı çarpanı). Koruyucu geri alması aktifken de uygulanır (yalnız temkin yönü)."""
+    try:
+        D = json.load(open(os.path.join(DATA, "drift.json"), encoding="utf-8"))
+        out = {}
+        for lg, v in (D.get("ligler") or {}).items():
+            a1, ao = float(v.get("agirlik_1x2", 1.0)), float(v.get("agirlik_ou", 1.0))
+            if a1 < 1 or ao < 1: out[lg] = {"1x2": round(max(0.0, min(1.0, a1)), 3), "ou": round(max(0.0, min(1.0, ao)), 3)}
+        return out
+    except Exception: return {}
+
+def drift_oranli(fx, P, DR):
+    """Drift alarmındaki ligde oranlı maçın model katkılı olasılığı (konsey kp/ko) uygulamanın saf piyasa yoluna çekilir:
+    kp ← a·kp + (1−a)·piyasa (a = 0 → piyasa ağırlığı 1). Dönüş: değişen maç sayısı."""
+    L = [f for f in fx if f["lg"] in DR and f.get("odds") and len(f["odds"]) == 3 and f.get("kpy") != "guc"
+         and (isinstance(f.get("kp"), list) or isinstance(f.get("ko"), (int, float)))]
+    if not L: return 0
+    S = sunulan_olasilik([f["odds"] for f in L], [f.get("ou") if f.get("ou") and len(f["ou"]) == 2 else None for f in L], P)
+    for f, (q, o) in zip(L, S):
+        a1, ao = DR[f["lg"]]["1x2"], DR[f["lg"]]["ou"]
+        if isinstance(f.get("kp"), list) and len(f["kp"]) == 3:
+            z = [a1 * f["kp"][k] + (1 - a1) * q[k] for k in range(3)]; t = sum(z); f["kp"] = [round(x / t, 4) for x in z]
+        if isinstance(f.get("ko"), (int, float)) and f.get("ou"): f["ko"] = round(ao * f["ko"] + (1 - ao) * o, 4)
+        f["drf"] = [a1, ao]
+    return len(L)
+
+def drift_uygula(fx, all_ms, P, PL, today, DR):
+    """Drift alarmındaki ligde oransız maçların topluluk tahmini (kp/ko) Poisson yoluna doğru çekilir: kp ← a·kp + (1−a)·Poisson.
+    a = 0 → tamamen Poisson (uygulamanın kendi yolu); a kademeli 1'e döndükçe topluluk geri gelir. Dönüş: değişen maç sayısı."""
+    hedef = [f for f in fx if f["lg"] in DR and f.get("kpy") == "guc" and (isinstance(f.get("kp"), list) or isinstance(f.get("ko"), (int, float)))]
+    if not hedef: return 0
+    n = 0; gs_ = P.get("gscale", 1.0)
+    for lg in sorted({f["lg"] for f in hedef}):
+        if len(all_ms.get(lg, [])) < 40: continue
+        F = fit(all_ms[lg], today, PL(lg)); L = [f for f in hedef if f["lg"] == lg]
+        lh = np.array([F["mu"] * F["gamma"] * F["t"].get(f["h"], NEW_TEAM)[0] * F["t"].get(f["a"], NEW_TEAM)[1] for f in L])
+        la = np.array([F["mu"] * F["t"].get(f["a"], NEW_TEAM)[0] * F["t"].get(f["h"], NEW_TEAM)[1] for f in L])
+        p, pO, _, _ = outcome_probs(lh * gs_, la * gs_, P["rho"]); p = apply_cal(p, P)
+        a1, ao = DR[lg]["1x2"], DR[lg]["ou"]
+        for i, f in enumerate(L):
+            if isinstance(f.get("kp"), list) and len(f["kp"]) == 3:
+                q = [a1 * f["kp"][k] + (1 - a1) * float(p[i, k]) for k in range(3)]; s = sum(q); f["kp"] = [round(x / s, 4) for x in q]
+            if isinstance(f.get("ko"), (int, float)): f["ko"] = round(ao * f["ko"] + (1 - ao) * float(pO[i]), 4)
+            f["drf"] = [a1, ao]; n += 1
+    return n
+
 def grade_predlog(log, all_ms, today):
     idx = {}
     for lg, ms in all_ms.items():
@@ -1859,6 +1966,15 @@ def main():
         if GA_ and not GA_.get("aktif"):
             GOLGE_T = guc.tahmin([f for f in fx if f.get("src") != "iddaa"], season, P, today, sys.modules[__name__], GA_, golge=True)
     except Exception as e: print("topluluk atlandı:", e.__class__.__name__, e, flush=True)
+    # 📉 Drift bayrağı (lab/drift.py → data/drift.json): alarmdaki ligde model ağırlığı düşer (oranlı: yalnız piyasa; oransız: topluluk → Poisson)
+    P.pop("drift", None)
+    DR = drift_ayar()
+    if DR:
+        try:
+            P["drift"] = DR; nd_ = drift_uygula(fx, all_ms, P, PL, today, DR)
+            nk_ = drift_oranli(fx, P, DR)
+            print(f"Drift: {len(DR)} ligde model ağırlığı düşük ({json.dumps(DR, ensure_ascii=False)[:300]}); oransız {nd_}, oranlı {nk_} maç", flush=True)
+        except Exception as e: print("drift bayrağı atlandı:", e.__class__.__name__, e, flush=True)
     # 🧮 Pazar motoru: tüm pazarlar tek skor ızgarasından (scripts/pazar.py). Karne tam öğrenmede (veya yoksa) yeniden kurulur.
     pzmap, PK = {}, None
     kp_ = os.path.join(DATA, "pazar_karne.json")
@@ -1895,11 +2011,18 @@ def main():
     lg_tk = {lg: {t for m in ms for t in (m["h"], m["a"])} for lg, ms in all_ms.items()}
     ok_src = lambda f: f.get("src") != "iddaa" or (f.get("lgk") and f["h"] in lg_tk.get(f["lg"], ()) and f["a"] in lg_tk.get(f["lg"], ()))
     fx_lock = [f for f in fx if ok_src(f) and kickoff(f) > now_utc and (f["lg"], f["h"], f["a"], f["d"]) not in played]
-    model_yolu = {}
+    model_yolu = {}; tahmin_ = {}; yeni_ = []
     for e in predict_fixtures(fx_lock, all_ms, P, today, pzmap=pzmap, PL=PL, golge=GOLGE_T):
         model_yolu[e["id"]] = (e["p"], e.get("o"))       # model yolu (oranlı maçta piyasadan bağımsız Poisson)
+        tahmin_[e["id"]] = e
         if e["id"] not in have:                           # maçtan önceki ilk tahmin kilitlenir, sonradan değiştirilmez
-            e["v"] = ENGINE_V; e["ts"] = now_utc.strftime("%Y-%m-%dT%H:%MZ"); plog.append(e); have.add(e["id"])
+            e["v"] = ENGINE_V; e["ts"] = now_utc.strftime("%Y-%m-%dT%H:%MZ"); plog.append(e); have.add(e["id"]); yeni_.append(e)
+    try:   # 🔒 açılışta uygulamanın gösterdiği (ps) + kapanış kilidi (maça ≤75 dk kala bir kez: pc/mpc/psc; p değişmez)
+        fx_id_ = {f"{f['lg']}|{f['d']}|{f['h']}|{f['a']}": f for f in fx_lock}
+        tahmin_ = {k: dict(v) for k, v in tahmin_.items()}   # yeni kayıtlara eklenen alanlar kapanış kopyasına sızmasın
+        na_ = acilis_sunulan(yeni_, fx_id_, P); nc_ = kapanis_kilidi(plog, tahmin_, fx_id_, kickoff, now_utc, P)
+        print(f"Kilit: {len(yeni_)} yeni açılış ({na_} oranlı), {nc_} kapanış kilidi", flush=True)
+    except Exception as e: print("kapanış kilidi atlandı:", e.__class__.__name__, e, flush=True)
     try:   # 🌱 taze veri gölge kaydı (scripts/tazeveri.py): kadro / oran hareketi / karışım ayarlı ve ayarsız tahmin; kapı açıksa fixtures çıktısına
         import tazeveri as TZV
         TZA = TZV.ayar(); TZG = TZV.jl(TZV.GOLGE, None) or {}
@@ -1917,8 +2040,15 @@ def main():
         if nk_: print(f"Kadro özeti eklenen kilitli tahmin: {nk_}", flush=True)
     except Exception as e: print("kadro özeti atlandı:", e.__class__.__name__, e, flush=True)
     plog = grade_predlog(plog, all_ms, today)
+    try:   # 🧾 sezon verisinde sonucu gecikenler (hafta içi turları vb.) iddaa sonuçlarından: r/rh/rs (scripts/sonuc_esle.py; p değişmez)
+        import sonuc_esle
+        oz_ = sonuc_esle.tamamla(plog, today, DATA, cevrimici=not offline)
+        print("iddaa sonuç eşleme:", json.dumps(oz_, ensure_ascii=False), flush=True)
+    except Exception as e: print("iddaa sonuç eşleme atlandı:", e.__class__.__name__, e, flush=True)
     json.dump(plog, open(plp, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
     live = live_report(plog, today)
+    try: live["kilit"] = kilit_karne(plog)   # yeni alan: açılış / kapanış kilidi karnesi (eski alanlar aynı)
+    except Exception as e: print("kilit karnesi atlandı:", e.__class__.__name__, e, flush=True)
     print("Canlı karne:", json.dumps(live, ensure_ascii=False), flush=True)
     if PK:
         try:
