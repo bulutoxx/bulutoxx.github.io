@@ -144,88 +144,139 @@
  },
  "live": {
   "all": {
-   "n": 489,
-   "r1x2": 0.5419,
-   "logloss": 0.9755,
-   "ou25": 0.5644,
-   "ft_exact": 0.1227,
-   "market_r1x2": 0.5222,
-   "market_logloss": 0.9813,
-   "market_n": 316
+   "n": 521,
+   "r1x2": 0.547,
+   "logloss": 0.9735,
+   "ou25": 0.5739,
+   "ft_exact": 0.1267,
+   "market_r1x2": 0.5316,
+   "market_logloss": 0.9773,
+   "market_n": 348
   },
   "d30": {
-   "n": 489,
-   "r1x2": 0.5419,
-   "logloss": 0.9755,
-   "ou25": 0.5644,
-   "ft_exact": 0.1227,
-   "market_r1x2": 0.5222,
-   "market_logloss": 0.9813,
-   "market_n": 316
+   "n": 521,
+   "r1x2": 0.547,
+   "logloss": 0.9735,
+   "ou25": 0.5739,
+   "ft_exact": 0.1267,
+   "market_r1x2": 0.5316,
+   "market_logloss": 0.9773,
+   "market_n": 348
   },
-  "pending": 529
+  "pending": 497,
+  "kilit": {
+   "acilis": {
+    "n": 521,
+    "model": {
+     "ll": 0.9735,
+     "brier": 0.5783,
+     "beraberlik": 0.2537
+    },
+    "beraberlik_gercek": 0.2265,
+    "oranli": {
+     "n": 348,
+     "model": {
+      "ll": 0.986,
+      "brier": 0.5867,
+      "beraberlik": 0.2528
+     },
+     "piyasa": {
+      "ll": 0.9773,
+      "brier": 0.5798,
+      "beraberlik": 0.2464
+     },
+     "beraberlik_gercek": 0.2328,
+     "fark_ll": 0.0087
+    },
+    "oranli_sunulan": {
+     "n": 0
+    },
+    "ou": {
+     "n": 0
+    }
+   },
+   "kapanis": {
+    "n": 0,
+    "oranli": {
+     "n": 0
+    },
+    "oranli_sunulan": {
+     "n": 0
+    },
+    "ou": {
+     "n": 0
+    }
+   },
+   "kapsam": 0.0,
+   "acilis_kilit_saat": {
+    "ortanca": 33.6,
+    "p90": 57.6,
+    "n": 203
+   },
+   "aciklama": "acilis = maçtan önceki ilk kilit (p, mp, ps); kapanis = maça ≤75 dk kala bir kez yazılan ikinci kilit (pc, mpc, psc). model = motorun model yolu, piyasa = oran payı, sunulan = uygulamanın oranlı maçta gösterdiği. fark_ll = model − piyasa."
+  }
  },
  "cup": {
   "mu": 1.185,
   "gamma": 1.349,
   "n": 675,
   "strength": {
-   "crc": -0.5,
-   "de": -0.066,
-   "sc": -0.804,
-   "usl": -0.5,
-   "es": -0.036,
-   "gua": -0.5,
-   "bol": -0.5,
-   "no": -0.452,
-   "it2": -0.55,
-   "per": -0.5,
-   "ar": -0.5,
-   "fr2": -0.6,
-   "chi": -0.5,
-   "en3": -0.5,
-   "en2": -0.35,
-   "de2": -0.45,
-   "ven": -0.5,
-   "be": -0.321,
-   "sc3": -0.5,
-   "en4": -0.5,
-   "us": -0.5,
-   "ecu": -0.5,
-   "it": -0.143,
-   "ie": -0.969,
-   "slv": -0.5,
-   "br": -0.5,
-   "ksa": -0.5,
-   "mx": -0.5,
-   "uru": -0.5,
-   "pt": -0.28,
-   "en": 0.245,
-   "pl": -0.596,
-   "fr": -0.12,
-   "cn": -0.5,
-   "par": -0.5,
-   "hon": -0.5,
-   "nl2": -0.5,
-   "rsa": -0.5,
    "es2": -0.5,
-   "ch": -0.331,
-   "col": -0.5,
-   "mx2": -0.5,
-   "sc2": -0.75,
-   "dk": -0.364,
+   "ar": -0.5,
+   "de2": -0.45,
+   "br": -0.5,
    "ar2": -0.5,
-   "gr": -0.543,
-   "sc4": -0.5,
-   "at": -0.686,
+   "dk": -0.364,
+   "hon": -0.5,
+   "per": -0.5,
+   "par": -0.5,
    "se": -0.734,
-   "en5": -0.5,
-   "ro": -0.76,
-   "tr1": -0.31,
+   "col": -0.5,
+   "gua": -0.5,
+   "es": -0.036,
+   "gr": -0.543,
+   "sc2": -0.75,
    "fi": -0.853,
+   "cn": -0.5,
+   "pl": -0.596,
+   "de": -0.066,
+   "en4": -0.5,
+   "sc": -0.804,
+   "tr1": -0.31,
+   "mx": -0.5,
+   "pt": -0.28,
+   "sc3": -0.5,
+   "it2": -0.55,
    "br2": -0.5,
-   "jp": -0.5,
+   "ecu": -0.5,
+   "uru": -0.5,
+   "fr": -0.12,
+   "ie": -0.969,
+   "nl2": -0.5,
+   "ksa": -0.5,
+   "us": -0.5,
+   "ro": -0.76,
+   "ven": -0.5,
+   "crc": -0.5,
+   "at": -0.686,
+   "fr2": -0.6,
+   "it": -0.143,
+   "no": -0.452,
+   "bol": -0.5,
+   "slv": -0.5,
    "nl": -0.458,
+   "en3": -0.5,
+   "en5": -0.5,
+   "sc4": -0.5,
+   "chi": -0.5,
+   "usl": -0.5,
+   "rsa": -0.5,
+   "en": 0.245,
+   "be": -0.321,
+   "en2": -0.35,
+   "ch": -0.331,
+   "jp": -0.5,
+   "mx2": -0.5,
    "ru": -0.4
   },
   "unknown": -0.5,
@@ -987,12 +1038,12 @@
    ]
   }
  },
- "updated": "2026-10-28 17:30",
+ "updated": "2026-10-28 18:05",
  "tuned": "2026-10-28 06:56",
  "fp": "26dc896a8545bfb2",
  "engine": "2026-10-25.ml80",
  "data_v": 3,
- "checks": 198,
+ "checks": 200,
  "trainings": 67,
  "tuned_n": 13050,
  "params": {
@@ -2522,8 +2573,8 @@
   "derin_dosya": 190,
   "arsiv": {
    "gun": 9,
-   "kayit": 1865,
-   "puanli": 1480,
+   "kayit": 1871,
+   "puanli": 1497,
    "ilk": "2026-10-22",
    "eski_gun": 0
   }

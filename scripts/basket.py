@@ -475,7 +475,7 @@ def lock_and_grade(plog, fixtures, fits, Ps, store_games, today, YD=None):
     cut = (today - timedelta(days=200)).isoformat()
     return [e for e in plog if e["d"] >= cut]
 
-def live_report(plog, today):
+def live_report(plog, today, sm=None):
     def st(es):
         es = [e for e in es if e.get("r")]
         if not es: return None
@@ -489,7 +489,10 @@ def live_report(plog, today):
             out["ou"] = round(float(np.mean(vv)), 4) if vv else None
         return out
     cut = (today - timedelta(days=30)).isoformat()
-    return {"all": st(plog), "d30": st([e for e in plog if e["d"] >= cut]), "pending": sum(1 for e in plog if e.get("r") is None)}
+    out = {"all": st(plog), "d30": st([e for e in plog if e["d"] >= cut]), "pending": sum(1 for e in plog if e.get("r") is None)}
+    try: import guvenilirlik as GV; out["guvenilirlik"] = GV.karne_basket(plog, sm)   # YH-09: Brier ayrışımı + ECE (kilitli, sonuçlanmış)
+    except Exception as ex: print("güvenilirlik atlandı:", ex.__class__.__name__, ex, flush=True)
+    return out
 
 def learn_market(plog):
     """Oranı olan geçmiş maçlarda model ile piyasa çizgisinin en iyi karışımını öğren (yeterli veri olunca)."""
@@ -721,7 +724,7 @@ def main():
         if f.get("state") == "in": x["live"] = True; x["hs"] = f.get("hs"); x["as"] = f.get("as_")
         fx_out.append(x)
     res = {"updated": now, "tuned": old.get("tuned", now) if quick else now, "fp": fp, "engine": ENGINE_V, "leagues": out_lg, "fixtures": fx_out, "backtest": tot, "history": hist,
-           "live": live_report(plog, today), "market": {"w": mw if mw is not None else 0.5, "n": mn, "learned": mw is not None}, "sources": log}
+           "live": live_report(plog, today, {k_: v_.get("sm") for k_, v_ in out_lg.items()}), "market": {"w": mw if mw is not None else 0.5, "n": mn, "learned": mw is not None}, "sources": log}
     def _cn(o):
         if isinstance(o, float): return o if math.isfinite(o) else None
         if isinstance(o, dict): return {k: _cn(v) for k, v in o.items()}

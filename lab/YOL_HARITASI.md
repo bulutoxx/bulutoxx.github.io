@@ -136,7 +136,12 @@ drift alarmı ve kapanış kilidi (yolda). Aşağıdaki maddeler bunların **üz
 - **Efor:** S · **Risk:** çok düşük · **Veri:** mevcut.
 - **Nasıl sınanır:** Kapı yok (ölçüm); birim testi: ayrışım toplamı Brier'e eşit (±1e-9).
 - **Kaynak:** Murphy (1973) J. Applied Meteorology [doi:10.1175/1520-0450(1973)012<0595:ANVPOT>2.0.CO;2](https://doi.org/10.1175/1520-0450(1973)012%3C0595:ANVPOT%3E2.0.CO;2) · Wheatcroft (2021) JQAS 17(4) "Evaluating probabilistic forecasts of football matches: the case against the ranked probability score" [arXiv:1908.08980](https://arxiv.org/abs/1908.08980)
-- **Durum:** bekliyor
+- **Durum:** yayında (2026-10-28, v138) — tek hesap yeri `scripts/guvenilirlik.py` (10 eşit kova; güvenilirlik − çözünürlük + belirsizlik + `kova_ici` = Brier,
+  kova_ici Stephenson 2008 kova içi terimi; ECE ağırlıklı; kova başına Wilson %95). Karne betiklerinden çağrılır, yeni alan adı `guvenilirlik`:
+  `data/daily.json` (collector, kilitli arşiv önerileri) n = 1.497, ECE 0,0225, güv. 0,0013, çöz. 0,0072 · `daily.canli` (kayıt anındaki p, 75. dk hariç) n = 1.989, ECE 0,0387, güv. 0,0017, çöz. 0,0085 ·
+  `data/pazar_karne.json → canli` (kilitli 1X2 model yolu, zaman damgalı) 203 maç / 609 olasılık, ECE 0,0409, güv. 0,0029; model − piyasa LL n = 30 (veri az) ·
+  `data/basket.json → live` (favori, Φ((ph−pa)/sm)) n = 54, ECE 0,0781, güv. 0,0128 · `data/at/karne.json` (koşudan önce, doğru mod) 177 at / 15 koşu, ECE 0,0183, güv. 0,0018 ·
+  `data/oxx_karne.json → stratejiler.*` (canlı KUPO bacakları). Birim testi `lab/guvenilirlik_test.py` (300 rastgele + uç durum, toplam = Brier ±1e-9): geçti. Not: kovalar eşit genişlikte (görev tanımı), eşit örnekli değil.
 
 ### YH-10 · canlı · Canlı piyasa olasılığı + CG harmanı (futbol)
 - **Açıklama:** Uygulama iddaa canlı oranlarını okuyup gösteriyor; CG modeli ise canlı piyasayı kullanmıyor. Canlı kayıt anlık görüntüsüne marjı ayrılmış canlı MS ve 2,5 olasılığı eklenir (yoksa boş); `logit p = a·logit p_CG + b·logit p_canlı-piyasa` dakika dilimine göre öğrenilir. Canlı piyasa yokken CG aynen kalır.
@@ -168,7 +173,11 @@ drift alarmı ve kapanış kilidi (yolda). Aşağıdaki maddeler bunların **üz
 - **Efor:** S · **Risk:** düşük (duman testi + kalite ekran görüntüsü) · **Veri:** mevcut.
 - **Nasıl sınanır:** Kalite botu (360/390 px ekran görüntüsü), duman testi, açılış süresi artışı < 50 ms; görünür metin yasaklı kelime taraması.
 - **Kaynak:** Joslyn & LeClerc (2012) J. Exp. Psychology: Applied [doi:10.1037/a0025185](https://doi.org/10.1037/a0025185) · Gigerenzer & Hoffrage (1995) Psychological Review [doi:10.1037/0033-295X.102.4.684](https://doi.org/10.1037/0033-295X.102.4.684)
-- **Durum:** bekliyor
+- **Durum:** yayında (2026-10-28, v138) — Tahmin karnesinde katlanır "📐 Güvenilirlik raporu" (`<script id="guvenilirlik-v138">`): Futbol / Canlı / Basket / At sekmeleri,
+  kova başına "%X dediğimiz n tahmin gerçekte %Y tuttu" + %95 aralık çubuğu, n < 50 "veri az" (gizlemek yerine işaret), futbolda gösterilen öneri vs piyasa
+  log-kayıp (n = 474: fark −0,0026 [−0,0145, 0,0092], anlamlı değil) ve 1X2 model yolu vs piyasa (n = 30: +0,0045 [−0,0271, 0,0361], veri az). Panel açılmadan ek dosya indirmez.
+  Sınama: Playwright 390 px koyu/açık şema, 4 sekmede rakamlar karne dosyalarıyla birebir, 0 sayfa hatası, yatay taşma yok, yasak kelime yok.
+  Son 30/90 gün ve pazar seçimi henüz yok (veri tüm dönem).
 
 ### YH-14 · basket · Tempo (hücum sayısı) tabanlı toplam sayı modeli
 - **Açıklama:** Toplam sayı şu an hücum/savunma sayı ridge'inden geliyor. ESPN kutu skorundan (FGA, FTA, TOV, OREB) hücum sayısı tahmini → takım temposu ve hücum başına verim ayrı öğrenilir; toplam = tempo × (verim_ev + verim_dep). Alt/üst ve handikap dağılımı bundan türetilir.
