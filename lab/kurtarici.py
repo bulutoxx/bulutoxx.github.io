@@ -162,6 +162,13 @@ def kalite_alarmlari():
     return out
 
 
+def kaynak_alarmlari():
+    """data/saglik/at-kaynak.json (lab/at/kaynak_durum.py): açık arşiv aynasının gecikmesi. Yeniden tetikleme düzeltmez → yalnız rapor."""
+    D = jl(os.path.join(SAGLIK_DIZIN, "at-kaynak.json"), {}) or {}
+    if not isinstance(D, dict) or not D.get("alarm"): return []
+    return [f"at kaynak gecikmesi: {x}" for x in (D.get("sorunlar") or ["alarm"])[:4]]
+
+
 # ------------------------------------------------------------------ ana
 def main():
     simdi = datetime.now(timezone.utc)
@@ -271,6 +278,7 @@ def main():
     sorunlar += [f"KALICI hata ({k['imza']}): 24 saatte {k['hata_24s']} kez, çıkış {k['rc']} — yeniden tetiklenmez, elle düzeltme gerekir"
                  for k in kalici_alarm if k["onem"] != "bilgi"]
     sorunlar += [f"kalite alarmı ({k}): {', '.join(v['hatalar'][:3]) or 'alarm'}" for k, v in kalite.items() if v["alarm"]]
+    sorunlar += kaynak_alarmlari()   # yalnız rapor (kaynak yayınlayınca at-canli kendiliğinden toparlar)
     saglik = {"zaman": simdi.strftime("%Y-%m-%dT%H:%MZ"), "alarm": bool(sorunlar), "sorunlar": sorunlar,
               "kalici_alarm": kalici_alarm, "adimlar": adimlar, "tazelik": taze, "kalite": kalite,
               "aciklama": "Sağlık özeti (lab/kurtarici.py): adım çıkış kodları (data/saglik/*.json, lab/adim.py), ana dosyaların tazeliği, "

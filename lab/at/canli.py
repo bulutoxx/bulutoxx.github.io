@@ -328,6 +328,11 @@ def main():
     progs = {t: veri.program_yukle(t, kaynak) for t in gunler}
     progs = {t: p for t, p in progs.items() if p}
     print("program:", {t: len(p) for t, p in progs.items()})
+    try:   # kaynak gecikmesi izleyicisi (yalnız gerçek "bugün" çalışmasında): data/saglik/at-kaynak.json + arayüz özeti data/at/kaynak_durum.json
+        import kaynak_durum
+        if not ar.bugun: kaynak_durum.yaz(kaynak, bugun, len(progs.get(bugun) or []))
+    except Exception as e:   # noqa: BLE001 — izleyici ana canlı akışı durdurmaz
+        print("kaynak durumu yazılamadı:", type(e).__name__, e)
 
     import at6; at6.hava_hazirla()   # v6: a6_hava yayındaysa hava tablosu (yoksa özellik "hava yok")
     kosular, _ = veri.sonuclari_yukle(kaynak)

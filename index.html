@@ -5920,7 +5920,7 @@ if((location.hash||"")==="#sonuclar") setTimeout(()=>$("navRes").click(),200);
 // =====================================================================
 // OXXai v35: Otomatik sürüm güncelleme — yeni sürüm yayınlanınca uygulama kendini yeniler
 // =====================================================================
-const APP_V="2026-10-28.136";
+const APP_V="2026-10-28.137";
 (function autoUpdate(){
   let shown=false;
   async function check(auto){
@@ -7950,7 +7950,7 @@ setTimeout(()=>{ try{ renderTP(); }catch(e){} },1500);
       AT.days=[]; offs.forEach((o,i)=>{ const d=got[i]; if(d&&d.kosular&&d.kosular.length){ AT.data[d.tarih]=d; AT.days.push(d.tarih); } });
       AT.days.sort(); if(!AT.d||!AT.data[AT.d]) AT.d=AT.days.includes(dISO(0))?dISO(0):AT.days[AT.days.length-1]||null;
       const [m,k]=await Promise.all([j("data/at/model.json"),j("data/at/karne.json")]); AT.model=m; AT.karne=k;
-      AT.jok=await j("data/at/jokeyler.json"); AT.altK=await j("data/at/altili_karne.json");
+      AT.jok=await j("data/at/jokeyler.json"); AT.altK=await j("data/at/altili_karne.json"); AT.kyn=await j("data/at/kaynak_durum.json");
       AT.alt=AT.alt||{}; const als=await Promise.all(AT.days.map(d=>j("data/at/altili/"+d+".json"))); AT.days.forEach((d,i)=>{ if(als[i]&&als[i].altililar) AT.alt[d]=als[i]; });
       AT.canli=AT.canli||{}; const cs=await Promise.all(AT.days.map(d=>j("data/at/canli/"+d+".json"))); AT.days.forEach((d,i)=>{ if(cs[i]&&cs[i].kosular) AT.canli[d]=cs[i]; });
     }finally{ AT.busy=false; } render(); }
@@ -8013,7 +8013,7 @@ setTimeout(()=>{ try{ renderTP(); }catch(e){} },1500);
     // 1) program ve ilerleme
     const ilk=KS[0], biten=KS.filter(r=>son(r)), kalan=KS.filter(r=>!bitti(r));
     let p1=`${esc(day)} ${hips.length} hipodromda ${KS.length} koşu var: ${hips.map(h=>{ const R=KS.filter(r=>r.hipodrom===h); return `${esc(h)} ${R.length} koşu (${esc(R[0].saat||"")}–${esc(R[R.length-1].saat||"")})`; }).join(", ")}.`;
-    if(biten.length){ const ok=biten.filter(r=>son(r).tuttu).length; p1+=` Şu ana kadar <b>${biten.length}</b> koşu bitti; modelin ilk seçimi <b>${ok}</b> tanesinde kazandı${kalan.length?`, ${kalan.length} koşu kaldı`:", günün tüm koşuları tamamlandı"}.`; }
+    if(biten.length){ const ok=biten.filter(r=>son(r).tuttu).length; p1+=` Şu ana kadar <b>${biten.length}</b> koşu bitti; modelin ilk seçimi <b>${ok}</b> tanesinde kazandı${kalan.length?`, ${kalan.length} koşu kaldı`:biten.length<KS.length?`; koşuları geçen ${KS.length-biten.length} koşunun sonucu arşive henüz gelmedi`:", günün tüm koşuları tamamlandı"}.`; }
     else if(ilk&&!bitti(ilk)) p1+=` İlk koşu: ${esc(ilk.hipodrom)}, saat ${esc(ilk.saat||"")}.`;
     L.push(["🗓️",p1]);
     // 2) altın atlar ve durumları
@@ -11685,6 +11685,7 @@ html[data-v122-ctx="at"] nav.tabs button[aria-current]{color:var(--ink3,#8893AB)
   // =====================================================================
   function body(rt){
     if(!AT.d){ if(AT.busy||!AT.model&&!AT.days.length&&!S.loadedOnce) return skel();
+      if(AT.kyn&&AT.kyn.bugun===istDay(new Date())&&AT.kyn.durum!=="program_yok") return kynCard()+istHtml(true);
       return `<div class="a2-card a2-empty"><div class="e" aria-hidden="true">🗓️</div><b>Yakın günlerde koşu programı yok</b><p>Laboratuvar her sabah 05:23 ve öğlen 12:23'te yeni programı işler. Hipodromlar genelde pazartesi dinlenir.</p><button class="a2-btn q" type="button" data-re>Yeniden dene</button></div>${istHtml(true)}`; }
     const V={bugun:vBugun,program:vProgram,turler:vTurler,sonuc:vSonuc,kupon:vKupon,kosu:vKosu,at:vAt,jokey:a=>person("jokey",a[0]),antrenor:a=>person("antrenor",a[0]),takip:vTakip,istatistik:()=>istHtml(false)}[rt.v]||vBugun;
     return V(rt.a); }
@@ -11694,8 +11695,17 @@ html[data-v122-ctx="at"] nav.tabs button[aria-current]{color:var(--ink3,#8893AB)
   const dayChips=()=>AT.days.length>1?`<div class="a2-chips" role="group" aria-label="Gün seç">${AT.days.map(x=>`<button class="a2-chip" type="button" data-day="${x}" aria-pressed="${x===AT.d}">${E(dLbl(x))}</button>`).join("")}</div>`:"";
   function titleRow(){ const R=races(); return `<div class="a2-hd"><h1><img class="at-emb a2-emb" src="icons/oxxai-at.webp" alt="" aria-hidden="true" decoding="async" onerror="this.onerror=null;this.src='icons/oxxai-at.png'">At Yarışı<span class="a2-dn">DENEME</span><small>${E(dLbl(AT.d))} · ${hips().length} hipodrom · ${R.length} koşu</small></h1>
     <a class="a2-ib" href="#at/istatistik" aria-label="İstatistik: model karnesi ve jokey sıralaması">${IC.stat}</a><a class="a2-ib" href="#at/takip" aria-label="Takip listem${tkN()?" ("+tkN()+")":""}">${tkN()?IC.starF:IC.star}</a></div>`; }
+  // ---------- kaynak durumu (data/at/kaynak_durum.json · lab/at/kaynak_durum.py): bugünün programı yoksa dürüstçe söyle ----------
+  function kynCard(){ const t=istDay(new Date()); if(AT.days.includes(t)) return ""; const k=AT.kyn&&AT.kyn.bugun===t?AT.kyn:null;
+    const son=k&&k.ayna_son_guncelleme?Date.parse(k.ayna_son_guncelleme):NaN, sa=isFinite(son)?Math.max(0,Math.round((NOW()-son)/36e5)):null;
+    const ne=isFinite(son)?` Açık yarış arşivi en son <b>${E(new Date(son).toLocaleString("tr-TR",{timeZone:"Europe/Istanbul",day:"numeric",month:"long",hour:"2-digit",minute:"2-digit"}))}</b> güncellendi${sa>=1?` (${sa} saat önce)`:""}.`:"";
+    const dn=k&&k.dun_kosu&&k.dun_sonuclu<k.dun_kosu?` Dünün ${k.dun_kosu} koşusundan ${k.dun_sonuclu} tanesinin sonucu arşive geldi; kalanlar gelince kendiliğinden eklenir.`:"";
+    const alt=AT.d&&AT.d!==t?` Aşağıda <b>${E(dLbl(AT.d))}</b> günü gösteriliyor.`:"";
+    if(k&&k.durum==="program_yok") return `<div class="a2-card a2-empty" role="status"><div class="e" aria-hidden="true">🗓️</div><b>Bugün yerli koşu programı yok</b><p>Açık yarış arşivi bugün güncellendi; bugün için yerli hipodrom koşusu görünmüyor.${dn}${alt}</p></div>`;
+    if(k&&k.bugun_kosu>0) return `<div class="a2-card a2-empty" role="status"><div class="e" aria-hidden="true">⏳</div><b>Bugünün programı geldi, tahminler hazırlanıyor</b><p>Açık yarış arşivi bugünün ${k.bugun_kosu} koşusunu yayınladı; kilitli tahminler birkaç dakika içinde burada olur.${alt}</p></div>`;
+    return `<div class="a2-card a2-empty" role="status"><div class="e" aria-hidden="true">📭</div><b>Bugünün programı henüz yayınlanmadı</b><p>OXXai bugünün koşularını açık yarış arşivi programı yayınlayınca hazırlar; tahmin uydurulmaz.${ne}${dn}${alt}</p><button class="a2-btn q" type="button" data-re>Yeniden dene</button></div>`; }
   // ---------- 1) BUGÜN ----------
-  function vBugun(){ const d=AT.d, R=races(); let h=titleRow()+dayChips();
+  function vBugun(){ const d=AT.d, R=races(); let h=titleRow()+kynCard()+dayChips();
     const nx=R.find(open);
     if(nx){ const m=M(nx), t=tsOf(d,nx.saat), mn=Math.max(0,Math.round((t-NOW())/6e4)), far=mn>12*60;
       h+=`<a class="a2-card" href="#at/kosu/${K(nx.kosu_id)}" aria-label="Sıradaki koşu: ${E(nx.hipodrom)} ${nx.kosu}. koşu, saat ${E(nx.saat)}${far?"":", "+mn+" dakika sonra"}">
@@ -11703,7 +11713,7 @@ html[data-v122-ctx="at"] nav.tabs button[aria-current]{color:var(--ink3,#8893AB)
         <div class="a2-nx-t">${far?`<div class="a2-nx-c" style="font-size:26px">${E(dLbl(d))}<small>${E(nx.saat)}</small></div>`:`<div class="a2-nx-c" id="at2cd" data-t="${t}" aria-hidden="true">${cdHtml(mn)}</div>`}
           <div class="a2-nx-m"><b>${E(nx.hipodrom)} · ${nx.kosu}. Koşu · ${E(nx.saat)}</b><span>${E(nx.mesafe)} m ${E(nx.pist)} · ${E(nx.sinif)} · ${m.A.length} at</span></div>${IC.chev}</div>
         <div class="a2-mini">${m.A.slice(0,3).map((x,i)=>`<div><span class="a2-no${i===0?" top":""}">${E(x.no)}</span><span class="a2-hn"><b>${isTk("at",x.ad)?'<span class="a2-star" aria-label="takipte">★</span> ':""}${E(x.ad)}</b></span><span class="a2-hp"><b style="font-size:15px">${P(x.p)}</b></span></div>`).join("")}</div></a>`; }
-    else h+=`<div class="a2-card a2-empty"><div class="e" aria-hidden="true">🏁</div><b>${E(dLbl(d))} koşular tamamlandı</b><p>Sonuçlar ve modelin karnesi "Sonuç" sekmesinde.</p><a class="a2-btn q" href="#at/sonuc" data-tab="sonuc">Sonuçlara git</a></div>`;
+    else{ const eks=R.filter(r=>st(r)!=="bitti").length; h+=`<div class="a2-card a2-empty"><div class="e" aria-hidden="true">🏁</div><b>${E(dLbl(d))} ${eks?"koşular koşuldu":"koşular tamamlandı"}</b><p>${eks?`${eks} koşunun sonucu arşive henüz gelmedi; gelince kendiliğinden eklenir. `:""}Sonuçlar ve modelin karnesi "Sonuç" sekmesinde.</p><a class="a2-btn q" href="#at/sonuc" data-tab="sonuc">Sonuçlara git</a></div>`; }
     // takip ettiklerin koşuyor
     const FT=[], seen=new Set();
     for(const r of R){ const m=M(r); for(const x of m.A){ const why=isTk("at",x.ad)?"":isTk("jokey",x.jokey)?"jokey "+x.jokey:isTk("antrenor",x.antrenor)?"antrenör "+x.antrenor:null; if(why==null) continue;
@@ -11731,7 +11741,7 @@ html[data-v122-ctx="at"] nav.tabs button[aria-current]{color:var(--ink3,#8893AB)
   // ---------- 2) PROGRAM ----------
   function vProgram(){ const H=hips(); if(!S.hipU||!H.includes(S.hip)){ const nx=races().find(open); S.hip=nx?nx.hipodrom:H.includes(S.hip)?S.hip:H[0]; } AT.hip=S.hip;
     const R=races().filter(r=>r.hipodrom===S.hip).sort((a,b)=>a.kosu-b.kosu), G=new Set(golds().map(g=>g.r.kosu_id)), A=ALT(), al=((A&&A.altililar)||[]).filter(a=>a.hipodrom===S.hip);
-    let h=titleRow()+dayChips();
+    let h=titleRow()+kynCard()+dayChips();
     if(S.pickTur) h+=`<div class="a2-pick" role="status"><span><b style="color:var(--a2-ink)">${E(TURAD[S.pickTur]||"")}</b> KUPO'su için başlamamış bir koşu seç.</span><button type="button" data-pickx>Vazgeç</button></div>`;
     h+=`<div class="a2-chips" role="group" aria-label="Hipodrom seç">${H.map(x=>`<button class="a2-chip" type="button" data-hp="${E(x)}" aria-pressed="${x===S.hip}">${E(x)} <small>${races().filter(r=>r.hipodrom===x).length}</small></button>`).join("")}</div>`;
     h+=`<div class="a2-rl">${R.map(r=>{ const m=M(r), f=m.A[0]||{}, s=st(r), a6=al.find(a=>(a.kosular||[]).includes(r.kosu)), ay=a6?a6.kosular.indexOf(r.kosu)+1:0, fv=m.A.some(x=>isTk("at",x.ad));

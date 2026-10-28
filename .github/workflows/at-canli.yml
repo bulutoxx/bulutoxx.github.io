@@ -5,6 +5,8 @@ name: OXXai at yarisi canli (gun ici)
 # sonuç yoksa en çok 15 dk'da bir kayıt (Pages derleme sınırı: saatte ~10 derleme).
 # Gece/sabah (TSİ 00:07–02:37 ve 07:07–10:37): 30 dk'da bir tek tur — geç yayınlanan sonuçlar ve sabah programı.
 # Her çalışma son 3 günün sonucu eksik koşularını da yeniden dener (canli.py GERI_GUN; tahminler korunur, sonuç eklenir).
+# Kaynak gecikmesi: lab/at/kaynak_durum.py → data/saglik/at-kaynak.json (alarm) + data/at/kaynak_durum.json (arayüz:
+# "Bugünün programı henüz yayınlanmadı"); ayna programı sabah kilidinden sonra yayınlarsa at-lab.yml bir kez tetiklenir.
 # Yalnız data/at/canli/, data/at/oran_izi/, data/at/karne.json, 6'lı (data/at/altili/, altili_karne.json), KUPO at
 # (data/oxx_kupon/at/) ve türetilmiş ek kaynak özetlerini yazar; futbol sistemine, index.html'e dokunmaz.
 # Veri: github.com/cenkozgur/tjk-data aynası (sığ klon, _tjk-data, gitignore'da) + Ek kaynak A (yalnız secret; sonuç yedeği,
@@ -18,6 +20,7 @@ on:
   workflow_dispatch:
 permissions:
   contents: write
+  actions: write   # geç gelen program: at-lab.yml'yi günde en çok bir kez tetikler (lab/at/kaynak_durum.py --gec-kilit)
 concurrency:
   group: at-canli   # ayrı grup: at-lab (05:23 / 12:23) iptal edilmesin; aynı dosyalar lab/gonder.py ile anahtar düzeyinde birleşir
   cancel-in-progress: false
@@ -60,7 +63,7 @@ jobs:
           if [ "$SAAT" -ge 8 ] && [ "$SAAT" -le 21 ] && [ "${{ github.event_name }}" = "schedule" ]; then SURE=$SURE_SN; else SURE=0; fi
           BAS=$(date +%s); SON_KAYIT=$BAS; ONCEKI=-1; i=0
           export AT_BITTI_SAYAC="$RUNNER_TEMP/at_bitti"
-          YOLLAR="data/at/canli data/at/ek_ozellik data/at/karne.json data/at/altili data/at/altili_karne.json data/oxx_kupon/at data/at/oran_izi data/saglik"
+          YOLLAR="data/at/canli data/at/kaynak_durum.json data/at/ek_ozellik data/at/karne.json data/at/altili data/at/altili_karne.json data/oxx_kupon/at data/at/oran_izi data/saglik"
           while :; do
             i=$((i+1)); t0=$(date +%s)
             GUNC="--guncelleme-yok"
@@ -71,6 +74,7 @@ jobs:
             fi
             python3 lab/adim.py at-canli -- timeout 420 python lab/at/canli.py $GUNC
             python3 lab/adim.py at-kupon -- timeout 60 python scripts/oxx_kupon.py --at
+            python3 lab/adim.py gec-kilit --onem bilgi -- timeout 90 python3 lab/at/kaynak_durum.py --gec-kilit
             SIMDI=$(cat "$AT_BITTI_SAYAC" 2>/dev/null || echo 0)
             YENI=0; if [ "$ONCEKI" -ge 0 ] && [ "$SIMDI" -gt "$ONCEKI" ]; then YENI=1; fi
             if [ "$i" -eq 1 ] && [ "$SIMDI" -gt 0 ]; then YENI=1; fi   # ilk tur: önceki işten bu yana gelen sonuçlar
@@ -88,4 +92,4 @@ jobs:
       - name: Son turun türetilmiş çıktılarını kaydet
         run: |
           python3 lab/gonder.py -m "At canlı: $(TZ=Europe/Istanbul date '+%Y-%m-%d %H:%M') [skip ci]" \
-            data/at/canli data/at/ek_ozellik data/at/karne.json data/at/altili data/at/altili_karne.json data/oxx_kupon/at data/at/oran_izi data/saglik
+            data/at/canli data/at/kaynak_durum.json data/at/ek_ozellik data/at/karne.json data/at/altili data/at/altili_karne.json data/oxx_kupon/at data/at/oran_izi data/saglik
