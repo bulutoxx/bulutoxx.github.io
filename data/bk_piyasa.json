@@ -1,6 +1,6 @@
 {
  "surum": "2026-10-28.1",
- "guncelleme": "2026-10-28 10:07",
+ "guncelleme": "2026-10-28 11:08",
  "aciklama": "Basket piyasa karnesi: kilitli model tahmini ile maç öncesi son piyasa oranı (marjı Shin ile ayrılmış) aynı maçlarda. Harman = Benter iki aşama (lig grubu, zaman sıralı ağırlık). Çapalı = model fark/toplamının handikap ve alt/üst çizgisine çekilmesi. GA: gün blokları bootstrap %95. Üretime yalnız OXXai kapısı + gölge sonrası girer.",
  "kurallar": {
   "kapi": "n ≥ 150, gün ≥ 20, ΔLL GA üst < 0, ΔBrier < 0, isabet düşmez",
@@ -304,13 +304,6 @@
   }
  },
  "agirlik": {
-  "pro": {
-   "a": 0.2795,
-   "b": 0.7366,
-   "w_m": 0.8431,
-   "w_t": 1.0,
-   "n_ogrenme": 43
-  },
   "kolej": {
    "a": 0.3,
    "b": 0.7,
@@ -324,6 +317,13 @@
    "w_m": 0.5222,
    "w_t": 0.4827,
    "n_ogrenme": 10
+  },
+  "pro": {
+   "a": 0.2795,
+   "b": 0.7366,
+   "w_m": 0.8431,
+   "w_t": 1.0,
+   "n_ogrenme": 43
   }
  },
  "uretimde": {},
@@ -385,11 +385,11 @@
   },
   "el": {
    "kilitli": 26,
-   "oranli": 12,
+   "oranli": 13,
    "sonuclu_oranli": 4,
-   "iddaa_ms": 12,
-   "iddaa_hnd": 12,
-   "iddaa_au": 8,
+   "iddaa_ms": 13,
+   "iddaa_hnd": 13,
+   "iddaa_au": 11,
    "espn": 0
   },
   "ec": {
@@ -439,8 +439,7 @@
   }
  },
  "sentetik_yarismalar": {
-  "Europe Kupası": 5,
-  "Arjantin LNB": 4,
+  "Arjantin LNB": 3,
   "Endonezya Basketbol Ligi Gr. B": 1,
   "Şampiyonlar Ligi": 4,
   "Doğu Asya Süper Ligi, C Grubu": 1,
@@ -458,7 +457,8 @@
   "Çekya NBL": 3,
   "Euroleague Kadınlar": 4,
   "Filipinler PBA, Governors Kupas, Playoffs": 1,
-  "Meksika LNBP, Playofflar": 1
+  "Meksika LNBP, Playofflar": 1,
+  "Europe Kupası": 6
  },
  "gunluk": [
   {
