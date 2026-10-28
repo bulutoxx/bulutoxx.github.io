@@ -162,7 +162,7 @@ drift alarmı ve kapanış kilidi (yolda). Aşağıdaki maddeler bunların **üz
 - **Efor:** M · **Risk:** orta (ilk haftalar kararsızlığı) · **Veri:** mevcut.
 - **Nasıl sınanır:** `fb_guc_lab.py espn` ve `derin` alanlarında SK.
 - **Kaynak:** Koopman & Lit (2019) IJF [VU araştırma](https://research.vu.nl/en/publications/forecasting-football-match-results-in-national-league-competition-2/), [Tinbergen DP 17-062](https://papers.tinbergen.nl/17062.pdf) · Koopman & Lit (2015) JRSS-A [doi:10.1111/rssa.12042](https://doi.org/10.1111/rssa.12042)
-- **Durum:** bekliyor
+- **Durum:** işleniyor (2026-10-28, ajan)
 
 ### YH-12 · futbol · Oransız ligler için ESPN maç istatistiklerinden şut gücü
 - **Açıklama:** YH-03'ün oransız ligler sürümü: ESPN maç özetindeki takım istatistikleri (şut, isabetli şut, korner) yalnız türetilmiş takım puanı olarak saklanır (ham yanıt depoya girmez); `guc.py` topluluğu bu puanı oransız liglerde kullanır. YH-03 kapıdan geçmeden başlanmaz.
