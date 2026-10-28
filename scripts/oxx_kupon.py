@@ -456,8 +456,9 @@ def bk_kuponlar(maclar, A):
     return {"bk_en_olasi": [_kupon("bk_en_olasi", B)]}
 
 
-def bk_mac(id_, lg, lig, h, a, bas, ph, pa, sm, olcek, io=None):
-    p1 = _phi((ph - pa) / max(sm * olcek, 1e-6)); kod = "1" if p1 >= .5 else "2"
+def bk_mac(id_, lg, lig, h, a, bas, ph, pa, sm, olcek, io=None, p=None):
+    # p: piyasa harmanlı ev olasılığı (cp.p; yalnız kapıdan geçmiş grupta) — verilirse σ yolu yerine o kullanılır
+    p1 = float(p) if p is not None else _phi((ph - pa) / max(sm * olcek, 1e-6)); kod = "1" if p1 >= .5 else "2"
     o = (io[0] if kod == "1" else io[1]) if io and len(io) == 2 else None
     return {"mac": id_, "lg": lg, "lig": lig, "h": h, "a": a, "bas_utc": bas, "kod": kod, "p": max(p1, 1 - p1), "oran": o,
             "tahmin": f"{round(ph)}-{round(pa)}"}
@@ -476,7 +477,7 @@ def bk_canli_maclar(gun, simdi, A):
         L = LG.get(e["lg"], {})
         cp = e.get("cp") or {}       # piyasa çapalı tahmin: yalnız kapı + gölgeden geçmiş grupta basket.py yazar (scripts/bk_piyasa.py)
         out.append(bk_mac(e["id"], e["lg"], L.get("name", e["lg"]), e["h"], e["a"], iso(bas), cp.get("ph", e["ph"]), cp.get("pa", e["pa"]), L.get("sm") or 12.0,
-                          A["bk_en_olasi"].get("olcek", 1.0), f.get("io")))
+                          A["bk_en_olasi"].get("olcek", 1.0), f.get("io"), cp.get("p")))
     return out
 
 

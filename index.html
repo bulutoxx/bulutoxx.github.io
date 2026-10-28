@@ -4516,7 +4516,7 @@ function bkPredict(f){
     const mar=(1-w)*(mh-ma)+w*(-od.spread), tot=(1-w)*(mh+ma)+w*od.ou; mh=(tot+mar)/2; ma=(tot-mar)/2; mkt=true; }
   if(f.cp&&f.cp.ph!=null&&f.cp.pa!=null){ mh=+f.cp.ph; ma=+f.cp.pa; mkt=true; }   // v123: sunucuda kapıyı geçmiş piyasa çapası (yoksa yukarıdaki yol)
   const sm=L.sm||12, st=L.st||18, sh=L.shares||[.25,.25,.25,.25], s1=sh[0]+sh[1];
-  const mar=mh-ma, tot=mh+ma, pH=bkPhi(mar/sm);
+  const mar=mh-ma, tot=mh+ma, pH=(f.cp&&f.cp.p!=null)?+f.cp.p:bkPhi(mar/sm);   // kapıdan geçmiş grupta harmanlı olasılık
   // Tutarlı skor: MS = İY + 2Y = çeyreklerin toplamı, beraberlik yok
   let H_=Math.round(mh), A_=Math.round(ma); if(H_===A_){ if(mh>=ma) H_++; else A_++; }
   let h1=Math.round(mh*s1), a1=Math.round(ma*s1); if(h1===a1){ if(mh>=ma) h1++; else a1++; }

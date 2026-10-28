@@ -14,6 +14,11 @@ Ne yapar:
      ΔLL (harman − model) GA üst sınırı < 0, ΔBrier < 0, isabet düşmez. Geçen grup yalnız ADAY olur: lab/oxx_ogren.py
      sinyali (tur "bk_piyasa") ve lab/surekli_deney.py gölge ölçümü (en az 3 gün) sonrası data/oxx_ayar.json
      params.bk_piyasa.<grup> = true yazılınca üretime girer. O zamana kadar harman yalnız gölgede ölçülür.
+     Üretimde 14 gün izlenir (lab/oxx_ogren.yeniden_sina); kötüleşirse bayrak false olur ve bekleyen maçlardaki cp silinir.
+     Alfa yatırımı servetinde piyasa çapası kendi ailesindedir ("bk_piyasa-<yıl>"): kör eşik keşifleri onu tüketemez.
+  5) Gölge kaydı (2026-10-28). Her canlı (başlamamış, piyasalı) kilitli maçta harmansız / harmanlı / çapalı olasılık o anki
+     ağırlıklarla e["pg"]'ye yazılır (maç başlayana dek tazelenir). Karne bunu "canli_golge" olarak ölçer; veri birikip
+     kapı geçince harman kendiliğinden üretime girer.
   4) Karne. Her basket çalışmasında data/bk_piyasa.json yeniden yazılır (günlük satır tarihe göre güncellenir).
 Ağ gerektirmez; yalnız yerel dosyalarla çalışır.
   python3 scripts/bk_piyasa.py           # karneyi yeniden üret
@@ -28,7 +33,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA = os.path.join(ROOT, "data")
 KARNE = os.path.join(DATA, "bk_piyasa.json")
 AYAR = os.path.join(DATA, "oxx_ayar.json")
-SURUM = "2026-10-27.1"
+SURUM = "2026-10-28.1"
 N = NormalDist()
 
 GRUP = {"nba": "pro", "wnba": "pro", "gl": "pro", "nbl": "pro", "el": "avrupa", "ec": "avrupa", "ncaa": "kolej", "ncaaw": "kolej"}
@@ -267,6 +272,48 @@ def kapi(S, fk):
             "neden": "; ".join(neden) if neden else "harman kapıyı geçti → OXXai gölge ölçümüne aday"}
 
 
+def izleme():
+    """oxx_ayar.json izlenen + gecmis içindeki bk_piyasa kayıtları (karne için)."""
+    J = jl(AYAR, {}) or {}
+    iz = [{k: i.get(k) for k in ("anahtar", "kabul_tarihi", "yeniden_sinama", "uzatma")} for i in J.get("izlenen", []) if i.get("tur") == "bk_piyasa"]
+    gc = [g for g in J.get("gecmis", []) if str(g.get("anahtar", "")).startswith("bk_piyasa:")][-10:]
+    return {"izlenen": iz, "gecmis": gc}
+
+
+def golge_ve_capa(plog, ligler, PK, now_iso):
+    """Başlamamış her piyasalı kilitli maç: gölge kaydı e["pg"] (harmansız pm, harmanlı ph, çapalı pc, piyasa pk) daima;
+    çapalı üretim tahmini e["cp"] yalnız üretimdeki grupta. Üretimden çıkmış (geri alınmış) grupta bekleyen cp silinir.
+    Dönüş: {id: cp} (basket.json fikstürüne)."""
+    U = PK.get("uretimde") or {}; AG = PK.get("agirlik") or {}; cp_fx = {}
+    for e in plog:
+        if e.get("r") is not None or e.get("ph") is None or e.get("dt", e.get("d", ""))[:16] <= now_iso: continue
+        g = GRUP.get(e["lg"]); L = ligler.get(e["lg"]) or {}
+        if not U.get(g): e.pop("cp", None)
+        if not e.get("pz") or not g or not AG.get(g): continue
+        cp = capala(e["ph"], e["pa"], e["pz"], L, AG[g])
+        if not cp: continue
+        sm = L.get("sm") or 12.0; mk = piyasa(e["pz"], sm, L.get("st") or 18.0)
+        e["pg"] = {"pm": round(phi((e["ph"] - e["pa"]) / sm), 4), "ph": cp["p"], "pc": round(phi((cp["ph"] - cp["pa"]) / sm), 4),
+                   "pk": round(mk["p"], 4), "n": AG[g].get("n_ogrenme"), "u": bool(U.get(g)), "ts": now_iso + "Z"}
+        if U.get(g): e["cp"] = cp; cp_fx[e["id"]] = cp
+    return cp_fx
+
+
+def canli_golge(plog):
+    """Gölge kaydı olan sonuçlanmış maçlar: kayıt anındaki ağırlıklarla harmansız / harmanlı / çapalı ölçüm."""
+    out = {}
+    R = [e for e in plog if e.get("r") and e.get("pg") and e["r"][0] != e["r"][1]]
+    for g in ["tum"] + sorted({GRUP.get(e["lg"], "diger") for e in R}):
+        G = [e for e in R if g == "tum" or GRUP.get(e["lg"], "diger") == g]
+        if not G: continue
+        o = {"n": len(G), "gun": len({gun_tr(e) for e in G})}
+        for k in ("pm", "ph", "pc", "pk"):
+            ys = [(e["pg"][k], int(e["r"][0] > e["r"][1])) for e in G]
+            o[k] = {"ll": r4(np.mean([_ll(p, y) for p, y in ys])), "isabet": r4(np.mean([(p >= .5) == bool(y) for p, y in ys]))}
+        out[g] = o
+    return out
+
+
 def uretimde():
     """oxx_ayar.json params.bk_piyasa: {grup: true} (yalnız oxx_ogren / surekli_deney kapısı + gölge sonrası yazılır)."""
     P = ((jl(AYAR, {}) or {}).get("params") or {}).get("bk_piyasa") or {}
@@ -339,9 +386,11 @@ def karne(plog=None, ligler=None, fixtures=None, yaz=True):
                         "çizgisine çekilmesi. GA: gün blokları bootstrap %95. Üretime yalnız OXXai kapısı + gölge sonrası girer."),
            "kurallar": {"kapi": f"n ≥ {KAPI_N}, gün ≥ {KAPI_GUN}, ΔLL GA üst < 0, ΔBrier < 0, isabet düşmez",
                         "onbilgi": {"a": A0, "b": B0, "lam": LAM_AB, "w_m": W0_M, "w_t": W0_T, "lam_w": LAM_W},
-                        "uretim": "data/oxx_ayar.json params.bk_piyasa.<grup> = true (oxx_ogren kapısı + surekli_deney gölgesi)"},
+                        "uretim": "data/oxx_ayar.json params.bk_piyasa.<grup> = true (oxx_ogren kapısı + surekli_deney gölgesi)",
+                        "izleme": "üretimde 14 gün: kabulden sonraki maçlarda harman log-kaybı model + 0,002'yi aşarsa (n ≥ 30) otomatik geri alma",
+                        "golge": "başlamamış her piyasalı maçta pg = {pm harmansız, ph harmanlı, pc çapalı, pk piyasa} bk_predlog'a yazılır"},
            "toplam": {"n": len(S), "gun": len({x["gun"] for x in S}), **{k: olc(S, v) for k, v in YOLLAR.items()}},
-           "gruplar": gruplar, "agirlik": son_ag, "uretimde": U, "kapsam": kp, "sentetik_yarismalar": syn,
+           "gruplar": gruplar, "agirlik": son_ag, "uretimde": U, "izleme": izleme(), "canli_golge": canli_golge(plog), "kapsam": kp, "sentetik_yarismalar": syn,
            "gunluk": [gunluk[d] for d in sorted(gunluk)][-120:]}
     if yaz:
         tmp = KARNE + ".tmp"

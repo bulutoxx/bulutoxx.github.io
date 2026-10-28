@@ -127,13 +127,13 @@ def deney_oxx(alan):
     for c in adaylar[:ADAY_N]:
         if kalan() < 60: break
         m += 1; t1 = time.time()
-        a_t = O.yatirim_alfa(GL, alan_k, c)          # alfa yatırımı (servet karar işinde kalıcı güncellenir)
+        a_t = O.yatirim_alfa(GL, O.servet_k(c, alan_k), c)          # alfa yatırımı (servet karar işinde kalıcı güncellenir)
         try:
             rap = O.sina(c, V, J, A, m, alfa=a_t)
         except Exception as e:
             rap = {"karar": "hata", "neden": repr(e)[:300]}
         if rap.get("test_yapildi"):                  # aynı çalışmada ikinci aday güncel servetle sınansın (yalnız bellekte)
-            O.yatirim_guncelle(GL, alan_k, rap["alfa_ham"], rap["istatistik_gecti"])
+            O.yatirim_guncelle(GL, O.servet_k(c, alan_k), rap["alfa_ham"], rap["istatistik_gecti"])
         denenen.append({"aday": c, "m": m, "rap": rap, "sure_sn": round(time.time() - t1, 1)})
         print(f"[{alan}] {c['anahtar']} → {rap.get('karar')} ({rap.get('neden')})", flush=True)
     olcum = []
@@ -302,7 +302,7 @@ def karar(kaynak, kuru=False):
             alan_k = f"{c['alan']}-{tarih[:4]}"
             if kar in ("kabul", "ret"): GL["sayac"][alan_k] = max(GL["sayac"].get(alan_k, 0), d.get("m", 0))
             if rap.get("test_yapildi"):                       # alfa yatırımı servetini kalıcı güncelle (dosya sırasıyla)
-                rap["servet_sonra"] = O.yatirim_guncelle(GL, alan_k, rap["alfa_ham"], rap["istatistik_gecti"])["servet"]
+                rap["servet_sonra"] = O.yatirim_guncelle(GL, O.servet_k(c, alan_k), rap["alfa_ham"], rap["istatistik_gecti"])["servet"]
             ek = {k: v for k, v in rap.items() if k not in ("karar", "neden")}
             ek["sure_sn"] = d.get("sure_sn")
             if kar == "kabul":
