@@ -154,7 +154,7 @@ drift alarmı ve kapanış kilidi (yolda). Aşağıdaki maddeler bunların **üz
 - **Efor:** M · **Risk:** orta (canlı oran askıya alınmış anlar; gecikme sızıntısı → yalnız kayıt anından önceki oran) · **Veri:** zaten okunan kaynak, ücretsiz; ham oran depoya yazılmaz (yalnız marjı ayrılmış olasılık, 3 hane).
 - **Nasıl sınanır:** `canli_guc_lab.py` protokolü + ayrıca "piyasası olan" alt kümede SK; ≥ 600 anlık görüntü.
 - **Kaynak:** Robberechts, Van Haaren, Davis (2021) KDD "A Bayesian approach to in-game win probability in soccer" [arXiv:1906.05029](https://arxiv.org/abs/1906.05029) · Croxson & Reade (2014) Economic Journal "Information and efficiency: goal arrival in soccer betting" [doi:10.1111/ecoj.12033](https://doi.org/10.1111/ecoj.12033)
-- **Durum:** bekliyor
+- **Durum:** işleniyor (2026-10-28, ajan)
 
 ### YH-11 · futbol · Skor güdümlü (GAS) dinamik güç modeli — model yolu
 - **Açıklama:** Poisson robotu haftalık yeniden eğitim + üstel unutma kullanıyor. Skor güdümlü modelde her maçtan sonra hücum/savunma gücü log-olabilirlik gradyanıyla güncellenir (öğrenilen adım ve kalıcılık); Koopman–Lit'in iki değişkenli Poisson sürümü. Topluluğa 5. robot ya da Poisson'un yerine aday.
