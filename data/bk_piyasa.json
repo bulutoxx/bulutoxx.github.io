@@ -1,6 +1,6 @@
 {
- "surum": "2026-10-27.1",
- "guncelleme": "2026-10-28 02:44",
+ "surum": "2026-10-28.1",
+ "guncelleme": "2026-10-28 04:04",
  "aciklama": "Basket piyasa karnesi: kilitli model tahmini ile maç öncesi son piyasa oranı (marjı Shin ile ayrılmış) aynı maçlarda. Harman = Benter iki aşama (lig grubu, zaman sıralı ağırlık). Çapalı = model fark/toplamının handikap ve alt/üst çizgisine çekilmesi. GA: gün blokları bootstrap %95. Üretime yalnız OXXai kapısı + gölge sonrası girer.",
  "kurallar": {
   "kapi": "n ≥ 150, gün ≥ 20, ΔLL GA üst < 0, ΔBrier < 0, isabet düşmez",
@@ -12,7 +12,9 @@
    "w_t": 0.6,
    "lam_w": 40.0
   },
-  "uretim": "data/oxx_ayar.json params.bk_piyasa.<grup> = true (oxx_ogren kapısı + surekli_deney gölgesi)"
+  "uretim": "data/oxx_ayar.json params.bk_piyasa.<grup> = true (oxx_ogren kapısı + surekli_deney gölgesi)",
+  "izleme": "üretimde 14 gün: kabulden sonraki maçlarda harman log-kaybı model + 0,002'yi aşarsa (n ≥ 30) otomatik geri alma",
+  "golge": "başlamamış her piyasalı maçta pg = {pm harmansız, ph harmanlı, pc çapalı, pk piyasa} bk_predlog'a yazılır"
  },
  "toplam": {
   "n": 49,
@@ -279,22 +281,27 @@
    "w_t": 1.0,
    "n_ogrenme": 39
   },
-  "avrupa": {
-   "a": 0.2891,
-   "b": 0.6577,
-   "w_m": 0.5222,
-   "w_t": 0.4827,
-   "n_ogrenme": 10
-  },
   "kolej": {
    "a": 0.3,
    "b": 0.7,
    "w_m": 0.6,
    "w_t": 0.6,
    "n_ogrenme": 0
+  },
+  "avrupa": {
+   "a": 0.2891,
+   "b": 0.6577,
+   "w_m": 0.5222,
+   "w_t": 0.4827,
+   "n_ogrenme": 10
   }
  },
  "uretimde": {},
+ "izleme": {
+  "izlenen": [],
+  "gecmis": []
+ },
+ "canli_golge": {},
  "kapsam": {
   "nba": {
    "kilitli": 91,
@@ -362,24 +369,24 @@
  },
  "sentetik_yarismalar": {
   "Arjantin LNB": 4,
-  "Endonezya Basketbol Ligi Gr. B": 1,
-  "Şampiyonlar Ligi": 4,
-  "Doğu Asya Süper Ligi, C Grubu": 1,
-  "İzlanda Urvalsdeild": 1,
-  "European North Basketball Leag": 1,
-  "Japonya B2.Ligi": 1,
-  "Eurocup, Kadınlar": 10,
-  "Uruguay Basketbol Ligi": 1,
-  "Çin CBA": 1,
-  "Almanya Pro A": 1,
   "Endonezya Basketbol Ligi Gr. A": 1,
-  "G. Kore Güney Kore Basketbol Ligi": 1,
-  "Macaristan NB I": 3,
-  "İtalya Serie B": 1,
-  "Çekya NBL": 3,
-  "Euroleague Kadınlar": 4,
   "Filipinler PBA, Governors Kupas, Playoffs": 1,
-  "Euroleague": 1
+  "G. Kore Güney Kore Basketbol Ligi": 1,
+  "Doğu Asya Süper Ligi, C Grubu": 1,
+  "Endonezya Basketbol Ligi Gr. B": 1,
+  "Çin CBA": 1,
+  "European North Basketball Leag": 1,
+  "Eurocup, Kadınlar": 10,
+  "Macaristan NB I": 3,
+  "Euroleague Kadınlar": 4,
+  "Çekya NBL": 3,
+  "Şampiyonlar Ligi": 4,
+  "Almanya Pro A": 1,
+  "İtalya Serie B": 1,
+  "Japonya B2.Ligi": 1,
+  "Euroleague": 1,
+  "İzlanda Urvalsdeild": 1,
+  "Uruguay Basketbol Ligi": 1
  },
  "gunluk": [
   {

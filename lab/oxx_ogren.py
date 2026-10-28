@@ -88,6 +88,12 @@ def kesif_mi(c):
     return str((c.get("sinyal") or {}).get("kaynak", "")).startswith("keşif")
 
 
+def servet_k(c, alan_k):
+    """Alfa yatırımı ailesi: basket piyasa çapası önceden belirlenmiş ayrı hipotezdir (kendi KI kapısı scripts/bk_piyasa.py);
+    kör eşik keşifleri onun servetini tüketmesin diye ayrı aile ("bk_piyasa-<yıl>"). Diğer adaylar alan-yıl ailesinde."""
+    return f"bk_piyasa-{alan_k.rsplit('-', 1)[-1]}" if c.get("tur") == "bk_piyasa" else alan_k
+
+
 def yatirim_alfa(GL, alan_k, c):
     """Bu test için α_t: servetin önceliğe göre payı (sinyalli aday daha çok, kör keşif az harcar)."""
     W = max(0.0, _yatirim(GL, alan_k)["servet"])
@@ -679,14 +685,14 @@ def main():
         alan_k = f"{c['alan']}-{bugun.year}"
         m = GL["sayac"].get(alan_k, 0) + 1
         t1 = time.time()
-        a_t = yatirim_alfa(GL, alan_k, c)
+        a_t = yatirim_alfa(GL, servet_k(c, alan_k), c)
         try:
             rap = sina(c, V, J, A, m, alfa=a_t)
         except Exception as e:
             rap = {"karar": "hata", "neden": repr(e)[:300]}
         if rap.get("karar") in ("kabul", "ret"): GL["sayac"][alan_k] = m
         if rap.get("test_yapildi"):
-            rap["servet_sonra"] = yatirim_guncelle(GL, alan_k, rap["alfa_ham"], rap["istatistik_gecti"])["servet"]
+            rap["servet_sonra"] = yatirim_guncelle(GL, servet_k(c, alan_k), rap["alfa_ham"], rap["istatistik_gecti"])["servet"]
         if rap.get("karar") == "kabul":
             if donuk: rap["karar"], rap["neden"] = "dondurulmus", "koruyucu geri alma aktif (data/rollback.json); kabul edilmedi"
             elif c["anahtar"] in (rb.get("donmus") or {}): rap["karar"], rap["neden"] = "dondurulmus", "bu anahtar OXXai geri alma süresinde"
