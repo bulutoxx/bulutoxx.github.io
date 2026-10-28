@@ -254,7 +254,7 @@ drift alarmı ve kapanış kilidi (yolda). Aşağıdaki maddeler bunların **üz
 - **Efor:** M · **Risk:** düşük–orta (performans; yasaklı kelime taraması) · **Veri:** mevcut.
 - **Nasıl sınanır:** Duman + kalite testleri, açılış süresi artışı < 50 ms, `bot_coach` "neden" niyetli soruların faydalı oranı düşmüyor.
 - **Kaynak:** Lundberg & Lee (2017) NeurIPS "A unified approach to interpreting model predictions" [arXiv:1705.07874](https://arxiv.org/abs/1705.07874) · Joslyn & LeClerc (2012) [doi:10.1037/a0025185](https://doi.org/10.1037/a0025185)
-- **Durum:** bekliyor
+- **Durum:** işleniyor (2026-10-28, ajan)
 
 ---
 
