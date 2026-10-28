@@ -6,12 +6,13 @@ Alanlar:
   derin  Oranlı ligler (derin arşiv 2021+ ve season.json). Model yolu (piyasa yok sayılarak) + piyasa ile yığınlama ölçümü.
 
 Protokol (önceden kayıtlı):
-  • Durumlar (Poisson haftalık yeniden eğitim, Elo, pi) yalnız maçtan önceki sonuçlarla ilerler.
+  • Durumlar (Poisson haftalık yeniden eğitim, Elo, pi, GAS — YH-11 scripts/gas.py) yalnız maçtan önceki sonuçlarla ilerler.
   • Uygunluk: ligde eğitimde ≥45 maç, iki takımın da ≥3 önceki maçı (motorun backtest kuralı).
   • Seçim dilimi S: SINIR tarihinden önce (ayar ızgarası burada seçilir). Sınama dilimi T: SINIR ve sonrası (yalnız rapor).
   • Yığınlayıcı ağırlıkları aylık genişleyen pencereyle yalnız GEÇMİŞ aylarla öğrenilir.
   • Kapı (üretim): T'de ΔLL (aday − üretim) %95 GA üst sınırı < 0, T'nin iki yarısında da ΔLL < 0, ΔBrier ≤ 0;
     tek yanlı bootstrap p ≤ α_t (alfa yatırımı, lab/oxx_ogren.yatirim_alfa; alan "fb_model").
+  • YH-11: C7 GAS, C8 topluluk+GAS; kiyas_c4 = mevcut topluluğa (C4) göre fark (gas_1x2 / gas_ou kapısının tabanı).
 Çıktı: data/fb_guc_lab.json (karne) ve --uret ile data/fb_guc.json (yalnız kapıyı geçerse aktif=true).
 
   python3 lab/fb_guc_lab.py espn [--uret]
@@ -27,6 +28,7 @@ DATA = os.path.join(ROOT, "data")
 sys.path.insert(0, os.path.join(ROOT, "scripts")); sys.path.insert(0, os.path.join(ROOT, "lab"))
 import update as U  # noqa: E402
 import guc as G  # noqa: E402
+import gas as GS  # noqa: E402
 
 T0 = time.time()
 RNG = np.random.default_rng(20261027)
@@ -142,6 +144,7 @@ def calistir(alan, sinir, uret=False):
     if IZ_EK: log("üretim decay/prior ızgarada yok → B0 için ayrıca hesaplanıyor:", b0)
     ELO = [(K, eta) for K in (20, 30, 40, 55, 75) for eta in (0.0, 1.0, 2.0)]
     PI = [(lm, gm) for lm in (0.035, 0.06, 0.1, 0.15, 0.22) for gm in (0.5, 0.7, 0.9)]
+    GAZ = [(A_, B_) for A_ in (0.006, 0.01, 0.015, 0.025, 0.04) for B_ in (0.99, 0.995, 0.998, 1.0)]     # YH-11 GAS (adım, kalıcılık)
     R = collections.defaultdict(list)    # sütun → liste
     for lg, ms in Lg.items():
         hafta, uy = uygun_ve_hafta(ms, pencere)
@@ -152,6 +155,7 @@ def calistir(alan, sinir, uret=False):
             lams[(dc, pr)] = poisson_wf(ms, hafta, uy, PP, pencere)
         elos = {k: np.array(G.elo_seq(ms, {"K": k[0], "eta": k[1]})[0]) for k in ELO}
         pis = {k: np.array(G.pi_seq(ms, {"lam": k[0], "gam": k[1]})[0]) for k in PI}
+        gass = {k: np.array(GS.gas_seq(ms, {"A": k[0], "B": k[1]})[0]) for k in GAZ}
         # lig gol ortalaması (son 300 maç, yalnız geçmiş)
         tot = np.array([m["ft"][0] + m["ft"][1] for m in ms], float); cs = np.concatenate([[0], np.cumsum(tot)])
         og = np.array([(cs[i] - cs[max(0, i - 300)]) / max(1, i - max(0, i - 300)) if i else 2.6 for i in range(len(ms))])
@@ -164,6 +168,7 @@ def calistir(alan, sinir, uret=False):
         for k, v in lams.items(): R[("lam",) + k].append(v[ii])
         for k, v in elos.items(): R[("elo",) + k].append(v[ii])
         for k, v in pis.items(): R[("pi",) + k].append(v[ii])
+        for k, v in gass.items(): R[("gas",) + k].append(v[ii])
         log(lg, "uygun", int(uy.sum()))
     y = np.array(R["y"]); d = np.array(R["d"]); lgs = np.array(R["lg"]); n = len(y)
     yo = (np.array(R["tot"]) > 2).astype(float); og = np.array(R["og"])
@@ -202,12 +207,19 @@ def calistir(alan, sinir, uret=False):
     log("Elo ızgarası:", {f"{a}/{b}": round(v, 4) for (a, b), v in esk.items()}, "→", ke)
     log("pi ızgarası:", {f"{a}/{b}": round(v, 4) for (a, b), v in psk.items()}, "→", kp)
     E = R[("elo",) + ke]; PIg = R[("pi",) + kp]
+    # --- YH-11 GAS: λ → Dixon-Coles olasılıkları; seçim diliminde tek başına lojistik eşlemeyle ayar
+    gpr = {}
+    for k in GAZ:
+        L = R[("gas",) + k]; q, qO, _, _ = U.outcome_probs(L[:, 0], L[:, 1], rho); gpr[k] = (q, qO)
+    gsk = {k: tek(list(G.ozellik_1x2(None, None, None, ("gas",), gpr[k][0])[:, 1:].T), Ssel) for k in GAZ}
+    kg = min(gsk, key=gsk.get); GP, GO = gpr[kg]
+    log("GAS ızgarası:", {f"{a}/{b}": round(v, 4) for (a, b), v in gsk.items()}, "→", kg)
 
     # --- aylık genişleyen yığınlama
     aylar = sorted({x[:7] for x in d})
-    def yigin(kullan, ou=False, min_n=800, l2=1.0):
+    def yigin(kullan, ou=False, min_n=800, l2=1.0, Xou=None):
         out = np.full((n, 3), np.nan) if not ou else np.full(n, np.nan); W = None
-        X = G.ozellik_1x2(p1, E, PIg, kullan) if not ou else G.ozellik_ou(o1, PIg, og)
+        X = G.ozellik_1x2(p1, E, PIg, kullan, GP) if not ou else (G.ozellik_ou(o1, PIg, og) if Xou is None else Xou)
         for ay in aylar:
             tr = d < ay + "-01"; te = np.array([x[:7] == ay for x in d])
             if tr.sum() < min_n: continue
@@ -232,16 +244,25 @@ def calistir(alan, sinir, uret=False):
                    ("C4 Topluluk (Poisson+Elo+pi)", ("pois", "elo", "pi")), ("C5 Poisson+pi", ("pois", "pi")), ("C6 Poisson+Elo", ("pois", "elo"))):
         q, W = yigin(ku); adaylar[ad] = (q, None); adaylar[ad + "|W"] = W
     qo, Wo = yigin(None, ou=True)
+    # YH-11: GAS adayları (C7 tek başına, C8 mevcut topluluk + GAS); A/Ü: topluluk girdilerine GAS üst logiti eklenir
+    Xog = G.ozellik_ou(o1, PIg, og, GO)
+    for ad, ku in (("C7 GAS", ("gas",)), ("C8 Topluluk+GAS (Poisson+Elo+pi+GAS)", ("pois", "elo", "pi", "gas"))):
+        q, W = yigin(ku); adaylar[ad] = (q, None); adaylar[ad + "|W"] = W
+    qog, Wog = yigin(None, ou=True, Xou=Xog)
+    qo7, _ = yigin(None, ou=True, Xou=Xog[:, [0, 4, 3]])
+    OU_ADAY = {"C4": qo, "C7 GAS": qo7, "C8 Topluluk+GAS (Poisson+Elo+pi+GAS)": qog}
     # yalnız yığınlayıcının tanımlı olduğu ve sınama dilimindeki satırlar
-    ok = Tm & ~np.isnan(adaylar["C4 Topluluk (Poisson+Elo+pi)"][0][:, 0]) & ~np.isnan(qo) & ~np.isnan(tb[:, 0])
+    ok = (Tm & ~np.isnan(adaylar["C4 Topluluk (Poisson+Elo+pi)"][0][:, 0]) & ~np.isnan(qo) & ~np.isnan(tb[:, 0])
+          & ~np.isnan(adaylar["C8 Topluluk+GAS (Poisson+Elo+pi+GAS)"][0][:, 0]) & ~np.isnan(qog))
     log("değerlendirme satırı", int(ok.sum()))
     yarim = np.median(np.where(ok)[0]) if ok.any() else 0
     dT = d[ok]; sinir2 = sorted(dT)[len(dT) // 2] if len(dT) else sinir
     karne = {"alan": alan, "tarih": date.today().isoformat(), "sinir": sinir, "yarilar_siniri": sinir2,
              "n_satir": int(n), "n_secim": int(Ssel.sum()), "n_sinama": int(ok.sum()), "lig": sorted(set(lgs.tolist())),
-             "secilen": {"poisson": {"decay": k1[0], "prior": k1[1]}, "elo": {"K": ke[0], "eta": ke[1]}, "pi": {"lam": kp[0], "gam": kp[1]}},
+             "secilen": {"poisson": {"decay": k1[0], "prior": k1[1]}, "elo": {"K": ke[0], "eta": ke[1]}, "pi": {"lam": kp[0], "gam": kp[1]}, "gas": {"A": kg[0], "B": kg[1]}},
              "izgara": {"poisson": {f"{a}/{b}": round(v, 5) for (a, b), v in izsk.items()},
-                        "elo": {f"{a}/{b}": round(v, 5) for (a, b), v in esk.items()}, "pi": {f"{a}/{b}": round(v, 5) for (a, b), v in psk.items()}},
+                        "elo": {f"{a}/{b}": round(v, 5) for (a, b), v in esk.items()}, "pi": {f"{a}/{b}": round(v, 5) for (a, b), v in psk.items()},
+                        "gas": {f"{a}/{b}": round(v, 5) for (a, b), v in gsk.items()}},
              "modeller": {}, "kiyas": {}}
     karne["modeller"]["B0 üretim (model yolu)"] = ozet(p0[ok], y[ok], o0[ok], yo[ok])
     l0 = ll3(p0[ok], y[ok]); b0 = br3(p0[ok], y[ok]); lo0 = ll2(o0[ok], yo[ok]); bo0 = br2(o0[ok], yo[ok])
@@ -249,7 +270,7 @@ def calistir(alan, sinir, uret=False):
     for ad, v in adaylar.items():
         if ad.endswith("|W"): continue
         q, oo = v
-        oo = qo if ad.startswith("C4") else (oo if oo is not None else None)
+        oo = qo if ad.startswith("C4") else OU_ADAY.get(ad, oo)
         karne["modeller"][ad] = ozet(q[ok], y[ok], oo[ok] if oo is not None else None, yo[ok] if oo is not None else None)
         dl = ll3(q[ok], y[ok]) - l0; db = br3(q[ok], y[ok]) - b0
         k = {"ll": blok_boot(dl, blok[ok]), "brier": blok_boot(db, blok[ok]),
@@ -264,6 +285,20 @@ def calistir(alan, sinir, uret=False):
     # lig bazında (C4 − B0)
     c4 = adaylar["C4 Topluluk (Poisson+Elo+pi)"][0]
     dl4 = ll3(c4[ok], y[ok]) - l0
+    # --- YH-11: GAS adaylarının MEVCUT TOPLULUK (C4) karşısındaki farkı (gas_1x2 / gas_ou kapısının tabanı)
+    lc4 = ll3(c4[ok], y[ok]); bc4 = br3(c4[ok], y[ok]); loc4 = ll2(qo[ok], yo[ok]); boc4 = br2(qo[ok], yo[ok])
+    karne["kiyas_c4"] = {}
+    for ad in ("C7 GAS", "C8 Topluluk+GAS (Poisson+Elo+pi+GAS)"):
+        q = adaylar[ad][0][ok]; oo = OU_ADAY[ad][ok]
+        dl = ll3(q, y[ok]) - lc4; do = ll2(oo, yo[ok]) - loc4
+        karne["kiyas_c4"][ad] = {"ll": blok_boot(dl, blok[ok]), "brier": blok_boot(br3(q, y[ok]) - bc4, blok[ok]),
+                                 "ll_yari1": round(float(dl[~h2].mean()), 5), "ll_yari2": round(float(dl[h2].mean()), 5),
+                                 "isabet_fark": round(float((q.argmax(1) == y[ok]).mean() - (c4[ok].argmax(1) == y[ok]).mean()), 4),
+                                 "ou_ll": blok_boot(do, blok[ok]), "ou_brier": blok_boot(br2(oo, yo[ok]) - boc4, blok[ok]),
+                                 "ou_ll_yari1": round(float(do[~h2].mean()), 5), "ou_ll_yari2": round(float(do[h2].mean()), 5)}
+        kk = karne["kiyas_c4"][ad]
+        log(f"[C4 tabanı] {ad:36s} ΔLL {kk['ll']['fark']:+.5f} {kk['ll']['ga95']} yarılar {kk['ll_yari1']:+.4f}/{kk['ll_yari2']:+.4f} ΔBr {kk['brier']['fark']:+.5f}"
+            f" | A/Ü ΔLL {kk['ou_ll']['fark']:+.5f} {kk['ou_ll']['ga95']} yarılar {kk['ou_ll_yari1']:+.4f}/{kk['ou_ll_yari2']:+.4f} ΔBr {kk['ou_brier']['fark']:+.5f}")
     karne["lig_bazinda"] = {lg: {"n": int((lgs[ok] == lg).sum()), "dLL": round(float(dl4[lgs[ok] == lg].mean()), 4)} for lg in sorted(set(lgs[ok].tolist()))}
 
     # --- derin alan: piyasa kıyası (yalnız ölçüm)
@@ -298,7 +333,10 @@ def calistir(alan, sinir, uret=False):
     karne["kapi_ham"] = kapi
     # üretim ağırlıkları: kapı ileri yürüyüşle ölçüldü; yayına giden ağırlık tüm uygun satırlarla (yalnız geçmiş) öğrenilir
     Xall = G.ozellik_1x2(p1, E, PIg); W_tum = G.mlogit_fit(Xall, y); Wo_tum = G.logit_fit(G.ozellik_ou(o1, PIg, og), yo)
+    Xg = G.ozellik_1x2(p1, E, PIg, ("pois", "elo", "pi", "gas"), GP)
     son = {"W": adaylar["C4 Topluluk (Poisson+Elo+pi)|W"], "Wo": Wo, "k1": k1, "ke": ke, "kp": kp, "W_tum": W_tum, "Wo_tum": Wo_tum,
+           "kg": kg, "W_gas": adaylar["C8 Topluluk+GAS (Poisson+Elo+pi+GAS)|W"], "Wo_gas": Wog,
+           "W_gas_tum": G.mlogit_fit(Xg, y), "Wo_gas_tum": G.logit_fit(Xog, yo),
            "son_tarih": max(d.tolist())}
     return karne, son
 

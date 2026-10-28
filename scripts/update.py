@@ -1579,6 +1579,8 @@ def predict_fixtures(fx, all_ms, P, today, pzmap=None, PL=None, golge=None):
                 if f.get("kpy") == "guc" and isinstance(f.get("kp"), list):
                     e["gp"] = e["p"]; e["p"] = [round(float(x), 4) for x in f["kp"]]; e["pk"] = "guc"
                     if isinstance(f.get("ko"), (int, float)) and f.get("kpo") == "guc": e["o"] = round(float(f["ko"]), 4); e["ok_"] = "guc"
+                    if isinstance(f.get("kpg"), list): e["gt"] = f["kpg"]; e["gtk"] = f.get("kpgy")       # YH-11 GAS'sız topluluk gölgesi
+                    if isinstance(f.get("kog"), (int, float)) and e.get("ok_") == "guc": e["gto"] = f["kog"]
                 if yeni_pois or e.get("pk") == "guc":
                     q, qo = g0[i] if yeni_pois else (p[i], float(pO[i]))
                     e["g0"] = [round(float(x), 4) for x in q]; e["g0o"] = round(float(qo), 4)

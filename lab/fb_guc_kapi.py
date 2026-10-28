@@ -6,7 +6,9 @@
                    motorun pazar olasılıkları ve kilitli tahmin p'si bu ayarla. Ölçüt: uygulama yolu (gscale, iki yarı DC, calT/dk) 1X2 LL.
   topluluk_1x2     Poisson + Elo + pi yığını → fixtures.json kp (uygulamanın öneri yolu recOf bunu kullanır), kilitli p.
   topluluk_ou      Aynı yığının 2,5 üst olasılığı → fixtures.json ko. Ölçüt: A/Ü LL.
-Gölge (yalnız ölçülür, üretime girmez): C1k, C2 Elo, C3 pi, C5, C6 (laboratuvar karnesinde her çalışmada yeniden ölçülür).
+  gas_1x2 / gas_ou (YH-11) Topluluk + GAS skor güdümlü Poisson (scripts/gas.py) → kp / ko. Taban MEVCUT topluluk (karne kiyas_c4);
+                   yalnız topluluk_1x2 / topluluk_ou aktif ya da kalıcıyken denenir. İzleme: kilitli p ile GAS'sız topluluk gölgesi (gt / gto).
+Gölge (yalnız ölçülür, üretime girmez): C7 GAS, C1k, C2 Elo, C3 pi, C5, C6 (laboratuvar karnesinde her çalışmada yeniden ölçülür).
 
 Kapı (hepsi gerekli; lab/fb_guc_lab.py, zaman sıralı ileri yürüyüş, son 180 gün sınama):
   ΔLL (aday − üretim) %95 GA üst sınırı < 0 (lig×gün blok bootstrap'ı), sınamanın iki yarısında ΔLL < 0, ΔBrier ≤ 0,
@@ -46,8 +48,12 @@ ADAY = {
                      "baslik": "Oransız maçlarda topluluk tahmini (Poisson + Elo + pi-rating), maç sonucu"},
     "topluluk_ou": {"ad": "C4 Topluluk (Poisson+Elo+pi)", "ll": "ou_ll", "br": "ou_brier", "y1": "ou_ll_yari1", "y2": "ou_ll_yari2",
                     "baslik": "Oransız maçlarda topluluk tahmini, 2,5 alt/üst"},
+    "gas_1x2": {"ad": "C8 Topluluk+GAS (Poisson+Elo+pi+GAS)", "taban": "kiyas_c4", "on": "topluluk_1x2", "ll": "ll", "br": "brier", "y1": "ll_yari1",
+                "y2": "ll_yari2", "baslik": "Oransız maçlarda topluluğa skor güdümlü dinamik güç robotu (GAS), maç sonucu"},
+    "gas_ou": {"ad": "C8 Topluluk+GAS (Poisson+Elo+pi+GAS)", "taban": "kiyas_c4", "on": "topluluk_ou", "ll": "ou_ll", "br": "ou_brier", "y1": "ou_ll_yari1",
+               "y2": "ou_ll_yari2", "baslik": "Oransız maçlarda topluluğa skor güdümlü dinamik güç robotu (GAS), 2,5 alt/üst"},
 }
-GOLGE_ADLAR = ["C1k Poisson + yığın kalibrasyonu", "C2 Elo", "C3 pi-rating", "C5 Poisson+pi", "C6 Poisson+Elo", "R0 taban oranları (referans)"]
+GOLGE_ADLAR = ["C7 GAS", "C1k Poisson + yığın kalibrasyonu", "C2 Elo", "C3 pi-rating", "C5 Poisson+pi", "C6 Poisson+Elo", "R0 taban oranları (referans)"]
 
 
 def bugun(): return (datetime.now(timezone.utc) + timedelta(hours=3)).date()
@@ -77,7 +83,9 @@ def olc():
     karne["uretim_agirlik"] = {"W": np.asarray(x["W_tum"]).round(6).tolist(), "Wo": np.asarray(x["Wo_tum"]).round(6).tolist(),
                                "poisson": {"decay": x["k1"][0], "prior": x["k1"][1]},
                                "prm": {"elo": {"K": x["ke"][0], "eta": x["ke"][1]}, "pi": {"lam": x["kp"][0], "gam": x["kp"][1]}},
-                               "ligler": karne["lig"], "son_tarih": x["son_tarih"]}
+                               "ligler": karne["lig"], "son_tarih": x["son_tarih"],
+                               "W_gas": np.asarray(x["W_gas_tum"]).round(6).tolist(), "Wo_gas": np.asarray(x["Wo_gas_tum"]).round(6).tolist(),
+                               "gas": {"A": x["kg"][0], "B": x["kg"][1]}}
     karne["ileri_agirlik"] = {"W": np.asarray(x["W"]).round(6).tolist(), "Wo": np.asarray(x["Wo"]).round(6).tolist()}
     return karne
 
@@ -104,7 +112,7 @@ def karar_ver(karne, A, kuru=False):
     U = karne["uretim_agirlik"]
     for ak, a in ADAY.items():
         st = A["adaylar"].setdefault(ak, {"durum": "yeni"})
-        k = karne["kiyas"].get(a["ad"])
+        k = (karne.get(a.get("taban", "kiyas")) or {}).get(a["ad"])
         if not k: continue
         st["son_olcum"] = {"tarih": gs, "fark": k[a["ll"]]["fark"], "ga95": k[a["ll"]]["ga95"], "n": k[a["ll"]]["n"]}
         if st.get("durum") in ("aktif", "kalici"):
@@ -117,6 +125,8 @@ def karar_ver(karne, A, kuru=False):
             st["durum"] = "golge"; continue
         if rb:
             st["durum"] = "golge"; st["not"] = "koruyucu geri alma aktif; kapı denenmedi"; continue
+        if a.get("on") and A["adaylar"].get(a["on"], {}).get("durum") not in ("aktif", "kalici"):
+            st["durum"] = "golge"; st["not"] = f"taban ({a['on']}) yayında değil; kapı denenmedi"; continue
         alan_k = f"fb_model-{yil}"
         c = {"anahtar": ak, "sinyal": {"kaynak": "ön kayıtlı laboratuvar adayı"}}
         alfa = O.yatirim_alfa(A, alan_k, c)
@@ -136,11 +146,17 @@ def karar_ver(karne, A, kuru=False):
     # üretim ayarlarını yaz (yalnız aktif adayların ilgili alanı kullanılır)
     A["W"], A["Wo"], A["prm"], A["poisson"], A["ligler"] = U["W"], U["Wo"], U["prm"], U["poisson"], U["ligler"]
     A["kullan"] = ["pois", "elo", "pi"]
+    if U.get("W_gas"):     # YH-11: GAS'lı topluluk ağırlıkları (yalnız gas_aktif / gas_ko_aktif ise kullanılır)
+        A["W_gas"], A["Wo_gas"], A["gas"] = U["W_gas"], U["Wo_gas"], U["gas"]
+    A["gas_aktif"] = A["adaylar"].get("gas_1x2", {}).get("durum") in ("aktif", "kalici")
+    A["gas_ko_aktif"] = A["adaylar"].get("gas_ou", {}).get("durum") in ("aktif", "kalici")
     po = A["adaylar"].get("poisson_oransiz", {})
     A["poisson_oransiz"] = {"aktif": po.get("durum") in ("aktif", "kalici"), "decay": U["poisson"]["decay"], "prior": U["poisson"]["prior"]}
     A["aktif"] = A["adaylar"].get("topluluk_1x2", {}).get("durum") in ("aktif", "kalici")
     A["ko_aktif"] = A["adaylar"].get("topluluk_ou", {}).get("durum") in ("aktif", "kalici")
     A["golge"] = {ad: karne["kiyas"][ad]["ll"] for ad in GOLGE_ADLAR if ad in karne["kiyas"]}
+    if karne.get("kiyas_c4"):      # YH-11 gölge ölçümü: GAS adaylarının mevcut topluluğa göre farkı (1X2 ve 2,5 A/Ü)
+        A["golge_gas"] = {ad: {"ll": v["ll"], "ou_ll": v["ou_ll"], "tarih": karne["tarih"]} for ad, v in karne["kiyas_c4"].items()}
     A["lab_ozet"] = {"tarih": karne["tarih"], "sinir": karne["sinir"], "n_sinama": karne["n_sinama"], "secilen": karne["secilen"],
                      "modeller": karne["modeller"]}
     izle(A, Gel, guardian)
@@ -174,7 +190,14 @@ def izle_olc(plog, ak, bas):
     for e in plog:
         if not isinstance(e.get("r"), list) or e.get("d", "") < bas or not e.get("g0"): continue
         y = _y(e["r"])
-        if ak == "topluluk_1x2":
+        if ak == "gas_1x2":
+            if e.get("gtk") != "gas" or not e.get("gt"): continue
+            a, b = e["p"][y], e["gt"][y]
+        elif ak == "gas_ou":
+            if e.get("ok_") != "guc" or e.get("gto") is None: continue
+            ov = (e["r"][0] + e["r"][1]) > 2
+            a = e["o"] if ov else 1 - e["o"]; b = e["gto"] if ov else 1 - e["gto"]
+        elif ak == "topluluk_1x2":
             if e.get("pk") != "guc": continue
             a, b = e["p"][y], e["g0"][y]
         elif ak == "poisson_oransiz":
