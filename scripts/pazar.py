@@ -498,7 +498,9 @@ def karne(season, P, U, log=print):
 def live_scores(plog, karne_):
     """predlog'daki pz kayıtlarını sonuçla puanla; Altın kapısını (gerçek oranla) burada açar."""
     es = [e for e in plog if e.get("pz") and e.get("r") and e.get("pzv") == PAZAR_V]
-    if not es: return {"n": 0}
+    try: import guvenilirlik as GV; gv = GV.karne_futbol_1x2(plog)     # YH-09: kilitli 1X2 + model vs piyasa log-kayıp
+    except Exception as ex: GV = None; gv = None; print("güvenilirlik atlandı:", ex.__class__.__name__, ex, flush=True)
+    if not es: return {"n": 0, **({"guvenilirlik": gv} if gv else {})}
     rows = []
     for e in es:
         p = full(dict(zip(PZ_KAYIT, [x / 1000 for x in e["pz"]])))
@@ -513,6 +515,7 @@ def live_scores(plog, karne_):
         if len(ps) >= 30:
             r = stats(np.array(ps), np.array(ys))
             if r: out["pazarlar"][c] = {k: r[0][k] for k in ("n", "logloss", "brier", "ece", "ort_tahmin", "ort_gercek")}
+            if r and GV: out["pazarlar"][c]["guvenilirlik"] = GV.rapor(ps, ys)
     # Altın kapısı: yeni kod, gerçek oranla (po) p ≥ .78 ve oran 1,15–2,00 seçimlerinde ≥100 kayıt, isabet ≥ eski Altın
     ref = None
     try: ref = karne_["oneri_karsilastirma"]["eski"]["tum"]["altin"]["isabet"]
@@ -528,6 +531,7 @@ def live_scores(plog, karne_):
                 if y is not None: hits.append(y)
         if hits: gate[c] = {"n": len(hits), "isabet": round(float(np.mean(hits)), 4), "acik": bool(len(hits) >= 100 and ref is not None and np.mean(hits) >= ref)}
     out["altin_kapisi"] = gate
+    if gv: out["guvenilirlik"] = gv
     return out
 
 # ------------------------------------------------------------------ yaklaşan maçlar

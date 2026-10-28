@@ -840,12 +840,13 @@ def tum_kuponlar():
 
 def karne_kur(bugun, log=print):
     T = tum_kuponlar()
-    by = collections.defaultdict(list); bekleyen = collections.Counter()
+    by = collections.defaultdict(list); bekleyen = collections.Counter(); bac = collections.defaultdict(list)
     for g, sp, K, geri in T:
         if K.get("durum") == "bekliyor": bekleyen[K["strateji"]] += 1
         if K.get("durum") not in ("tuttu", "tutmadi"): continue
         if K["strateji"].startswith("at_altili_") and not K.get("kosudan_once", True): continue
         bl = [b for b in K["bacaklar"] if b.get("tuttu") is not None]
+        if not geri: bac[K["strateji"]] += bl                                   # YH-09: yalnız canlı (kilitli) KUPO bacakları
         by[K["strateji"]].append((g, float(K["p"] or 0), bool(K["tuttu"]), len(bl), sum(1 for b in bl if b["tuttu"]),
                                   sum(float(b.get("p") or 0) for b in bl), geri, K.get("bas_utc") or (K["bacaklar"][0].get("bas_utc") if K["bacaklar"] else "") or ""))
     d7 = (bugun - timedelta(days=7)).isoformat(); d30 = (bugun - timedelta(days=30)).isoformat()
@@ -861,6 +862,8 @@ def karne_kur(bugun, log=print):
                       son7=_ozet([x for x in L if x[0] >= d7]), son30=_ozet([x for x in L if x[0] >= d30]), seri=_seri(L),
                       canli=_ozet([x for x in L if not x[6]]), geriye_donuk=_ozet([x for x in L if x[6]]),
                       gunluk=[{"d": d, "n": v[0], "tutan": v[1], "beklenen": round(v[2], 3), "geriye_donuk": v[3]} for d, v in list(gun.items())[-30:]])
+        try: import guvenilirlik as GV; S[sid]["guvenilirlik"] = GV.karne_bacak(bac.get(sid, []))
+        except Exception as ex: print("güvenilirlik atlandı:", ex.__class__.__name__, ex, flush=True)
     gd = sorted({g for g, _, _, geri in T if geri}); cd = sorted({g for g, _, _, geri in T if not geri})
     J = jl(AYAR, {}) or {}
     out = {"v": 1, "oxx_v": OXX_V, "guncelleme_utc": iso(datetime.now(timezone.utc)), "uyari": UYARI,

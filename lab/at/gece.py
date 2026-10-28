@@ -353,6 +353,9 @@ def puanla(kosular, yalniz_degisince=False):
         return karne, yeni
     karne["gecikmeli_kilit_sayisi"] = sum(1 for x in karne["kosular"] if not x.get("kosudan_once", True))
     kilit.karne_ek(karne)   # toplam = yalnız koşudan önce + mod_hatali olmayan kilitler; ilk-3, kalibrasyon kovaları   # mod_hatali işareti + "hariç" sütunu (geçmiş silinmez)
+    try:   # YH-09: Brier ayrışımı + ECE (ortak ölçüm yardımcısı scripts/guvenilirlik.py; at modeli ayrı kalır)
+        sys.path.append(os.path.join(KOK, "scripts")); import guvenilirlik as GV; karne["guvenilirlik"] = GV.karne_at(karne["kosular"])
+    except Exception as ex: print("güvenilirlik atlandı:", ex.__class__.__name__, ex, flush=True)
     karne["guncelleme"] = datetime.now(timezone.utc).isoformat(timespec="seconds")
     jyaz(os.path.join(CIKTI, "karne.json"), karne)
     return karne, yeni

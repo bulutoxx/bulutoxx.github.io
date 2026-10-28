@@ -2240,5 +2240,75 @@
  "disarida": {
   "mod_hatali": 16,
   "gecikmeli_kilit": 6
+ },
+ "guvenilirlik": {
+  "n": 177,
+  "brier": 0.06754,
+  "guvenilirlik": 0.00176,
+  "cozunurluk": 0.011526,
+  "belirsizlik": 0.077564,
+  "kova_ici": -0.000257,
+  "ece": 0.018267,
+  "log_kayip": 0.246019,
+  "ort_tahmin": 0.08475,
+  "gercek_oran": 0.084746,
+  "kovalar": [
+   {
+    "aralik": "0.0-0.1",
+    "n": 124,
+    "tahmin": 0.048404,
+    "gercek": 0.040323,
+    "wilson95": [
+     0.017344,
+     0.090926
+    ]
+   },
+   {
+    "aralik": "0.1-0.2",
+    "n": 41,
+    "tahmin": 0.136949,
+    "gercek": 0.121951,
+    "wilson95": [
+     0.053233,
+     0.255442
+    ],
+    "veri_az": true
+   },
+   {
+    "aralik": "0.2-0.3",
+    "n": 9,
+    "tahmin": 0.237989,
+    "gercek": 0.333333,
+    "wilson95": [
+     0.120584,
+     0.645798
+    ],
+    "veri_az": true
+   },
+   {
+    "aralik": "0.3-0.4",
+    "n": 2,
+    "tahmin": 0.3061,
+    "gercek": 0.5,
+    "wilson95": [
+     0.094531,
+     0.905469
+    ],
+    "veri_az": true
+   },
+   {
+    "aralik": "0.6-0.7",
+    "n": 1,
+    "tahmin": 0.6297,
+    "gercek": 1.0,
+    "wilson95": [
+     0.206549,
+     1.0
+    ],
+    "veri_az": true
+   }
+  ],
+  "yontem": "Murphy (1973) Brier ayrışımı + kova_ici (Stephenson 2008), ECE 10 eşit kova ağırlıklı, Wilson %95",
+  "n_kosu": 15
  }
 }

@@ -458,6 +458,8 @@ def live_cal_block(stats, h1=None):
     """Canlı kalibrasyon bloğu (daily.json → canli). Ağ kullanmaz. v117: önce kalan süre modeli kapısı (canli.zaman); kabul ise
     kova ve Platt, kayıtlı seçimlerin v117 modeliyle YENİDEN hesaplanan olasılığı üzerinden öğrenilir (uygulama ile aynı ölçek)."""
     import canli_istat as CI
+    try: import guvenilirlik as GV; GVB = GV.karne_canli(stats)      # YH-09: kayıt anındaki olasılıkla (kapıdan önce), 75. dk hariç
+    except Exception as ex: GVB = None; print("güvenilirlik atlandı:", ex.__class__.__name__, ex, flush=True)
     if h1 is None:
         try: h1 = json.load(open(os.path.join(DATA, "model.json"), encoding="utf-8"))["params"].get("h1", .4428)
         except Exception: h1 = .4428
@@ -481,6 +483,7 @@ def live_cal_block(stats, h1=None):
         bins.append([lo, hi, len(s_), round(sum(r["ok"] for r in s_) / len(s_), 4) if s_ else None])
     out = {"n": len(stats), "hit": round(sum(r["ok"] for r in stats) / len(stats), 4) if stats else None, "bins": bins, "zaman": zm,
            "son_dk_haric": {"esik_dk": 75, "n_tum": n_tum, "hit_tum": h_tum}}
+    if GVB: out["guvenilirlik"] = GVB
     # 🎯 Canlı Platt kalibrasyonu (yeni alan, 'bins' biçimi değişmedi): zaman sıralı sınamayı geçerse kabul=true
     try:
         pl = live_platt(stats, edges)
@@ -565,6 +568,8 @@ def main():
                       "guclu_n": sum(1 for r in allg if r["rp"] >= .7), "guclu_hit": (round(sum(r["ok"] for r in allg if r["rp"] >= .7) / max(1, sum(1 for r in allg if r["rp"] >= .7)), 4))}}
     try: out["veritabani"] = arsiv.ozet(DATA)   # yeni alan: {gun, kayit, puanli, ilk, eski_gun}
     except Exception: pass
+    try: import guvenilirlik as GV; out["guvenilirlik"] = GV.karne_futbol_oneri(allg)   # YH-09: Brier ayrışımı + ECE
+    except Exception as ex: print("güvenilirlik atlandı:", ex.__class__.__name__, ex, flush=True)
     try: live_snapshot()
     except Exception as ex: print("canlı kayıt atlandı:", ex.__class__.__name__, ex, flush=True)
     try: out["canli"] = live_grade()
