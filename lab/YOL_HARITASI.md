@@ -32,7 +32,12 @@ drift alarmı ve kapanış kilidi (yolda). Aşağıdaki maddeler bunların **üz
 - **Efor:** S (kapanış kilidine bağımlı) · **Risk:** düşük (yalnız ölçüm) · **Veri:** kendi kayıtlarımız, ücretsiz.
 - **Nasıl sınanır:** Önce doğrulama: geçmiş 90 günde CLV ile gerçekleşen LL farkı arasında aylık korelasyon > 0 (blok bootstrap GA alt sınırı > 0). Sonra karneye girer; kapı gerekmez (karar üretmez).
 - **Kaynak:** Kaunitz, Zhong, Kreiner (2017) [arXiv:1710.02824](https://arxiv.org/abs/1710.02824) · Štrumbelj (2014) IJF [doi:10.1016/j.ijforecast.2014.02.008](https://doi.org/10.1016/j.ijforecast.2014.02.008)
-- **Durum:** bekliyor
+- **Durum:** gölgede (2026-10-28; doğrulama geçmedi, veri birikiyor) — `lab/clv_karne.py` → `data/clv.json`, otonom ekipte günde 2 kez (yalnız ölçüm, arayüzde yok).
+  Kilit = arşiv oranı (iddaa kimliği), kapanış = tazeveri `o1/u1` (başlamadan medyan ≈ 16 dk önce son görülen oran). n = 1.791 öneri (1X2 804, 2,5 A/Ü 987), 5 gün;
+  öneri tarafı ort. clv −0,0007 [GA −0,0013, −0,0004], kapanışı geçen %5,6 (öneri oranlarının %86,9'u kilitten kapanışa hiç oynamadı).
+  Doğrulama: corr(clv, y − p_kilit) = −0,038 [GA −0,063, −0,016] (n = 1.450 sonuçlu) → **geçmedi**; ayrıca iddaa kapanışı kilitten daha bilgili değil:
+  ΔLL(kapanış − kilit) = +0,0006 [+0,0003, +0,0016] (n = 2.604). Yorum: yerel piyasada maça yakın hareket az ve bilgi taşımıyor; 90 günlük örnekte
+  yeniden değerlendirilecek (≥ 30 gün, corr GA alt > 0 olursa karneye ve drift alarmına bağlanır). Model yolu CLV'si için sonuçlu Pinnacle kapanışı gerekir (YH-02 ile).
 
 ### YH-02 · futbol · Keskin piyasa önceliği (Pinnacle / uzlaşı) hem öğrenme hedefinde hem yaklaşan maçlarda
 - **Açıklama:** Motor kapanışta önce `AvgC*`, yaklaşanlarda önce `Avg*` kullanıyor; football-data aynı satırda Pinnacle (`PSCH…`, `PSH…`) ve en yüksek oranı da veriyor. Aday: (a) kalibrasyon hedefi = Pinnacle kapanışı (yoksa ortalama), (b) yaklaşan maçta iddaa olasılığı ile football-data Pinnacle/ortalama olasılığının log-uzlaşısı (ağırlık yürüyen pencerede öğrenilir).

@@ -50,6 +50,8 @@ jobs:
         run: python3 lab/adim.py arastirmaci -- python lab/research.py
       - name: 📊 Analist
         run: python3 lab/adim.py analist -- python lab/analyst.py
+      - name: 📈 Öneri CLV karnesi (YH-01; yalnız ölçüm, gölgede)
+        run: python3 lab/adim.py clv-karne --onem bilgi -- python lab/clv_karne.py
       - name: 🛡️ Koruyucu (değişiklik izleme, gerekirse geri alma)
         run: python3 lab/adim.py koruyucu -- python lab/guardian.py
       - name: 🔁 OXXai öğrenme döngüsü (deney kuyruğu → ileriye dönük sanal oynatma → kapı; 14 gün sonra yeniden sınama/geri alma)
@@ -70,4 +72,4 @@ jobs:
           python3 lab/gonder.py -m "Otonom ekip raporu $(date -u +%F)" \
             data/derin data/research.json data/analyst.json data/qa.json data/qa data/changes.json data/rollback.json data/dq.json \
             data/gelisim.json data/bot_kb.json data/bot_coach.json data/bot_tests.json \
-            data/oxx_ayar.json data/deney_kuyrugu.json data/ogrenme_gunlugu.json data/oxx_rollback.json data/saglik
+            data/oxx_ayar.json data/deney_kuyrugu.json data/ogrenme_gunlugu.json data/oxx_rollback.json data/clv.json data/saglik
