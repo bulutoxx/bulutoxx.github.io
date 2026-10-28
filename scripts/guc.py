@@ -11,6 +11,8 @@ Ağırlıklar yalnız geçmiş maçlarla öğrenilir (laboratuvarda aylık geni�
 Üretim bağlantısı (bayraklı, geri alınabilir): data/fb_guc.json  {"aktif": bool, "W": .., "Wo": .., "prm": ..}
   aktif ise update.py oranı OLMAYAN yaklaşan maçlara kp (1X2) ve ko (2,5 üst) yazar; uygulamanın öneri yolu (recOf) bunları kullanır.
   Koruyucu geri alma (data/rollback.json) ya da OXXai geri alma (data/oxx_rollback.json donmus["fb_guc"]) aktifse uygulanmaz.
+GAS (YH-11, scripts/gas.py): skor güdümlü dinamik Poisson, topluluğa aday 4. robot. gas_aktif / gas_ko_aktif (lab/fb_guc_kapi.py
+  gas_1x2 / gas_ou kapısı) açıksa kp / ko GAS'lı topluluktan gelir; GAS'sız topluluk kpg / kog olarak kilitli kayda gölge yazılır.
 """
 import collections, json, math, os
 from datetime import date
@@ -91,9 +93,9 @@ def _softmax(z):
     z = z - z.max(1, keepdims=True); e = np.exp(z); return e / e.sum(1, keepdims=True)
 
 
-def ozellik_1x2(pp, elo_d, pi_gd, kullan=("pois", "elo", "pi")):
-    """pp: (n,3) Poisson olasılıkları; elo_d: (n,) elo farkı; pi_gd: (n,) pi beklenen gol farkı."""
-    n = len(pp); cols = [np.ones(n)]
+def ozellik_1x2(pp, elo_d, pi_gd, kullan=("pois", "elo", "pi"), gas_p=None):
+    """pp: (n,3) Poisson olasılıkları; elo_d: (n,) elo farkı; pi_gd: (n,) pi beklenen gol farkı; gas_p: (n,3) GAS olasılıkları (YH-11)."""
+    n = len(pp) if pp is not None else len(gas_p); cols = [np.ones(n)]
     if "pois" in kullan:
         lp = np.log(np.clip(pp, 1e-6, 1))
         cols += [lp[:, 0] - lp[:, 2], lp[:, 1] - (lp[:, 0] + lp[:, 2]) / 2]
@@ -101,6 +103,9 @@ def ozellik_1x2(pp, elo_d, pi_gd, kullan=("pois", "elo", "pi")):
         e = np.asarray(elo_d, float) / 400; cols += [e, np.abs(e)]
     if "pi" in kullan:
         g = np.clip(np.asarray(pi_gd, float), -4, 4); cols += [g, np.abs(g)]
+    if "gas" in kullan:
+        lq = np.log(np.clip(gas_p, 1e-6, 1))
+        cols += [lq[:, 0] - lq[:, 2], lq[:, 1] - (lq[:, 0] + lq[:, 2]) / 2]
     return np.stack(cols, 1)
 
 
@@ -129,9 +134,14 @@ def mlogit_fit(X, y, l2=1.0, it=60, W0=None):
 def mlogit_pred(X, W): return _softmax(X @ np.asarray(W, float))
 
 
-def ozellik_ou(pO, pi_gd, ort_gol):
-    lo = np.log(np.clip(pO, 1e-4, 1 - 1e-4)) - np.log(np.clip(1 - pO, 1e-4, 1))
-    return np.stack([np.ones(len(lo)), lo, np.abs(np.clip(np.asarray(pi_gd, float), -4, 4)), np.log(np.maximum(ort_gol, .5))], 1)
+def _lgt(q): return np.log(np.clip(q, 1e-4, 1 - 1e-4)) - np.log(np.clip(1 - q, 1e-4, 1))
+
+
+def ozellik_ou(pO, pi_gd, ort_gol, gas_o=None):
+    lo = _lgt(pO)
+    cols = [np.ones(len(lo)), lo, np.abs(np.clip(np.asarray(pi_gd, float), -4, 4)), np.log(np.maximum(ort_gol, .5))]
+    if gas_o is not None: cols.append(_lgt(np.asarray(gas_o, float)))      # YH-11: GAS 2,5 üst logiti
+    return np.stack(cols, 1)
 
 
 def logit_fit(X, y, l2=1.0, it=50):
@@ -214,6 +224,13 @@ def tahmin(fx_list, season, P, today, U, A=None, golge=False):
             continue
         se, sp, og = durumlar(ms, A.get("prm") or {})
         cnt = collections.Counter([m["h"] for m in ms] + [m["a"] for m in ms])
+        gas_st = None
+        if A.get("W_gas") and (golge or A.get("gas_aktif") or A.get("gas_ko_aktif")):
+            try:
+                import gas as GS
+                ms_s = sorted(ms, key=lambda m: (m["d"], m["h"])); gas_st = GS.gas_seq(ms_s, A.get("gas"))[1]
+            except Exception:
+                gas_st = None
         rows = []
         for f in fl:
             if cnt[f["h"]] < 3 or cnt[f["a"]] < 3: continue
@@ -226,10 +243,20 @@ def tahmin(fx_list, season, P, today, U, A=None, golge=False):
         X = ozellik_1x2(pp, [r[3] for r in rows], [r[4] for r in rows], tuple(A.get("kullan") or ("pois", "elo", "pi")))
         q = mlogit_pred(X, A["W"])
         qo = logit_pred(ozellik_ou(pO, [r[4] for r in rows], np.full(len(rows), og)), A["Wo"]) if A.get("Wo") else pO
+        qg = qog = None
+        if gas_st is not None:
+            import gas as GS
+            gl = np.array([GS.gas_lam(gas_st, r[0]["h"], r[0]["a"]) for r in rows])
+            gp, gO, _, _ = U.outcome_probs(gl[:, 0], gl[:, 1], PP.get("rho", -0.06))
+            qg = mlogit_pred(ozellik_1x2(pp, [r[3] for r in rows], [r[4] for r in rows], ("pois", "elo", "pi", "gas"), gp), A["W_gas"])
+            qog = logit_pred(ozellik_ou(pO, [r[4] for r in rows], np.full(len(rows), og), gO), A["Wo_gas"]) if A.get("Wo_gas") else None
         for i, r in enumerate(rows):
             f = r[0]
-            out[(lg, f["d"], f["h"], f["a"])] = {"p": [round(float(x), 4) for x in q[i]], "o": round(float(qo[i]), 4),
-                                                 "p_pois": [round(float(x), 4) for x in pp[i]]}
+            z = {"p": [round(float(x), 4) for x in q[i]], "o": round(float(qo[i]), 4), "p_pois": [round(float(x), 4) for x in pp[i]]}
+            if qg is not None:
+                z["pg"] = [round(float(x), 4) for x in qg[i]]
+                if qog is not None: z["og"] = round(float(qog[i]), 4)
+            out[(lg, f["d"], f["h"], f["a"])] = z
     return out
 
 
@@ -243,5 +270,8 @@ def uygula(fx, season, P, today, U):
         z = T.get((f.get("lg"), f.get("d"), f.get("h"), f.get("a")))
         if not z or f.get("odds"): continue
         f["kp"] = z["p"]; f["kpy"] = "guc"; n += 1
-        if A.get("ko_aktif"): f["ko"] = z["o"]; f["kpo"] = "guc"     # 2,5 üst ayrı kapı
+        if A.get("gas_aktif") and z.get("pg"): f["kp"] = z["pg"]; f["kpg"] = z["p"]; f["kpgy"] = "gas"     # YH-11; GAS'sız gölge
+        if A.get("ko_aktif"):
+            f["ko"] = z["o"]; f["kpo"] = "guc"     # 2,5 üst ayrı kapı
+            if A.get("gas_ko_aktif") and z.get("og") is not None: f["ko"] = z["og"]; f["kog"] = z["o"]
     return n

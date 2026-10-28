@@ -170,7 +170,14 @@ drift alarmı ve kapanış kilidi (yolda). Aşağıdaki maddeler bunların **üz
 - **Efor:** M · **Risk:** orta (ilk haftalar kararsızlığı) · **Veri:** mevcut.
 - **Nasıl sınanır:** `fb_guc_lab.py espn` ve `derin` alanlarında SK.
 - **Kaynak:** Koopman & Lit (2019) IJF [VU araştırma](https://research.vu.nl/en/publications/forecasting-football-match-results-in-national-league-competition-2/), [Tinbergen DP 17-062](https://papers.tinbergen.nl/17062.pdf) · Koopman & Lit (2015) JRSS-A [doi:10.1111/rssa.12042](https://doi.org/10.1111/rssa.12042)
-- **Durum:** bekliyor
+- **Durum:** reddedildi — gölgede (2026-10-28) — robot `scripts/gas.py` (birim ölçekli skor güncellemesi, A/B seçim diliminde ızgarayla), topluluğa 4. üye
+  adayı; `lab/fb_guc_lab.py` iki alanda da ölçüyor, `lab/fb_guc_kapi.py` adayları `gas_1x2` / `gas_ou` (taban: mevcut topluluk; bayrak `gas_aktif` / `gas_ko_aktif`,
+  kilitli kayıtta GAS'sız gölge `gt`/`gto`, 14 gün izleme + geri alma). Sınama (zaman sıralı, sızıntısız; sonuç `data/gas_lab.json`):
+  oransız (espn, n = 3.574, sınır 2026-05-01): GAS tek başına LL 1,0047 (Poisson 1,0053, topluluk 1,0031); topluluk+GAS − topluluk ΔLL −0,0004 [GA −0,0017, +0,0010],
+  ΔBrier −0,0004; A/Ü ΔLL −0,0002 [−0,0010, +0,0005] → **SK geçmedi** (GA sıfırı içeriyor). Oranlı model yolu (derin, n = 15.363, sınır 2025-07-01):
+  GAS tek başına +0,0110 (piyasa xg hedefli Poisson'dan kötü); topluluk+GAS − topluluk ΔLL −0,0003 [−0,0006, 0,0000], ilk yarı +0,0000;
+  üretim yoluna göre −0,0006 [−0,0012, +0,0001]; A/Ü −0,0001 [−0,0002, +0,0000] → **SK geçmedi**. Beklenen −0,002…−0,006 görülmedi: GAS bilgisi
+  Poisson + Elo + pi'nin taşıdığıyla büyük ölçüde örtüşüyor. Kapı her ölçümde yeniden dener (alfa yatırımı; ret sonrası 14 gün bekleme), gölge farkı `fb_guc.json golge_gas`.
 
 ### YH-12 · futbol · Oransız ligler için ESPN maç istatistiklerinden şut gücü
 - **Açıklama:** YH-03'ün oransız ligler sürümü: ESPN maç özetindeki takım istatistikleri (şut, isabetli şut, korner) yalnız türetilmiş takım puanı olarak saklanır (ham yanıt depoya girmez); `guc.py` topluluğu bu puanı oransız liglerde kullanır. YH-03 kapıdan geçmeden başlanmaz.
@@ -262,7 +269,7 @@ drift alarmı ve kapanış kilidi (yolda). Aşağıdaki maddeler bunların **üz
 - **Efor:** M · **Risk:** düşük–orta (performans; yasaklı kelime taraması) · **Veri:** mevcut.
 - **Nasıl sınanır:** Duman + kalite testleri, açılış süresi artışı < 50 ms, `bot_coach` "neden" niyetli soruların faydalı oranı düşmüyor.
 - **Kaynak:** Lundberg & Lee (2017) NeurIPS "A unified approach to interpreting model predictions" [arXiv:1705.07874](https://arxiv.org/abs/1705.07874) · Joslyn & LeClerc (2012) [doi:10.1037/a0025185](https://doi.org/10.1037/a0025185)
-- **Durum:** bekliyor
+- **Durum:** işleniyor (2026-10-28, ajan)
 
 ---
 
