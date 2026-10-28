@@ -1,0 +1,82 @@
+{
+ "durum": "golge",
+ "kullan": false,
+ "v": 1,
+ "zaman": "2026-10-28T20:44Z",
+ "model": "YH-10: p ∝ exp(a·ln p_CG + b·ln p_piyasa) — MS, ana çizgi Alt/Üst, sıradaki gol; (a,b) dakika dilimine göre",
+ "golge_W": {
+  "ms": {
+   "0": [
+    0.5,
+    0.5
+   ],
+   "30": [
+    0.5,
+    0.5
+   ],
+   "60": [
+    0.5,
+    0.5
+   ],
+   "75": [
+    0.5,
+    0.5
+   ]
+  },
+  "ou": {
+   "0": [
+    0.5,
+    0.5
+   ],
+   "30": [
+    0.5,
+    0.5
+   ],
+   "60": [
+    0.5,
+    0.5
+   ],
+   "75": [
+    0.5,
+    0.5
+   ]
+  },
+  "ng": {
+   "0": [
+    0.5,
+    0.5
+   ],
+   "30": [
+    0.5,
+    0.5
+   ],
+   "60": [
+    0.5,
+    0.5
+   ],
+   "75": [
+    0.5,
+    0.5
+   ]
+  }
+ },
+ "golge_kaynak": "önsel (veri yok)",
+ "veri": {
+  "piyasali_sonuclu": 0,
+  "piyasali_tum": 0,
+  "sonuclu_anlik": 3031
+ },
+ "sinama": {
+  "yontem": "genişleyen pencere, gün bazlı; eğitim = sınama günü başlamadan sonucu kesin maçlar (CG parametreleri ve harman ağırlıkları)",
+  "fark": null,
+  "tablo": {},
+  "dilim": {},
+  "gunler": []
+ },
+ "kapi": {
+  "min_n": 600,
+  "min_mac": 120,
+  "kural": "birleşik ΔLL (harman − CG) lig×gün blok bootstrap %95 GA üst < 0; iki zaman yarısında ΔLL < 0; ΔBrier ≤ 0; her pazarda ΔLL ≤ 0; tek yanlı p ≤ α_t",
+  "not": "veri birikiyor: 0/600 piyasalı anlık görüntü, 0/120 maç"
+ }
+}

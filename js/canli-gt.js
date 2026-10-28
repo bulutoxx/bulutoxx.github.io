@@ -65,9 +65,11 @@
       if(fH>fA)H+=p; else if(fH===fA)D+=p; else A+=p; if(p>best.p) best={p,s:fH+"-"+fA}; if(fH+fA>2) more+=p; if(fH>0&&fA>0) kg+=p; }
     const z=H+D+A, p0=cg?PH[0]*PA[0]:Math.exp(-(LH+LA)), tot=hs+as, ou=m.odds&&m.odds.ou, line=ou?ou.l:tot+.5;
     const cgOver=need=>need<=0?1:Math.max(0,1-TT.slice(0,need).reduce((s,x)=>s+x,0));      // kalan gol ≥ need
-    return {H:H/z,D:D/z,A:A/z,ft:best.s,ftp:best.p/z,nextH:(1-p0)*LH/(LH+LA||1),nextA:(1-p0)*LA/(LH+LA||1),none:p0,o25:more/z,t,
+    const out={H:H/z,D:D/z,A:A/z,ft:best.s,ftp:best.p/z,nextH:(1-p0)*LH/(LH+LA||1),nextA:(1-p0)*LA/(LH+LA||1),none:p0,o25:more/z,t,
       line,pOver:cg?cgOver(Math.floor(line)-tot+1):1-poisCdf(Math.floor(line)-tot,LH+LA),src,
-      LH,LA,LH0,LA0,L,kg:kg/z,r05:1-p0,r15:cg?cgOver(2):1-poisCdf(1,LH+LA),model:cg?"cg":"eski"}; }
+      LH,LA,LH0,LA0,L,kg:kg/z,r05:1-p0,r15:cg?cgOver(2):1-poisCdf(1,LH+LA),model:cg?"cg":"eski"};
+    if(cg&&window.CPH&&CPH.H.on){ try{ CPH.apply(out,m); }catch(e){} }    // v144 YH-10: canlı piyasa harmanı (bayrak kapalıyken etkisiz)
+    return out; }
 
   // ---------- istatistik deposu (maç başına; oturum boyunca saklanır) ----------
   const SK="bx-cgt-v107", ST=new Map();

@@ -33,9 +33,11 @@ jobs:
         run: python3 lab/adim.py arena --onem bilgi -- python lab/arena.py
       - name: ⚽ Canlı güç modeli (zaman sıralı kapı; geçmezse kullan=false → uygulama eski yol)
         run: python3 lab/adim.py canli-guc --onem bilgi -- timeout 600 python lab/canli_guc_lab.py --uygula
+      - name: 📊 Canlı piyasa harmanı (YH-10; zaman sıralı kapı + gece yeniden sınama; tutmazsa kullan=false → CG aynen)
+        run: python3 lab/adim.py canli-piyasa --onem bilgi -- timeout 900 python lab/canli_piyasa_lab.py --uygula
       - name: 📈 Gelişim günlüğü
         run: python3 lab/adim.py koruyucu -- python lab/guardian.py
       - name: Sonucu kaydet
         run: |
           python3 lab/gonder.py -m "Otomatik laboratuvar sonucu $(date -u +%F) [guncelle]" \
-            data/auto_lab.json data/canli_guc.json data/arena.json data/gelisim.json data/changes.json data/rollback.json data/saglik
+            data/auto_lab.json data/canli_guc.json data/canli_piyasa.json data/arena.json data/gelisim.json data/changes.json data/rollback.json data/saglik

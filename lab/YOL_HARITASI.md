@@ -154,7 +154,15 @@ drift alarmı ve kapanış kilidi (yolda). Aşağıdaki maddeler bunların **üz
 - **Efor:** M · **Risk:** orta (canlı oran askıya alınmış anlar; gecikme sızıntısı → yalnız kayıt anından önceki oran) · **Veri:** zaten okunan kaynak, ücretsiz; ham oran depoya yazılmaz (yalnız marjı ayrılmış olasılık, 3 hane).
 - **Nasıl sınanır:** `canli_guc_lab.py` protokolü + ayrıca "piyasası olan" alt kümede SK; ≥ 600 anlık görüntü.
 - **Kaynak:** Robberechts, Van Haaren, Davis (2021) KDD "A Bayesian approach to in-game win probability in soccer" [arXiv:1906.05029](https://arxiv.org/abs/1906.05029) · Croxson & Reade (2014) Economic Journal "Information and efficiency: goal arrival in soccer betting" [doi:10.1111/ecoj.12033](https://doi.org/10.1111/ecoj.12033)
-- **Durum:** işleniyor (2026-10-28, ajan)
+- **Durum:** gölgede (2026-10-28, v144; kapı veri yetersizliğinden geçmedi, veri birikiyor) — Mevcut canlı kayıtlarda (3.097 anlık görüntü, 5 gün)
+  yalnız seçilen tarafın tek oranı vardı (`o`), marj ayrılamaz → piyasalı sınama satırı **n = 0** (gerekli ≥ 600 / ≥ 120 maç). Vekil ölçüm (karar dışı, tek gün,
+  seçim yanlı): kayıtlı seçimlerde CG `pc` LL 0,651 / Brier 0,228, marjlı `1/o` LL 0,729 / Brier 0,258 (n = 370).
+  Yapılan: `scripts/canli_guc.py` `piyasa()` (power marj ayırma, uygulamadaki `implied()` ile aynı) + `harman()` (`p ∝ exp(a·ln p_CG + b·ln p_piyasa)`,
+  pazar × dakika dilimi 0/30/60/75); `scripts/collector.py` her canlı kayda `mk` (ms, ana çizgi ou, ng; 3 hane, ham oran yok) + gölge harman olasılığı `ph`
+  yazar (`hv`: 1 = harman açık); `lab/canli_piyasa_lab.py` genişleyen pencere sınama + SK (lig×gün blok bootstrap, iki yarı, ΔBrier, pazar başına ΔLL ≤ 0,
+  alfa yatırımı) → `data/canli_piyasa.json` (kullan=false, gölge ağırlık önsel 0,5/0,5); auto-lab'da her gece yeniden sınama, geçerse 14 gün izleme,
+  tutmazsa geri alma. Uygulama: `canli-piyasa-v144` (js/katmanlar.js) + canli-gt-v107 core kancası — bayrak kapalıyken etkisiz; JS ↔ Python birebir
+  (`lab/canli_piyasa_test.cjs`, 400 durum, fark < 1e-12).
 
 ### YH-11 · futbol · Skor güdümlü (GAS) dinamik güç modeli — model yolu
 - **Açıklama:** Poisson robotu haftalık yeniden eğitim + üstel unutma kullanıyor. Skor güdümlü modelde her maçtan sonra hücum/savunma gücü log-olabilirlik gradyanıyla güncellenir (öğrenilen adım ve kalıcılık); Koopman–Lit'in iki değişkenli Poisson sürümü. Topluluğa 5. robot ya da Poisson'un yerine aday.

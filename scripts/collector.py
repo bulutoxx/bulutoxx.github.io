@@ -115,6 +115,7 @@ def live_snapshot():
     # v136: uygulamanın canlı olasılığı (CG açıksa) ve canlı altın kuralı — scripts/canli_altin.py ile uygulamadaki formülün aynısı
     import canli_guc as CGM, canli_altin as CAL
     PCG = CGM.ayar(DATA); FAL = CAL.ayar(DATA); FIS = CAL.isaret_ayar(DATA); gcal = None
+    HW = CGM.harman_ayar(DATA); HWG = HW or CGM.harman_ayar(DATA, golge=True)      # v144 YH-10: piyasa harmanı (açık) · gölge ağırlıklar
     try:
         _k = json.load(open(os.path.join(DATA, "canli_guc.json"), encoding="utf-8")).get("kal") or None
         if _k and all(isinstance(_k.get(x), (int, float)) for x in ("a", "b")): gcal = {"a": float(_k["a"]), "b": float(_k["b"])}
@@ -135,10 +136,14 @@ def live_snapshot():
         t = 45.0 if pd == 0 else s["min"] + (s.get("sec") or 0) / 60; hs, as_ = int(s["ht"].get("c") or 0), int(s["at"].get("c") or 0)
         rc = [int(s["ht"].get("rc") or 0), int(s["at"].get("rc") or 0)]
         P = live_pred(L[0], L[1], hs, as_, t, rc, h1, pd, Z)
-        Pc = None
+        Pc = Ph = None
+        try: mk = CGM.piyasa(e)                              # v144: marjı ayrılmış canlı piyasa olasılığı (ham oran kaydedilmez)
+        except Exception: mk = {}
         if PCG:
             try:
                 Pc = CGM.probs(float(L[0]), float(L[1]), hs, as_, t, rc, pd, PCG)
+                Ph = CGM.harman(Pc, mk, t, HWG, hs + as_) if HWG and mk else None
+                if HW and Ph is not None: Pc, Ph = Ph, Pc            # harman açık: uygulamanın olasılığı harmanlı (altın / işaret aynı sayıyı görür)
                 _uc = CAL.uygulama_adaylari(e, Pc, hs, as_)
                 ga = CAL.mac_adayi(_uc, s.get("min"), FAL, gcal)
                 if ga: gold_c.append(dict(ga, id=k, dk=s.get("min"), key=f"{k}-{int(t)}"))
@@ -168,6 +173,10 @@ def live_snapshot():
         if Pc is not None:
             pc = CGM.pick_p(Pc, b[0], hs, as_)
             if pc is not None: log[key]["pc"] = round(min(pc, .99), 4)     # v136: aynı seçimin uygulamadaki (CG) olasılığı
+            if Ph is not None:                                               # v144: harmanın öteki yüzü (açıkken saf CG, kapalıyken gölge harman)
+                ph = CGM.pick_p(Ph, b[0], hs, as_)
+                if ph is not None: log[key]["ph"] = round(min(ph, .99), 4); log[key]["hv"] = 1 if HW else 0
+        if mk: log[key]["mk"] = CGM.mk_kayit(mk)
         n += 1; new_keys.add(key)
     # v136: canlı altın — o anki eşik ve kuralla uygulamanın seçeceği altın seçimler işaretlenir (48 saat kapısı bunlarla ölçer)
     ng = 0

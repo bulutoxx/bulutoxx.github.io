@@ -158,3 +158,36 @@ setTimeout(kur,400);
 W.oxxGeri={durum:()=>({cur:CUR&&CUR.k,state:H.state,ign:IGN,busy:BUSY}),geri,git};
 })();
 } catch (e) { if (typeof reportError === "function") reportError(e); else setTimeout(function () { throw e; }); } /* /id: ara-geri-v142 */
+/* id: canli-piyasa-v144 */ try {
+(function(){
+  "use strict";
+  // =====================================================================
+  // v144 · YH-10 · CANLI PİYASA OLASILIĞI + CG HARMANI (futbol) — scripts/canli_guc.py piyasa() / harman() ile BİREBİR
+  // • Canlı oranlardan (m.odds = idlOdds: MS, ana çizgi Alt/Üst, sıradaki gol) marjı ayrılmış piyasa olasılığı (power yöntemi).
+  // • Harman: p_i ∝ exp(a·ln p_CG,i + b·ln p_piyasa,i); (a, b) pazar × dakika dilimi (0–30, 30–60, 60–75, 75+), lab/canli_piyasa_lab.py
+  //   zaman sıralı kapısından gelir. Kapalı (askıdaki) pazarda ya da oran yokken CG aynen kalır.
+  // • Bayrak: data/canli_piyasa.json → kullan=true ise açılır (gece yeniden sınanır; tutmazsa kendiliğinden kapanır). Kapalıyken etkisiz.
+  // • Kanca: canli-gt-v107 core() dönüşünde (CG açıkken) CPH.apply → pencere, Seçenekler, canlı altın, işaret aynı sayıyı görür.
+  // =====================================================================
+  const DL=["0","30","60","75"], PZ=["ms","ou","ng"], H={on:false,W:null,src:"kapali"};
+  function implied(o){ const q=o.map(x=>1/x); let lo=1,hi=3,k=1; for(let i=0;i<40;i++){ k=(lo+hi)/2; if(q.reduce((a,b)=>a+Math.pow(b,k),0)>1) lo=k; else hi=k; }
+    const p=q.map(x=>Math.pow(x,k)), s=p.reduce((a,b)=>a+b,0); return p.map(x=>x/s); }
+  const dilim=t=>t>=75?"75":t>=60?"60":t>=30?"30":"0";
+  function hk(pc,pm,a,b){ const z=pc.map((x,i)=>a*Math.log(Math.max(x,1e-9))+b*Math.log(Math.max(pm[i],1e-9))), mx=Math.max(...z), e=z.map(v=>Math.exp(v-mx)), s=e.reduce((x,y)=>x+y,0); return e.map(v=>v/s); }
+  function piyasa(od){ const o={}; if(!od) return o;
+    if(od.ms&&!od.ms.lock&&od.ms.v&&od.ms.v.length===3) o.ms=implied(od.ms.v);
+    if(od.ng&&!od.ng.lock&&od.ng.v&&od.ng.v.length===3) o.ng=implied(od.ng.v);
+    if(od.ou&&!od.ou.lock&&od.ou.alt&&od.ou.ust) o.ou=[+od.ou.l,implied([od.ou.alt,od.ou.ust])[1]];
+    return o; }
+  function gecerli(W){ try{ const o={}; for(const m of PZ){ o[m]={}; for(const d of DL){ const v=W[m][d], a=+v[0], b=+v[1];
+      if(!(isFinite(a)&&isFinite(b)&&a>=0&&a<=2&&b>=0&&b<=2)) return null; o[m][d]=[a,b]; } } return o; }catch(e){ return null; } }
+  function apply(P,m){ if(!H.on||!H.W||!P) return P; const mk=piyasa(m&&m.odds), dl=dilim(P.t), W=H.W;
+    if(mk.ms){ const r=hk([P.H,P.D,P.A],mk.ms,W.ms[dl][0],W.ms[dl][1]); P.H=r[0]; P.D=r[1]; P.A=r[2]; }
+    if(mk.ng){ const r=hk([P.nextH,P.none,P.nextA],mk.ng,W.ng[dl][0],W.ng[dl][1]); P.nextH=r[0]; P.none=r[1]; P.nextA=r[2]; }
+    if(mk.ou&&+P.line===mk.ou[0]&&P.pOver>0&&P.pOver<1) P.pOver=hk([P.pOver,1-P.pOver],[mk.ou[1],1-mk.ou[1]],W.ou[dl][0],W.ou[dl][1])[0];
+    if(mk.ms||mk.ng||mk.ou){ P.pz=mk; P.harman=true; } return P; }
+  window.CPH={H,piyasa,apply,hk,dilim,implied};
+  try{ fetch("data/canli_piyasa.json",{cache:"no-cache"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||j.kullan!==true) return;
+      const W=gecerli(j.W); if(!W) return; H.W=W; H.on=true; H.src="canli_piyasa"; }).catch(()=>{}); }catch(e){}
+})();
+} catch (e) { if (typeof reportError === "function") reportError(e); else setTimeout(function () { throw e; }); } /* /id: canli-piyasa-v144 */
