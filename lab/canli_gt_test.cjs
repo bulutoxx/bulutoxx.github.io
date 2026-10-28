@@ -153,10 +153,11 @@ print(json.dumps({"R":R,"C":C,"Z":{k:CI.ZDEF[k] for k in ("e1","e2","xi","rmin")
     document.querySelector('nav.tabs button[data-v="power"]') && document.querySelector('nav.tabs button[data-v="power"]').click();
     await new Promise(r => setTimeout(r, 400)); try { renderPower(); } catch (e) {}
     const pwRow = [...document.querySelectorAll("#v-power .pw-r")].find(r => /Arsenal/.test(r.textContent)); const pwTxt = pwRow ? (pwRow.querySelector(".pw-s b") || {}).textContent : null;
-    return { x2, k, shown, rb, boxP, pwP, kx, pwTxt: pwTxt ? pwTxt.replace(/\D/g, "") : null, adj: !!P.adj }; });
+    const yasak = typeof LGF !== "undefined" && m.min != null && +m.min >= LGF.dkmax;   // v135/v136: dkmax ve sonrası Power Now tavsiyesi yok
+    return { x2, k, shown, rb, boxP, pwP, kx, pwTxt: pwTxt ? pwTxt.replace(/\D/g, "") : null, adj: !!P.adj, yasak, dk: m.min }; });
   await shot("05_power_now");
-  ok(C.adj && String(C.shown) === C.rb && C.boxP === C.shown && C.pwP === C.shown && C.kx.includes(String(C.shown)) && C.pwTxt === String(C.shown),
-    `${tag} aynı olasılık her yerde (${C.k}): pencere %${C.rb}, kutu %${C.boxP}, Power Now %${C.pwP}/${C.pwTxt}, KUPO %${C.kx.join(",")}, liveShown %${C.shown}`);
+  ok(C.adj && String(C.shown) === C.rb && C.boxP === C.shown && (C.yasak ? C.pwP === null && C.pwTxt === null : C.pwP === C.shown && C.pwTxt === String(C.shown)) && C.kx.includes(String(C.shown)),
+    `${tag} aynı olasılık her yerde (${C.k}): pencere %${C.rb}, kutu %${C.boxP}, Power Now %${C.pwP}/${C.pwTxt}${C.yasak ? ` (${C.dk}'. dk ≥ son dakika sınırı: tavsiye yok, beklenen)` : ""}, KUPO %${C.kx.join(",")}, liveShown %${C.shown}`);
   ok(C.kx.includes(String(C.x2)), `${tag} KUPO'da en olası olmayan seçim (MS X) de aynı kaynaktan: %${C.x2} (${C.kx.join(",")})`);
   await p.evaluate(() => kxOpen("cp")); await p.waitForTimeout(500); await shot("06_kupo_canli");
 

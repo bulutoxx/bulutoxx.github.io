@@ -112,13 +112,21 @@ def live_snapshot():
     except Exception: h1 = .4428
     import canli_istat as CI
     Z = CI.zaman(DATA)                                   # v117: kabul edilmiş kalan süre modeli (yoksa eski model)
+    # v136: uygulamanın canlı olasılığı (CG açıksa) ve canlı altın kuralı — scripts/canli_altin.py ile uygulamadaki formülün aynısı
+    import canli_guc as CGM, canli_altin as CAL
+    PCG = CGM.ayar(DATA); FAL = CAL.ayar(DATA); gcal = None
+    try:
+        _k = json.load(open(os.path.join(DATA, "canli_guc.json"), encoding="utf-8")).get("kal") or None
+        if _k and all(isinstance(_k.get(x), (int, float)) for x in ("a", "b")): gcal = {"a": float(_k["a"]), "b": float(_k["b"])}
+    except Exception: pass
+    gold_c = []
     get = lambda u: json.loads(urllib.request.urlopen(urllib.request.Request(u, headers=ID.UA), timeout=40).read().decode("utf-8")).get("data") or {}
     lr = get("https://statisticsv2.iddaa.com/live-results?sportId=1"); ev = get("https://sportsbookv2.iddaa.com/sportsbook/events?st=1&type=1&version=0")
     sc = lr.get("sc") or {}
     os.makedirs(LIVE, exist_ok=True); fp = os.path.join(LIVE, f"{d}.json")
     try: log = json.load(open(fp, encoding="utf-8"))
     except Exception: log = {}
-    n = 0; st_c = []
+    n = 0; st_c = []; new_keys = set()
     for e in (ev.get("events") or []):
         if e.get("s") != 1: continue
         k = str(e["i"]); s = sc.get(k); L = lam.get(k)
@@ -127,6 +135,13 @@ def live_snapshot():
         t = 45.0 if pd == 0 else s["min"] + (s.get("sec") or 0) / 60; hs, as_ = int(s["ht"].get("c") or 0), int(s["at"].get("c") or 0)
         rc = [int(s["ht"].get("rc") or 0), int(s["at"].get("rc") or 0)]
         P = live_pred(L[0], L[1], hs, as_, t, rc, h1, pd, Z)
+        Pc = None
+        if PCG:
+            try:
+                Pc = CGM.probs(float(L[0]), float(L[1]), hs, as_, t, rc, pd, PCG)
+                ga = CAL.mac_adayi(CAL.uygulama_adaylari(e, Pc, hs, as_), s.get("min"), FAL, gcal)
+                if ga: gold_c.append(dict(ga, id=k, dk=s.get("min"), key=f"{k}-{int(t)}"))
+            except Exception: Pc = None
         st_c.append({"id": k, "t": t, "pd": pd, "hs": hs, "as": as_, "rc": rc, "lam": [float(L[0]), float(L[1])], "h": e.get("hn") or "", "a": e.get("an") or ""})
         cands = []
         for m in e.get("m") or []:
@@ -147,9 +162,24 @@ def live_snapshot():
         log[key] = {"id": k, "t": round(t, 1), "hs": hs, "as": as_, "rk": b[0], "p": round(b[1], 4), "o": b[2], "c": e.get("ci"), "h": e.get("hn"), "a": e.get("an"),
                     "ts": int(now.timestamp()),    # kayıt anı: canlı kalibrasyonun zaman sıralı sınaması için
                     "pd": pd, "rc": rc, "lam": [round(float(L[0]), 4), round(float(L[1]), 4)], "mv": 117 if Z else 0}   # v117: yeniden hesap için   # kayıt anı: canlı kalibrasyonun zaman sıralı sınaması için
-        n += 1
+        if Pc is not None:
+            pc = CGM.pick_p(Pc, b[0], hs, as_)
+            if pc is not None: log[key]["pc"] = round(min(pc, .99), 4)     # v136: aynı seçimin uygulamadaki (CG) olasılığı
+        n += 1; new_keys.add(key)
+    # v136: canlı altın — o anki eşik ve kuralla uygulamanın seçeceği altın seçimler işaretlenir (48 saat kapısı bunlarla ölçer)
+    ng = 0
+    try:
+        K = CAL.sec(gold_c, FAL) if gold_c else None
+        if K:
+            for x in K["sel"]:
+                if x["key"] not in new_keys: continue
+                log[x["key"]]["g"] = 1
+                log[x["key"]]["ga"] = {"k": x["k"], "p": round(x["p"], 4), "o": x["o"], "tur": K["tur"], "kp": round(K["p"], 4), "n": len(K["sel"]),
+                                       "tekli": FAL["tekli"], "kombine": FAL["kombine"], "durum": FAL.get("durum")}
+                ng += 1
+    except Exception as ex: print("canlı altın işaretleme atlandı:", ex.__class__.__name__, flush=True)
     json.dump(log, open(fp, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
-    print(f"Canlı kayıt: {n} yeni seçim ({len(log)} bugün)", flush=True)
+    print(f"Canlı kayıt: {n} yeni seçim ({len(log)} bugün) · altın {ng}", flush=True)
     try: live_stats_snapshot(st_c, h1, now, Z=Z)
     except Exception as ex: print("canlı istatistik atlandı:", ex.__class__.__name__, flush=True)
 
@@ -391,7 +421,7 @@ def live_grade():
     now = datetime.now(timezone.utc); stats = []
     for f in sorted(glob.glob(os.path.join(LIVE, "*.json")))[-30:]:
         d = os.path.basename(f)[:10]; log = json.load(open(f, encoding="utf-8")); changed = False
-        need = [r for r in log.values() if "ok" not in r]
+        need = [r for r in log.values() if "ok" not in r or ("ga" in r and "gok" not in r)]
         if need and d >= (now.astimezone(TR).date() - timedelta(days=2)).isoformat():
             fin = {}
             for back in (0, 1):
@@ -417,6 +447,9 @@ def live_grade():
                     elif da > 0 and dh == 0: ok = k == "G2"
                     else: ok = None     # iki takım da attı: ilk golü kimin attığı bilinmiyor
                 r["ok"] = ok; changed = True
+                if isinstance(r.get("ga"), dict):                       # v136: canlı altın seçiminin sonucu (seçim kaydınkinden farklı olabilir)
+                    import canli_altin as CAL
+                    r["gok"] = CAL.hit(r["ga"].get("k"), fh, fa, r["hs"], r["as"])
             if changed: json.dump(log, open(f, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
         stats += [dict(r, _d=d) for r in log.values() if r.get("ok") is not None]
     return live_cal_block(stats)

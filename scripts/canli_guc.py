@@ -8,6 +8,9 @@ CG (parametreler yalnız kayıtlı canlı anlık görüntüler + maç sonuçlar�
   rem      = kalan süre gol payı (canli_istat.rem_share, v117 biçimi: e1/e2 uzatma + yarı içi artan yoğunluk ξ; h1 öğrenilir)
   el       = 1 − rem  (geçen süre payı)
   durum    = t ≥ 15 ise skor durumu çarpanı: geride exp(g_tr + g_trl·geç), önde exp(g_ld), eşit exp(g_lv); geç = sınırla((t−60)/30, 0, 1)
+  geç      = v136 son dakika düzeltmesi (lab/canli_guc_lab.py "gec" kapısı; geçmezse nötr): uzatma beklentisi e2 ve kalan süre tabanı
+             rmin öğrenilir; 70→85. dk arası artan yoğunluk exp(g_l2·sınırla((t−70)/15, 0, 1)) her iki takıma; önde olan takımın geç
+             dakika hızı exp(g_ld + g_ldl·geç). Nötr değerler (e2=3, rmin=1, g_l2=0, g_ldl=0) eski CG ile birebir aynıdır.
   kart     = 0,72^kendi kırmızı × 1,25^rakip kırmızı   (Titman ve ark. 2015; kayıtlarda kart verisi az → sabit)
   Bayes    = takım gücü çarpanı θ ~ Gamma(a, a) (ortalama 1). Atılan gol x, geçen beklenen gol E = s·λ·el →
              θ | veri ~ Gamma(a + x, a + E)  (eşlenik güncelleme)
@@ -20,7 +23,8 @@ yalnız ayrı kapısını geçerse etkindir.
 import json, math, os
 
 DEF = {"s": 1.0, "h1": 0.4437, "xi": 1.0, "e1": 3.0, "e2": 3.0, "rmin": 1.0, "a": 8.0,
-       "g_tr": 0.1, "g_trl": 0.0, "g_ld": -0.1, "g_lv": -0.1, "rc_own": 0.72, "rc_opp": 1.25, "nmax": 10}
+       "g_tr": 0.1, "g_trl": 0.0, "g_ld": -0.1, "g_lv": -0.1, "rc_own": 0.72, "rc_opp": 1.25, "nmax": 10,
+       "g_l2": 0.0, "g_ldl": 0.0}
 KEYS = ("s", "h1", "xi", "a", "g_tr", "g_trl", "g_ld", "g_lv")
 
 
@@ -55,14 +59,14 @@ def rem_share(t, pd, P):
 def lams(lh, la, hs, as_, t, rc, pd, P):
     """Kalan sürede ortalama gol (μH, μA) ve NB şekilleri (rH, rA)."""
     rem = rem_share(t, pd, P); el = max(0.0, 1 - rem); d = hs - as_
-    late = min(1.0, max(0.0, (t - 60) / 30))
+    late = min(1.0, max(0.0, (t - 60) / 30)); kL = math.exp(P["g_l2"] * min(1.0, max(0.0, (t - 70) / 15)))
     def st(dd):
         if t < 15: return 1.0
-        return math.exp(P["g_tr"] + P["g_trl"] * late) if dd < 0 else math.exp(P["g_ld"]) if dd > 0 else math.exp(P["g_lv"])
+        return math.exp(P["g_tr"] + P["g_trl"] * late) if dd < 0 else math.exp(P["g_ld"] + P["g_ldl"] * late) if dd > 0 else math.exp(P["g_lv"])
     rc = rc or [0, 0]; a = P["a"]; s = P["s"]
     kH = P["rc_own"] ** (rc[0] or 0) * P["rc_opp"] ** (rc[1] or 0); kA = P["rc_own"] ** (rc[1] or 0) * P["rc_opp"] ** (rc[0] or 0)
     bH = (a + hs) / (a + s * lh * el); bA = (a + as_) / (a + s * la * el)
-    return s * lh * rem * st(d) * kH * bH, s * la * rem * st(-d) * kA * bA, a + hs, a + as_
+    return s * lh * rem * st(d) * kH * bH * kL, s * la * rem * st(-d) * kA * bA * kL, a + hs, a + as_
 
 
 def nb_pmf(mu, r, n):

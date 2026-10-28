@@ -112,12 +112,12 @@ def old_probs(X, h1):
 
 def cg_probs(X, P, nb=True):
     t = X["t"]; rem = _rem(t, X["pd"], P["h1"], P["xi"], P["e1"], P["e2"], P["rmin"]); el = np.maximum(0, 1 - rem); d = X["hs"] - X["as"]
-    late = np.clip((t - 60) / 30, 0, 1); st = t >= 15
-    def sm(dd): return np.where(st, np.where(dd < 0, np.exp(P["g_tr"] + P["g_trl"] * late), np.where(dd > 0, np.exp(P["g_ld"]), np.exp(P["g_lv"]))), 1.0)
+    late = np.clip((t - 60) / 30, 0, 1); st = t >= 15; kL = np.exp(P.get("g_l2", 0.0) * np.clip((t - 70) / 15, 0, 1))
+    def sm(dd): return np.where(st, np.where(dd < 0, np.exp(P["g_tr"] + P["g_trl"] * late), np.where(dd > 0, np.exp(P["g_ld"] + P.get("g_ldl", 0.0) * late), np.exp(P["g_lv"]))), 1.0)
     a = P["a"]; s = P["s"]
     kH = P["rc_own"] ** X["rh"] * P["rc_opp"] ** X["ra"]; kA = P["rc_own"] ** X["ra"] * P["rc_opp"] ** X["rh"]
-    mH = s * X["lh"] * rem * sm(d) * kH * (a + X["hs"]) / (a + s * X["lh"] * el)
-    mA = s * X["la"] * rem * sm(-d) * kA * (a + X["as"]) / (a + s * X["la"] * el)
+    mH = s * X["lh"] * rem * sm(d) * kH * kL * (a + X["hs"]) / (a + s * X["lh"] * el)
+    mA = s * X["la"] * rem * sm(-d) * kA * kL * (a + X["as"]) / (a + s * X["la"] * el)
     if not nb: return _grid(_pois(mH, NMAX), _pois(mA, NMAX), X)
     return _grid(_nb(mH, a + X["hs"], NMAX), _nb(mA, a + X["as"], NMAX), X)
 
@@ -192,6 +192,32 @@ def fit(X, base, nb=True):
     return unpack(v, base), val
 
 
+# ---------------------------------------------------------------- v136 · son dakika (geç) parametreleri — 2. aşama
+# Ölçüm (v135): eski canlı modelde 75. dk sonrası %97,9 denilen seçimler %81,6 tuttu. CG'de geç dakikalar için ayrı serbest parametre
+# yoktu (uzatma e2=3 ve taban rmin=1 sabit). 2. aşama: 1. aşama parametreleri sabitken yalnız GEC öğrenilir (nötr Gauss önsel).
+GEC = ("e2", "rmin", "g_l2", "g_ldl")
+GEC_NOTR = {"e2": 3.0, "rmin": 1.0, "g_l2": 0.0, "g_ldl": 0.0}
+GEC_DK = 75                            # ölçüm dilimi sınırı (75+ / 75−)
+
+
+def unpack_gec(v, base):
+    return dict(base, e2=min(8.0, max(1.0, v[0])), rmin=min(4.0, max(0.5, v[1])), g_l2=min(1.0, max(-1.0, v[2])), g_ldl=min(1.0, max(-1.0, v[3])))
+
+
+def fit_gec(X, base):
+    """2. aşama: yalnız geç dakika parametreleri. Amaç: tüm satırlarda birleşik log-kayıp (geç dakika satırları bu parametrelere
+    duyarlı olduğundan esas olarak onlar belirler); önsel nötr (GEC_NOTR), Gauss önsel std sc."""
+    m = X["t"] >= 60
+    Xs = {k: v[m] for k, v in X.items()}
+    v0 = np.array([GEC_NOTR[k] for k in GEC]); sc = np.array([2.0, 1.0, 0.5, 0.5])     # önsel std (Gauss önsel, toplam log-olabilirliğe eklenir)
+    def f(v):
+        P = unpack_gec(v, base); l1, _, l2, _ = losses(cg_probs(Xs, P), Xs); w = Xs["w"]
+        return float(((l1 + l2) * w).sum() + 0.5 * np.sum(((v - v0) / sc) ** 2)) / float(w.sum())
+    v, _ = nelder_mead(f, v0, step=.3, it=600)
+    v, _ = nelder_mead(f, v, step=.05, it=400)
+    return unpack_gec(v, base)
+
+
 # ---------------------------------------------------------------- seçim (pick) Platt'ı — uygulamanın liveCal'ı
 def pick_rows(snaps, ids):
     return [r for r in snaps if r["id"] in ids and r.get("ok") is not None]
@@ -228,6 +254,7 @@ def evaluate(fin, snaps, h1, verbose=True):
         Xtr = rows_of(snaps, fin, tr_ids, extra=True)
         base = dict(CG.DEF, h1=h1)
         P, val = fit(Xtr, base, nb=True)
+        Pg = fit_gec(Xtr, P)
         Xte = rows_of(snaps, fin, te_ids, extra=False)
         # seçim Platt'ları (yalnız eğitim maçlarının kayıtlı seçimleri)
         pr_tr = pick_rows(snaps, tr_ids)
@@ -236,18 +263,19 @@ def evaluate(fin, snaps, h1, verbose=True):
         ab_cg = platt_fit([x[0] for x in cgp], [x[1] for x in cgp]) if len(cgp) >= 300 else None
         po = old_probs(Xte, h1); pn = cg_probs(Xte, P)
         V = {"eski_ham": po, "eski_kal": shown(po, ab_old), "cg_ham": pn, "cg_kal": shown(pn, ab_cg),
-             "cg_poisson": cg_probs(Xte, dict(P, a=1e7), nb=True)}
+             "cg_poisson": cg_probs(Xte, dict(P, a=1e7), nb=True), "cg_gec": cg_probs(Xte, Pg)}
+        res.setdefault("_T", []).append(Xte["t"])
         for k, pr in V.items(): acc[k].append(np.stack(losses(pr, Xte), 1))
         ids_all += [r["id"] for r in snaps if r["d"] == D and r["id"] in te_ids]
         # satır sırası rows_of ile aynı (snaps sırası)
         g = {k: [round(float(x), 5) for x in np.stack(losses(pr, Xte), 1).mean(0)] for k, pr in V.items()}
-        res.setdefault("_P", []).append((D, P))
+        res.setdefault("_P", []).append((D, P)); res.setdefault("_PG", []).append((D, Pg))
         res["gunler"].append({"gun": D, "egitim_mac": len(tr_ids), "egitim_canli_mac": len(tr_live), "sinama_n": int(len(Xte["t"])), "sinama_mac": len(te_ids),
-                              "params": {k: round(P[k], 4) for k in FREE}, "platt_eski": ab_old and [round(x, 4) for x in ab_old], "platt_cg": ab_cg and [round(x, 4) for x in ab_cg],
+                              "params": {k: round(P[k], 4) for k in FREE}, "gec": {k: round(Pg[k], 4) for k in GEC}, "platt_eski": ab_old and [round(x, 4) for x in ab_old], "platt_cg": ab_cg and [round(x, 4) for x in ab_cg],
                               "olcu": g})
         if verbose: print(D, "eğitim maç", len(tr_ids), "sınama", len(Xte["t"]), "/", len(te_ids), {k: v for k, v in g.items()}, {k: round(P[k], 3) for k in FREE}, flush=True)
     if not acc: return None
-    L = {k: np.concatenate(v) for k, v in acc.items()}; ids = np.array(ids_all)
+    L = {k: np.concatenate(v) for k, v in acc.items()}; ids = np.array(ids_all); res["_T"] = np.concatenate(res["_T"])
     res["n"] = int(len(ids)); res["mac"] = len(set(ids_all))
     NM = ("ll_ms", "brier_ms", "ll_o25", "brier_o25")
     res["tablo"] = {k: {nm: round(float(v[:, i].mean()), 5) for i, nm in enumerate(NM)} for k, v in L.items()}
@@ -275,6 +303,53 @@ def pick_eval(fin, snaps, h1, params_by_day):
             "eski_kal": {"brier": round(float(br(A[:, 0]).mean()), 5), "ll": round(float(ll(A[:, 0]).mean()), 5), "ort_p": round(float(A[:, 0].mean()), 4)},
             "cg_ham": {"brier": round(float(br(A[:, 1]).mean()), 5), "ll": round(float(ll(A[:, 1]).mean()), 5), "ort_p": round(float(A[:, 1].mean()), 4)},
             "d_brier": round(float(d.mean()), 5), "ga95": ci, "p_iyi": pw}
+
+
+def gec_eval(fin, snaps, h1, res, L, ids):
+    """v136 · geç dakika düzeltmesinin zaman sıralı ölçümü, 75+ ve 75− dilimlerinde ayrı ayrı:
+    (a) anlık görüntüler: MS + 2,5 Üst birleşik log-kayıp ve Brier (cg_ham ↔ cg_gec), maç-blok bootstrap;
+    (b) kayıtlı canlı seçimler (Power Now): seçimin olasılığı ↔ tuttu mu — n, ort_p, gerçek, kalibrasyon farkı, LL, Brier.
+        once = CG (zaman sıralı, uygulamanın kullandığı), sonra = CG + geç parametreler, eski_kayit = kayıttaki eski model olasılığı
+        (v135 ölçümünde aşırı güvenli çıkan; başvuru için)."""
+    T = res["_T"]; out = {"dk": GEC_DK, "anlik": {}, "secim": {}}
+    for nm, m in (("75+", T >= GEC_DK), ("75-", T < GEC_DK)):
+        if not m.any(): continue
+        a, b = L["cg_ham"][m], L["cg_gec"][m]; d = (b[:, 0] + b[:, 2]) - (a[:, 0] + a[:, 2]); ci, pw = boot(d, ids[m])
+        out["anlik"][nm] = {"n": int(m.sum()), "ll_once": round(float((a[:, 0] + a[:, 2]).mean()), 5), "ll_sonra": round(float((b[:, 0] + b[:, 2]).mean()), 5),
+                            "brier_once": round(float((a[:, 1] + a[:, 3]).mean()), 5), "brier_sonra": round(float((b[:, 1] + b[:, 3]).mean()), 5),
+                            "d_ll": round(float(d.mean()), 5), "ga95": ci, "p_iyi": pw}
+    PG = dict(res.get("_PG", [])); rows = []
+    for D, P in res.get("_P", []):
+        Pg = PG.get(D)
+        if not Pg: continue
+        for r in snaps:
+            if r["d"] != D or r.get("ok") is None: continue
+            p0, p1 = cg_pick_p(r, P), cg_pick_p(r, Pg)
+            if p0 is None or p1 is None: continue
+            rows.append((r["t"], min(.99, p0), min(.99, p1), float(r["ok"]), r["id"], min(.99, float(r["p"]))))
+    for nm, f in (("75+", lambda t: t >= GEC_DK), ("75-", lambda t: t < GEC_DK)):
+        R = [x for x in rows if f(x[0])]
+        if not R: continue
+        A = np.array([x[1:4] for x in R]); y = A[:, 2]; I = np.array([x[4] for x in R]); E = np.array([x[5] for x in R])
+        br = lambda p: (p - y) ** 2; ll = lambda p: -(y * np.log(np.clip(p, 1e-6, 1)) + (1 - y) * np.log(np.clip(1 - p, 1e-6, 1)))
+        dB = br(A[:, 1]) - br(A[:, 0]); ci, pw = boot(dB, I)
+        hi = A[:, 0] >= .9
+        out["secim"][nm] = {"n": int(len(y)), "gercek": round(float(y.mean()), 4),
+                            "once": {"ort_p": round(float(A[:, 0].mean()), 4), "fark": round(float(y.mean() - A[:, 0].mean()), 4), "ll": round(float(ll(A[:, 0]).mean()), 5), "brier": round(float(br(A[:, 0]).mean()), 5)},
+                            "sonra": {"ort_p": round(float(A[:, 1].mean()), 4), "fark": round(float(y.mean() - A[:, 1].mean()), 4), "ll": round(float(ll(A[:, 1]).mean()), 5), "brier": round(float(br(A[:, 1]).mean()), 5)},
+                            "eski_kayit": {"ort_p": round(float(E.mean()), 4), "fark": round(float(y.mean() - E.mean()), 4), "ll": round(float(ll(E).mean()), 5), "brier": round(float(br(E).mean()), 5),
+                                           "p95_ustu": {"n": int((E >= .95).sum()), "ort_p": round(float(E[E >= .95].mean()), 4) if (E >= .95).any() else None,
+                                                        "gercek": round(float(y[E >= .95].mean()), 4) if (E >= .95).any() else None,
+                                                        "cg_ort_p": round(float(A[E >= .95, 0].mean()), 4) if (E >= .95).any() else None}},
+                            "d_brier": round(float(dB.mean()), 5), "ga95": ci, "p_iyi": pw,
+                            "p90_ustu": {"n": int(hi.sum()), "gercek": round(float(y[hi].mean()), 4) if hi.any() else None,
+                                         "once_ort_p": round(float(A[hi, 0].mean()), 4) if hi.any() else None, "sonra_ort_p": round(float(A[hi, 1].mean()), 4) if hi.any() else None}}
+    a, b = out["anlik"].get("75+"), out["anlik"].get("75-"); sa, sb = out["secim"].get("75+"), out["secim"].get("75-")
+    ok = bool(a and b and sa and sb and a["n"] >= 150 and a["d_ll"] < 0 and a["p_iyi"] >= .8 and b["d_ll"] <= 0.001
+              and sa["d_brier"] <= 0 and sb["d_brier"] <= 0.001 and abs(sa["sonra"]["fark"]) <= abs(sa["once"]["fark"]) + 0.01)
+    out["kapi"] = {"kural": "75+ anlık: ΔLL < 0 ve bootstrap P(iyi) ≥ 0,8 (n ≥ 150); 75−: ΔLL ≤ +0,001; seçimlerde 75+ ΔBrier ≤ 0, 75− ΔBrier ≤ +0,001; 75+ kalibrasyon farkı büyümüyor (+0,01 pay)",
+                   "gecti": ok}
+    return out
 
 
 def boot(dl, ids, B=2000, seed=11):
@@ -308,12 +383,17 @@ def main(argv):
         K = {f"{a}_vs_{b}": cmp(a, b) for a, b in (("cg_ham", "eski_kal"), ("cg_kal", "eski_kal"), ("cg_ham", "eski_ham"), ("cg_poisson", "eski_ham"))}
         win_days = sum(1 for g in res["gunler"] if g["olcu"]["cg_ham"][0] + g["olcu"]["cg_ham"][2] < g["olcu"]["eski_kal"][0] + g["olcu"]["eski_kal"][2])
         c = K["cg_ham_vs_eski_kal"]
+        GECR = gec_eval(fin, snaps, h1, res, L, ids); res.pop("_T", None); res.pop("_PG", None)
         SEC = pick_eval(fin, snaps, h1, res.pop("_P", []))
         ok = (SEC is not None and SEC["d_brier"] <= 0 and res["n"] >= MIN_N and res["mac"] >= MIN_M and c["ga95"][1] < 0 and c["d_ll_ms"] <= 0 and c["d_ll_o25"] <= 0 and c["d_brier_ms"] <= 0
               and win_days * 2 > len(res["gunler"]))
         # son parametreler: tüm sonuçlu maçlarla (uygulamada kullanılacak)
         base = dict(CG.DEF, h1=h1); Xall = rows_of(snaps, fin, set(fin), extra=True); P, _ = fit(Xall, base)
-        out.update({"kullan": bool(ok), "params": {k: round(P[k], 5) for k in list(FREE) + ["e1", "e2", "rmin", "rc_own", "rc_opp", "nmax"]},
+        if GECR["kapi"]["gecti"]: P = fit_gec(Xall, P)          # v136: geç dakika parametreleri yalnız kapıyı geçerse (yoksa nötr)
+        else: P = dict(P, **GEC_NOTR)
+        GECR["uygulanan"] = {k: round(P[k], 5) for k in GEC}
+        out.update({"kullan": bool(ok), "params": {k: round(P[k], 5) for k in list(FREE) + ["e1", "e2", "rmin", "g_l2", "g_ldl", "rc_own", "rc_opp", "nmax"]},
+                    "gec": GECR,
                     "kal": None, "egitim_satir": int(len(Xall["t"])), "egitim_mac": len(fin),
                     "sinama": {"yontem": "genişleyen pencere, gün bazlı; eğitim = sınama günü başlamadan sonucu kesin maçlar", "n": res["n"], "mac": res["mac"],
                                "tablo": T, "karsilastirma": K, "secim": SEC, "kazanilan_gun": win_days, "gun_sayisi": len(res["gunler"]), "gunler": res["gunler"]},
@@ -321,6 +401,7 @@ def main(argv):
                     "karar": "kapıdan geçti — uygulama CG kullanır" if ok else "kapıdan geçmedi — uygulama eski yolu kullanır"})
     print(json.dumps({k: v for k, v in out.items() if k != "sinama"}, ensure_ascii=False, indent=1))
     if E: print(json.dumps({k: out["sinama"][k] for k in ("n", "mac", "tablo", "karsilastirma", "secim", "kazanilan_gun", "gun_sayisi")}, ensure_ascii=False, indent=1))
+    if E: print(json.dumps(out.get("gec"), ensure_ascii=False, indent=1))
     if "--uygula" in argv:
         json.dump(out, open(os.path.join(DATA, "canli_guc.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
         print("yazıldı: data/canli_guc.json")

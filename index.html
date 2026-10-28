@@ -5920,7 +5920,7 @@ if((location.hash||"")==="#sonuclar") setTimeout(()=>$("navRes").click(),200);
 // =====================================================================
 // OXXai v35: Otomatik sürüm güncelleme — yeni sürüm yayınlanınca uygulama kendini yeniler
 // =====================================================================
-const APP_V="2026-10-28.135";
+const APP_V="2026-10-28.136";
 (function autoUpdate(){
   let shown=false;
   async function check(auto){
@@ -6016,6 +6016,12 @@ setTimeout(dailyLoad,2500); setInterval(()=>{ if(!document.hidden) dailyLoad(); 
 // Kupon artık Power Now sayfasının üstündeki "Kuponum" şeridinden ve Menü'den açılır.
 // =====================================================================
 const PW={th:0.75, pick:0.80, timer:null, last:null};
+// v136: canlı altın eşikleri veriden seçilir (lab/canli_altin_lab.py → data/canli_altin.json; 48 saatlik canlı denemede tutmazsa
+// kendiliğinden geri alınır). Dosya yoksa ya da bozuksa eski değerler. Toplayıcı aynı kuralı scripts/canli_altin.py ile işaretler.
+const LGF={tekli:.85, kombine:.75, aday:.80, dkmax:75, durum:null};
+try{ fetch("data/canli_altin.json",{cache:"no-cache"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j) return; const v=k=>{ const x=+j[k]; return j[k]!=null&&isFinite(x)?x:null; };
+  const t=v("tekli"), k=v("kombine"), a=v("aday"), d=v("dkmax");
+  if(t!=null&&k!=null&&a!=null&&d!=null&&t>=.5&&t<=.99&&k>=.5&&k<=.99&&a>=.5&&a<=.99&&d>=30&&d<=120){ Object.assign(LGF,{tekli:t,kombine:k,aday:a,dkmax:d,durum:j.durum||null}); PW.pick=a; } }).catch(()=>{}); }catch(e){}
 // Canlı seçim kalibrasyonu: 15 dakikada bir kilitlenen canlı seçimlerin gerçek tutma oranı (data/daily.json → canli)
 function liveCal(pp){ const C=DAILY&&DAILY.canli; if(!C||!C.bins) return {p:pp};
   for(const [lo,hi,n,h] of C.bins) if(pp>=lo&&pp<hi&&n>=30&&h!=null) return {p:(h*n+pp*50)/(n+50), n, h};
@@ -6026,7 +6032,7 @@ function pwLiveCands(){
     let P=null, K=null; try{ P=idlPred(m); K=idlPick(m,P); }catch(e){}
     if(!P||!K) continue;
     const best=K.all.filter(c=>c.o&&c.o>=1.03&&c.p>=.6&&isFinite(c.p)).sort((a,b)=>b.p-a.p)[0];
-    if(m.min!=null&&+m.min>=75) continue;   // v135: son dakikalarda tavsiye yok (istatistiği şişiriyordu)
+    if(m.min!=null&&+m.min>=LGF.dkmax) continue;   // v135: son dakikalarda tavsiye yok (istatistiği şişiriyordu); v136: sınır bayraktan
     if(best){ const C=liveCal(best.p); if(C.p>=PW.pick) out.push({m, k:best.k, n:best.n, p:Math.min(C.p,.99), raw:best.p, cn:C.n, ch:C.h, o:best.o, clock:idlClockTxt(m)}); }
   }
   return out.sort((a,b)=>b.p-a.p);
@@ -7895,9 +7901,9 @@ setTimeout(()=>{ try{ renderTP(); }catch(e){} },1500);
 // =====================================================================
 (function(){
   // v135: son dakika seçimleri altına girmez (75. dk ve sonrası: model orada aşırı güvenliydi, %97,9 dediği %81,6 tuttu).
-  // Eşikler (TH/SOLO/PMIN) kullanıcı kararını bekliyor; şimdilik önceki değerler.
-  const TH=.75, SOLO=.85, PMIN=0, DKMAX=75; let open=false, lastSig="";
-  function build(){ let L=[]; try{ L=pwLiveCands(); }catch(e){} const seen=new Set(), c=[];
+  // v136: eşikler data/canli_altin.json'dan (LGF; veriye dayalı seçim + 48 saatlik canlı kapı). Python eşi: scripts/canli_altin.py sec().
+  const PMIN=0; let TH=LGF.kombine, open=false, lastSig="";
+  function build(){ TH=LGF.kombine; const SOLO=LGF.tekli, DKMAX=LGF.dkmax; let L=[]; try{ L=pwLiveCands(); }catch(e){} const seen=new Set(), c=[];
     for(const x of L){ if(!(x.o>=1.05)) continue; if(!(x.p>=PMIN)) continue; if(x.m&&x.m.min!=null&&+x.m.min>=DKMAX) continue; if(seen.has(x.m.id)) continue; seen.add(x.m.id); c.push(x); if(c.length>=12) break; }
     let best=null;
     (function rec(i,sel,p,o){ if(sel.length>=2&&p>=TH&&(!best||o>best.o+1e-9)) best={sel:sel.slice(),p,o};
@@ -7922,7 +7928,7 @@ setTimeout(()=>{ try{ renderTP(); }catch(e){} },1500);
     pan.innerHTML=K.sel.map(x=>{ const m=x.m; return `<div class="pw-r"${omA(m)}><div class="pw-m"><b>${esc(m.h)} - ${esc(m.a)}</b><small>🔴 ${esc(x.clock||"")} · ${m.hs}-${m.as} · ${esc(m.comp||"")}</small></div><div class="pw-s"><span>${esc(x.n)}</span><b>%${pc9(x.p)}</b><i>${of2(x.o)}</i></div></div>`; }).join("")
       +`<button type="button" class="lg-add" id="lgAdd">+ Altın seçimleri KUPO'ya ekle</button><p class="lg-n">Canlı maçlar 10 saniyede bir yeniden taranır; maç durumu değişince KUPO da değişir. %${Math.round(TH*100)}+ birlikte tutma bile kesinlik değildir · 18+</p>`;
     $("lgAdd").onclick=()=>{ buzz([10,30,10]); try{ pwAdd(K.sel); }catch(e){} }; }
-  window.lgPaint=paint;
+  window.lgPaint=paint; window.lgBuild=build;   // v136: lab/canli_altin_test.cjs (Python eşi scripts/canli_altin.py ile birebir sınama)
   try{ const _ira=idlRenderAll; idlRenderAll=function(){ const r=_ira.apply(this,arguments); try{ paint(); }catch(e){} return r; }; }catch(e){}
   try{ paint(); }catch(e){}
 })();
@@ -12227,7 +12233,7 @@ html[data-v122-ctx="at"] nav.tabs button[aria-current]{color:var(--ink3,#8893AB)
   // ---------- canlı güç modeli (CG) · scripts/canli_guc.py ile BİREBİR; data/canli_guc.json → kullan=true ise açılır ----------
   // Kalan gol ~ Negatif Binom (Gamma-Poisson): maçta atılan gol takım gücünü Bayes yoluyla günceller; skor durumu, kırmızı kart,
   // uzatmalı kalan süre. Parametreler lab/canli_guc_lab.py'nin zaman sıralı kapısından gelir. Kapalıysa eski yol aynen çalışır.
-  const GDEF={s:1,h1:.4437,xi:1,e1:3,e2:3,rmin:1,a:8,g_tr:.1,g_trl:0,g_ld:-.1,g_lv:-.1,rc_own:.72,rc_opp:1.25,nmax:10};
+  const GDEF={s:1,h1:.4437,xi:1,e1:3,e2:3,rmin:1,a:8,g_tr:.1,g_trl:0,g_ld:-.1,g_lv:-.1,rc_own:.72,rc_opp:1.25,nmax:10,g_l2:0,g_ldl:0};   // v136: g_l2/g_ldl geç dakika (nötr 0)
   const G={on:false,P:null,cal:null,src:"eski"};
   try{ fetch("data/canli_guc.json",{cache:"no-cache"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||j.kullan!==true||!j.params) return;
       const P=Object.assign({},GDEF); for(const k of Object.keys(GDEF)){ const v=+j.params[k]; if(j.params[k]!=null&&isFinite(v)) P[k]=v; }
@@ -12238,11 +12244,12 @@ html[data-v122-ctx="at"] nav.tabs button[aria-current]{color:var(--ink3,#8893AB)
     if(pd===1){ const a=Math.max(0,t), r=t<45?(45-t)+P.e1:Math.max(P.e1-(t-45),P.rmin); return (1-gF(a/(a+r),P.xi))*h1+(1-h1); }
     const a=Math.max(0,t-45), r=t<90?(90-t)+P.e2:Math.max(P.e2-(t-90),P.rmin); return Math.max(.004,(1-gF(a/(a+r),P.xi))*(1-h1)); }
   function cgLams(lh,la,hs,as,t,rc,pd,P){ const rem=cgRem(t,pd,P), el=Math.max(0,1-rem), d=hs-as, late=Math.min(1,Math.max(0,(t-60)/30));
-    const st=dd=>t<15?1:dd<0?Math.exp(P.g_tr+P.g_trl*late):dd>0?Math.exp(P.g_ld):Math.exp(P.g_lv);
+    const kL=Math.exp((P.g_l2||0)*Math.min(1,Math.max(0,(t-70)/15)));
+    const st=dd=>t<15?1:dd<0?Math.exp(P.g_tr+P.g_trl*late):dd>0?Math.exp(P.g_ld+(P.g_ldl||0)*late):Math.exp(P.g_lv);
     const a=P.a, s=P.s, r0=(rc&&rc[0])||0, r1=(rc&&rc[1])||0;
     const kH=Math.pow(P.rc_own,r0)*Math.pow(P.rc_opp,r1), kA=Math.pow(P.rc_own,r1)*Math.pow(P.rc_opp,r0);
     const bH=(a+hs)/(a+s*lh*el), bA=(a+as)/(a+s*la*el);
-    return [s*lh*rem*st(d)*kH*bH, s*la*rem*st(-d)*kA*bA, a+hs, a+as]; }
+    return [s*lh*rem*st(d)*kH*bH*kL, s*la*rem*st(-d)*kA*bA*kL, a+hs, a+as]; }
   function nbV(mu,r,K){ const q=r/(r+mu), u=mu/(r+mu), o=[Math.pow(q,r)]; for(let k=0;k<K;k++) o.push(o[k]*(k+r)/(k+1)*u); const z=o.reduce((s,x)=>s+x,0); return o.map(x=>x/z); }
   const pdM=m=>{ try{ return window.CDR&&CDR.pdOf?CDR.pdOf(m):null; }catch(e){ return null; } };
 

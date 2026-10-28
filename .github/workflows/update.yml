@@ -63,6 +63,8 @@ jobs:
         run: python3 lab/adim.py acik-veri --onem bilgi -- timeout 120 python scripts/acik_veri.py
       - name: Veri toplayıcı (öneri arşivi, sonuç puanlama, günlük özet)
         run: python3 lab/adim.py toplayici -- python scripts/collector.py
+      - name: 🥇 Canlı altın eşiği (48 saatlik canlı kapı + günde bir veriye dayalı eşik ölçümü; lab/canli_altin_lab.py → data/canli_altin.json)
+        run: python3 lab/adim.py canli-altin --onem bilgi -- timeout 300 python3 lab/canli_altin_lab.py gunluk
       - name: Basketbol verilerini indir ve modeli eğit
         run: python3 lab/adim.py basket -- python scripts/basket.py
         env:
