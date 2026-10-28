@@ -125,7 +125,15 @@ drift alarmı ve kapanış kilidi (yolda). Aşağıdaki maddeler bunların **üz
 - **Efor:** S–M · **Risk:** düşük · **Veri:** mevcut.
 - **Nasıl sınanır:** `bk_gelistir.py` kapısı (gün kümeli bootstrap, iki zaman dilimi) + lig grubu başına ayrı karar.
 - **Kaynak:** [FiveThirtyEight NBA Elo](https://fivethirtyeight.com/features/how-we-calculate-nba-elo-ratings/) · Hvattum & Arntzen (2010) IJF [doi:10.1016/j.ijforecast.2009.10.002](https://doi.org/10.1016/j.ijforecast.2009.10.002)
-- **Durum:** bekliyor
+- **Durum:** reddedildi (2026-10-28; hiçbir lig grubunda SK geçmedi, üretim değişmedi) — `lab/bk_elo_lab.py` → `data/bk_elo_lab.json`.
+  Haftalık ileri yürüyüş (üretim ridge'i aynen, σ yalnız önceki haftalardan), Elo (K = 20, ev 100, MOV çarpanı, sezon arası ¼ ortalamaya) hafta başında
+  dondurulmuş; yığınlayıcı `logit p = c + a·logit p_ridge + b·ΔElo + d·dinlenme` grup başına yalnız önceki haftalarla, (0,1,0,0) ön bilgisine L2 (λ = 300),
+  gün-blok bootstrap B = 2000, α = 0,05/4. n = 12.557 maç: **pro** (NBA/WNBA/GL/NBL, n = 2.262) LL 0,61885 → 0,61614, ΔLL −0,00271 [−0,00443, −0,00090],
+  p = 0,0005 ama 1. yarı +0,00028, 2. yarı −0,00569, isabet −0,13 puan → geçmedi (Elo katsayısı b = 0,12: gerçek ek bilgi, yalnız ikinci yarıda) ·
+  **avrupa** (n = 436) ΔLL +0,00012 [−0,00089, +0,00112] → geçmedi · **kolej** (n = 9.859) ΔLL −0,00116 [−0,00237, +0,00012], p = 0,033, isabet −0,04 puan →
+  geçmedi (kazanç Elo'dan değil, kesişim −0,12 ve a = 1,09 yeniden kalibrasyondan; Elo tek başına LL 0,561, ridge 0,518) · tümü ΔLL −0,00139
+  [−0,00233, −0,00035] ama isabet −0,06 puan, 1. yarı GA sıfırı içeriyor. Beklenen −0,002…−0,006 yalnız pro 2. yarıda görüldü; NBA 2026-27 sezonu
+  verisi birikince (≥ 1.000 yeni pro maçı) aynı betikle yeniden sınanabilir.
 
 ### YH-08 · at · Sabah olasılığının kapanış piyasasına bilgi katkısı (at için CLV)
 - **Açıklama:** Sabah kilitli model olasılığı ile kapanış oranı (izinli ayna kaynağı, marjı ayrılmış) arasında: (a) sabah p kapanış hareketinin yönünü öngörüyor mu (kapanış − açılış/ön oran farkının sabah p − piyasa farkına regresyonu), (b) Benter iki aşaması: `logit p = a·logit p_model + b·logit p_kapanış` içinde a > 0 mı. Karneye "sabah modeli piyasaya bilgi ekliyor mu" satırı olarak girer; harman ağırlığının sağlık izlemesi olur.
