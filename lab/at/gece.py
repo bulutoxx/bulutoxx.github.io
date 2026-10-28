@@ -200,7 +200,9 @@ def _tam(v):
 def kosu_tahmini(m, kosu, durum, yayin_modu):
     X = durum.ozellik(kosu, m.adlar)
     K = M.Kume(X, np.zeros(len(X)), np.zeros(len(X)), np.zeros(len(X)), np.zeros(len(X), int))
-    q = veri.piyasa_q([a["oran"] for a in kosu["atlar"]])
+    # yer tutucu (≥ 999) ya da ≤ 1 oran varsa piyasa hiç kullanılmaz: yalnız modele düşer (26 Ekim hatası)
+    oranlar = [a["oran"] for a in kosu["atlar"]]
+    q = veri.piyasa_q(oranlar) if all(kilit.gecerli(o) is not None for o in oranlar) else None
     if q is not None and yayin_modu == "model+piyasa":
         p = m.p_harman(X, K, np.asarray(q)); mod = "model+piyasa"
     elif q is not None:
@@ -262,11 +264,16 @@ def kilitle(gunler, son_sonuc, m, durum, yayin_modu, surum):
         ks = []
         yak = kilit.yakalama_tablosu(t)
         for k in prog:
+            # kilit yalnız koşu başlamadan: saati geçmiş koşu kilitlenmez (gecikmeli kilit karneye hiç girmez)
+            if k.get("saat") and f"{t} {k['saat']}" <= simdi_tr:
+                continue
             # sabah kilidi her zaman yalnız model (erken havuz oranı harmana girmez); o anki oranlar yalnız kayda yazılır
             kt = kilit.sabah_tahmini(kosu_tahmini, m, k, durum, yak.get((k["hipodrom"], k["kosu"])))
             # koşu saati geçtiyse kilit "canlı" sayılmaz (sızıntısızdır ama koşudan sonra atılmıştır)
-            kt["kosudan_once"] = not (k.get("saat") and f"{t} {k['saat']}" <= simdi_tr)
+            kt["kosudan_once"] = True
             ks.append(kt)
+        if not ks:
+            continue
         jyaz(yol, {"tarih": t, "kilit_zamani": datetime.now(timezone.utc).isoformat(timespec="seconds"),
                    "kilit_zamani_tsi": simdi_tr, "model_surumu": surum, "kaynaklar": KAYNAKLAR,
                    "not": "Hobi amaçlı olasılıklar; garanti değildir · 18+. kosudan_once=false olan koşular canlı karneye sayılmaz.",
@@ -281,7 +288,9 @@ def _gun_ozeti(satir):
     return {"canli": any(x["kosudan_once"] for x in satir), "kosu": len(canli),
             "log_loss": round(float(np.mean([x["log_loss"] for x in canli])), 4),
             "ilk_secim_isabet": round(float(np.mean([x["ilk_secim_tuttu"] for x in canli])), 4),
-            "ikili_isabet": round(float(np.mean([x["ikili_tuttu"] for x in canli])), 4)}
+            "ikili_isabet": round(float(np.mean([x["ikili_tuttu"] for x in canli])), 4),
+            **({"ilk3_isabet": round(float(np.mean([x["ilk3_tuttu"] for x in canli])), 4)}
+               if all("ilk3_tuttu" in x for x in canli) else {})}
 
 
 def puanla(kosular, yalniz_degisince=False):
@@ -319,6 +328,7 @@ def puanla(kosular, yalniz_degisince=False):
             satir.append({"kosu_id": kp["kosu_id"], "mod": kp["mod"], "kosudan_once": kp.get("kosudan_once", True), "kazanan": kaz, "p_kazanan": round(pk, 4),
                           "log_loss": round(-math.log(max(pk, 1e-12)), 4), "ilk_secim": ilk["ad"],
                           "ilk_secim_tuttu": ilk["ad"] == kaz,
+                          "ilk3_tuttu": (sira.get(ilk["ad"]) or 99) <= 3,
                           "ikili_tuttu": kp["ikili_onerisi"]["sira"] == [kaz_no, ikinci],
                           "pw": [[round(a["p_kazanma"] / s, 4), int(a["ad"] == kaz)] for a in atl]})
         if not satir:
@@ -327,17 +337,22 @@ def puanla(kosular, yalniz_degisince=False):
         var.update(x["kosu_id"] for x in satir)
         karne["gunler"][t] = _gun_ozeti([x for x in karne["kosular"] if x["kosu_id"].startswith(t + "/")])
         yeni.append(t)
+    # eski satırlara ilk-3 isabeti (ilk seçimin bitiş sırası sonuç arşivinden; geçmiş satırlar silinmez)
+    for x in karne["kosular"]:
+        if "ilk3_tuttu" in x:
+            continue
+        t_, h_, n_ = x["kosu_id"].split("/")
+        r = sonuc.get((t_, h_, int(n_)))
+        if r:
+            sr = {a["ad"]: a["sira"] for a in r["atlar"]}
+            x["ilk3_tuttu"] = (sr.get(x["ilk_secim"]) or 99) <= 3
+            yeni.append(t_) if t_ not in yeni else None
+    for t_ in yeni:
+        karne["gunler"][t_] = _gun_ozeti([x for x in karne["kosular"] if x["kosu_id"].startswith(t_ + "/")])
     if yalniz_degisince and not yeni:
         return karne, yeni
-    ks = [x for x in karne["kosular"] if x.get("kosudan_once", True)]
     karne["gecikmeli_kilit_sayisi"] = sum(1 for x in karne["kosular"] if not x.get("kosudan_once", True))
-    if ks:
-        pw = np.array([v for x in ks for v in x["pw"]])
-        karne["toplam"] = {"kosu": len(ks), "log_loss": round(float(np.mean([x["log_loss"] for x in ks])), 4),
-                           "ilk_secim_isabet": round(float(np.mean([x["ilk_secim_tuttu"] for x in ks])), 4),
-                           "ikili_isabet": round(float(np.mean([x["ikili_tuttu"] for x in ks])), 4),
-                           "kovalar": M.kovalar(pw[:, 0], pw[:, 1])}
-    kilit.karne_ek(karne)   # mod_hatali işareti + "hariç" sütunu (geçmiş silinmez)
+    kilit.karne_ek(karne)   # toplam = yalnız koşudan önce + mod_hatali olmayan kilitler; ilk-3, kalibrasyon kovaları   # mod_hatali işareti + "hariç" sütunu (geçmiş silinmez)
     karne["guncelleme"] = datetime.now(timezone.utc).isoformat(timespec="seconds")
     jyaz(os.path.join(CIKTI, "karne.json"), karne)
     return karne, yeni

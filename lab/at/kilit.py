@@ -130,12 +130,32 @@ def mod_hatali(satir):
     return ("piyasa" in mod and not mod.startswith("yalnız model")) and not satir.get("kapi_gecti")
 
 
+KAL_KOVA = [0.0, 0.10, 0.20, 0.30, 0.50, 1.0001]   # karne kalibrasyon kovaları: %0–10, 10–20, 20–30, 30–50, 50+
+
+
+def kal_kovalari(satir):
+    pw = np.array([v for x in satir for v in x.get("pw") or []], float)
+    out = []
+    if not len(pw):
+        return out
+    for lo, hi in zip(KAL_KOVA[:-1], KAL_KOVA[1:]):
+        m = (pw[:, 0] >= lo) & (pw[:, 0] < hi)
+        out.append({"aralik": f"%{round(lo * 100)}–{round(min(hi, 1) * 100)}" if hi <= 1 else f"%{round(lo * 100)}+",
+                    "at": int(m.sum()), "ort_tahmin": round(float(pw[m, 0].mean()), 4) if m.any() else None,
+                    "gercek": round(float(pw[m, 1].mean()), 4) if m.any() else None})
+    return out
+
+
 def _ozet(satir):
     if not satir:
         return None
     pk = [x["log_loss"] for x in satir]
+    i3 = [x["ilk3_tuttu"] for x in satir if "ilk3_tuttu" in x]
     return {"kosu": len(satir), "log_loss": round(float(np.mean(pk)), 4),
+            "brier": round(float(np.mean([sum((p - y) ** 2 for p, y in x["pw"]) for x in satir if x.get("pw")])), 4)
+            if any(x.get("pw") for x in satir) else None,
             "ilk_secim_isabet": round(float(np.mean([x["ilk_secim_tuttu"] for x in satir])), 4),
+            "ilk3_isabet": round(float(np.mean(i3)), 4) if i3 else None, "ilk3_n": len(i3),
             "ikili_isabet": round(float(np.mean([x["ikili_tuttu"] for x in satir])), 4)}
 
 
@@ -153,7 +173,17 @@ def karne_ek(karne):
         g["mod_hatali"] = h
         g["haric"] = _ozet([x for x in gs if not x.get("mod_hatali")])
     karne["mod_hatali_sayisi"] = sum(1 for x in canli if x.get("mod_hatali"))
-    karne["toplam_haric"] = _ozet([x for x in canli if not x.get("mod_hatali")])
+    temiz = [x for x in canli if not x.get("mod_hatali")]
+    karne["toplam_haric"] = _ozet(temiz)
+    # canlı karne (yayın ölçüsü): YALNIZ koşudan önce atılmış ve doğru modda kilitler; dışarıda kalanlar ayrıca sayılır
+    t = _ozet(temiz)
+    if t:
+        t.update({"mod_hatali": 0, "gecikmeli_kilit": 0, "kovalar": kal_kovalari(temiz),
+                  "not": "yalnız koşudan önce, oran kapısına uygun modda kilitlenmiş tahminler"})
+    karne["toplam"] = t
+    karne["toplam_tum"] = _ozet(karne.get("kosular", []))
+    karne["disarida"] = {"mod_hatali": karne["mod_hatali_sayisi"],
+                         "gecikmeli_kilit": sum(1 for x in karne.get("kosular", []) if not x.get("kosudan_once", True))}
     karne["mod_hatali_not"] = ("mod_hatali=true: 26 Ekim 2026 kilitleri erken havuz oranıyla (999.99 yer tutucuları geçerli "
                                "sayılarak) 'model+piyasa' modunda atıldı. 'toplam' bunları içerir, 'toplam_haric' içermez.")
     return karne
