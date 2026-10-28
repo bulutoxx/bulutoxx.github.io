@@ -1,13 +1,13 @@
 name: OXXai duman testi (dal / PR)
-# Uygulama dosyaları (index.html, sw.js, manifest, brain-worker.js, icons/) ya da test araçları değişince, main DIŞINDAKİ dallarda
+# Uygulama dosyaları (index.html, sw.js, manifest, brain-worker.js, icons/, js/, css/) ya da test araçları değişince, main DIŞINDAKİ dallarda
 # ve PR'larda yerel kopya üzerinde lab/qa.mjs hızlı modunu koşar (birkaç dakika). main'e gelen değişiklik ayrıca update.yml
 # deploy işindeki yayın kapısından geçer. Depoya yazmaz; issue/mail/bildirim açmaz. Ücretsiz (genel depo, Actions).
 on:
   push:
     branches-ignore: [main]
-    paths: ["index.html", "sw.js", "manifest.webmanifest", "brain-worker.js", "icons/**", "lab/qa.mjs", "lab/duman.sh", "lab/yayin_kapisi.py", "lab/yayin_listesi.py", ".github/workflows/duman.yml"]
+    paths: ["index.html", "sw.js", "manifest.webmanifest", "brain-worker.js", "icons/**", "js/**", "css/**", "lab/qa.mjs", "lab/duman.sh", "lab/yayin_kapisi.py", "lab/yayin_listesi.py", ".github/workflows/duman.yml"]
   pull_request:
-    paths: ["index.html", "sw.js", "manifest.webmanifest", "brain-worker.js", "icons/**", "lab/qa.mjs", "lab/duman.sh", "lab/yayin_kapisi.py", "lab/yayin_listesi.py", ".github/workflows/duman.yml"]
+    paths: ["index.html", "sw.js", "manifest.webmanifest", "brain-worker.js", "icons/**", "js/**", "css/**", "lab/qa.mjs", "lab/duman.sh", "lab/yayin_kapisi.py", "lab/yayin_listesi.py", ".github/workflows/duman.yml"]
   workflow_dispatch:
 permissions:
   contents: read
@@ -31,6 +31,7 @@ jobs:
       - name: 💨 Duman testi (yayınlanacak daraltılmış kopya, hızlı mod; 404 = alarm)
         run: |
           python3 lab/yayin_listesi.py kur "$RUNNER_TEMP/site_duman"
+          python3 lab/yayin_kapisi.py denetle --kok "$RUNNER_TEMP/site_duman"
           bash lab/duman.sh "$RUNNER_TEMP/site_duman" "$RUNNER_TEMP/qa_duman.json"
       - name: Sonucu sakla
         if: always()

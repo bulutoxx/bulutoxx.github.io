@@ -2,8 +2,8 @@
 // Tarayıcı gerekmez: betik küçük taslaklarla node vm içinde çalıştırılır. Kullanım: node lab/canli_altin_test.cjs
 const fs = require("fs"), path = require("path"), vm = require("vm"), cp = require("child_process");
 const ROOT = path.resolve(__dirname, "..");
-const html = fs.readFileSync(path.join(ROOT, "index.html"), "utf8");
-const src = html.match(/<script id="canli-v70">([\s\S]*?)<\/script>/)[1];
+const K = require("./_kaynak.cjs");   // v143: bloklar js/*.js paketlerinde (/* id: … */)
+const src = K.blok("canli-v70");
 let pass = 0, fail = 0; const ok = (c, m) => { c ? pass++ : fail++; console.log(c ? "  ✓" : "  ✗", m); };
 let rnd = 7; const R = () => (rnd = (rnd * 16807) % 2147483647) / 2147483647;
 const cases = [];
@@ -32,7 +32,7 @@ ok(bad === 0, `altın seçimi JS ↔ Python birebir (${cases.length} durum: ${nk
 
 // v140 · Canlı altın İŞARET (tek maç rozeti): index.html → canli-isaret-v140 aiRule ↔ scripts/canli_altin.py isaret, 300 rastgele durum
 {
-  const src2 = html.match(/<script id="canli-isaret-v140">([\s\S]*?)<\/script>/)[1];
+  const src2 = K.blok("canli-isaret-v140");
   const ctx = { console, Math, JSON, Object, Array, Map, Set, String, Number, isFinite, document: { querySelector: () => null, querySelectorAll: () => [], addEventListener() {} },
     $: () => null, esc: s => String(s), toast() {}, LGF: { isaret: { esik: .8, kapanis: .77, dkmax: 75, durum: "deneme" } }, IDL: { byId: {}, live: {}, load: async () => {} },
     idlRow: () => "", idlBoxHtml: () => "", msRender() {}, idlPick: () => null, idlPred: () => null, IDLV: { sp: 1 } };

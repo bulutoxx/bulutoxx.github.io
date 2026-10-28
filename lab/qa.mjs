@@ -1,7 +1,7 @@
 // 🎨 Tasarımcı / kalite botu (Playwright, ücretsiz). Uygulamayı gerçek bir telefon ekranında açar, ana ekranları gezer ve ölçer:
 //   Bülten, Canlı, Sonuçlar, Menü, POWER NOW, KUPO, OXXai sohbeti, At (Bugün, Program, Türler, Sonuç, KUPO, arama).
 //   Her ekranda: ekran açıldı mı / dolu mu, pageerror sayısı, yatay taşma, görünür metinde yasak kelime.
-//   Performans bütçesi: index.html boyutu, ilk ekranın veri boyutu, en uzun ana iş parçacığı görevi.
+//   Performans bütçesi: index.html boyutu, uygulama paketleri (js/, css/; v143) toplamı, ilk ekranın veri boyutu, en uzun ana iş parçacığı görevi.
 // Sonuç QA_CIKTI dosyasına (varsayılan data/qa.json) yazılır. Alarm varsa çıkış kodu 1 olur: lab/adim.py bunu sağlık kaydına
 // "hata" olarak yazar, kurtarıcı (lab/kurtarici.py) hem bu kaydı hem data/qa*.json alarmını görür. Issue/mail/bildirim AÇMAZ.
 //
@@ -11,7 +11,7 @@
 //   QA_CIKTI    sonuç dosyası (varsayılan data/qa.json)
 //   QA_EKRAN    ekran görüntüsü klasörü (tam modda varsayılan data/qa; boş = alma)
 //   QA_DIS      engelle | izin  — dış alan adlarına istek (yerel adreste varsayılan engelle). tjk.org ve atyarisi.com HER ZAMAN engellenir.
-//   QA_BUTCE_INDEX_KB, QA_BUTCE_VERI_KB, QA_BUTCE_GOREV_MS   bütçe sınırları (aşılırsa alarm)
+//   QA_BUTCE_INDEX_KB, QA_BUTCE_UYGULAMA_KB, QA_BUTCE_PAKET_KB, QA_BUTCE_VERI_KB, QA_BUTCE_GOREV_MS   bütçe sınırları (aşılırsa alarm)
 //   QA_KAYNAK   depo kökü (lab/duman.sh verir). Aynı kaynaktan 404 alan her istek HATADIR (yayın listesinden eksik dosya → kapı reddeder).
 //               Tek istisna: tarihli dosya (…/2026-10-28.json gibi) depoda da yoksa 404 normaldir (o günün verisi henüz yok) → yalnız bilgi.
 import { chromium, devices } from "playwright";
@@ -27,6 +27,8 @@ const YEREL = /^https?:\/\/(127\.0\.0\.1|localhost)(:\d+)?\//.test(URL);
 const DIS = (process.env.QA_DIS || (YEREL ? "engelle" : "izin")) === "engelle";
 const BUTCE = {   // alarm sınırları (gerileme kapısı). "hedef" değerleri yalnız bilgi (denetim_mimari §4 hedefleri)
   index_kb: +(process.env.QA_BUTCE_INDEX_KB || 1500),
+  uygulama_kb: +(process.env.QA_BUTCE_UYGULAMA_KB || 2000),   // index.html + yüklediği js/ css/ paketleri (lab/yayin_kapisi.py denetle ile aynı)
+  paket_kb: +(process.env.QA_BUTCE_PAKET_KB || 600),
   veri_kb: +(process.env.QA_BUTCE_VERI_KB || 6000),
   gorev_ms: +(process.env.QA_BUTCE_GOREV_MS || 15000),
 };
@@ -206,7 +208,12 @@ try {
   const butce = out.butce = { sinir: BUTCE, hedef: HEDEF };
   try {
     const r = await ctx.request.get(URL + "index.html?qa=" + Date.now(), { timeout: 120000 });
-    butce.index_kb = Math.round((await r.body()).length / 1024);
+    const ib = await r.body(); butce.index_kb = Math.round(ib.length / 1024);
+    // v143: index.html ince kabuk; katmanlar js/*.js, stiller css/*.css paketlerinde
+    const pk = [...new Set([...ib.toString("utf8").matchAll(/(?:src|href)="((?:js|css)\/[^"]+)"/g)].map(m => m[1]))];
+    let top = ib.length, enb = 0, enbAd = ""; butce.paket = {};
+    for (const y of pk) { const q = await ctx.request.get(URL + y, { timeout: 120000 }); const n = (await q.body()).length; top += n; butce.paket[y.split("?")[0]] = Math.round(n / 1024); if (n > enb) { enb = n; enbAd = y.split("?")[0]; } }
+    butce.uygulama_kb = Math.round(top / 1024); butce.paket_sayisi = pk.length; butce.paket_en_buyuk_kb = Math.round(enb / 1024); butce.paket_en_buyuk = enbAd;
   } catch (e) { uyari("index.html boyutu ölçülemedi: " + String(e.message).slice(0, 100)); }
 
   // ---------------------------------------------------------------- açılış
@@ -291,6 +298,8 @@ try {
   butce.en_uzun_gorev_ms = lt.reduce((m, x) => Math.max(m, x[1]), 0);
   butce.uzun_gorev_sayisi = lt.length;
   if (butce.index_kb != null && butce.index_kb > BUTCE.index_kb) hata(`bütçe: index.html ${butce.index_kb} KB > ${BUTCE.index_kb} KB`);
+  if (butce.uygulama_kb != null && butce.uygulama_kb > BUTCE.uygulama_kb) hata(`bütçe: uygulama (index.html + paketler) ${butce.uygulama_kb} KB > ${BUTCE.uygulama_kb} KB`);
+  if (butce.paket_en_buyuk_kb != null && butce.paket_en_buyuk_kb > BUTCE.paket_kb) hata(`bütçe: ${butce.paket_en_buyuk} ${butce.paket_en_buyuk_kb} KB > ${BUTCE.paket_kb} KB`);
   if (butce.ilk_veri_kb > BUTCE.veri_kb) hata(`bütçe: ilk ekran verisi ${butce.ilk_veri_kb} KB > ${BUTCE.veri_kb} KB`);
   if (butce.en_uzun_gorev_ms > BUTCE.gorev_ms) hata(`bütçe: en uzun görev ${butce.en_uzun_gorev_ms} ms > ${BUTCE.gorev_ms} ms`);
   butce.hedefte = { index: (butce.index_kb ?? 1e9) <= HEDEF.index_kb, gorev: butce.en_uzun_gorev_ms <= HEDEF.gorev_ms };

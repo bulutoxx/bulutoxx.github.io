@@ -4,7 +4,7 @@
 
 ## Nasıl çalışır
 
-- **Uygulama** (`index.html`): Takımları yazınca ligi bulur, son 5 maçı doldurur ve tahmin üretir. İlk yarı, ikinci yarı ve maç sonu net skorunu, İY/MS, 1X2, alt/üst ve KG var/yok olasılıklarını verir. Oran girilirse değerli bahisleri işaretler.
+- **Uygulama** (`index.html` + `js/`, `css/` paketleri; yapı ve yeni katman kuralı: MIMARI.md → Uygulama dosya yapısı): Takımları yazınca ligi bulur, son 5 maçı doldurur ve tahmin üretir. İlk yarı, ikinci yarı ve maç sonu net skorunu, İY/MS, 1X2, alt/üst ve KG var/yok olasılıklarını verir. Oran girilirse değerli bahisleri işaretler.
 - **Veri ve öğrenme motoru** (`scripts/update.py`): GitHub Actions bu betiği her saat :17'de çalıştırır (akıllı nöbet). Yeni maç sonucu geldiyse tam öğrenme yapar, gelmediyse aynı veriyle yeniden eğitmek bir şey katmayacağı için yalnızca oranları, fikstürü ve tahmin karnesini tazeler.
   1. 38 ligin (Avrupa'nın 22 ligi ile Brezilya, Arjantin, MLS, Meksika, Japonya, Çin ve diğerleri) bu ve geçen sezon sonuçlarını, ilk yarı skorlarını ve bahis oranlarını [football-data.co.uk](https://www.football-data.co.uk)'tan; Şampiyonlar Ligi, Avrupa Ligi ve Konferans Ligi maçlarını [TheSportsDB](https://www.thesportsdb.com)'den indirir. Farklı liglerden takımları karşılaştırmak için lig gücü katsayılarını kupa sonuçlarından öğrenir.
   2. Her maçı yalnızca o haftadan önceki maçlarla tahmin ederek geriye dönük test yapar.

@@ -2,7 +2,7 @@
 """🚦 Yayın kapısı (update.yml → deploy işi). Pages "GitHub Actions" kaynağından, artifact ile yayınlanıyor; bu yüzden kapı
 yalnız iş akışında kurulur, depo ayarı gerekmez.
 
-Uygulama dosyaları (index.html, sw.js, manifest.webmanifest, brain-worker.js, icons/) yayındakinden farklıysa yayından ÖNCE
+Uygulama dosyaları (index.html, sw.js, manifest.webmanifest, brain-worker.js, icons/, js/, css/) yayındakinden farklıysa yayından ÖNCE
 duman testi koşar (lab/duman.sh). Test geçmezse Pages'e YENİ uygulama çıkmaz: çalışma ağacındaki uygulama dosyaları son başarılı
 sürüme (yayındaki yayin.json → uygulama_commit) geri alınır, veri (data/*) yine yeni haliyle yayınlanır. Yalnız veri değiştiyse
 test atlanır, yayın eskisi kadar hızlıdır.
@@ -14,13 +14,19 @@ Yayındaki sürüm bilgisi Pages'teki /yayin.json dosyasındadır (depoya yazıl
   python3 lab/yayin_kapisi.py geri --commit SHA --canli URL           → uygulama dosyalarını son iyi sürüme döndürür
   python3 lab/yayin_kapisi.py yaz --commit SHA [--red-ozet .. --red-commit .. --red-neden .. --red-neden-qa qa.json] [--onceki-red-koru]
   python3 lab/yayin_kapisi.py bekle --canli URL --ozet X [--sn 300]   → CDN yeni yayin.json'u gösterene dek bekler
+  python3 lab/yayin_kapisi.py denetle [--kok DİZİN]                    → boyut / paket denetimi (duman testinden önce; hata → 1)
+Boyut denetimi (v143, index.html paketlere bölündü): index.html ≤ 1500 KB (qa.mjs bütçesiyle aynı, GEVŞETİLMEZ; hedef < 300 KB),
+her js/ css/ paketi ≤ 600 KB, ilk yük (index.html + yüklediği tüm paketler) ≤ 2000 KB (1700 KB üstü uyarı), index.html içindeki
+satır içi script toplamı 30 KB üstüyse uyarı (yeni katman index.html'e değil js/ paketine eklenir, MIMARI.md). Her paket
+`node --check` ile sözdizimi denetlenir (node varsa): bozuk paket o dosyadaki TÜM katmanları durdurur.
 Yalnız standart kütüphane. Issue, mail, bildirim AÇMAZ. tjk.org / atyarisi.com'a istek ATMAZ.
 """
 import argparse, hashlib, json, os, shutil, subprocess, sys, time, urllib.request
 from datetime import datetime, timezone
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-UYGULAMA = ["index.html", "sw.js", "manifest.webmanifest", "brain-worker.js", "icons"]
+UYGULAMA = ["index.html", "sw.js", "manifest.webmanifest", "brain-worker.js", "icons", "js", "css"]
+SINIR_KB = {"index": 1500, "paket": 600, "ilk_yuk": 2000, "ilk_yuk_uyari": 1700, "satir_ici_script_uyari": 30}
 RED_SAAT = 6.0          # reddedilen aynı uygulama sürümü bu süre içinde yeniden test edilmez (doğrudan son iyi sürüm yayınlanır)
 YAYIN = os.path.join(ROOT, "yayin.json")
 
@@ -117,7 +123,15 @@ def cmd_geri(a):
         print(f"[kapı] yayındaki dosyalar indirilemedi: {str(e)[:120]}", file=sys.stderr); return 1
     if len(alinan.get("index.html", b"")) < 10000:
         print("[kapı] yayındaki index.html beklenenden küçük; kullanılmadı", file=sys.stderr); return 1
+    # v143: index.html'in yüklediği paketler (js/…, css/… ?v=) de yayındaki sürümden alınır
+    try:
+        import re as _re
+        for y in dict.fromkeys(_re.findall(r'(?:src|href)="((?:js|css)/[A-Za-z0-9_\-]+\.(?:js|css))', alinan["index.html"].decode("utf-8", "replace"))):
+            alinan[y] = getir(a.canli.rstrip("/") + f"/{y}?t={int(time.time())}", 60)
+    except Exception as e:
+        print(f"[kapı] yayındaki paketler indirilemedi: {str(e)[:120]}", file=sys.stderr); return 1
     for f, v in alinan.items():
+        os.makedirs(os.path.dirname(os.path.join(ROOT, f)), exist_ok=True)
         with open(os.path.join(ROOT, f), "wb") as fh:
             fh.write(v)
     print("[kapı] uygulama dosyaları yayındaki sürümden alındı")
@@ -158,6 +172,58 @@ def cmd_bekle(a):
     print("[kapı] yeni sürüm süre içinde görünmedi (CDN gecikmesi olabilir)"); return 1
 
 
+def satir_ici_script_kb(html):
+    import re
+    return sum(len(m.group(1).encode("utf-8")) for m in re.finditer(r"<script\b(?![^>]*\bsrc=)[^>]*>(.*?)</script>", html, re.S)) / 1024
+
+
+def cmd_denetle(a):
+    """Boyut ve paket denetimi. Sınır aşımı / eksik paket / sözdizimi hatası → 1 (kapı: yeni uygulama yayınlanmaz)."""
+    import re
+    kok = os.path.abspath(a.kok or ROOT)
+    hata, uyari = [], []
+    ip = os.path.join(kok, "index.html")
+    html = open(ip, encoding="utf-8").read()
+    kb = lambda p: os.path.getsize(p) / 1024
+    index_kb = kb(ip)
+    paket = list(dict.fromkeys(re.findall(r'(?:src|href)="((?:js|css)/[A-Za-z0-9_\-]+\.(?:js|css))', html)))
+    toplam = index_kb
+    satir = [f"index.html {index_kb:.1f} KB"]
+    for y in paket:
+        p = os.path.join(kok, y)
+        if not os.path.isfile(p):
+            hata.append(f"index.html'in yüklediği paket yok: {y}"); continue
+        k = kb(p); toplam += k; satir.append(f"{y} {k:.1f} KB")
+        if k > SINIR_KB["paket"]:
+            hata.append(f"{y} {k:.0f} KB > {SINIR_KB['paket']} KB (paketi böl: yeni dosya index.html'de aynı sıraya)")
+    if index_kb > SINIR_KB["index"]:
+        hata.append(f"index.html {index_kb:.0f} KB > {SINIR_KB['index']} KB")
+    if toplam > SINIR_KB["ilk_yuk"]:
+        hata.append(f"ilk yük {toplam:.0f} KB > {SINIR_KB['ilk_yuk']} KB")
+    elif toplam > SINIR_KB["ilk_yuk_uyari"]:
+        uyari.append(f"ilk yük {toplam:.0f} KB > {SINIR_KB['ilk_yuk_uyari']} KB (sınır {SINIR_KB['ilk_yuk']} KB)")
+    si = satir_ici_script_kb(html)
+    if si > SINIR_KB["satir_ici_script_uyari"]:
+        uyari.append(f"index.html satır içi script {si:.1f} KB > {SINIR_KB['satir_ici_script_uyari']} KB: yeni katmanı js/katmanlar.js sonuna "
+                     "`/* id: … */` ile ekleyin (MIMARI.md → Uygulama dosya yapısı)")
+    node = shutil.which("node")
+    if node:
+        for y in paket:
+            p = os.path.join(kok, y)
+            if y.endswith(".js") and os.path.isfile(p):
+                r = subprocess.run([node, "--check", p], capture_output=True, text=True)
+                if r.returncode != 0:
+                    hata.append(f"{y} sözdizimi hatası: {(r.stderr or '').strip().splitlines()[-1:] or ['?']}")
+    else:
+        uyari.append("node yok: paket sözdizimi denetlenmedi")
+    print(f"[kapı] boyut: {' · '.join(satir)} · ilk yük {toplam:.1f} KB · satır içi script {si:.1f} KB")
+    for u in uyari:
+        print(f"::warning title=Yayın kapısı (boyut)::{u}")
+    for h in hata:
+        print(f"::error title=Yayın kapısı (boyut)::{h}")
+    return 1 if hata else 0
+
+
 def main():
     ap = argparse.ArgumentParser()
     alt = ap.add_subparsers(dest="k", required=True)
@@ -167,9 +233,10 @@ def main():
     y.add_argument("--red-ozet", default=""); y.add_argument("--red-commit", default=""); y.add_argument("--red-neden", default="")
     y.add_argument("--red-neden-qa", default="", help="neden: bu qa çıktısının ilk hataları")
     y.add_argument("--onceki-red-koru", action="store_true")
+    d = alt.add_parser("denetle"); d.add_argument("--kok", default="")
     b = alt.add_parser("bekle"); b.add_argument("--canli", required=True); b.add_argument("--ozet", required=True); b.add_argument("--sn", type=int, default=300)
     a = ap.parse_args()
-    return {"karar": cmd_karar, "geri": cmd_geri, "yaz": cmd_yaz, "bekle": cmd_bekle}[a.k](a)
+    return {"karar": cmd_karar, "geri": cmd_geri, "yaz": cmd_yaz, "bekle": cmd_bekle, "denetle": cmd_denetle}[a.k](a)
 
 
 if __name__ == "__main__":

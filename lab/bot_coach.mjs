@@ -70,7 +70,7 @@ const fillQ = q => q.replace(/\{D\+(\d+)\}/g, (_, k) => { const d = dayAt(+k); r
 
 // ---------------- index.html'den bot sözlüğü (çakışma kontrolü için) ----------------
 const INDEX = process.env.BOT_COACH_INDEX ? path.resolve(process.env.BOT_COACH_INDEX) : path.join(ROOT, "index.html");
-const HTML = fs.readFileSync(INDEX, "utf8");
+const HTML = require("./_kaynak.cjs").tumKaynak(INDEX);   // v143: index.html + js/*.js paketleri (sözlükler paketlerde)
 function lexicon() {
   const L = { stop: new Set(), sl: new Set(), botlg: new Set(), raw: [], gen: new Set() };
   const m1 = /const STOPW=new Set\(\(([\s\S]*?)\)\.split\(" "\)\)/.exec(HTML);

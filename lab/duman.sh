@@ -68,7 +68,7 @@ except Exception as e:
     print(f"[duman] sonuç okunamadı: {e}"); sys.exit(0)
 b = d.get("butce") or {}
 print(f"[duman] alarm={d.get('alarm')} süre={d.get('sure_sn')} sn pageerror={d.get('pageerror')} taşma={d.get('tasma')} 404={len(d.get('istek404') or [])} "
-      f"index={b.get('index_kb')} KB ilk_veri={b.get('ilk_veri_kb')} KB en_uzun_görev={b.get('en_uzun_gorev_ms')} ms")
+      f"index={b.get('index_kb')} KB uygulama={b.get('uygulama_kb')} KB ({b.get('paket_sayisi')} paket) ilk_veri={b.get('ilk_veri_kb')} KB en_uzun_görev={b.get('en_uzun_gorev_ms')} ms")
 for h in (d.get("hatalar") or [])[:15]:
     print("  ✗", h)
 PY

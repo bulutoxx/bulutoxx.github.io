@@ -2,8 +2,8 @@
 // Tarayıcı gerekmez: canli-gt-v107 betiği küçük taslaklarla (stub) node vm içinde çalıştırılır. Kullanım: node lab/canli_guc_test.cjs
 const fs = require("fs"), path = require("path"), vm = require("vm"), cp = require("child_process");
 const ROOT = path.resolve(__dirname, "..");
-const html = fs.readFileSync(path.join(ROOT, "index.html"), "utf8");
-const src = html.match(/<script id="canli-gt-v107">([\s\S]*?)<\/script>/)[1];
+const K = require("./_kaynak.cjs");   // v143: bloklar js/*.js paketlerinde (/* id: … */)
+const src = K.blok("canli-gt-v107");
 const flag = JSON.parse(fs.readFileSync(path.join(ROOT, "data", "canli_guc.json"), "utf8"));
 let pass = 0, fail = 0; const ok = (c, m) => { c ? pass++ : fail++; console.log(c ? "  ✓" : "  ✗", m); };
 

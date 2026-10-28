@@ -93,7 +93,8 @@ jobs:
 
   deploy:
     # 🚦 Yayın kapısı: Pages "GitHub Actions" kaynağından artifact ile yayınlanır. Uygulama dosyaları (index.html, sw.js,
-    # manifest.webmanifest, brain-worker.js, icons/) yayındakinden farklıysa yayından ÖNCE duman testi (lab/qa.mjs hızlı modu)
+    # manifest.webmanifest, brain-worker.js, icons/, js/, css/) yayındakinden farklıysa yayından ÖNCE boyut/paket denetimi
+    # (lab/yayin_kapisi.py denetle) ve duman testi (lab/qa.mjs hızlı modu)
     # koşar. Geçmezse yeni uygulama yayınlanmaz: uygulama dosyaları son iyi sürüme döner, veri (data/*) yine yeni haliyle çıkar.
     # Yalnız veri değiştiyse test atlanır (yayın eskisi kadar hızlı). Yeni uygulama yayınlandıysa yayından sonra canlı adreste
     # aynı test koşar; o da geçmezse son iyi sürüm otomatik geri yayınlanır. Sonuçlar data/saglik/update-yayin.json (lab/adim.py),
@@ -136,6 +137,7 @@ jobs:
         run: |
           python3 lab/adim.py duman-kurulum --onem bilgi -- bash lab/duman.sh kur
           python3 lab/yayin_listesi.py kur "$RUNNER_TEMP/site_kapi"
+          python3 lab/adim.py yayin-boyut --onem bilgi --kritik -- python3 lab/yayin_kapisi.py denetle --kok "$RUNNER_TEMP/site_kapi"
           python3 lab/adim.py yayin-kapisi --onem bilgi --kritik -- bash lab/duman.sh "$RUNNER_TEMP/site_kapi" "$RUNNER_TEMP/qa_kapi.json"
       - name: ↩️ Test geçmedi → uygulama son iyi sürümde kalır (veri yine güncellenir)
         id: geri
@@ -200,7 +202,7 @@ jobs:
       - name: Kapı kayıtlarını kaydet (sağlık + qa_kapi / qa_yayin; yalnız veri dosyaları)
         if: always()
         run: |
-          git checkout -q HEAD -- index.html sw.js manifest.webmanifest brain-worker.js icons data/version.json 2>/dev/null || true
+          git checkout -q HEAD -- index.html sw.js manifest.webmanifest brain-worker.js icons js css data/version.json 2>/dev/null || true
           rm -f yayin.json
           YOLLAR="data/saglik"
           if [ -s "$RUNNER_TEMP/qa_kapi.json" ]; then cp "$RUNNER_TEMP/qa_kapi.json" data/qa_kapi.json; YOLLAR="$YOLLAR data/qa_kapi.json"; fi

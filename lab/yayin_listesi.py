@@ -4,7 +4,8 @@
 Eskiden deploy işi tüm depoyu (`path: .`) yüklüyordu: lab/, scripts/, data/derin/, robot iç verisi de yayındaydı.
 Bu betik listeyi otomatik çıkarır:
   1) Kök uygulama dosyaları: index.html, sw.js, manifest.webmanifest, brain-worker.js, yayin.json (yayın kapısı kaydı).
-  2) index.html, sw.js (SHELL), manifest.webmanifest ve brain-worker.js içindeki yol dizeleri: "data/…", "icons/…", "ses/…".
+  2) index.html, sw.js (SHELL), manifest.webmanifest, brain-worker.js ve uygulama paketleri (js/*.js, css/*.css; v143'ten beri
+     index.html ince kabuk, katmanlar bu paketlerde) içindeki yol dizeleri: "data/…", "icons/…", "ses/…", "js/…", "css/…".
      - Düz yol ("data/ratings.json?t=" → data/ratings.json) olduğu gibi alınır.
      - Klasör önekli dinamik yol ("data/at/canli/"+gün+".json") → o klasördeki *.json (alt klasöre inmez).
      - Şablon (`data/archive/${d}.json`) → data/archive/*.json.
@@ -16,6 +17,9 @@ Kullanım:
   python3 lab/yayin_listesi.py liste [--json]          → yayınlanacak dosyalar (depo köküne göre)
   python3 lab/yayin_listesi.py kur _site               → listeyi _site/ klasörüne kopyalar (klasör önce temizlenir)
   python3 lab/yayin_listesi.py ozet                    → yayınlanan / yayınlanmayan boyut özeti
+  python3 lab/yayin_listesi.py damga                   → depodaki index.html / sw.js içindeki js/…, css/… ?v= özetlerini yeniler
+Önbellek kırma: index.html ve sw.js paketleri "js/core.js?v=<içerik özeti>" ile ister. `kur` hedef klasördeki kopyada bu özetleri
+dosyaların GERÇEK içeriğinden yeniden yazar (bir ajan paketi değiştirip özeti unutsa bile yayında eski JS önbellekten gelmez).
 Seçenek: --kok DİZİN (varsayılan depo kökü). Yalnız standart kütüphane; ağ isteği yapmaz.
 
 Güvenlik payı: listeden eksik kalan bir dosya uygulamayı kırar. lab/qa.mjs aynı kaynaktan 404 alan her isteği
@@ -24,7 +28,7 @@ hata sayar (yayın kapısı reddeder); tarihli dosyalar (ör. data/at/canli/2026
 import argparse, fnmatch, json, os, re, shutil, sys
 
 KOK0 = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-KAYNAK = ["index.html", "sw.js", "manifest.webmanifest", "brain-worker.js"]
+KAYNAK = ["index.html", "sw.js", "manifest.webmanifest", "brain-worker.js"]   # + index.html/sw.js'in andığı js/*.js, css/*.css (paketler())
 KOK_DOSYA = ["index.html", "sw.js", "manifest.webmanifest", "brain-worker.js", "yayin.json"]
 # Taramanın kaçırabileceği ya da başka bloklarda kurulan dinamik yollar (glob, depo köküne göre).
 BILINEN = [
@@ -43,13 +47,50 @@ DISLA = [
     "data/at/deneyler*.json", "data/at/arastirma.json", "data/at/replay.json", "data/at/ek_ozellik/*",
     "data/at/oran_izi_v*.json", "data/saglik/*", "data/qa/*",
 ]
-YOL_RE = re.compile(r"(?<![A-Za-z0-9_\-])(?:\./|/)?((?:data|icons|ses)/[A-Za-z0-9_\-./${}]*)")
+YOL_RE = re.compile(r"(?<![A-Za-z0-9_\-])(?:\./|/)?((?:data|icons|ses|js|css)/[A-Za-z0-9_\-./${}]*)")
+PAKET_RE = re.compile(r"((?:js|css)/[A-Za-z0-9_\-]+\.(?:js|css))(?:\?v=[A-Za-z0-9._\-]*)?(?=[\"'])")
+
+
+def paketler(kok):
+    """index.html'in (ve sw.js SHELL'in) yüklediği uygulama paketleri: js/*.js, css/*.css (sırayla, tekrarsız)."""
+    out = []
+    for f in ("index.html", "sw.js"):
+        p = os.path.join(kok, f)
+        if os.path.isfile(p):
+            for m in PAKET_RE.finditer(open(p, encoding="utf-8", errors="replace").read()):
+                if m.group(1) not in out:
+                    out.append(m.group(1))
+    return out
+
+
+def ozet_kisa(yol):
+    import hashlib
+    with open(yol, "rb") as fh:
+        return hashlib.sha256(fh.read()).hexdigest()[:10]
+
+
+def damgala(kok, dosyalar=("index.html", "sw.js")):
+    """Dosyalardaki js/…, css/… adreslerinin ?v= kısmını paketin gerçek içerik özetiyle yazar. Değişen dosya listesini döner."""
+    degisen = []
+    for f in dosyalar:
+        p = os.path.join(kok, f)
+        if not os.path.isfile(p):
+            continue
+        metin = open(p, encoding="utf-8").read()
+        def yaz(m):
+            y = os.path.join(kok, m.group(1))
+            return f"{m.group(1)}?v={ozet_kisa(y)}" if os.path.isfile(y) else m.group(0)
+        yeni = PAKET_RE.sub(yaz, metin)
+        if yeni != metin:
+            open(p, "w", encoding="utf-8").write(yeni)
+            degisen.append(f)
+    return degisen
 
 
 def tara(kok):
     """Kaynak dosyalardaki yol dizelerini (düz, klasör öneki, şablon) çıkarır → glob listesi."""
     desen = set()
-    for f in KAYNAK:
+    for f in KAYNAK + [y for y in paketler(kok) if y not in KAYNAK]:
         p = os.path.join(kok, f)
         if not os.path.isfile(p):
             continue
@@ -126,16 +167,23 @@ def depo_dosyalari(kok):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("komut", choices=["liste", "kur", "ozet"])
+    ap.add_argument("komut", choices=["liste", "kur", "ozet", "damga"])
     ap.add_argument("hedef", nargs="?")
     ap.add_argument("--kok", default=KOK0)
     ap.add_argument("--json", action="store_true")
     a = ap.parse_args()
     kok = os.path.abspath(a.kok)
+    if a.komut == "damga":
+        d = damgala(kok)
+        print(f"[yayın listesi] ?v= özetleri yenilendi: {', '.join(d) if d else 'değişiklik yok'}")
+        return 0
     sec, eksik = liste(kok)
     for y in ("index.html", "sw.js", "manifest.webmanifest"):
         if y not in sec:
             print(f"[yayın listesi] HATA: {y} yok", file=sys.stderr); return 2
+    eksik_paket = [y for y in paketler(kok) if y not in sec]
+    if eksik_paket:
+        print(f"[yayın listesi] HATA: index.html/sw.js'in yüklediği paket depoda yok: {', '.join(eksik_paket)}", file=sys.stderr); return 2
     if a.komut == "liste":
         print(json.dumps({"dosyalar": sec, "bulunamayan": eksik}, ensure_ascii=False, indent=1) if a.json else "\n".join(sec))
         return 0
@@ -156,6 +204,7 @@ def main():
         h = os.path.join(hedef, y)
         os.makedirs(os.path.dirname(h), exist_ok=True)
         shutil.copy2(os.path.join(kok, y), h)
+    damgala(hedef)                       # yayın kopyasında ?v= = paketin gerçek içerik özeti (önbellek kırma)
     print(f"[yayın listesi] {len(sec)} dosya, {round(boyut(kok, sec) / 1024)} KB → {hedef}")
     if eksik:
         print(f"[yayın listesi] kaynakta geçen ama depoda olmayan {len(eksik)} yol (dinamik olabilir): {', '.join(eksik[:12])}")

@@ -125,6 +125,58 @@ OXXai (sohbet asistanı) tamamen telefonda çalışır; yapay zekâ servisi ve s
 Yerel deneme: `node lab/bot_coach.mjs --dry` (dosya yazmaz) · `node lab/bot_coach.mjs --eval` (yalnız test kümesi) ·
 `BOT_COACH_TIME=2026-10-25T12:00:00+03:00` saati sabitler · `BOT_COACH_INDEX=<dosya>` başka bir index.html'i sınar.
 
+## 📦 Uygulama dosya yapısı (v143): index.html ince kabuk + js/ css/ paketleri
+
+`index.html` (~170 KB; gzip ~38 KB) yalnız HTML iskeleti, ilk boyama stili (`stil-bas`, head'de satır içi: ilk ziyarette açılış
+görseli ek istek beklemeden çizilir), küçük satır içi stiller ve sürüm satırıdır. Eskiden satır içi olan tüm katmanlar
+**aynı yerde, aynı sırayla** `<script src="js/<paket>.js?v=<özet>"></script>` ile yüklenir (defer/async YOK: yürütme sırası,
+global kapsam ve sarmalayıcı zincirleri — `quickPred=function…`, `msRender=function…` — birebir aynı).
+
+| Dosya | İçindeki katmanlar (eski `<script id>`, sırayla) |
+|---|---|
+| *(satır içi, head)* `<style id="stil-bas">` | ilk boyama stili (kritik CSS; dışarı alınınca Fast 3G'de ilk boyama 0,8 → 2,1 sn gecikti) |
+| js/baslangic.js | ui-v122-yardim, perf-v118, istek-v124, ui-v92 |
+| *(satır içi)* `<script id="surum">` | `const APP_V="…";` — update.yml (`sed ^const APP_V=`) ve oxxLatestV buradan okur; **sürüm burada artırılır** |
+| js/core.js | ana çekirdek (id'siz eski büyük blok; `"use strict"` dosyanın başında, bu yüzden tek başına) |
+| js/bot.js · js/ekran.js · js/at.js · js/futbol.js | bot-v69, bot-v70 · core-v69, ui-v70, pw-v70, canli-v70 · at-v73 · rec-v77 … oxxai-bot-v88 |
+| css/govde.css + `<style id="stil-govde-svg">` + css/govde-2.css | stil-govde (SVG `url(#…)` kuralları belgede kalır) |
+| js/kupo.js | kupon-v93, derbi-v95, kuponum-v95, gollu-v97, onarim-v100, kupo-canli-v101 |
+| *(satır içi SVG gradyanları)* | |
+| js/at-kupo.js · js/pazar.js · js/at2.js · js/canli-gt.js · js/at5.js · js/arayuz.js | ust-ikon-v101, atkupon-v98 · canli-sirada-v103, pazar-v104, sonuc-oxx-v104 · at2-v106, at3-v109 · canli-gt-v107, canli-dr-v117, oxx-kupon-v110, oxxai-v111, canli-gece-v115 · at5-v116 · perf-v118-nabiz, ui-v122, bot-v123, bot-v127, ui-v125 |
+| js/ses.js · js/paylas.js · js/guvenilirlik.js · js/canli-isaret.js | ses-v121 · kpaylas-v129, kpaylas-at-v129, oransiz-kupa-v132, canli-coklu-v133, canli-nabiz-v134 · guvenilirlik-v138 · canli-isaret-v140 (aralarındaki küçük `<style id>` blokları index.html'de, eski yerinde) |
+| css/katmanlar.css · js/katmanlar.js | ara-geri-v142-css · ara-geri-v142 **+ bundan sonraki tüm yeni katmanlar** |
+
+**Paket biçimi.** Her katman kendi işaretiyle ve kendi `try` bloğunda (bir katmanın hatası yalnız onu durdurur — eskiden ayrı
+`<script>` olmasının davranışı; hata `reportError` ile yine sayfa hatası olarak görünür):
+
+```js
+/* id: ornek-v150 */ try {
+(function(){ … katman … })();
+} catch (e) { if (typeof reportError === "function") reportError(e); else setTimeout(function () { throw e; }); } /* /id: ornek-v150 */
+```
+
+### Yeni katman nereye eklenir (otonom döngü ve tüm ajanlar için kural)
+1. **index.html'e yeni satır içi `<script>` EKLEME.** Yeni JS katmanı `js/katmanlar.js` dosyasının **sonuna**, yukarıdaki biçimle
+   (`/* id: <ad-vNNN> */ try {` … `} catch (e) {…} /* /id: <ad-vNNN> */`) eklenir. En sonda olduğu için önceki tüm katmanları sarabilir.
+   Katman tek bir IIFE olmalı: dosya düzeyinde `function`/`var`/`let`/`const` bildirme (aynı dosyadaki önceki katmanlara sızar/hoist olur).
+2. Yeni CSS `css/katmanlar.css` sonuna (`/* ===== <ad-vNNN> ===== */` başlığıyla). Mevcut bir katmanı düzeltmek: ilgili paketteki
+   `/* id: … */` bloğunu yerinde değiştir.
+3. Paket 600 KB'ı geçecekse yeni bir paket aç (ör. `js/katmanlar-2.js`), index.html'de `js/katmanlar.js` satırının hemen ALTINA
+   `<script src="js/katmanlar-2.js?v=x"></script>` ekle ve sw.js SHELL listesine yaz.
+4. Sürüm: index.html `<script id="surum">` içindeki APP_V, sw.js `oxxai-vNNN`, data/version.json. `?v=` özetleri için
+   `python3 lab/yayin_listesi.py damga` (unutulsa bile `yayin_listesi.py kur` yayın kopyasında gerçek içerik özetini yazar).
+5. Testler blokları id ile `lab/_kaynak.cjs` (`K.blok("canli-v70")`, `K.tumKaynak()`) / `lab/_kaynak.py` ile okur; index.html'i
+   regex'le okuyan yeni test yazma.
+
+**Önbellek.** sw.js: index.html ve data/ her zaman önce ağdan; `js/`, `css/` adresleri `?v=<içerik özeti>` taşıdığı için önce
+önbellekten (aynı adres = aynı içerik), yeni sürümde index.html yeni `?v=` ister → eski JS önbellekten gelmez; aynı dosyanın eski
+sürümleri önbellekten silinir. Tekrar açılışta ağdan yalnız index.html iner (gzip ~38 KB; eskiden her açılışta 1,5 MB / gzip 475 KB).
+
+**Kapı.** `lab/yayin_kapisi.py denetle` (update.yml duman testinden önce): index.html ≤ 1500 KB, her paket ≤ 600 KB, ilk yük
+(index.html + paketler) ≤ 2000 KB (1700 üstü uyarı), satır içi script > 30 KB uyarı, her paket `node --check`. Yayın listesi
+(`lab/yayin_listesi.py`) paketleri index.html/sw.js'den bulur ve içlerindeki `data/…` yollarını da tarar.
+Tembel yükleme yok: tüm paketler açılışta, eski sırayla (window global listesi ve davranış birebir aynı kalsın diye).
+
 ## Yeni bot eklemek
 
 1. `lab/<bot>.py` (veya `.mjs`) yaz: girdiyi `data/`'dan okusun, çıktıyı tek bir `data/<bot>.json`'a yazsın, hata verse bile sıfırdan farklı çıkmasın.
@@ -163,7 +215,7 @@ Yerel deneme: `node lab/bot_coach.mjs --dry` (dosya yazmaz) · `node lab/bot_coa
 - Elenenler (gürültü içinde): haftalık/günlük yeniden kalibrasyon, haftalık yeniden eğitim, gün içi jokey/antrenör kalıntısı, koşu içi z/sıra özellikleri.
 
 ## 🐎 At Yarışı 2.0 (v106, lab/at/TASARIM.md Aşama 1–2)
-- Bloklar: `<style id="at2-v106">` + `<script id="at2-v106">` (</body> öncesi). Silinirse eski at ekranı (`at-v73`) geri gelir.
+- Bloklar: `at2-v106` (v143'ten beri js/at2.js içinde `/* id: at2-v106 */`; stili css/govde-2.css). Silinirse eski at ekranı (`at-v73`, js/at.js) geri gelir.
 - `at-v73` çekirdeği (`BX_AT`) sarılır: eski `render()` gizli `#atBox`'a yazmaya devam eder (atkupon-v98 `deco` ve geriye uyum); yeni ekranlar `#at2Box`'ta, sekmeler uygulamanın yapışkan `.at-head` kabında (`#at2Nav`).
 - Yollar: `#at` · `#at/{bugun|program|bahis|sonuc|kupon}` (sekme: replaceState) · `#at/kosu/<gün~hipodrom~no>` · `#at/at/<koşu>/<no>` · `#at/jokey/<ad>` · `#at/antrenor/<ad>` · `#at/takip` · `#at/istatistik` (detay: pushState; tarayıcı geri tuşu çalışır). Eski `AT.tab` (altili/sonuc/jokey/altin) yeni sekmeye eşlenir; `BX_AT.horseSheet` at profiline yönlenir.
 - Kupon: ayrı kupon yok; koşu kartı/at profili/6'lı düğmeleri `data-atkr` / `data-atkh` / `data-atka` ile atkupon-v98 kurucusunu açar. Kupon sekmesi KX'teki aktif at kuponunu okur (Aşama 3 genişletecek).

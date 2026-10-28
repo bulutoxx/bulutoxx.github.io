@@ -1,6 +1,6 @@
 """⚔️ Derbi karnesi (yalnız repodaki veriyle; ağ kullanmaz).
 
-Derbi listesi index.html içindeki `<script id="derbi-v95">` bloğundaki DERBI_DATA sabitinden okunur (tek kaynak);
+Derbi listesi `derbi-v95` bloğundaki (v143'ten beri js/kupo.js içinde `/* id: derbi-v95 */`) DERBI_DATA sabitinden okunur (tek kaynak);
 ad eşleştirme kuralları oradaki JavaScript ile birebir aynıdır (Türkçe karakter, FC/SK/AŞ/JK ekleri, U17–U23 / B / II /
 kadın takımı ayrımı; genç/kadın takımı ana derbi sayılmaz).
 
@@ -22,7 +22,9 @@ def jl(p):
     except Exception: return None
 
 def derbi_data():
-    html = open(os.path.join(ROOT, "index.html"), encoding="utf-8").read()
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    from _kaynak import blok                      # v143: derbi-v95 bloğu js/kupo.js paketinde
+    html = blok("derbi-v95", ROOT)
     m = re.search(r"/\*DERBI_JSON\*/(.*?)/\*/DERBI_JSON\*/", html, re.S)
     return json.loads(m.group(1))
 
