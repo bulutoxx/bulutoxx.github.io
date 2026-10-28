@@ -438,11 +438,16 @@ def live_cal_block(stats, h1=None):
         zm.update(kabul=bool(G.get("kabul")), kapi=G)
     except Exception as ex:
         print("canlı zaman kapısı atlandı:", ex.__class__.__name__, ex, flush=True)
+    # v135: 75. dakika ve sonrasındaki seçimler karneye ve kalibrasyona girmez (uygulama artık o dakikalarda tavsiye vermiyor;
+    # neredeyse kesin son dakika seçimleri isabeti olduğundan yüksek gösteriyordu). Kayıtlar silinmez, yalnız sayılmaz.
+    n_tum, h_tum = len(stats), (round(sum(r["ok"] for r in stats) / len(stats), 4) if stats else None)
+    stats = [r for r in stats if (r.get("t") if r.get("t") is not None else 0) < 75]
     edges = [0.5, 0.6, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.01]; bins = []
     for lo, hi in zip(edges[:-1], edges[1:]):
         s_ = [r for r in stats if lo <= r["p"] < hi]
         bins.append([lo, hi, len(s_), round(sum(r["ok"] for r in s_) / len(s_), 4) if s_ else None])
-    out = {"n": len(stats), "hit": round(sum(r["ok"] for r in stats) / len(stats), 4) if stats else None, "bins": bins, "zaman": zm}
+    out = {"n": len(stats), "hit": round(sum(r["ok"] for r in stats) / len(stats), 4) if stats else None, "bins": bins, "zaman": zm,
+           "son_dk_haric": {"esik_dk": 75, "n_tum": n_tum, "hit_tum": h_tum}}
     # 🎯 Canlı Platt kalibrasyonu (yeni alan, 'bins' biçimi değişmedi): zaman sıralı sınamayı geçerse kabul=true
     try:
         pl = live_platt(stats, edges)

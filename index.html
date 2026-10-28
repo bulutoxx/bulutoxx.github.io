@@ -5920,7 +5920,7 @@ if((location.hash||"")==="#sonuclar") setTimeout(()=>$("navRes").click(),200);
 // =====================================================================
 // OXXai v35: Otomatik sürüm güncelleme — yeni sürüm yayınlanınca uygulama kendini yeniler
 // =====================================================================
-const APP_V="2026-10-28.134";
+const APP_V="2026-10-28.135";
 (function autoUpdate(){
   let shown=false;
   async function check(auto){
@@ -6026,6 +6026,7 @@ function pwLiveCands(){
     let P=null, K=null; try{ P=idlPred(m); K=idlPick(m,P); }catch(e){}
     if(!P||!K) continue;
     const best=K.all.filter(c=>c.o&&c.o>=1.03&&c.p>=.6&&isFinite(c.p)).sort((a,b)=>b.p-a.p)[0];
+    if(m.min!=null&&+m.min>=75) continue;   // v135: son dakikalarda tavsiye yok (istatistiği şişiriyordu)
     if(best){ const C=liveCal(best.p); if(C.p>=PW.pick) out.push({m, k:best.k, n:best.n, p:Math.min(C.p,.99), raw:best.p, cn:C.n, ch:C.h, o:best.o, clock:idlClockTxt(m)}); }
   }
   return out.sort((a,b)=>b.p-a.p);
@@ -7893,9 +7894,11 @@ setTimeout(()=>{ try{ renderTP(); }catch(e){} },1500);
 // Kupondaki maçlar canlı listede altın çerçeveyle işaretlenir. Tahmindir, garanti değildir.
 // =====================================================================
 (function(){
-  const TH=.75, SOLO=.85; let open=false, lastSig="";
+  // v135: son dakika seçimleri altına girmez (75. dk ve sonrası: model orada aşırı güvenliydi, %97,9 dediği %81,6 tuttu).
+  // Eşikler (TH/SOLO/PMIN) kullanıcı kararını bekliyor; şimdilik önceki değerler.
+  const TH=.75, SOLO=.85, PMIN=0, DKMAX=75; let open=false, lastSig="";
   function build(){ let L=[]; try{ L=pwLiveCands(); }catch(e){} const seen=new Set(), c=[];
-    for(const x of L){ if(!(x.o>=1.05)) continue; if(seen.has(x.m.id)) continue; seen.add(x.m.id); c.push(x); if(c.length>=12) break; }
+    for(const x of L){ if(!(x.o>=1.05)) continue; if(!(x.p>=PMIN)) continue; if(x.m&&x.m.min!=null&&+x.m.min>=DKMAX) continue; if(seen.has(x.m.id)) continue; seen.add(x.m.id); c.push(x); if(c.length>=12) break; }
     let best=null;
     (function rec(i,sel,p,o){ if(sel.length>=2&&p>=TH&&(!best||o>best.o+1e-9)) best={sel:sel.slice(),p,o};
       if(sel.length>=4) return; for(let j=i;j<c.length;j++){ const np=p*c[j].p; if(np<TH) continue; sel.push(c[j]); rec(j+1,sel,np,o*c[j].o); sel.pop(); } })(0,[],1,1);
