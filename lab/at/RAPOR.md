@@ -1,6 +1,6 @@
 # OXXai 🐎 At Yarışı Laboratuvarı — Rapor
 
-_Otomatik üretildi: 2026-10-28T01:18:31+00:00 · model sürümü `20261028T0118` · hobi amaçlıdır, garanti değildir · 18+_
+_Otomatik üretildi: 2026-10-28T03:06:47+00:00 · model sürümü `20261028T0118` · hobi amaçlıdır, garanti değildir · 18+_
 
 ## Yeniden oynatma (replay): 2026-03-16 → 2026-10-23
 
@@ -416,8 +416,8 @@ Yorum: sabah tahmininde en çok taşıyan bilgiler reytingler (at/jokey/antrenö
 ## Kapı (sürekli öğrenme)
 
 - Kural: tarif (özellikler/ayarlar) değişirse yeni model ancak **aynı sınama koşularında** yalnız-model log-loss'u düşürür, ilk seçim isabetini düşürmez ve harman log-loss'unu 0,001'den fazla bozmazsa kabul edilir. Tarif aynıysa özellikler her gece yeni sonuçlarla güncellenir, katsayılar haftada bir yeniden eğitilir (KORU = bu gece yenileme günü değil); ortak koşularda belirgin bozulma (veri sorunu) olursa dünkü model korunur. İz: `data/at/sinama_izi.json`.
-- Son karar (2026-10-28T01:18:31+00:00): **KABUL** — harman log-loss 1.796→1.7907, harman ilk seçim 0.3516→0.3523; yalnız-model 1.8686→1.8521 (yalnız harman tarafı değişti: harman_kalinti; ortak 5469 sınama koşusunda)
-- Yeni: yalnız model log-loss 1.8521, ilk seçim %32.4; harman 1.7907. Kıyas: yalnız model 1.8686, ilk seçim %31.6; harman 1.7960.
+- Son karar (2026-10-28T03:06:47+00:00): **KORU** — aynı tarif; katsayılar 0 günlük (haftalık yenileme), özellikler bu gece yeni sonuçlarla güncellendi
+- Yeni: yalnız model log-loss 1.8521, ilk seçim %32.4; harman 1.7907. Kıyas: yalnız model 1.8521, ilk seçim %32.4; harman 1.7907.
 
 ## Canlı karne (kilitlenmiş tahminler, sonuç gelince)
 
