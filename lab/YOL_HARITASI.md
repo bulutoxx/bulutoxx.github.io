@@ -112,7 +112,12 @@ drift alarmı ve kapanış kilidi (yolda). Aşağıdaki maddeler bunların **üz
 - **Efor:** S · **Risk:** düşük · **Veri:** mevcut.
 - **Nasıl sınanır:** `pazar.py` aylık ileriye dönük sınaması: İKİ zaman diliminde de LL düşmeli + SK.
 - **Kaynak:** Kull, Silva Filho, Flach (2017) AISTATS [PMLR v54](https://proceedings.mlr.press/v54/kull17a.html) · Walsh & Joshi (2024) "Machine learning for sports betting: should model selection be based on accuracy or calibration?" [Bath](https://researchportal.bath.ac.uk/en/publications/machine-learning-for-sports-betting-should-model-selection-be-bas/)
-- **Durum:** bekliyor
+- **Durum:** reddedildi (2026-10-28; beta Platt'tan ayırt edilemiyor, hiçbir pazarda kapı geçmedi) — `lab/beta_kal_lab.py` → `data/beta_kal_lab.json`.
+  Aylık ileriye dönük (yalnız önceki aylarla), 2025-12-01…2026-10-26, n = 6.659 maç, lig×gün blok bootstrap B = 2000, α = 0,05/7. Aday beta vs üretim yolu (Platt kabul edilen pazarda Platt, diğerlerinde ham):
+  U15 ΔLL +0,00013 [−0,00011, +0,00038] · U35 −0,00001 [−0,00005, +0,00005] · KGV +0,00001 [−0,00012, +0,00015] · İY 0,5 Ü +0,00016 [−0,00043, +0,00076] ·
+  İY 1,5 Ü 0,00000 [−0,00002, +0,00002] · 2Y 0,5 Ü −0,00044 [−0,00086, −0,00001] (yarılar −0,00008 / −0,00079, p = 0,024 > α → geçmedi) · 2Y 1,5 Ü +0,00002 [−0,00096, +0,00098];
+  2,5 Ü (yalnız bilgi) +0,00022 [−0,00040, +0,00080]. Beta − Platt farkı tüm pazarlarda |ΔLL| ≤ 0,00002 (öğrenilen a ≈ b: asimetrik sapma yok).
+  Zayıf ridge (λ = 3) duyarlılığı daha kötü. Üretim değişmedi; 2Y 0,5 Üst için Platt/beta kabul sınırda — pazar karnesi kendi aylık kapısıyla izlemeye devam ediyor.
 
 ### YH-07 · basket · Sayı farkı ağırlıklı Elo robotu + ridge ile yığma
 - **Açıklama:** Basket motoru tek model (ağırlıklı ridge hücum/savunma). Sayı farkı çarpanlı, sezon başı ortalamaya çekmeli Elo ayrı robot olarak çalıştırılır; lojistik yığınlayıcı (girdiler: ridge fark/σ, Elo farkı, dinlenme) yalnız geçmişle öğrenir.
