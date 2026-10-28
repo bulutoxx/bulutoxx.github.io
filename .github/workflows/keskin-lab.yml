@@ -1,10 +1,8 @@
 name: OXXai keskin piyasa laboratuvari (YH-02)
 # Yalnız ölçüm: football-data.co.uk (motorun zaten kullandığı ücretsiz kaynak) eski sezonlarında Avg / Pinnacle / uzlaşı
 # kalibrasyonunu yürüyen pencereyle sınar (lab/keskin_piyasa.py). Yalnız data/keskin_piyasa.json (toplu metrik) yazar.
+# Haftalık izleme (pazar); üretimi değiştirmez. Issue/mail/bildirim yok.
 on:
-  push:
-    branches: ["yh02-keskin"]
-    paths: ["lab/keskin_piyasa.py", ".github/workflows/keskin-lab.yml"]
   schedule:
     - cron: "23 5 * * 0"
   workflow_dispatch:

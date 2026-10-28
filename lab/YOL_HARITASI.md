@@ -45,7 +45,15 @@ drift alarmı ve kapanış kilidi (yolda). Aşağıdaki maddeler bunların **üz
 - **Efor:** S · **Risk:** düşük (bayraklı; iddaa gösterimi değişmez, yalnız olasılık) · **Veri:** football-data.co.uk, ücretsiz (atıf).
 - **Nasıl sınanır:** `_served_walkforward` katlarında üç hedef (Avg / PS / uzlaşı) yarışır; SK + katların çoğunda daha iyi + Altın isabeti düşmüyor.
 - **Kaynak:** Štrumbelj (2014) [doi:10.1016/j.ijforecast.2014.02.008](https://doi.org/10.1016/j.ijforecast.2014.02.008) · Hubáček, Šourek, Železný (2019) IJF [ideas.repec](https://ideas.repec.org/a/eee/intfor/v35y2019i2p783-796.html) · [football-data.co.uk notları](https://www.football-data.co.uk/notes.txt)
-- **Durum:** bekliyor
+- **Durum:** gölgede (2026-10-28; 1X2 reddedildi, 2,5 A/Ü kapıyı geçti ama etki pratik eşiğin altında) — `lab/keskin_piyasa.py` → `data/keskin_piyasa.json`,
+  `keskin-lab.yml` haftalık (yalnız ölçüm). football-data 22 ana lig 2020–2026 + 16 yeni lig (68.078 maç), power marj + T yürüyen pencerede, yıllık katlar 2022–2025,
+  lig×gün blok bootstrap B = 2000; referans = Avg (üretim). **1X2 maç öncesi** (n = 26.168): PS ΔLL −0,00018 [GA −0,00044, +0,00008], uzlaşı (w ≈ 0,9–1)
+  −0,00020 [−0,00046, +0,00006], isabet −0,07…−0,09 puan → **geçmedi**. **1X2 kapanış** (yeni ligler dahil, n = 42.397): PS −0,00017 [−0,00045, +0,00010],
+  son iki katta +0,0001/+0,0011 → **geçmedi**. **2,5 A/Ü maç öncesi** (n = 26.087): PS ΔLL −0,00018 [−0,00034, −0,00003], yarılar −0,00024/−0,00012,
+  ΔBrier −0,00015, isabet +0,09 puan, p = 0,011 → **SK geçti**; ancak kazanç beklenenin (−0,001…) ~1/10'u ve üretime almak f.ou'yu (gösterilen ve değer
+  hesabında kullanılan oranı) değiştirir → yayına alınmadı, haftalık izlemede. Yeniden değerlendirme: ≥ 3 ardışık hafta geçerse yalnız olasılık yoluna
+  (gösterim değişmeden) ayrı alanla bağlanır. (b) iddaa × keskin piyasa uzlaşısı: tazeveri 2026-10-23'ten beri (FD liglerinde ≈ 250 sonuçlu maç) → ≥ 30 gün sonra.
+  Commit: dal `yh02-keskin` (4d120b8), sınama çalışması 40670911382.
 
 ### YH-03 · futbol · Şut tabanlı güç robotu (GAP / sözde-xG) — oranlı ligler
 - **Açıklama:** `update.py` football-data'dan isabetli şutu (`HST/AST` → `m["st"]`) zaten indiriyor ama yalnız korner/kart modelinde kullanıyor. Wheatcroft'un GAP puanı gibi her takıma şut ve isabetli şut üretme/yeme gücü (ev/deplasman ayrı, üstel unutma) çıkar; beklenen isabetli şut → beklenen gol dönüşümü öğrenilir. `guc.py` topluluğuna 4. robot ve 2,5 üst yığınlayıcısına girdi olarak eklenir; oranlı maçta piyasa ile karışım `karisim` gölgesinde ölçülür.
