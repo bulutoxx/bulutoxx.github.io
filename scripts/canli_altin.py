@@ -112,3 +112,45 @@ def hit(k, fh, fa, hs, as_):
         if da > 0 and dh == 0: return k == "G2"
         return None
     return None
+
+
+# ---------------------------------------------------------------- v140 · Canlı altın İŞARET (tek maç rozeti)
+# Uygulamadaki <script id="canli-isaret-v140"> aiRule() ile AYNI kural. Canlı altın KUPO (sec) ve eşikleri değişmez.
+#   1) dakika ≥ dkmax → işaret yok (75. dk sonrası model aşırı güvenliydi; v135 kararı korunur);
+#   2) maçın en olası seçimi (oran ≥ 1,03, olasılık ≥ 0,60 — pwLiveCands ile aynı aday), oranı ≥ 1,05 olmalı;
+#   3) gösterilen (kalibre) olasılık ≥ esik → işaret açılır; zaten açıksa kapanis altına düşene dek kalır (histerezis).
+# Bayrak: data/canli_altin.json → "isaret": {esik, kapanis, dkmax, durum, baslangic, bitis, olcum, kapi}; durum "durduruldu" → işaret yok.
+ISARET_VARSAYILAN = {"esik": 0.80, "kapanis": 0.77, "dkmax": 75}
+
+
+def isaret_ayar(data_dir):
+    I = dict(ISARET_VARSAYILAN, durum="deneme")
+    try:
+        j = (json.load(open(os.path.join(data_dir, "canli_altin.json"), encoding="utf-8")) or {}).get("isaret") or {}
+        T = dict(I)
+        for k in ISARET_VARSAYILAN:
+            v = j.get(k)
+            if isinstance(v, (int, float)) and math.isfinite(v): T[k] = float(v)
+        if 0.5 <= T["kapanis"] <= T["esik"] <= 0.99 and 30 <= T["dkmax"] <= 120:
+            I = T
+        I["durum"] = j.get("durum") or "deneme"
+        for k in ("baslangic", "bitis"):
+            if j.get(k): I[k] = j[k]
+    except Exception:
+        pass
+    return I
+
+
+def isaret(cands, dk, I, cal=None, onceki=False):
+    """cands: uygulama_adaylari() çıktısı [(rk, ham p, oran|None)]; dk: maç dakikası (m.min); onceki: bu maç bir önceki turda işaretli miydi.
+    Dönüş: {"k", "p" (gösterilen, ≤ 0,99), "ham", "o"} ya da None."""
+    if I.get("durum") == "durduruldu": return None
+    if dk is not None and dk >= I["dkmax"]: return None
+    ok = [c for c in cands if c[2] and c[2] >= 1.03 and c[1] is not None and math.isfinite(c[1]) and c[1] >= .6]
+    if not ok: return None
+    b = max(ok, key=lambda c: c[1])
+    if not (b[2] >= 1.05): return None
+    p = min(kal(b[1], cal), .99)
+    if p >= I["esik"] or (onceki and p >= I["kapanis"]):
+        return {"k": b[0], "p": p, "ham": b[1], "o": b[2]}
+    return None

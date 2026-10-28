@@ -17,6 +17,11 @@ seçimleri (toplayıcı canlı kayıtta "g": 1 ve "ga" ile işaretler, "gok" ile
 kombine: benzersiz kombinasyon. n < 10 → "yetersiz"; bir türde n ≥ 10 ve Wilson alt sınırı < eşik − 0,05 → "başarısız";
 ikisi de n < 10 ama toplam ≥ 10 ise birleşik isabet min(eşik) − 0,05 ile sınanır. Başarısız/yetersiz → eşikler önceki değerlere
 döner (durum "geri_alindi"); başarılı → durum "kalici". Karar data/gelisim.json'a olay olarak yazılır.
+İŞARET (v140, isaret): tek maç "Canlı altın işaret" rozeti (uygulama: canli-isaret-v140; toplayıcı "ai": 1 + "aa", sonuç "aok").
+  Maç başına İLK işaret anı bir kez sayılır. Ölçüm: n, tuttu, gerçek, Wilson %95 alt, ortalama tahmin (deneme dönemi + tümü).
+  48 saat (+3 sa puanlama payı) sonunda: n ≥ 15 ve Wilson alt ≥ 0,75 → "kalici"; Wilson alt < 0,75 → eşik 0,85'e (kapanış 0,82)
+  yükselir ve yeni 48 saat deneme (en çok bir kez; yükseltilmiş eşik de tutmazsa işaret "durduruldu"); n < 15 → deneme 48 saat uzar.
+  Karar data/gelisim.json'a olay. Canlı altın KUPO eşikleri bu kapıdan etkilenmez.
 """
 import glob, json, math, os, sys, collections
 from datetime import datetime, timezone, timedelta
@@ -124,6 +129,7 @@ def uygula(O):
          "baslangic": now.strftime("%Y-%m-%dT%H:%MZ"), "bitis": (now + timedelta(hours=DENEME_SA)).strftime("%Y-%m-%dT%H:%MZ"),
          "durum": "deneme", "onceki": {"tekli": cur["tekli"], "kombine": cur["kombine"]}, "olcum": O, "olcum_zaman": eski["olcum_zaman"],
          "kapi": {"kural": KAPI_KURAL, "karar": None}}
+    if eski.get("isaret"): F["isaret"] = eski["isaret"]          # v140: işaret bayrağı KUPO denemesinden bağımsız korunur
     json.dump(F, open(FLAG, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     yaz_gelisim("gelisme", "Canlı altın eşiği denemede",
                 f"Kayıtlı canlı seçimlerden seçilen eşik 48 saat canlı denenecek: tekli %{round(t * 100)}+, kombine %{round(k * 100)}+ "
@@ -136,6 +142,8 @@ def uygula(O):
 def gunluk():
     """update.yml adımı: önce kapı (deneme bittiyse karar), sonra günde bir ölçüm (+ gerekiyorsa yeni deneme)."""
     kapi()
+    try: isaret_kapi()
+    except Exception as ex: print("işaret kapısı atlandı:", ex.__class__.__name__, ex)
     try: F = json.load(open(FLAG, encoding="utf-8"))
     except Exception: F = {}
     try: son = datetime.fromisoformat((F.get("olcum_zaman") or "2000-01-01T00:00Z").replace("Z", "+00:00"))
@@ -202,6 +210,104 @@ def kapi():
     print("karar:", sonuc, json.dumps(olc_, ensure_ascii=False))
 
 
+# ---------------------------------------------------------------- v140 · Canlı altın İŞARET ölçümü + 48 saat kapı
+IS_N, IS_WILSON, IS_YUKSEK, IS_YUKSEK_KAP = 15, 0.75, 0.85, 0.82
+IS_KURAL = (f"48 sa (+{BEKLE_SA} sa puanlama) sonunda maç başına ilk işaret: n ≥ {IS_N} ve Wilson %95 alt ≥ {IS_WILSON} → kalıcı; "
+            f"Wilson alt < {IS_WILSON} → eşik {IS_YUKSEK} (en çok bir kez; o da tutmazsa durdurulur); n < {IS_N} → deneme 48 sa uzar")
+_ts = lambda z: datetime.fromisoformat(z.replace("Z", "+00:00"))
+_fmt = lambda d: d.strftime("%Y-%m-%dT%H:%MZ")
+
+
+def isaret_kayitlari(t0=None, t1=None, logs=None):
+    """Maç başına İLK işaret (en erken ts); yalnız sonuçlanmış (aok True/False). logs: test için [{key: kayıt}]."""
+    if logs is None:
+        logs = []
+        for f in sorted(glob.glob(os.path.join(DATA, "archive", "live", "*.json"))):
+            try: logs.append(json.load(open(f, encoding="utf-8")))
+            except Exception: continue
+    ilk = {}
+    for log in logs:
+        for r in log.values():
+            if r.get("ai") != 1 or not isinstance(r.get("aa"), dict): continue
+            ts = r.get("ts") or 0
+            if t0 is not None and ts < t0: continue
+            if t1 is not None and ts >= t1: continue
+            i = str(r.get("id"))
+            if i not in ilk or ts < ilk[i]["ts"]: ilk[i] = {"ts": ts, "ok": r.get("aok"), "p": r["aa"].get("p"), "dk": r["aa"].get("dk"), "k": r["aa"].get("k")}
+    return [x for x in ilk.values() if x["ok"] in (True, False)]
+
+
+def isaret_olc(X):
+    n = len(X); h = sum(1 for x in X if x["ok"])
+    return {"n": n, "tuttu": h, "gercek": round(h / n, 4) if n else None, "wilson_alt": wilson(h, n),
+            "ort_p": round(sum(x["p"] or 0 for x in X) / n, 4) if n else None}
+
+
+def isaret_kapi(now=None, F=None, logs=None, yaz=True):
+    """Ölçümü yazar ve gerekiyorsa karar verir. now/F/logs: test için. Dönüş: güncel isaret bayrağı."""
+    import canli_altin as CA_
+    now = now or datetime.now(timezone.utc)
+    if F is None:
+        try: F = json.load(open(FLAG, encoding="utf-8"))
+        except Exception: F = {}
+    I = F.get("isaret")
+    if not isinstance(I, dict) or not I.get("baslangic"):          # kendini onarır: bayrak yoksa deneme şimdi başlar
+        I = dict(CA_.ISARET_VARSAYILAN, durum="deneme", baslangic=_fmt(now), bitis=_fmt(now + timedelta(hours=DENEME_SA)), uzatma=0, yukseltildi=False)
+    I.setdefault("kapi", {"kural": IS_KURAL, "karar": None})
+    t0, t1 = _ts(I["baslangic"]).timestamp(), _ts(I["bitis"]).timestamp()
+    D = isaret_olc(isaret_kayitlari(t0, t1, logs)); T = isaret_olc(isaret_kayitlari(None, None, logs))
+    I["olcum"] = dict(T, deneme=D, zaman=_fmt(now))
+    ev = None
+    if I.get("durum") == "deneme" and now >= _ts(I["bitis"]) + timedelta(hours=BEKLE_SA):
+        pc = lambda x: f"%{round(x * 100)}"
+        tx = f"{D['tuttu']}/{D['n']}" + (f" ({pc(D['gercek'])}, Wilson alt {pc(D['wilson_alt'])})" if D["n"] else "")
+        gecmis = I.setdefault("gecmis", []); gecmis.append({"esik": I["esik"], "baslangic": I["baslangic"], "bitis": I["bitis"], **D})
+        if D["n"] < IS_N:
+            I["bitis"] = _fmt(_ts(I["bitis"]) + timedelta(hours=DENEME_SA)); I["uzatma"] = int(I.get("uzatma") or 0) + 1; karar = "uzatildi"
+            ev = ("bilgi", "Canlı altın işaret denemesi uzatıldı", f"48 saatte yeterli işaret birikmedi ({tx}; en az {IS_N} gerekli). Deneme 48 saat uzadı, eşik %{round(I['esik'] * 100)}.")
+        elif D["wilson_alt"] >= IS_WILSON:
+            I["durum"] = "kalici"; karar = "kalici"
+            ev = ("gelisme", "Canlı altın işaret kalıcı oldu", f"48 saatlik canlı denemede %{round(I['esik'] * 100)}+ işaretli maçlar {tx} tuttu. İşaret kalıcı.")
+        elif not I.get("yukseltildi") and I["esik"] < IS_YUKSEK:
+            eski_e = I["esik"]; I.update(esik=IS_YUKSEK, kapanis=IS_YUKSEK_KAP, yukseltildi=True, baslangic=_fmt(now), bitis=_fmt(now + timedelta(hours=DENEME_SA)), uzatma=0)
+            karar = "yukseltildi"
+            ev = ("duzeltme", "Canlı altın işaret eşiği yükseltildi", f"%{round(eski_e * 100)}+ işaretler {tx} tuttu; güven alt sınırı %{round(IS_WILSON * 100)}'in altında. Eşik %{round(IS_YUKSEK * 100)}'e yükseldi, yeni 48 saat deneme.")
+        else:
+            I["durum"] = "durduruldu"; karar = "durduruldu"
+            ev = ("duzeltme", "Canlı altın işaret durduruldu", f"Yükseltilmiş %{round(I['esik'] * 100)}+ eşikte de işaretler {tx} tuttu; güven alt sınırı yetersiz. İşaret gösterilmiyor.")
+        I["kapi"] = dict(I["kapi"], karar=karar, zaman=_fmt(now), deneme=D)
+    F["isaret"] = I
+    if yaz:
+        json.dump(F, open(FLAG, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+        if ev: yaz_gelisim(ev[0], ev[1], ev[2], f"canli-isaret-{now:%Y-%m-%d}-{I['kapi']['karar']}")
+    print("işaret:", I.get("durum"), "eşik", I.get("esik"), json.dumps(I["olcum"], ensure_ascii=False))
+    return I
+
+
+def isaret_test():
+    """Kapı mantığı birim testi (dosyaya yazmaz)."""
+    t0 = datetime(2026, 10, 28, 20, 0, tzinfo=timezone.utc)
+    def logs(n, h, base=t0):
+        L = {}
+        for i in range(n):
+            ts = int((base + timedelta(hours=1 + i % 40)).timestamp())
+            L[f"{i}-30"] = {"id": str(i), "ts": ts, "ai": 1, "aa": {"k": "1", "p": .85, "dk": 30}, "aok": i < h}
+            L[f"{i}-40"] = {"id": str(i), "ts": ts + 600, "ai": 1, "aa": {"k": "1", "p": .9, "dk": 40}, "aok": False}   # aynı maç: sayılmaz
+        return [L]
+    F0 = lambda: {"isaret": {"esik": .8, "kapanis": .77, "dkmax": 75, "durum": "deneme", "baslangic": _fmt(t0), "bitis": _fmt(t0 + timedelta(hours=48))}}
+    ok = 0; fail = 0
+    def chk(c, m):
+        nonlocal ok, fail; ok += c; fail += (not c); print(("  ✓ " if c else "  ✗ ") + m)
+    later = t0 + timedelta(hours=52)
+    I = isaret_kapi(later, F0(), logs(20, 20), yaz=False); chk(I["durum"] == "kalici" and I["olcum"]["n"] == 20, f"20/20 → kalıcı (n={I['olcum']['n']}, maç başına ilk işaret)")
+    I = isaret_kapi(later, F0(), logs(20, 13), yaz=False); chk(I["esik"] == .85 and I["durum"] == "deneme" and I["yukseltildi"], "13/20 → eşik 0,85, yeni deneme")
+    F = {"isaret": dict(I)}; I2 = isaret_kapi(_ts(I["bitis"]) + timedelta(hours=4), F, logs(20, 13, _ts(I["baslangic"])), yaz=False); chk(I2["durum"] == "durduruldu", "yükseltilmiş eşik de tutmaz → durduruldu (en çok bir kez)")
+    I = isaret_kapi(later, F0(), logs(8, 8), yaz=False); chk(I["durum"] == "deneme" and I["uzatma"] == 1 and _ts(I["bitis"]) == t0 + timedelta(hours=96), "n=8 → deneme 48 sa uzar")
+    I = isaret_kapi(t0 + timedelta(hours=30), F0(), logs(20, 20), yaz=False); chk(I["durum"] == "deneme" and I["kapi"]["karar"] is None, "48 sa dolmadan karar yok")
+    I = isaret_kapi(t0, {}, [{}], yaz=False); chk(I["durum"] == "deneme" and I["esik"] == .8 and I["olcum"]["n"] == 0, "bayrak yoksa kendini onarır (deneme başlar)")
+    print(f"\n{ok} geçti, {fail} kaldı"); return fail == 0
+
+
 if __name__ == "__main__":
     a = sys.argv[1:] or ["olc"]
     if a[0] == "olc":
@@ -209,3 +315,5 @@ if __name__ == "__main__":
         if "--uygula" in a: uygula(O)
     elif a[0] == "kapi": kapi()
     elif a[0] == "gunluk": gunluk()
+    elif a[0] == "isaret": isaret_kapi()
+    elif a[0] == "isaret_test": sys.exit(0 if isaret_test() else 1)

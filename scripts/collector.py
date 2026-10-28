@@ -114,12 +114,12 @@ def live_snapshot():
     Z = CI.zaman(DATA)                                   # v117: kabul edilmiş kalan süre modeli (yoksa eski model)
     # v136: uygulamanın canlı olasılığı (CG açıksa) ve canlı altın kuralı — scripts/canli_altin.py ile uygulamadaki formülün aynısı
     import canli_guc as CGM, canli_altin as CAL
-    PCG = CGM.ayar(DATA); FAL = CAL.ayar(DATA); gcal = None
+    PCG = CGM.ayar(DATA); FAL = CAL.ayar(DATA); FIS = CAL.isaret_ayar(DATA); gcal = None
     try:
         _k = json.load(open(os.path.join(DATA, "canli_guc.json"), encoding="utf-8")).get("kal") or None
         if _k and all(isinstance(_k.get(x), (int, float)) for x in ("a", "b")): gcal = {"a": float(_k["a"]), "b": float(_k["b"])}
     except Exception: pass
-    gold_c = []
+    gold_c = []; ai_c = []      # v140: canlı altın işaret adayları (maç başına ilk işaret anı bir kez kaydedilir)
     get = lambda u: json.loads(urllib.request.urlopen(urllib.request.Request(u, headers=ID.UA), timeout=40).read().decode("utf-8")).get("data") or {}
     lr = get("https://statisticsv2.iddaa.com/live-results?sportId=1"); ev = get("https://sportsbookv2.iddaa.com/sportsbook/events?st=1&type=1&version=0")
     sc = lr.get("sc") or {}
@@ -139,8 +139,11 @@ def live_snapshot():
         if PCG:
             try:
                 Pc = CGM.probs(float(L[0]), float(L[1]), hs, as_, t, rc, pd, PCG)
-                ga = CAL.mac_adayi(CAL.uygulama_adaylari(e, Pc, hs, as_), s.get("min"), FAL, gcal)
+                _uc = CAL.uygulama_adaylari(e, Pc, hs, as_)
+                ga = CAL.mac_adayi(_uc, s.get("min"), FAL, gcal)
                 if ga: gold_c.append(dict(ga, id=k, dk=s.get("min"), key=f"{k}-{int(t)}"))
+                ia = CAL.isaret(_uc, s.get("min"), FIS, gcal)
+                if ia: ai_c.append(dict(ia, id=k, dk=s.get("min"), key=f"{k}-{int(t)}"))
             except Exception: Pc = None
         st_c.append({"id": k, "t": t, "pd": pd, "hs": hs, "as": as_, "rc": rc, "lam": [float(L[0]), float(L[1])], "h": e.get("hn") or "", "a": e.get("an") or ""})
         cands = []
@@ -178,8 +181,23 @@ def live_snapshot():
                                        "tekli": FAL["tekli"], "kombine": FAL["kombine"], "durum": FAL.get("durum")}
                 ng += 1
     except Exception as ex: print("canlı altın işaretleme atlandı:", ex.__class__.__name__, flush=True)
+    # v140: canlı altın İŞARET (tek maç rozeti) — her maç için yalnız İLK işaretlendiği an bir kez ("ai": 1, "aa": seçim, olasılık, dakika);
+    # gece yarısını aşan maçlar için dünün kaydına da bakılır (aynı maç iki kez sayılmaz, istatistik şişmez)
+    na = 0
+    try:
+        if ai_c:
+            dun = (now.astimezone(TR).date() - timedelta(days=1)).isoformat()
+            try: _dl = json.load(open(os.path.join(LIVE, f"{dun}.json"), encoding="utf-8"))
+            except Exception: _dl = {}
+            isl = {str(r.get("id")) for L_ in (log, _dl) for r in L_.values() if r.get("ai") == 1}
+            for x in ai_c:
+                if str(x["id"]) in isl or x["key"] not in log: continue
+                log[x["key"]]["ai"] = 1
+                log[x["key"]]["aa"] = {"k": x["k"], "p": round(x["p"], 4), "o": x["o"], "dk": x["dk"], "esik": FIS["esik"], "durum": FIS.get("durum")}
+                isl.add(str(x["id"])); na += 1
+    except Exception as ex: print("canlı altın işaret kaydı atlandı:", ex.__class__.__name__, flush=True)
     json.dump(log, open(fp, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
-    print(f"Canlı kayıt: {n} yeni seçim ({len(log)} bugün) · altın {ng}", flush=True)
+    print(f"Canlı kayıt: {n} yeni seçim ({len(log)} bugün) · altın {ng} · işaret {na}", flush=True)
     try: live_stats_snapshot(st_c, h1, now, Z=Z)
     except Exception as ex: print("canlı istatistik atlandı:", ex.__class__.__name__, flush=True)
 
@@ -421,7 +439,7 @@ def live_grade():
     now = datetime.now(timezone.utc); stats = []
     for f in sorted(glob.glob(os.path.join(LIVE, "*.json")))[-30:]:
         d = os.path.basename(f)[:10]; log = json.load(open(f, encoding="utf-8")); changed = False
-        need = [r for r in log.values() if "ok" not in r or ("ga" in r and "gok" not in r)]
+        need = [r for r in log.values() if "ok" not in r or ("ga" in r and "gok" not in r) or ("aa" in r and "aok" not in r)]
         if need and d >= (now.astimezone(TR).date() - timedelta(days=2)).isoformat():
             fin = {}
             for back in (0, 1):
@@ -450,6 +468,9 @@ def live_grade():
                 if isinstance(r.get("ga"), dict):                       # v136: canlı altın seçiminin sonucu (seçim kaydınkinden farklı olabilir)
                     import canli_altin as CAL
                     r["gok"] = CAL.hit(r["ga"].get("k"), fh, fa, r["hs"], r["as"])
+                if isinstance(r.get("aa"), dict):                       # v140: canlı altın işaretin sonucu (işaret anındaki skora göre)
+                    import canli_altin as CAL
+                    r["aok"] = CAL.hit(r["aa"].get("k"), fh, fa, r["hs"], r["as"])
             if changed: json.dump(log, open(f, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
         stats += [dict(r, _d=d) for r in log.values() if r.get("ok") is not None]
     return live_cal_block(stats)

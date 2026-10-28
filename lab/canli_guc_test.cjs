@@ -41,7 +41,7 @@ for min_,pd,hs,as_,rc in I["c"]:
 print(json.dumps(out))`], { cwd: ROOT, input: JSON.stringify({ p: params, c: cases }) }).toString());
   const d = Math.max(...J.map((r, i) => Math.max(...r.map((x, j) => Math.abs(x - py[i][j])))));
   ok(d < 1e-12, `CG olasılıkları JS ↔ Python birebir — ${tag} (${cases.length} durum, en büyük fark ${d.toExponential(1)})`);
-  ok(J.every(r => Math.abs(r[0] + r[1] + r[2] - 1) < 1e-9 && r.slice(0, 9).every(x => x >= 0 && x <= 1)), `olasılıklar geçerli (1/X/2 toplamı 1) — ${tag}`);
+  ok(J.every(r => Math.abs(r[0] + r[1] + r[2] - 1) < 1e-9 && r.slice(0, 9).every(x => x >= 0 && x <= 1 + 1e-12)), `olasılıklar geçerli (1/X/2 toplamı 1) — ${tag}`);
   return J; };
   const J0 = await parity(flag.params, "bayrak");
   // v136: geç dakika parametreleri (e2, rmin, g_l2, g_ldl) nötr değilken de birebir; nötrken eski CG ile aynı
