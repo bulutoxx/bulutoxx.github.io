@@ -27,6 +27,18 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: "20" }
       - run: pip install numpy==2.1.3
+      - name: 🗃️ Ham veri önbelleği (bk_games — ESPN skorları; herkese açık release'e girmez, yalnız actions/cache)
+        uses: actions/cache/restore@v4
+        with:
+          path: data/bk_games.json
+          key: arsiv-bk-games-${{ github.run_id }}
+          restore-keys: arsiv-bk-games-
+      - name: 🗃️ Ham veri önbelleği (replay_kosular — koşu sonuçları; herkese açık release'e girmez, yalnız actions/cache)
+        uses: actions/cache/restore@v4
+        with:
+          path: data/at/replay_kosular.json
+          key: arsiv-replay-kosular-${{ github.run_id }}
+          restore-keys: arsiv-replay-kosular-
       - name: 🗃️ Önbellekleri arşivden al (OXXai öğrenme döngüsünün basket ve at sanal oynatması için)
         env:
           GH_TOKEN: ${{ github.token }}

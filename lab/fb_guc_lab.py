@@ -136,6 +136,10 @@ def calistir(alan, sinir, uret=False):
         IZ = [(dc, pr) for dc in (0.003, 0.006, 0.01, 0.018) for pr in (0.3, 2.5, 5.0, 10.0, 20.0)]
     else:
         IZ = [(0.018, 0.3), (0.006, 1.5), (0.003, 4.0)]
+    # Üretimdeki (decay, prior) ızgarada yoksa B0 ölçümü için ayrıca hesaplanır; C1 seçimine KATILMAZ (seçim ızgarası önceden kayıtlı).
+    b0 = (float(P["decay"]), float(P["prior"]))
+    IZ_EK = [] if b0 in IZ else [b0]
+    if IZ_EK: log("üretim decay/prior ızgarada yok → B0 için ayrıca hesaplanıyor:", b0)
     ELO = [(K, eta) for K in (20, 30, 40, 55, 75) for eta in (0.0, 1.0, 2.0)]
     PI = [(lm, gm) for lm in (0.035, 0.06, 0.1, 0.15, 0.22) for gm in (0.5, 0.7, 0.9)]
     R = collections.defaultdict(list)    # sütun → liste
@@ -143,7 +147,7 @@ def calistir(alan, sinir, uret=False):
         hafta, uy = uygun_ve_hafta(ms, pencere)
         if uy.sum() < 20: continue
         lams = {}
-        for dc, pr in IZ:
+        for dc, pr in IZ + IZ_EK:
             PP = dict(P, decay=dc, prior=pr)
             lams[(dc, pr)] = poisson_wf(ms, hafta, uy, PP, pencere)
         elos = {k: np.array(G.elo_seq(ms, {"K": k[0], "eta": k[1]})[0]) for k in ELO}
@@ -171,9 +175,9 @@ def calistir(alan, sinir, uret=False):
     rho = P.get("rho", -0.06)
 
     # --- B0 üretim yolu: decay/prior/kalibrasyon model.json'dan; uygulamanın dist() yolu (gscale, iki yarı DC, calT/dk)
-    b0k = ("lam", P["decay"], P["prior"])
+    b0k = ("lam",) + b0
     if b0k not in R:
-        raise SystemExit("üretim decay/prior ızgarada yok")
+        raise SystemExit("üretim decay/prior hesaplanamadı (uygun maç yok)")
     L0 = R[b0k]
     p0, o0 = U.served_probs(L0[:, 0], L0[:, 1], P.get("gscale", 1.0), rho, P.get("h1", .4437))
     p0 = U._cal3(p0, P.get("calT", 1.0), P.get("dk", 1.0))

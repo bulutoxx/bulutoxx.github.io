@@ -190,6 +190,12 @@ def izle_olc(plog, ak, bas):
     return FL.blok_boot(np.array([r[1] for r in rows]), np.array([r[0] for r in rows]))
 
 
+def izle_sayac(plog, bas):
+    """İzleme penceresindeki kilitli gölge (g0) kayıtları: toplam ve sonuçlanmış."""
+    g = [e for e in plog if e.get("g0") and e.get("d", "") >= bas]
+    return {"kilitli": len(g), "sonuclu": sum(1 for e in g if isinstance(e.get("r"), list))}
+
+
 def golge_ileri(plog):
     """Yayında olmayan topluluk adayının kilitli gölge kaydı (gk/gko) ile yayındaki p/o kıyası (yalnız ölçüm)."""
     r1, r2 = [], []
@@ -212,8 +218,11 @@ def izle(A, Gel, guardian):
     for ak, st in A.get("adaylar", {}).items():
         if st.get("durum") != "aktif": continue
         r = izle_olc(plog, ak, st["baslangic"])
-        st["izleme"] = r
-        if not r: continue
+        if not r:
+            # henüz sonuçlanmış kilitli gölge kaydı yok: ölçüm çalıştı ama örneklem boş (karar verilmez, durum görünür kalsın)
+            st["izleme"] = {"n": 0, "durum": "sonuc_bekleniyor", "tarih": gs, "golge_kayit": izle_sayac(plog, st["baslangic"])}
+            continue
+        st["izleme"] = dict(r, durum="olculdu", tarih=gs)
         if r["n"] >= MIN_IZ_N and r["ga95"][0] > 0:
             _geri_al(A, ak, f"kilitli tahminlerde eski yoldan anlamlı kötü (ΔLL {r['fark']:+.4f}, GA {r['ga95']}, n={r['n']})", Gel, guardian, gs)
         elif gs >= st.get("izleme_bitis", "9999"):

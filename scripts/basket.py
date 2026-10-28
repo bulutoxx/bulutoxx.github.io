@@ -630,12 +630,8 @@ def main():
         import bk_piyasa as BP
         PK, _ = BP.karne(plog, out_lg, fixtures)
         U = PK.get("uretimde") or {}
-        now_iso = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M")
-        for e in plog:
-            g = BP.GRUP.get(e["lg"])
-            if e.get("r") is not None or not U.get(g) or not e.get("pz") or e.get("dt", e["d"])[:16] <= now_iso: continue
-            cp = BP.capala(e["ph"], e["pa"], e["pz"], out_lg.get(e["lg"]) or {}, (PK.get("agirlik") or {}).get(g))
-            if cp: e["cp"] = cp; cp_fx[e["id"]] = cp
+        # gölge kaydı (pg: harmansız / harmanlı / çapalı) her piyasalı maçta; cp yalnız üretimdeki grupta (geri alınınca silinir)
+        cp_fx = BP.golge_ve_capa(plog, out_lg, PK, datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M"))
         t_ = PK.get("toplam") or {}
         print(f"Basket piyasa karnesi: {t_.get('n')} maç · model LL {(t_.get('model') or {}).get('ll')} · piyasa {(t_.get('piyasa') or {}).get('ll')} "
               f"· harman {(t_.get('harman') or {}).get('ll')} · üretimde {sorted(g for g, v in U.items() if v)}", flush=True)
