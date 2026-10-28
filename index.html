@@ -919,6 +919,14 @@ nav.tabs #liveBadge{background:#1FBF5B}
 .lv-pr{font-size:11.5px;line-height:1.35;display:flex;flex-wrap:wrap;align-items:center;gap:3px 6px}
 .lv-pr .pp{color:var(--ink3)}
 .lv-pr .hit,.lv-pr .mid{margin:0;padding:1px 7px;border-radius:6px}
+.lv-gl{display:grid;gap:5px}
+.lv-gl .mo{min-height:44px;padding:4px 3px;min-width:0}
+.lv-gl .mo-n{max-width:100%;overflow:hidden;font-size:11px;line-height:1.2;text-align:center;overflow-wrap:anywhere;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2}
+.lv-gl .mo b{font-size:14px}.lv-gl .mo small{font-size:10px}
+.lv-pr .lv-bp{font:inherit;font-weight:700;border:1px solid transparent;min-height:40px;padding:2px 9px;border-radius:8px;cursor:pointer;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lv-pr .lv-bp.hit{background:rgba(43,212,107,.15);color:var(--c-green)}.lv-pr .lv-bp.mid{background:rgba(255,176,32,.12);color:var(--amber)}
+.lv-pr .lv-bp.sel,.lv-gl .mo.sel{background:rgba(47,123,255,.22)!important;border-color:var(--blue)!important;color:var(--c-white)!important}
+.lv-gl .mo.sel .mo-n,.lv-gl .mo.sel small,.lv-gl .mo.sel b{color:var(--c-white)!important}
 .lv-pr small{color:var(--ink3);font-size:10.5px}
 .idl-gh{padding:6px 10px;font-size:12.5px}
 .idl{gap:var(--sp-2)}
@@ -5283,11 +5291,21 @@ function idlRow(m){
     if(ou) B.push(ob(lnF(ou.l)+" A",ou.alt,ou.lock,"A"),ob(lnF(ou.l)+" Ü",ou.ust,ou.lock,"U"));
   }
   const odds=B.length?`<div class="lv-od" style="grid-template-columns:repeat(${B.length},1fr)">${B.join("")}</div>`:"";
+  // v141: gol seçenekleri satırda da (maç penceresiyle aynı mOpt + aynı idlPick olasılığı/oranı; dokun → canlı cpToggle yolu)
+  let gl="";
+  if(m.sp===1&&P&&K){ try{ const mm=idlMM(m), ng=od.ng&&!od.ng.lock?od.ng.v:null, ex=k=>(K.ext||[]).find(x=>x.k===k), gg=ex("GG");
+    const O=[], h1=ex("IO05")?["IO05","İY 0,5 Üst"]:ex("IO15")?["IO15","İY 1,5 Üst"]:null; if(gg) O.push(mOpt("GG","Başka gol olur",gg.p,null,mm));
+    const n4=gg&&h1, tn=n=>{ const t=shortTeam(n), w=t.split(" ")[0]; return n4&&w.length>=4?w:t; };   // 4 kutuda dar ekran: ilk ad
+    O.push(mOpt("G1",(n4?"Sıradaki: ":"Sıradaki gol: ")+tn(m.h),P.nextH,ng&&ng[0],mm),mOpt("G2",tn(m.a),P.nextA,ng&&ng[2],mm));
+    if(h1){ const x=ex(h1[0]); O.push(mOpt(h1[0],h1[1],x.p,x.o,mm)); }
+    gl=`<div class="lv-gl" data-lvg="${m.id}" style="grid-template-columns:repeat(${O.length},minmax(0,1fr))">${O.join("")}</div>`; }catch(e){ gl=""; } }
   const st=m.sp===1?[m.h1!=null?`İY ${m.h1}-${m.a1}`:"", m.co[0]!=null?`K ${m.co[0]}-${m.co[1]}`:"", m.yc[0]!=null?`🟨 ${m.yc[0]}-${m.yc[1]}`:""].filter(Boolean).join(" · ")
     : (m.hq.length?m.hq.map((q,i)=>`${i+1}Ç ${q}-${m.aq[i]??0}`).join(" "):"");
   let pr="";
   if(P){ const b=K.best, pc=pc9(cq(b.p));
-    pr=`<div class="lv-pr">🔮 <b>${esc(P.ft)}</b> <span class="pp">1 %${pc9(cq(P.H))} · X %${pc9(cq(P.D))} · 2 %${pc9(cq(P.A))}</span> <span class="${pc>=70?"hit":"mid"}">${pc>=70?"🎯":"⚖️"} ${esc(b.n)} %${pc}</span>${st?` <small>${esc(st)}</small>`:""}</div>`; }
+    // v141: en olası seçim etiketi dokunulabilir (pencere ile aynı anahtar/oran; Alt/Üst canlı çizgiyle)
+    const bk=b.k==="U"||b.k==="A"?b.k+P.line:b.k, bo=b.o||(b.p>0.005?(1/b.p).toFixed(2):"");
+    pr=`<div class="lv-pr">🔮 <b>${esc(P.ft)}</b> <span class="pp">1 %${pc9(cq(P.H))} · X %${pc9(cq(P.D))} · 2 %${pc9(cq(P.A))}</span> <button type="button" class="lv-bp ${pc>=70?"hit":"mid"}${cpHas(idlMM(m),bk)?" sel":""}" data-mk="${esc(bk)}" data-o="${bo}" data-p="${b.p}" aria-label="${esc(b.n)} KUPO'ya ekle / çıkar">${pc>=70?"🎯":"⚖️"} ${esc(b.n)} %${pc}</button>${st?` <small>${esc(st)}</small>`:""}</div>`; }
   else if(m.sp===2){ const f=BK.data&&(BK.data.fixtures||[]).find(x=>x.iid===m.id); const p=f&&bkPredict(f);
     let r=null; if(p) r=bkLivePred({mar:p.mar,sm:p.sm,mh:p.mh,ma:p.ma,L:p.L,pH:p.pH,tot:p.tot},{state:"in",clock:`${Math.max(m.hq.length,1)}th ${m.min||0}:${String(m.sec||0).padStart(2,"0")}`,hs:m.hs,as:m.as});
     if(r){ const pc=pc9(Math.max(r.pH,r.pA)); pr=`<div class="lv-pr">🔮 <b>${r.fh}-${r.fa}</b> <span class="${pc>=70?"hit":"mid"}">${pc>=70?"🎯":"⚖️"} MS ${r.pH>=r.pA?"1":"2"} %${pc}</span>${st?` <small>${esc(st)}</small>`:""}</div>`; }
@@ -5297,8 +5315,15 @@ function idlRow(m){
     <div class="lv-top"><span class="lv-ko">${esc(ist(new Date(m.ts),{hour:"2-digit",minute:"2-digit"}))}</span>
       <span class="lv-tm"><span>${esc(m.h)}${rc(m.rc[0])}</span><span>${esc(m.a)}${rc(m.rc[1])}</span></span>
       <span class="lv-sc"><b>${m.hs}-${m.as}</b><i class="lclk" data-id="${m.id}" data-sp="${m.sp}">${esc(idlClockTxt(m))}</i></span></div>
-    ${odds}${pr}</div>`;
+    ${odds}${gl}${pr}</div>`;
 }
+function idlMM(m){ return {lg:"i"+m.ci,h:m.h,a:m.a,dt:new Date(m.ts)}; }
+// v141: canlı satırdaki gol seçenekleri / en olası etiket → maç penceresindeki ile aynı cpToggle (çoklu canlı tahmin, aynı bildirim)
+document.addEventListener("click",e=>{ const b=e.target.closest&&e.target.closest(".lv-gl .mo,.lv-bp"); if(!b) return; const r=b.closest(".lv-c[data-id]"); if(!r) return;
+  const m=(IDL.byId[1]||{})[+r.dataset.id]; if(!m) return; e.preventDefault(); e.stopPropagation();
+  const mk=b.dataset.mk; if(/^[UA][\d.]+$/.test(mk)) MKT_N[mk]=`${lnF(mk.slice(1))} ${mk[0]==="U"?"Üst":"Alt"}`;
+  const mm=idlMM(m); cpToggle(mm,mk,+b.dataset.o,+b.dataset.p); if(typeof paintCoupon==="function") paintCoupon();
+  document.querySelectorAll(`.lv-c[data-id="${m.id}"]`).forEach(c=>c.querySelectorAll(".lv-gl .mo,.lv-bp").forEach(x=>x.classList.toggle("sel",cpHas(mm,x.dataset.mk)))); });
 const IDLV={ sp:1, sort:(()=>{ try{ return localStorage.getItem("bx-lvsort")||"saat"; }catch(e){ return "saat"; } })() };
 function idlListHtml(sp, q){
   let L=IDL.live[sp]||[];
@@ -5940,7 +5965,7 @@ if((location.hash||"")==="#sonuclar") setTimeout(()=>$("navRes").click(),200);
 // =====================================================================
 // OXXai v35: Otomatik sürüm güncelleme — yeni sürüm yayınlanınca uygulama kendini yeniler
 // =====================================================================
-const APP_V="2026-10-28.140";
+const APP_V="2026-10-28.141";
 (function autoUpdate(){
   let shown=false;
   async function check(auto){
