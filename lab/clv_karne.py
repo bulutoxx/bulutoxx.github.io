@@ -7,6 +7,7 @@ clv = ln(p_kapanış / p_kilit), öneri tarafı, marjı oransal ayrılmış olas
 Doğrulama (karneye girme koşulu): corr(clv, y − p_kilit) > 0, gün blok bootstrap %95 GA alt sınırı > 0
 (kapanışa doğru kayan öneriler kilit fiyatının ima ettiğinden daha sık tutuyor mu?). Ek: kapanış piyasası kilitten daha
 iyi mi? ΔLL = LL(kapanış) − LL(kilit), sonuçlu maçlarda (3 yollu 1X2 ve 2,5 alt/üst), aynı GA.
+Kapanış kilidi (kapanis_kilidi bloğu): data/predlog.json mp (açılış) → mpc (maça ≤ 75 dk kala, scripts/kilit.py); model yönü argmax(p − mp).
 Çıktı: data/clv.json. Kullanım: python3 lab/clv_karne.py [--kuru]
 """
 import glob, json, math, os, random, sys
@@ -144,13 +145,46 @@ def hesapla(R, L, rnd=None):
     return out
 
 
+def kapanis_kilidi(plog, rnd=None):
+    """Kilitli tahmin günlüğünün kapanış kilidi (scripts/kilit.py alanları): mp = açılış piyasa payı, mpc = maça ≤ 75 dk kala piyasa payı
+    (ikisi de marjı ayıklanmış). Model yönü k = argmax(p − mp) (modelin açılışta piyasadan ayrıldığı taraf); clv = ln(mpc[k] / mp[k]).
+    Ek: sonuçlu maçlarda kapanış piyasası açılıştan daha bilgili mi (ΔLL = LL(mpc) − LL(mp)); model kapanışı (pc) − piyasa kapanışı (mpc)."""
+    rnd = rnd or random.Random(20261029)
+    R = []
+    for e in plog:
+        p, m0, m1 = e.get("p"), e.get("mp"), e.get("mpc")
+        if not all(isinstance(x, list) and len(x) == 3 for x in (p, m0, m1)) or min(m0) <= 0 or min(m1) <= 0: continue
+        k = max(range(3), key=lambda i: p[i] - m0[i])
+        x = {"g": e.get("d", ""), "clv": math.log(m1[k] / m0[k]), "fark": p[k] - m0[k]}
+        r = e.get("r")
+        if isinstance(r, list) and len(r) == 2:
+            y = 0 if r[0] > r[1] else 1 if r[0] == r[1] else 2
+            x["dLL"] = -math.log(max(m1[y], 1e-9)) + math.log(max(m0[y], 1e-9))
+            if isinstance(e.get("pc"), list) and len(e["pc"]) == 3: x["mkLL"] = -math.log(max(e["pc"][y], 1e-9)) + math.log(max(m1[y], 1e-9))
+        R.append(x)
+    out = {"n": len(R), "kaynak": "data/predlog.json (mp → mpc)"}
+    if not R: return out
+    bl = {}
+    for x in R: bl.setdefault(x["g"], []).append(x)
+    out.update(ort_clv=round(sum(x["clv"] for x in R) / len(R), 4), gecti=round(sum(1 for x in R if x["clv"] > 1e-9) / len(R), 4),
+               ga_ort_clv=_ga(bl, lambda s: sum(x["clv"] for x in s) / len(s) if s else None, rnd),
+               corr_fark_clv=(lambda c: None if c is None else round(c, 4))(_corr([x["fark"] for x in R], [x["clv"] for x in R])))
+    S = [x for x in R if "dLL" in x]
+    if S: out["kapanis_dLL"] = {"n": len(S), "dLL": round(sum(x["dLL"] for x in S) / len(S), 5)}
+    M = [x for x in R if "mkLL" in x]
+    if M: out["model_eksi_piyasa_kapanis_LL"] = {"n": len(M), "dLL": round(sum(x["mkLL"] for x in M) / len(M), 5)}
+    return out
+
+
 def main():
     R, L = kayitlar()
     out = hesapla(R, L)
+    try: out["kapanis_kilidi"] = kapanis_kilidi(jl(os.path.join(DATA, "predlog.json"), []) or [])
+    except Exception as e: print("kapanış kilidi CLV atlandı:", e)
     out["guncelleme"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%MZ")
     out["aciklama"] = ("Öneri CLV karnesi (lab/clv_karne.py, YH-01): clv = ln(p_kapanış / p_kilit), öneri tarafı, marjı ayrılmış piyasa; "
                        "kilit = arşivdeki kilitli oran, kapanış = başlamadan önce son görülen oran (tazeveri o1/u1). Yalnız ölçüm.")
-    print(json.dumps({k: out[k] for k in ("oneri", "pazar", "dogrulama") if k in out}, ensure_ascii=False, indent=1))
+    print(json.dumps({k: out[k] for k in ("oneri", "pazar", "dogrulama", "kapanis_kilidi") if k in out}, ensure_ascii=False, indent=1))
     if "--kuru" not in sys.argv:
         with open(CIKTI, "w", encoding="utf-8") as f:
             json.dump(out, f, ensure_ascii=False, separators=(",", ":"))

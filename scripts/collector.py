@@ -565,6 +565,10 @@ def main():
                       "guclu_n": sum(1 for r in allg if r["rp"] >= .7), "guclu_hit": (round(sum(r["ok"] for r in allg if r["rp"] >= .7) / max(1, sum(1 for r in allg if r["rp"] >= .7)), 4))}}
     try: out["veritabani"] = arsiv.ozet(DATA)   # yeni alan: {gun, kayit, puanli, ilk, eski_gun}
     except Exception: pass
+    try:   # 🔒 yeni alan: kilitli tahmin günlüğünde açılış ve kapanış kilidi karnesi (scripts/kilit.py)
+        import kilit
+        out["kilit"] = kilit.kilit_karne(json.load(open(os.path.join(DATA, "predlog.json"), encoding="utf-8")))
+    except Exception as ex: print("kilit karnesi atlandı:", ex.__class__.__name__, ex, flush=True)
     try: live_snapshot()
     except Exception as ex: print("canlı kayıt atlandı:", ex.__class__.__name__, ex, flush=True)
     try: out["canli"] = live_grade()

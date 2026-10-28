@@ -870,6 +870,12 @@ def karne_kur(bugun, log=print):
                        "canli = gerçekten maçtan önce kilitlenenler. Para tutarı yoktur.",
            "donem": {"geriye_donuk": [gd[0], gd[-1]] if gd else None, "canli": [cd[0], cd[-1]] if cd else None},
            "ayar_surum": J.get("surum", "varsayilan"), "motor": motor_surumu(), "stratejiler": S}
+    try:   # 🔒 yeni alan: futbol tahminlerinin açılış / kapanış kilidi (scripts/kilit.py; eski alanlar aynı)
+        import kilit
+        PLG = jl(os.path.join(DATA, "predlog.json"), []) or []
+        BC = [b for g, sp, K, geri in T if sp == "futbol" and not geri for b in K.get("bacaklar") or []]
+        out["kilit"] = {"tahmin": kilit.kilit_karne(PLG), "bacak": kilit.bacak_kapanis(BC, PLG)}
+    except Exception as ex: log(f"kilit karnesi atlandı: {ex.__class__.__name__} {ex}")
     jw_degisince(KARNE, out)
     return out
 
