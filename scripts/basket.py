@@ -422,8 +422,25 @@ def pick_score(mh, ma, shares):
     return {"ms": [H, A], "iy": [h1, a1], "y2": [H - h1, A - a1], "q": [[q1h, q1a], [h1 - q1h, a1 - q1a], [q3h, q3a], [H - h1 - q3h, A - a1 - q3a]]}
 
 # ---------------------------------------------------------------- tahmin günlüğü
-def lock_and_grade(plog, fixtures, fits, Ps, store_games, today):
+def dinlenme_hazirla(fixtures, store_games):
+    """YH-04: fikstür → (Δfark, uygulanıyor mu). Takvim = arşivdeki maçlar + fikstürler (yalnız tarih/saha; sonuç kullanılmaz)."""
+    try:
+        import bk_dinlenme as BD
+        A = BD.ayar(); beta = A.get("beta") or {}; K = A.get("kullan") or {}
+        tak = [g for st in store_games.values() for g in st.get("g", [])] + [f for f in fixtures if f.get("lg") in LEAGUES]
+        X = BD.ozellikler(tak); out = {}
+        for f in fixtures:
+            g = BD.GRUP.get(f.get("lg"))
+            if g and beta.get(g) and f["id"] in X:
+                out[f["id"]] = (round(BD.delta(X[f["id"]], beta[g]), 2), bool(K.get(g)))
+        return out
+    except Exception as e:
+        print("dinlenme düzeltmesi atlandı:", e.__class__.__name__, str(e)[:120], flush=True); return {}
+
+
+def lock_and_grade(plog, fixtures, fits, Ps, store_games, today, YD=None):
     import bk_piyasa as BP
+    YD = YD or {}
     have = {e["id"] for e in plog}
     now_iso = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M")
     fx = {f["id"]: f for f in fixtures}
@@ -440,8 +457,11 @@ def lock_and_grade(plog, fixtures, fits, Ps, store_games, today):
         F = fits.get(f["lg"]); pm = pred_means(F, f["h"], f["a"], f.get("neutral", False), Ps.get(f["lg"], {}).get("newp")) if F else None
         if not pm: continue
         k_ = KS.get(f["lg"], 1.0); pm = (((pm[0] + pm[1]) + k_ * (pm[0] - pm[1])) / 2, ((pm[0] + pm[1]) - k_ * (pm[0] - pm[1])) / 2)
+        yd, yon = YD.get(f["id"], (None, False))
+        if yd is not None and yon: pm = (pm[0] + yd / 2, pm[1] - yd / 2)      # 😴 YH-04 üretimde: dinlenme düzeltmesi kilide girer
         e = {"id": f["id"], "lg": f["lg"], "d": f["dt"][:10], "dt": f["dt"], "h": f["h"], "a": f["a"], "ph": round(pm[0], 1), "pa": round(pm[1], 1),
              "v": ENGINE_V, "ts": now_iso + "Z"}
+        if yd is not None: e["yd" if yon else "ydg"] = yd                    # yd: uygulandı · ydg: yalnız gölge ölçümü
         if f.get("odds"): e["odds"] = f["odds"]
         pz = BP.pz_al(f)
         if pz: e["pz"] = dict(pz, ts=now_iso + "Z"); e["pz0"] = e["pz"]
@@ -532,6 +552,29 @@ def iddaa_bk(fixtures, out_lg):
     print(f"iddaa basketbol: {len(evs)} maç · {nm} eşleşti · {len(extra)} yeni · {len(syn)} yarışma", flush=True)
     return extra, syn
 
+def gece_isi():
+    """Günde bir (İstanbul 03:00'ten sonra ilk çalışma): YH-04 dinlenme kapısı yeniden sınaması ve YH-05 canlı kayıt puanlama + kapı."""
+    try:
+        from zoneinfo import ZoneInfo
+        now = datetime.now(ZoneInfo("Europe/Istanbul"))
+    except Exception:
+        now = datetime.now(timezone(timedelta(hours=3)))
+    if now.hour < 3 and "--gece" not in sys.argv: return
+    try:
+        import bk_canli as BC
+        if (BC.ayar().get("gece_tarih") == now.date().isoformat()) and "--gece" not in sys.argv: return
+        A = BC.gece(now.date())
+        print("🏀🔴 canlı kapı:", json.dumps({k: A.get(k) for k in ("kullan", "prm", "veri", "karar")}, ensure_ascii=False), flush=True)
+    except Exception as e:
+        print("canlı kapı atlandı:", e.__class__.__name__, str(e)[:160], flush=True)
+    try:
+        import subprocess
+        r = subprocess.run([sys.executable, os.path.join(ROOT, "lab", "bk_dinlenme_lab.py"), "--yaz"], capture_output=True, text=True, timeout=900)
+        print("😴 dinlenme kapısı:", (r.stdout.strip().splitlines() or ["?"])[-1][:300], flush=True)
+    except Exception as e:
+        print("dinlenme kapısı atlandı:", e.__class__.__name__, str(e)[:160], flush=True)
+
+
 def main():
     offline = "--offline" in sys.argv
     today = date.today()
@@ -556,7 +599,7 @@ def main():
     fp = hashlib.sha1(json.dumps(sorted((lg, len(st.get("g", [])), (st.get("g") or [{}])[-1].get("id", "")) for lg, st in store.items())).encode()).hexdigest()[:16]
     quick = old.get("fp") == fp and old.get("engine") == ENGINE_V and bool(old.get("leagues")) and "--force" not in sys.argv
     if quick: print("Basketbol: yeni sonuç yok, eğitim atlandı", flush=True)
-    out_lg, fits, Ps, bt_all = {}, {}, {}, []
+    out_lg, fits, Ps, bt_all, rows_lg = {}, {}, {}, [], {}
     for lg, (src, code, name, qlen) in LEAGUES.items():
         games = store.get(lg, {}).get("g", [])
         cnt_ = {}
@@ -596,6 +639,7 @@ def main():
         try: hz = metrics(backtest(games, P, mt, H=90), sm, stt, shares, halves)    # uzun vade: 3 ay önceden tahmin
         except Exception: hz = None
         F = fit(games, today, P); fits[lg] = F; Ps[lg] = P
+        if rows: rows_lg[lg] = rows
         logos = {}
         for g in games:
             if g.get("hl"): logos[g["h"]] = {"l": g["hl"], "ab": g.get("hab", "")}
@@ -623,7 +667,21 @@ def main():
         fixtures = fixtures + [f for f in old.get("fixtures", []) if str(f.get("lg", "")).startswith("i")]
     plog = json.load(open(pp, encoding="utf-8")) if os.path.exists(pp) else []
     KS.clear(); KS.update({lg: L.get("kscale", 1.0) for lg, L in out_lg.items()})
-    plog = lock_and_grade(plog, fixtures, fits, Ps, store, today)
+    # 😴 YH-04: tam eğitimde β (lig grubu, ileri yürüyüş artıkları) tazelenir; düzeltme gölgede ya da bayraklı üretimde
+    try:
+        import bk_dinlenme as BD
+        if rows_lg:
+            BD.kaydet(BD.ogren(rows_lg, [g for st in store.values() for g in st.get("g", [])]))
+    except Exception as e:
+        print("dinlenme β öğrenilemedi:", e.__class__.__name__, str(e)[:120], flush=True)
+    YD = dinlenme_hazirla(fixtures, store)
+    plog = lock_and_grade(plog, fixtures, fits, Ps, store, today, YD)
+    try:
+        import bk_dinlenme as BD
+        A_ = BD.izle(plog, out_lg); A_["golge"] = BD.golge_ozet(plog, out_lg); A_["guncelleme"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%MZ")
+        BD.kaydet(A_)
+    except Exception as e:
+        print("dinlenme izleme atlandı:", e.__class__.__name__, str(e)[:120], flush=True)
     # 📈 piyasa karnesi (data/bk_piyasa.json) + yalnız kapıdan ve gölgeden geçmiş gruplarda çapalı tahmin (cp)
     cp_fx = {}
     try:
@@ -659,6 +717,7 @@ def main():
         for k in ("odds", "phase", "round", "clock", "io", "iid", "itot", "ihnd", "src"):
             if f.get(k): x[k] = f[k]
         if cp_fx.get(f["id"]): x["cp"] = cp_fx[f["id"]]          # çapalı tahmin (yalnız üretime alınmış gruplar; istemci henüz okumuyor)
+        if YD.get(f["id"], (None, False))[1]: x["yd"] = YD[f["id"]][0]   # 😴 YH-04 dinlenme düzeltmesi (yalnız üretimdeki grup; bkPredict ekler)
         if f.get("state") == "in": x["live"] = True; x["hs"] = f.get("hs"); x["as"] = f.get("as_")
         fx_out.append(x)
     res = {"updated": now, "tuned": old.get("tuned", now) if quick else now, "fp": fp, "engine": ENGINE_V, "leagues": out_lg, "fixtures": fx_out, "backtest": tot, "history": hist,
@@ -669,6 +728,7 @@ def main():
         if isinstance(o, (list, tuple)): return [_cn(v) for v in o]
         return o
     json.dump(_cn(res), open(op, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"), allow_nan=False)
+    if not offline: gece_isi()
     print("Bitti:", json.dumps(tot, ensure_ascii=False), "fikstür", len(fx_out), flush=True)
 
 if __name__ == "__main__":

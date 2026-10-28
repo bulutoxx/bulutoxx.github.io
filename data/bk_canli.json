@@ -1,0 +1,53 @@
+{
+ "aciklama": "YH-05 basket canlı kazanma olasılığı bayrağı (scripts/bk_canli.py; uygulama bkLivePred okur). kullan=true → Brown hareketi modeli (k, w, γ); false → eski formül. Kapı gece (basket.py): ≥300 sonuçlu anlık görüntü ve ≥40 maç, maç-blok bootstrap ΔLL GA üst < 0; 14 gün izleme, kötüleşirse geri alma. onbilgi: geçmiş çeyrek sonu skorlarından (lab/bk_canli_lab.py).",
+ "kullan": false,
+ "prm": {
+  "k": 1.2,
+  "w": 1.4,
+  "g": 0.0
+ },
+ "onbilgi": {
+  "k": 1.2,
+  "w": 1.4,
+  "g": 0.0
+ },
+ "gecmis": [],
+ "onbilgi_kaynak": {
+  "tarih": "2026-10-28",
+  "n_anlik": 27674,
+  "n_mac": 12556,
+  "kapi": {
+   "tum": {
+    "n": 27674,
+    "mac": 12556,
+    "d_ll": -0.00365,
+    "d_ll_ga": [
+     -0.00505,
+     -0.00221
+    ],
+    "d_brier": -0.00097,
+    "d_brier_ga": [
+     -0.00139,
+     -0.00055
+    ],
+    "d_isabet": 0.00033,
+    "d_isabet_ga": [
+     -0.00137,
+     0.0021
+    ]
+   },
+   "gecti": true
+  },
+  "dosya": "data/bk_canli_lab.json"
+ },
+ "karar": "veri birikiyor",
+ "veri": {
+  "anlik": 0,
+  "mac": 0,
+  "gun": 0,
+  "esik": {
+   "anlik": 300,
+   "mac": 40
+  }
+ }
+}

@@ -76,7 +76,16 @@ drift alarmı ve kapanış kilidi (yolda). Aşağıdaki maddeler bunların **üz
 - **Efor:** S · **Risk:** düşük · **Veri:** mevcut (ESPN / EuroLeague takvimi), ücretsiz.
 - **Nasıl sınanır:** `lab/bk_gelistir.py` adayı olarak: gün kümeli bootstrap ΔLL üst sınırı < 0, ΔBrier < 0, isabet düşmüyor, iki zaman diliminde de.
 - **Kaynak:** Entine & Small (2008) JQAS "The Role of Rest in the NBA Home-Court Advantage" [UPenn](https://repository.upenn.edu/entities/publication/e871ae9f-87db-40bd-922e-53064fae121f) · [FiveThirtyEight: NBA tahmin yöntemi](https://fivethirtyeight.com/methodology/how-our-nba-predictions-work/)
-- **Durum:** bekliyor
+- **Durum:** gölgede (2026-10-28; kapıyı geçmedi) — `scripts/bk_dinlenme.py` (özellikler: b2b < 36 saat, dinlenme 0–3 gün, üst üste deplasman 0–4,
+  salon koordinatından seyahat km — yalnız NBA/WNBA), `lab/bk_dinlenme_lab.py` → `data/bk_dinlenme_lab.json`, bayrak `data/bk_dinlenme.json`
+  (`kullan.<grup>`, şu an üçü de false). Sınama: `bk_games.json` arşivi (2025-04 → 2026-10, 8 lig), üretim fit'i haftalık ileri yürüyüş, β grup başına
+  yalnız önceki haftaların artıklarından (ridge, λ = 200), σ önceki haftalardan; gün kümeli bootstrap B = 2000. Mevcut n = 12.557, LL 0,5399, isabet %71,67.
+  **pro** (NBA·WNBA·GL·NBL, n = 2.262): b2b ΔLL −0,00065 [GA −0,00146, +0,00017]; b2b+dinlenme −0,00085 [−0,00188, +0,00020]; tam −0,00127
+  [−0,00278, +0,00046], isabet −0,35 puan; literatür ön bilgili b2b (1,6 sayı) −0,00063 [−0,00217, +0,00086] → **geçmedi** (öğrenilen b2b β ≈ 1,1–1,4 sayı,
+  538 ile uyumlu ama örnek küçük). **kolej** (n = 9.859): tam −0,00030 [−0,00119, +0,00058], isabet −0,13 puan → geçmedi. **avrupa** (n = 436): tam +0,00074 → geçmedi
+  (yurt içi lig maçları veride yok, dinlenme özelliği Avrupa'da ölçülemiyor). Üretim: kilitli kayda gölge Δ (`ydg`) yazılır, `bk_dinlenme.json.golge` ölçer;
+  kapı gece (basket.py → lab/bk_dinlenme_lab.py --yaz) her gün yeniden sınanır, geçen grupta bayrak açılır (kilit + fikstür `yd`, uygulamada bkPredict),
+  14 gün izleme, ΔLL > +0,002 (n ≥ 30) olursa otomatik geri alma (30 gün yeniden açılmaz).
 
 ### YH-05 · canlı · Basket canlı kazanma olasılığı: kayıt + Brown hareketi kalibrasyonu + piyasa çapası
 - **Açıklama:** Uygulamadaki `bkLivePred` Stern tipi normal model kullanıyor ama σ (`p.sm`) ve sürüklenme hiç canlı veriyle sınanmadı ve kayıt yok. (1) Canlı kayıt işine basket anlık görüntüsü ekle (skor, kalan süre, maç öncesi olasılık / çizgi); (2) σ'yı kalan süreye göre ve sürüklenmeyi maç öncesi piyasa çizgisinden (Polson–Stern "örtük oynaklık") öğren; (3) Platt ile kalibre et; tek formül sunucu ve uygulamada birebir.
@@ -84,7 +93,18 @@ drift alarmı ve kapanış kilidi (yolda). Aşağıdaki maddeler bunların **üz
 - **Efor:** M · **Risk:** orta (saat ayrıştırma, uzatma) · **Veri:** ESPN / EuroLeague canlı akışı (zaten okunuyor), ücretsiz.
 - **Nasıl sınanır:** `canli_guc_lab.py` protokolü: sınama günü D için yalnız D'den önce biten maçlarla öğren; ≥ 600 anlık görüntü / ≥ 120 maç; maç-blok bootstrap ΔLL üst sınırı < 0; Brier kötüleşmiyor; günlerin çoğunda iyi.
 - **Kaynak:** Stern (1994) JASA "A Brownian motion model for the progress of sports scores" [doi:10.1080/01621459.1994.10476866](https://doi.org/10.1080/01621459.1994.10476866) · Polson & Stern (2015) JQAS [doi:10.1515/jqas-2014-0095](https://www.degruyterbrill.com/document/doi/10.1515/jqas-2014-0095/html)
-- **Durum:** bekliyor
+- **Durum:** gölgede, kayıt başladı (2026-10-28; çevrimdışı sınama geçti, canlı kapı veri bekliyor) — `scripts/bk_canli.py`, bayrak `data/bk_canli.json`
+  (`kullan: false`). Model: P = Φ((d + w·μ·r) / max(1,5; k·σ·r^(0,5+γ))), σ = sm·√(toplam / 2mu), μ = σ·Φ⁻¹(p0) (p0 = uygulamada gösterilen maç öncesi
+  olasılık: çapa / piyasa harmanı / model); sunucu `p_yeni` ve uygulama `bkLivePred` birebir (Node ↔ Python 6 hane aynı). (a) Kayıt: `live-log.yml` arka plan adımı,
+  5 dk arayla ESPN canlı (NBA, WNBA, NBL, GL, NCAA; EuroLeague/EuroCup ESPN'de yok) → `data/archive/bk_live/<gün>.json` (maç öncesi p0, fark, σ, toplam + anlık
+  görüntüler eski/yeni olasılıkla), maç bitince sonuç (ESPN, olmazsa bk_predlog/bk_games). (b) Çevrimdışı kanıt (`lab/bk_canli_lab.py` → `data/bk_canli_lab.json`):
+  arşivdeki 12.556 maçın çeyrek / devre sonu skorları (27.674 anlık görüntü), maç öncesi fark ve σ üretim modelinin ileri yürüyüşünden, (k, w, γ) haftalık yalnız
+  önceki haftalarla: LL 0,4053 → 0,4016, ΔLL −0,00365 [maç-blok GA −0,00505, −0,00221], yarılar −0,00252 / −0,00470, ΔBrier −0,00097, isabet %80,19 → %80,23
+  → **geçti** (en çok 3. çeyrek sonunda: 0,3161 → 0,3108). Öğrenmesiz sürüm (k = w = 1, γ = 0) ΔLL +0,00001 → kazanç öğrenilen parametrelerden:
+  k = 1,2 (σ daha geniş), w = 1,4 (maç öncesi güç farkı r ile doğrusaldan güçlü sürüyor), γ = 0. Bunlar `onbilgi` olarak bayrak dosyasında.
+  (c) Kapı: gece (basket.py, günde bir) ≥ 300 sonuçlu anlık görüntü ve ≥ 40 maçta gün sıralı (haftalık öğrenme, ön bilgiye çekilmiş) maç-blok bootstrap
+  ΔLL GA üst < 0, iki yarı < 0, ΔBrier ≤ 0, isabet düşmez → `kullan: true` (uygulama yeni formüle geçer); 14 gün izleme, ΔLL > +0,002 (≥ 20 maç) → geri alma.
+  Kalan: Platt kalibrasyonu ve piyasa canlı çizgisi (Polson–Stern örtük oynaklık) kayıt birikince ayrı aday.
 
 ### YH-06 · futbol · Beta kalibrasyonu (2,5 alt/üst, KG ve pazar motoru ek pazarları)
 - **Açıklama:** `pazar.py` ek kalibrasyonda yalnız Platt / sıcaklık deniyor. Beta kalibrasyonu (3 parametre: ln p ve ln(1−p) ayrı eğim) asimetrik sapmayı (ör. düşük olasılıklı "üst" uçlarında) düzeltebilir; Platt'ı özel durum olarak içerir. İzotonik yalnız karşılaştırma için (büyük örnekte).

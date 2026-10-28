@@ -4498,6 +4498,8 @@ function bkLoad(fresh){
   if(BK.loading && !fresh) return BK.loading;
   BK.loading=fetch("data/basket.json"+(fresh?"?t="+Date.now():""),{cache:fresh?"no-store":"no-cache"})
     .then(r=>r.ok?r.json():null).then(d=>{ if(d) BK.data=d; return BK.data; }).catch(()=>BK.data);
+  // YH-05: canlı kazanma olasılığı bayrağı ve parametreleri (k, w, γ); yoksa / kapalıysa eski formül
+  fetch("data/bk_canli.json"+(fresh?"?t="+Date.now():""),{cache:fresh?"no-store":"no-cache"}).then(r=>r.ok?r.json():null).then(j=>{ if(j) BK.cz=j; }).catch(()=>{});
   return BK.loading;
 }
 function bkPhi(x){ const t=1/(1+0.3275911*Math.abs(x)/Math.SQRT2);
@@ -4511,6 +4513,7 @@ function bkPredict(f){
   const hh=f.neutral?0:L.hca/2;
   let mh=L.mu+hh+H.off+A.def, ma=L.mu-hh+A.off+H.def, mkt=false;
   { const k=L.kscale||1; if(k!==1){ const t=mh+ma, d=(mh-ma)*k; mh=(t+d)/2; ma=(t-d)/2; } }   // öğrenilen fark ölçeği
+  if(f.yd){ mh+=f.yd/2; ma-=f.yd/2; }   // YH-04: dinlenme / arka arkaya maç düzeltmesi (yalnız sunucuda kapıyı geçmiş grupta gelir)
   const od=f.odds;
   if(od && od.spread!=null && od.ou){ const w=(D.market&&D.market.w!=null)?D.market.w:.5;
     const mar=(1-w)*(mh-ma)+w*(-od.spread), tot=(1-w)*(mh+ma)+w*od.ou; mh=(tot+mar)/2; ma=(tot-mar)/2; mkt=true; }
@@ -4925,11 +4928,26 @@ function bkParseClock(clock, L){
   if(q==null||left==null) return null;
   return {rem:Math.max(0,((per-q)*plen+left)/total)};
 }
+// Ters normal dağılım (Acklam); scripts/bk_canli.py NormalDist.inv_cdf ile aynı (hata < 1e-9)
+function bkPhiInv(p){ const a=[-39.69683028665376,220.9460984245205,-275.9285104469687,138.357751867269,-30.66479806614716,2.506628277459239],
+  b=[-54.47609879822406,161.5858368580409,-155.6989798598866,66.80131188771972,-13.28068155288572],
+  c=[-.007784894002430293,-.3223964580411365,-2.400758277161838,-2.549732539343734,4.374664141464968,2.938163982698783],
+  d=[.007784695709041462,.3224671290700398,2.445134137142996,3.754408661907416], pl=.02425;
+  if(p<pl){ const q=Math.sqrt(-2*Math.log(p)); return (((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5])/((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1); }
+  if(p>1-pl){ const q=Math.sqrt(-2*Math.log(1-p)); return -(((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5])/((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1); }
+  const q=p-.5, r=q*q; return (((((a[0]*r+a[1])*r+a[2])*r+a[3])*r+a[4])*r+a[5])*q/(((((b[0]*r+b[1])*r+b[2])*r+b[3])*r+b[4])*r+1); }
+// Canlı kazanma olasılığı. YH-05 (data/bk_canli.json kullan:true): Brown hareketi (Stern 1994) — σ tempoyla ölçeklenir,
+// sürüklenme maç öncesi gösterilen olasılıktan; k, w, γ canlı kayıttan öğrenilir (scripts/bk_canli.py p_yeni ile birebir).
+// Kapalıysa eski formül (fark·r sürüklenme, sm·√r belirsizlik).
 function bkLivePred(p, lv){
   if(!p||!lv||lv.state!=="in") return null;
   const pc=bkParseClock(lv.clock,p.L); if(!pc) return null;
-  const r=pc.rem, cur=lv.hs-lv.as, expM=cur+p.mar*r, sd=Math.max(1.5,p.sm*Math.sqrt(Math.max(r,.003)));
-  const pH=bkPhi(expM/sd);
+  const r=pc.rem, cur=lv.hs-lv.as, rr=Math.max(r,.003), CZ=BK.cz;
+  let pH;
+  if(CZ&&CZ.kullan===true&&CZ.prm&&p.pH!=null&&p.L){ const k=+CZ.prm.k||1, w=CZ.prm.w!=null?+CZ.prm.w:1, g=+CZ.prm.g||0;
+    const mu2=2*(p.L.mu||0), sg=(p.tot>0&&mu2>0)?p.sm*Math.sqrt(p.tot/mu2):p.sm, p0=Math.min(Math.max(p.pH,.01),.99);
+    pH=bkPhi((cur+w*sg*bkPhiInv(p0)*rr)/Math.max(1.5,k*sg*Math.pow(rr,.5+g))); }
+  else { const expM=cur+p.mar*r, sd=Math.max(1.5,p.sm*Math.sqrt(rr)); pH=bkPhi(expM/sd); }
   return {pH, pA:1-pH, fh:Math.round(lv.hs+p.mh*r), fa:Math.round(lv.as+p.ma*r), rem:r};
 }
 // Futbol bülteni: canlı maçta maç öncesi tahmin yerine anlık tahmin
@@ -5269,7 +5287,7 @@ function idlRow(m){
   if(P){ const b=K.best, pc=pc9(b.p);
     pr=`<div class="lv-pr">🔮 <b>${esc(P.ft)}</b> <span class="pp">1 %${pc9(P.H)} · X %${pc9(P.D)} · 2 %${pc9(P.A)}</span> <span class="${pc>=70?"hit":"mid"}">${pc>=70?"🎯":"⚖️"} ${esc(b.n)} %${pc}</span>${st?` <small>${esc(st)}</small>`:""}</div>`; }
   else if(m.sp===2){ const f=BK.data&&(BK.data.fixtures||[]).find(x=>x.iid===m.id); const p=f&&bkPredict(f);
-    let r=null; if(p) r=bkLivePred({mar:p.mar,sm:p.sm,mh:p.mh,ma:p.ma,L:p.L},{state:"in",clock:`${Math.max(m.hq.length,1)}th ${m.min||0}:${String(m.sec||0).padStart(2,"0")}`,hs:m.hs,as:m.as});
+    let r=null; if(p) r=bkLivePred({mar:p.mar,sm:p.sm,mh:p.mh,ma:p.ma,L:p.L,pH:p.pH,tot:p.tot},{state:"in",clock:`${Math.max(m.hq.length,1)}th ${m.min||0}:${String(m.sec||0).padStart(2,"0")}`,hs:m.hs,as:m.as});
     if(r){ const pc=pc9(Math.max(r.pH,r.pA)); pr=`<div class="lv-pr">🔮 <b>${r.fh}-${r.fa}</b> <span class="${pc>=70?"hit":"mid"}">${pc>=70?"🎯":"⚖️"} MS ${r.pH>=r.pA?"1":"2"} %${pc}</span>${st?` <small>${esc(st)}</small>`:""}</div>`; }
     else if(st) pr=`<div class="lv-pr"><small>${esc(st)}</small></div>`; }
   const rc=n=>n?`<i class="rc"></i>`.repeat(Math.min(n,3)):"";
@@ -5920,7 +5938,7 @@ if((location.hash||"")==="#sonuclar") setTimeout(()=>$("navRes").click(),200);
 // =====================================================================
 // OXXai v35: Otomatik sürüm güncelleme — yeni sürüm yayınlanınca uygulama kendini yeniler
 // =====================================================================
-const APP_V="2026-10-28.137";
+const APP_V="2026-10-28.139";
 (function autoUpdate(){
   let shown=false;
   async function check(auto){

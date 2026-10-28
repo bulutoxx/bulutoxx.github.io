@@ -26,6 +26,10 @@ jobs:
       - uses: actions/setup-python@v5
         with: { python-version: "3.12" }
       - run: pip install numpy==2.1.3
+      - name: 🏀 Basket canlı anlık görüntü (arka planda, 5 dk arayla; YH-05 → data/archive/bk_live/)
+        run: |
+          nohup timeout 1800 python3 scripts/bk_canli.py dongu "$TUR" "$ARALIK_SN" > "$RUNNER_TEMP/bk_canli.log" 2>&1 &
+          echo $! > "$RUNNER_TEMP/bk_canli.pid"
       - name: ⏱️ Canlı kayıt döngüsü (5 dk arayla) + 🛡️ bekçi
         run: |
           for i in $(seq 1 "$TUR"); do
@@ -42,5 +46,17 @@ jobs:
               if [ "$s" -gt 0 ]; then sleep "$s"; fi
             fi
           done
+      - name: 🏀 Basket canlı kaydının bitmesini bekle (Kaydet'ten önce; dosyalar yazılırken git işlemi olmasın)
+        if: always()
+        run: |
+          P=$(cat "$RUNNER_TEMP/bk_canli.pid" 2>/dev/null || true)
+          if [ -n "$P" ]; then for i in $(seq 1 120); do kill -0 "$P" 2>/dev/null || break; sleep 5; done; fi
+          tail -20 "$RUNNER_TEMP/bk_canli.log" 2>/dev/null || true
       - name: Kaydet (tüm turlar tek commit)
         run: python3 lab/gonder.py -m "Canlı seçim kaydı $(date -u +%FT%H:%M) [skip ci]" data/archive/live data/archive/live_stats data/health.json data/saglik
+      - name: 🏀 Basket canlı kaydını gönder (YH-05)
+        if: always()
+        run: |
+          if [ -d data/archive/bk_live ]; then
+            python3 lab/adim.py bk-canli-gonder --onem bilgi -- python3 lab/gonder.py -m "Basket canlı anlık görüntü $(date -u +%FT%H:%M) [skip ci]" data/archive/bk_live
+          fi
