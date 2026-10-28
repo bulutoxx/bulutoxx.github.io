@@ -10,13 +10,17 @@ Kurtarıcı (lab/kurtarici.py) bu kayıtları okur: önemli bir adım başarıs�
 
 Dosya adı: GITHUB_WORKFLOW_REF'teki iş akışı dosyasından (ör. live-log.yml → data/saglik/live-log.json);
 ADIM_ALT ortam değişkeni varsa sonuna eklenir (matris işleri: surekli-deney-futbol.json). Yerelde --is ile verilebilir.
+Geçici / kalıcı ayrımı: her adımın son 24 saatteki hata zamanları (hata_24s) iş akışı dosyasında çalışmalar arası tutulur.
+Aynı adım imzası (<iş akışı>/<adım>) 24 saatte ≥ KALICI_ESIK kez hata verirse sinif="kalici" olur; kurtarıcı bunu yeniden
+tetikleme sebebi saymaz, data/saglik.json "kalici_alarm" listesinde raporlar (yeniden tetikleme kalıcı hatayı düzeltmez).
 Yalnız standart kütüphane. Issue, mail, bildirim AÇMAZ.
 """
 import argparse, json, os, subprocess, sys, time
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DIZIN = os.path.join(ROOT, "data", "saglik")
+KALICI_ESIK, KALICI_SAAT = 3, 24
 
 
 def is_akisi():
@@ -42,6 +46,19 @@ def imza(D):
     return "|".join(sorted(f"{k}:{'ok' if a.get('rc') == 0 else 'HATA'}" for k, a in (D.get("adimlar") or {}).items() if a.get("run") == run))
 
 
+def hata_gecmisi(onceki, rc, an):
+    """Son KALICI_SAAT saatteki hata zamanları (çalışmalar arası). Başarılı çalışma geçmişi silmez: aralıklı hata da sayılır."""
+    sinir = an - timedelta(hours=KALICI_SAAT)
+    L = []
+    for t in (onceki or []):
+        try:
+            if datetime.fromisoformat(t.replace("Z", "+00:00")) > sinir: L.append(t)
+        except Exception:
+            pass
+    if rc != 0: L.append(an.strftime("%Y-%m-%dT%H:%M:%SZ"))
+    return L[-20:]
+
+
 def kaydet(wf, ad, rc, sn, onem):
     p = dosya_yolu(wf)
     try:
@@ -56,10 +73,14 @@ def kaydet(wf, ad, rc, sn, onem):
     eski = A.get(ad) if (A.get(ad) or {}).get("run") == run else None
     tur = (eski or {}).get("tur", 0) + 1
     hata = (eski or {}).get("hata", 0) + (1 if rc != 0 else 0)
-    A[ad] = {"rc": rc, "sn": round(sn, 1), "bitis": simdi(), "run": run, "onem": onem, "tur": tur, "hata": hata}
+    h24 = hata_gecmisi((A.get(ad) or {}).get("hata_24s"), rc, datetime.now(timezone.utc))
+    sinif = None if rc == 0 else ("kalici" if len(h24) >= KALICI_ESIK else "gecici")
+    A[ad] = {"rc": rc, "sn": round(sn, 1), "bitis": simdi(), "run": run, "onem": onem, "tur": tur, "hata": hata,
+             "hata_24s": h24, "sinif": sinif, "imza": f"{os.path.basename(wf)}/{ad}"}
     D["guncelleme"] = simdi()
     D["imza"] = imza(D)
-    D["aciklama"] = "Adım çıkış kodları (lab/adim.py). rc≠0 = adım başarısız; onem=bilgi olanlar yeniden tetikleme sebebi sayılmaz."
+    D["aciklama"] = ("Adım çıkış kodları (lab/adim.py). rc≠0 = adım başarısız; onem=bilgi olanlar yeniden tetikleme sebebi sayılmaz. "
+                     f"sinif: gecici / kalici (aynı adım 24 saatte ≥{KALICI_ESIK} hata; kurtarıcı yalnız raporlar, yeniden tetiklemez).")
     os.makedirs(DIZIN, exist_ok=True)
     tmp = p + ".tmp"
     with open(tmp, "w", encoding="utf-8") as f:
@@ -95,6 +116,12 @@ def main():
         print(f"sağlık kaydı yazılamadı: {e}", file=sys.stderr)
     if rc != 0:
         print(f"::warning title=Adım başarısız: {ar.ad}::çıkış kodu {rc}, {sn:.0f} sn (data/saglik kaydına yazıldı)")
+        try:
+            a = json.load(open(dosya_yolu(wf), encoding="utf-8"))["adimlar"][ar.ad]
+            if a.get("sinif") == "kalici":
+                print(f"::error title=Kalıcı hata: {ar.ad}::24 saatte {len(a['hata_24s'])} hata; kurtarıcı yeniden tetiklemez, elle düzeltme gerekir")
+        except Exception:
+            pass
     else:
         print(f"[adım] {ar.ad}: tamam ({sn:.0f} sn)")
     return rc if ar.kritik else 0

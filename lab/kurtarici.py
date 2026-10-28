@@ -9,6 +9,9 @@ Kurallar (döngüye girmemesi için sınırlı):
      adım çıkış kodları) ve ana çıktı dosyalarının tazeliği okunur. Önemli bir adım başarısızsa ya da beklenen dosya bayatsa
      ilgili iş akışı bir kez yeniden tetiklenir: aynı sorun imzası için 6 saatte en çok 1 kez, kural 3'ün "2 saatte 1 elle
      tetikleme" sınırı ve "çalışan varsa dokunma" kuralı aynen geçerli. Kalite alarmları (data/qa*.json) yalnız kaydedilir.
+  5) GEÇİCİ / KALICI: aynı adım imzası (<iş akışı>/<adım>) 24 saatte ≥3 kez hata verdiyse (lab/adim.py hata_24s) hata KALICI
+     sayılır: yeniden tetikleme döngüsüne SOKULMAZ (aynı hatayı tekrar üretir, dakika harcar), yalnız data/saglik.json
+     "kalici_alarm" listesinde raporlanır. Geçici hatalar kural 4'teki gibi bir kez yeniden tetiklenir.
   KURTARICI_DENEME=1 ile yalnız rapor eder, hiçbir şey yapmaz ve dosya yazmaz."""
 import glob, json, os, subprocess, sys
 from datetime import datetime, timedelta, timezone
@@ -19,6 +22,7 @@ SAGLIK = os.path.join(ROOT, "data", "saglik.json")
 SAGLIK_DIZIN = os.path.join(ROOT, "data", "saglik")
 DENEME = os.environ.get("KURTARICI_DENEME") == "1"
 SAGLIK_TEKRAR_SAAT = 6.0
+KALICI_ESIK, KALICI_SAAT = 3, 24
 
 # dosya: (görünen ad, en fazla kaç saat başarısız kalabilir, yalnız bu UTC saatlerinde bekle)
 ISLER = {
@@ -117,8 +121,20 @@ def tazelik(simdi):
 
 
 # ------------------------------------------------------------------ adım kayıtları ve kalite alarmları
-def adim_kayitlari():
-    """data/saglik/*.json → {iş akışı: {dosya: özet}}; yalnız o dosyadaki son çalışmanın adımları değerlendirilir."""
+def hata_24(a, simdi):
+    n = 0
+    for t in a.get("hata_24s") or []:
+        try:
+            if (simdi - zaman(t)).total_seconds() < KALICI_SAAT * 3600: n += 1
+        except Exception:
+            pass
+    return n
+
+
+def adim_kayitlari(simdi=None):
+    """data/saglik/*.json → {iş akışı: {dosya: özet}}; yalnız o dosyadaki son çalışmanın adımları değerlendirilir.
+    Her başarısız adım: sinif = kalici (24 saatte ≥KALICI_ESIK hata) | gecici."""
+    simdi = simdi or datetime.now(timezone.utc)
     out = {}
     for p in sorted(glob.glob(os.path.join(SAGLIK_DIZIN, "*.json"))):
         D = jl(p, {}) or {}
@@ -127,7 +143,10 @@ def adim_kayitlari():
         bas, bilgi = [], []
         for ad, a in (D.get("adimlar") or {}).items():
             if a.get("run") != run or a.get("rc") == 0: continue
-            kayit = {"adim": ad, "rc": a.get("rc"), "hata_tur": f"{a.get('hata', 1)}/{a.get('tur', 1)}"}
+            n24 = hata_24(a, simdi)
+            kayit = {"adim": ad, "rc": a.get("rc"), "hata_tur": f"{a.get('hata', 1)}/{a.get('tur', 1)}", "hata_24s": n24,
+                     "sinif": "kalici" if n24 >= KALICI_ESIK else "gecici", "imza": a.get("imza") or f"{wf}/{ad}",
+                     "onem": a.get("onem", "onemli"), "bitis": a.get("bitis")}
             (bilgi if a.get("onem") == "bilgi" else bas).append(kayit)
         out.setdefault(wf, {})[os.path.basename(p)] = {"run": run, "guncelleme": D.get("guncelleme"), "basarisiz": bas, "bilgi_hata": bilgi}
     return out
@@ -207,13 +226,19 @@ def main():
         durum.append(satir)
 
     # 4) sağlık: adım çıkış kodları + dosya tazeliği + kalite alarmları
-    adimlar = adim_kayitlari()
+    adimlar = adim_kayitlari(simdi)
     taze = tazelik(simdi)
     kalite = kalite_alarmlari()
     sorun_is = {}
+    kalici_alarm = []           # 5) kalıcı hatalar: yalnız rapor, yeniden tetikleme yok
     for wf, dosyalar in adimlar.items():
         for f, oz in dosyalar.items():
+            for b in oz["basarisiz"] + oz["bilgi_hata"]:
+                if b["sinif"] == "kalici":
+                    kalici_alarm.append({"imza": b["imza"], "is_akisi": wf, "dosya": f, "adim": b["adim"], "rc": b["rc"],
+                                         "hata_24s": b["hata_24s"], "onem": b["onem"], "son": b["bitis"]})
             for b in oz["basarisiz"]:
+                if b["sinif"] == "kalici": continue
                 sorun_is.setdefault(wf, []).append(f"adım başarısız: {b['adim']} (çıkış {b['rc']}, {b['hata_tur']} tur)")
     for t in taze:
         if t["bayat"]:
@@ -243,11 +268,14 @@ def main():
     tetik_gecmisi = {k: v for k, v in tetik_gecmisi.items() if k in sorun_is}
 
     sorunlar = [f"{ISLER.get(wf, (wf,))[0]}: {s}" for wf, L in sorun_is.items() for s in L]
+    sorunlar += [f"KALICI hata ({k['imza']}): 24 saatte {k['hata_24s']} kez, çıkış {k['rc']} — yeniden tetiklenmez, elle düzeltme gerekir"
+                 for k in kalici_alarm if k["onem"] != "bilgi"]
     sorunlar += [f"kalite alarmı ({k}): {', '.join(v['hatalar'][:3]) or 'alarm'}" for k, v in kalite.items() if v["alarm"]]
     saglik = {"zaman": simdi.strftime("%Y-%m-%dT%H:%MZ"), "alarm": bool(sorunlar), "sorunlar": sorunlar,
-              "adimlar": adimlar, "tazelik": taze, "kalite": kalite,
+              "kalici_alarm": kalici_alarm, "adimlar": adimlar, "tazelik": taze, "kalite": kalite,
               "aciklama": "Sağlık özeti (lab/kurtarici.py): adım çıkış kodları (data/saglik/*.json, lab/adim.py), ana dosyaların tazeliği, "
-                          "kalite alarmları. Sorun görülürse ilgili iş akışı bir kez yeniden tetiklenir; issue/mail/bildirim açılmaz."}
+                          "kalite alarmları. Geçici sorunda ilgili iş akışı bir kez yeniden tetiklenir; kalici_alarm (aynı adım 24 saatte ≥3 hata) "
+                          "yalnız raporlanır, yeniden tetiklenmez. Issue/mail/bildirim açılmaz."}
 
     gecmis = (eski.get("gecmis") or [])
     if eylem:
@@ -267,7 +295,7 @@ def main():
         s_yas = (simdi - zaman(s_eski.get("zaman", "2000-01-01T00:00Z"))).total_seconds() / 3600
     except Exception:
         s_yas = 99
-    if s_eski.get("sorunlar") != saglik["sorunlar"] or s_yas > 3:
+    if s_eski.get("sorunlar") != saglik["sorunlar"] or s_eski.get("kalici_alarm") != saglik["kalici_alarm"] or s_yas > 3:
         json.dump(saglik, open(SAGLIK, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     return 0
 

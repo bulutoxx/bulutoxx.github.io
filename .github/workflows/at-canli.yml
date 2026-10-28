@@ -35,6 +35,12 @@ jobs:
       - uses: actions/setup-python@v5
         with: { python-version: "3.12" }
       - run: pip install -q numpy lightgbm || pip install -q numpy
+      - name: 🗃️ Ham veri önbelleği (replay_kosular — koşu sonuçları; herkese açık release'e girmez, yalnız actions/cache)
+        uses: actions/cache/restore@v4
+        with:
+          path: data/at/replay_kosular.json
+          key: arsiv-replay-kosular-${{ github.run_id }}
+          restore-keys: arsiv-replay-kosular-
       - name: 🗃️ Yayın modelinin ağaçları ve yeniden oynatma arşivden (sürüm uyuşmazsa model doğrusal yedeğe düşer)
         env:
           GH_TOKEN: ${{ github.token }}

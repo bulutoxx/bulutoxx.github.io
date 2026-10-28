@@ -29,7 +29,19 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install numpy==2.1.3
-      - name: 🗃️ Önbellekleri arşivden al (release "veri-arsiv"; olmazsa git yedeği, o da olmazsa basket.py yeniden indirir)
+      - name: 🗃️ Ham veri önbelleği (bk_games — ESPN skorları; herkese açık release'e girmez, yalnız actions/cache)
+        uses: actions/cache/restore@v4
+        with:
+          path: data/bk_games.json
+          key: arsiv-bk-games-${{ github.run_id }}
+          restore-keys: arsiv-bk-games-
+      - name: 🗃️ Ham veri önbelleği (replay_kosular — koşu sonuçları; herkese açık release'e girmez, yalnız actions/cache)
+        uses: actions/cache/restore@v4
+        with:
+          path: data/at/replay_kosular.json
+          key: arsiv-replay-kosular-${{ github.run_id }}
+          restore-keys: arsiv-replay-kosular-
+      - name: 🗃️ Önbellekleri arşivden al (ham veri actions/cache'ten; olmazsa git yedeği, o da olmazsa basket.py yeniden indirir)
         env:
           GH_TOKEN: ${{ github.token }}
         run: python3 lab/adim.py arsiv-indir --onem bilgi -- python3 lab/arsiv.py indir data/bk_games.json data/at/replay_kosular.json
@@ -58,10 +70,16 @@ jobs:
           ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
       - name: 🎟️ OXXai kupon robotu (maçtan önce kilit, sonuç puanı, karne)
         run: python3 lab/adim.py oxx-kupon -- timeout 300 python scripts/oxx_kupon.py
-      - name: 🗃️ Basket önbelleğini arşive yükle (yalnız değiştiyse, en çok 6 saatte bir)
+      - name: 🗃️ Arşiv adımı (bk_games ham veri — release'e yüklenmez, aşağıdaki actions/cache adımı saklar)
         env:
           GH_TOKEN: ${{ github.token }}
         run: python3 lab/adim.py arsiv-yukle -- python3 lab/arsiv.py yukle --en-az-saat 6 data/bk_games.json
+      - name: 🗃️ Ham veri önbelleğini kaydet (data/bk_games.json; yalnız içerik değiştiyse yeni anahtar)
+        if: always() && hashFiles('data/bk_games.json') != ''
+        uses: actions/cache/save@v4
+        with:
+          path: data/bk_games.json
+          key: arsiv-bk-games-${{ hashFiles('data/bk_games.json') }}
       - name: Sürüm dosyası (data/version.json ← index.html APP_V; uygulama sürüm kontrolünde bunu okur)
         run: |
           V=$(sed -nE 's/^const APP_V="([^"]+)";.*/\1/p' index.html | head -1)
