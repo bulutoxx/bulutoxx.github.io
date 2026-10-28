@@ -156,6 +156,11 @@ Yerel deneme: `node lab/bot_coach.mjs --dry` (dosya yazmaz) · `node lab/bot_coa
 - **İzleme:** toplayıcı artık uygulamanın gösterdiği öneriyi (`sp`) de kilitler; koruyucu kalibrasyon değişikliklerini bununla ölçer.
 
 
+## 🐎 At modeli v7 (deney7, 28.10.2026)
+- Harman (model + oran) için ayrı kalıntı GBM (`model.HARMAN_KALINTI`): doğrusal puandan başlayan ağaçlar + kendi yığma/kalibrasyon/α-β; sabah (yalnız-model) olasılığı değişmez. Ağaçlar `gbm_uretim.txt` içinde `AYIRAC_H` ile ayrılır; yoksa klasik harmana düşer.
+- Gece kapısında harman dalı (`gece.HARMAN_ANAHTARLARI`): yalnız harman anahtarı değiştiyse ortak sınama koşularında harman LL (> 0,0001) düşmeli, harman ilk seçimi ve yalnız-model kötüleşmemeli, B katı harmanı kötüleşmemeli.
+- Elenenler (gürültü içinde): haftalık/günlük yeniden kalibrasyon, haftalık yeniden eğitim, gün içi jokey/antrenör kalıntısı, koşu içi z/sıra özellikleri.
+
 ## 🐎 At Yarışı 2.0 (v106, lab/at/TASARIM.md Aşama 1–2)
 - Bloklar: `<style id="at2-v106">` + `<script id="at2-v106">` (</body> öncesi). Silinirse eski at ekranı (`at-v73`) geri gelir.
 - `at-v73` çekirdeği (`BX_AT`) sarılır: eski `render()` gizli `#atBox`'a yazmaya devam eder (atkupon-v98 `deco` ve geriye uyum); yeni ekranlar `#at2Box`'ta, sekmeler uygulamanın yapışkan `.at-head` kabında (`#at2Nav`).

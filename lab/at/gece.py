@@ -1088,12 +1088,17 @@ def tarif():
             "kal_gun": M.KAL_GUN, "yari_omur": M.YARI_OMUR, "pl_hiz": ozellik.PL_HIZ, "pl_kademe": ozellik.PL_KADEME,
             "pm_hiz": ozellik.PM_HIZ, "ewma": ozellik.EWMA_A, "sonum_gun": ozellik.SONUM_GUN,
             "hz_yontem": ozellik.HZ_YONTEM, "henery_model": M.HENERY_MODEL,
+            # v7: harman kalıntı GBM'i yalnız açıkken tarife girer (kapalıyken eski tarif aynen kalsın)
+            **({"harman_kalinti": True} if (M.HARMAN_KALINTI and M.lgb is not None) else {}),
             # jokey turu: Bayes PL ayarları yalnız jk_* grubu yayındaysa tarife girer (yoksa tarif değişmesin)
             **({"jk": {"gruplar": list(jokey.JK_SECILI), "onsel": jokey.JK_ONSEL, "surukle": jokey.JK_SURUKLE,
                        "kademe": list(jokey.JK_KADEME)}} if jokey.JK_SECILI else {}),
             **({"a5": {"gruplar": list(at5.A5_SECILI), "k_uyum": at5.K_UYUM, "ant_k": at5.ANT_K}} if at5.A5_SECILI else {}),
             **({"a6": {"gruplar": list(at6.A6_SECILI), "k_r": at6.K_R, "k_q": at6.K_Q, "g_k": at6.G_K}} if at6.A6_SECILI else {}),
             **({"gl": list(ozellik._gl.GLOBAL_SECILI)} if ozellik._gl.GLOBAL_SECILI else {})}
+
+
+HARMAN_ANAHTARLARI = {"harman_kalinti"}   # yalnız p_harman'ı etkileyen tarif anahtarları (sabah kilidi değişmez)
 
 
 def kapi_karari(yeni, iz, trf, eski, eski_iz, b_bas=None):
@@ -1120,6 +1125,25 @@ def kapi_karari(yeni, iz, trf, eski, eski_iz, b_bas=None):
                     f"(model {e['model_ll']}→{y['model_ll']}); veri sorunu olabilir, dünkü model korunuyor", "yeni": y, "eski": e}
         return {"karar": "KABUL", "neden": f"aynı tarif, yeni veriyle yeniden eğitim (ortak {k['kosu']} koşuda model log-loss "
                 f"{e['model_ll']}→{y['model_ll']})", "yeni": y, "eski": e}
+    # v7: tarifte YALNIZ harman tarafı değiştiyse (yalnız-model/sabah olasılığı aynı) HARMAN KAPISI: yalnız-model log-loss ve
+    # ilk seçim kötüleşmemeli, harman log-loss'u anlamlı düşmeli (> 0,0001), harman ilk seçimi düşmemeli, en güncel kat (B)
+    # harmanı kötüleşmemeli. Ölçüm ortak sınama koşularında (iz) — adil kıyas.
+    et = eski.get("tarif") or {}
+    fark = {a for a in set(trf) | set(et) if trf.get(a) != et.get(a)}
+    if k and fark and fark <= HARMAN_ANAHTARLARI:
+        y, e = k["yeni"], k["eski"]
+        ek = f" (yalnız harman tarafı değişti: {', '.join(sorted(fark))}; ortak {k['kosu']} sınama koşusunda)"
+        if y["model_ll"] > e["model_ll"] + 1e-4 or y["model_ilk"] < e["model_ilk"]:
+            return {"karar": "RED", "neden": f"yalnız-model bozuldu ({e['model_ll']}→{y['model_ll']}, ilk {e['model_ilk']}→{y['model_ilk']}){ek}",
+                    "yeni": y, "eski": e}
+        if y["harman_ll"] >= e["harman_ll"] - 1e-4 or y["harman_ilk"] < e["harman_ilk"]:
+            return {"karar": "RED", "neden": f"harman log-loss anlamlı düşmedi ya da ilk seçim düştü ({e['harman_ll']}→{y['harman_ll']}, "
+                    f"ilk {e['harman_ilk']}→{y['harman_ilk']}); dünkü model korunuyor{ek}", "yeni": y, "eski": e}
+        if k.get("B") and k["B"]["yeni"]["harman_ll"] > k["B"]["eski"]["harman_ll"] + 1e-5:
+            return {"karar": "RED", "neden": f"en güncel katta (B) harman log-loss kötüleşti ({k['B']['eski']['harman_ll']} → "
+                    f"{k['B']['yeni']['harman_ll']}); dünkü model korunuyor{ek}", "yeni": y, "eski": e}
+        return {"karar": "KABUL", "neden": f"harman log-loss {e['harman_ll']}→{y['harman_ll']}, harman ilk seçim {e['harman_ilk']}→"
+                f"{y['harman_ilk']}; yalnız-model {e['model_ll']}→{y['model_ll']}{ek}", "yeni": y, "eski": e}
     if k:
         y, e, ek = k["yeni"], k["eski"], f" (ortak {k['kosu']} sınama koşusunda)"
     else:
@@ -1191,7 +1215,7 @@ def main():
         if uretim.gbm is not None and uretim.cg:
             os.makedirs(CIKTI, exist_ok=True)
             with open(GBM_DOSYA + ".tmp", "w", encoding="utf-8") as f:
-                f.write(uretim.gbm.model_to_string())
+                f.write(uretim.gbm_metin())   # v7: + AYIRAC_H + harman kalıntı ağaçları
             os.replace(GBM_DOSYA + ".tmp", GBM_DOSYA)
         jyaz(IZ_DOSYA, {"surum": mj["surum"], "tarif": trf,
                         "alanlar": ["kosu_id", "model_-logp_kazanan", "model_ilk_tuttu", "harman_-logp_kazanan", "harman_ilk_tuttu"],

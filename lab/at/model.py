@@ -189,6 +189,10 @@ KAL_AYAR = {"alan": False, "beta": True, "izo": False}   # kalibrasyon adımlar�
 PATLAT = (1.0, 0.5)   # v4: derinlik 2 geçti (deney 8b). patlatılmış (sıralı) logit: kademe ağırlıkları; (1.0,) = yalnız kazanan (klasik)
 PATLAT_GBM = False    # aynı sıralı amaç GBM'de de kullanılsın mı
 GBM_TOHUM = (1,)      # GBM torbalama tohumları (ham puanları ortalanır)
+GBM_INIT_DOGRUSAL = False   # v7 adayı: GBM doğrusal koşullu logit puanından başlar (init_score), ağaçlar yalnız kalıntıyı öğrenir
+# v7 (deney7 e4, harman kapısı): harman (model + oran) için AYRI bir kalıntı GBM — doğrusal puandan başlar; kendi yığma,
+# kalibrasyon ve α/β katsayıları. Yalnız-model (sabah) olasılığı DEĞİŞMEZ; yalnız p_harman bu yoldan hesaplanır.
+HARMAN_KALINTI = True
 KAT_BAS = "2025-11-01"   # çok katlı sınama: A katı KAT_BAS → son %30'un başı, B katı = son %30 (en güncel)
 
 
@@ -215,6 +219,7 @@ def gbm_egit(X, K, agirlik=None, ayar=None, init=None, tohum=1):
 
 
 AYIRAC = "\n#==== BULUTOXX GBM TOHUM ====\n"
+AYIRAC_H = "\n#==== BULUTOXX GBM HARMAN ====\n"   # gbm_uretim.txt: <yalnız-model ağaçları> AYIRAC_H <harman kalıntı ağaçları>
 
 
 class GbmTorba:
@@ -349,6 +354,7 @@ class Model:
         # eski model.json: üst uç kalibrasyonu s = ku·s0 + cu·max(log p0 − log eşik, 0)
         self.kal = kal if kal is not None else ([["ust", ku, cu, UST_ESIK]] if cu else [])
         self.bq, self.gbm_artik, self.ab_artik = 1.0, None, None
+        self.h, self.gbm_h = None, None   # v7 harman kalıntı GBM: {"cl", "cg", "kal", "alfa", "beta"} + ağaçlar
         self.gam_m, self.dlt_m = gam, dlt
 
     def _yedekte(self):
@@ -376,6 +382,12 @@ class Model:
         return self._kalp(X, K)
 
     def p_harman(self, X, K, q):
+        if self.h and self.gbm_h is not None and not self._yedekte():
+            h = self.h
+            s0 = h["cl"] * self.puan(X) + h["cg"] * self.gbm_h.predict(X, raw_score=True)
+            pk = kal_uygula(h["kal"], s0, K) if h["kal"] else softmax_kosu(s0, K)
+            s = h["alfa"] * np.log(np.clip(pk, 1e-12, 1)) + h["beta"] * np.log(np.clip(q, 1e-9, 1))
+            return softmax_kosu(s, K)
         a, b = (self.yedek["alfa"], self.yedek["beta"]) if self._yedekte() else (self.alfa, self.beta)
         s = a * np.log(np.clip(self._kalp(X, K), 1e-12, 1)) + b * np.log(np.clip(q, 1e-9, 1))
         return softmax_kosu(s, K)
@@ -410,10 +422,25 @@ class Model:
                 "gbm": self.gbm is not None and bool(self.cg),
                 "kalibrasyon": [[a[0]] + [(round(float(v), 5) if not isinstance(v, list) else v) for v in a[1:]] for a in self.kal],
                 "gbm_tohum": (len(self.gbm.b) if isinstance(self.gbm, GbmTorba) else (1 if self.gbm is not None else 0)),
+                **({"harman_kalinti": {"cl": round(float(self.h["cl"]), 5), "cg": round(float(self.h["cg"]), 5),
+                                       "alfa": round(float(self.h["alfa"]), 4), "beta": round(float(self.h["beta"]), 4),
+                                       "kal": [[a[0]] + [(round(float(v), 5) if not isinstance(v, list) else v) for v in a[1:]]
+                                               for a in self.h["kal"]]}}
+                   if self.h and self.gbm_h is not None else {}),
                 "yedek": ({k: round(float(v), 5) for k, v in self.yedek.items()} if self.yedek else None)}
+
+    def gbm_metin(self):
+        """gbm_uretim.txt içeriği: yalnız-model ağaçları (+ varsa AYIRAC_H + harman kalıntı ağaçları)."""
+        t = self.gbm.model_to_string() if self.gbm is not None else ""
+        if self.h and self.gbm_h is not None:
+            t += AYIRAC_H + self.gbm_h.model_to_string()
+        return t
 
     @staticmethod
     def yukle(j, gbm_metin=None):
+        gbm_metin_h = None
+        if gbm_metin and AYIRAC_H in gbm_metin:
+            gbm_metin, gbm_metin_h = gbm_metin.split(AYIRAC_H, 1)
         m = Model(j["ozellikler"], j["ortalama"], j["olcek"], j["agirlik"], j["sicaklik"], j["alfa"],
                      j["beta"], j["henery_gamma"], j["henery_delta"], j.get("lambda"),
                      cl=j.get("c_dogrusal", 1.0), cg=j.get("c_gbm", 0.0), ku=j.get("k_ust", 1.0), cu=j.get("c_ust", 0.0),
@@ -421,6 +448,11 @@ class Model:
                      gbm=(gbm_yukle(gbm_metin) if j.get("gbm") else None), yedek=j.get("yedek"))
         m.gam_m = j.get("henery_gamma_model", m.gam); m.dlt_m = j.get("henery_delta_model", m.dlt)
         m.bq = j.get("piyasa_keskin_beta", 1.0)
+        hk = j.get("harman_kalinti")
+        if hk and j.get("gbm") and gbm_metin_h:   # ağaçlar yoksa (sürüm uyuşmazlığı / LightGBM yok) klasik harmana düşer
+            m.gbm_h = gbm_yukle(gbm_metin_h)
+            if m.gbm_h is not None:
+                m.h = {"cl": hk["cl"], "cg": hk["cg"], "alfa": hk["alfa"], "beta": hk["beta"], "kal": hk.get("kal") or []}
         return m
 
 
@@ -430,12 +462,13 @@ def _ozel(K, m):
 
 
 def egit_ham(K_fit, K_har, sutun, lam=None, agirlik=None, gbm=True, gbm_ayar=None, patlat_ag=None, tohumlar=None,
-             patlat_gbm=None):
+             patlat_gbm=None, harman_kalinti=None):
     """Eğitim katmanı (pahalı kısım): standartlaştırma, doğrusal koşullu logit (isteğe bağlı patlatılmış/sıralı),
     LightGBM (isteğe bağlı birden çok tohum). Kalibrasyon penceresi yalnız λ seçimi için kullanılır."""
     patlat_ag = PATLAT if patlat_ag is None else patlat_ag
     tohumlar = GBM_TOHUM if tohumlar is None else tohumlar
     patlat_gbm = PATLAT_GBM if patlat_gbm is None else patlat_gbm
+    harman_kalinti = HARMAN_KALINTI if harman_kalinti is None else harman_kalinti
     Xf, Xh = K_fit.X[:, sutun], K_har.X[:, sutun]
     mu, sd = Xf.mean(0), Xf.std(0) + 1e-9
     Zf, Zh = (Xf - mu) / sd, (Xh - mu) / sd
@@ -456,9 +489,16 @@ def egit_ham(K_fit, K_har, sutun, lam=None, agirlik=None, gbm=True, gbm_ayar=Non
             Kg = Kume(Kg.X[:, sutun], Kg.y, Kg.sira, Kg.q, Kg.kosu_no)
         else:
             Kg, ag_g = Kume(Xf, K_fit.y, K_fit.sira, K_fit.q, K_fit.kosu_no), agirlik
-        bs = [gbm_egit(Kg.X, Kg, ag_g, gbm_ayar, tohum=t) for t in tohumlar]
+        ini = None
+        if GBM_INIT_DOGRUSAL and not (patlat_gbm and len(patlat_ag) > 1):
+            ini = Zf @ w   # doğrusal puan (eğitim kümesinde); tahminde ağaç çıktısı ayrı, yığma katsayıları birleştirir
+        bs = [gbm_egit(Kg.X, Kg, ag_g, gbm_ayar, init=ini, tohum=t) for t in tohumlar]
         booster = GbmTorba(bs)
-    return {"mu": mu, "sd": sd, "w": w, "lam": lam, "booster": booster}
+    booster_h = None
+    if gbm and lgb is not None and harman_kalinti and not GBM_INIT_DOGRUSAL:
+        Kh0 = Kume(Xf, K_fit.y, K_fit.sira, K_fit.q, K_fit.kosu_no)
+        booster_h = GbmTorba([gbm_egit(Xf, Kh0, agirlik, gbm_ayar, init=Zf @ w, tohum=tohumlar[0])])
+    return {"mu": mu, "sd": sd, "w": w, "lam": lam, "booster": booster, "booster_h": booster_h}
 
 
 def egit_kal(ham, K_har, adlar, sutun, s=None, g=None, henery=True, kal_ayar=None, ust=None):
@@ -487,6 +527,7 @@ def egit_kal(ham, K_har, adlar, sutun, s=None, g=None, henery=True, kal_ayar=Non
     m = Model([adlar[i] for i in sutun], mu, sd, w, 1.0, float(ab[0]), float(ab[1]), 1.0, 1.0, lam,
               cl=cl, cg=cg, gbm=booster, yedek=(yedek if booster is not None else None), kal=kal)
     m.bq = float(clogit(lq[:, None], K_har, 1e-6)[0])
+    harman_kal_ogren(m, ham.get("booster_h"), K_har, s, Xh, kal_ayar, ust)
     if henery:
         ph = m.p_harman(Xh, K_har, K_har.q)
         m.gam = henery_ussu(ph, K_har, 2)
@@ -496,6 +537,21 @@ def egit_kal(ham, K_har, adlar, sutun, s=None, g=None, henery=True, kal_ayar=Non
             m.gam_m = henery_ussu(pmh, K_har, 2)
             m.dlt_m = henery_ussu(pmh, K_har, 3)
     return m
+
+
+def harman_kal_ogren(m, booster_h, K_har, s, Xh, kal_ayar=None, ust=None):
+    """v7: harman kalıntı GBM'inin yığma (doğrusal + kalıntı ağaçlar), kalibrasyon ve α/β katsayıları — kalibrasyon
+    penceresinde (yalnız-model katmanıyla aynı pencere ve adımlar)."""
+    if booster_h is None:
+        return
+    gh = booster_h.predict(Xh, raw_score=True)
+    cl, cg = (float(v) for v in clogit(np.c_[s, gh], K_har, 1e-6))
+    sb = cl * s + cg * gh
+    kal = kal_ogren(sb, K_har, kal_ayar, ust)
+    pk = kal_uygula(kal, sb, K_har)
+    ab = clogit(np.c_[np.log(np.clip(pk, 1e-12, 1)), np.log(K_har.q)], K_har, 1e-6)
+    m.gbm_h = booster_h
+    m.h = {"cl": cl, "cg": cg, "kal": kal, "alfa": float(ab[0]), "beta": float(ab[1])}
 
 
 def egit(K_fit, K_har, adlar, lam=None, sutun=None, henery=True, agirlik=None, gbm=True, artik=False):
