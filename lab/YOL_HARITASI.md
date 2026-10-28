@@ -67,7 +67,7 @@ drift alarmı ve kapanış kilidi (yolda). Aşağıdaki maddeler bunların **üz
   [GA −0,00054, +0,00047], yarılar −0,00036/+0,00031 → **geçmedi**. Model yolu 2,5 A/Ü: ΔLL −0,00033 [−0,00082, +0,00014], yarılar −0,00032/−0,00035, ΔBrier −0,00016,
   isabet −0,11 puan, p = 0,085 > α = 0,05 → **geçmedi (sınırda)**. Piyasa üstü 1X2: +0,00007 [−0,00019, +0,00031]; piyasa+topluluk üstü: +0,00012 [−0,00011, +0,00036];
   piyasa üstü 2,5 A/Ü: −0,00004 [−0,00025, +0,00017] → **geçmedi** (`karisim` adayına bağlanmadı). Yorum: isabetli şut bilgisi Poisson+Elo+pi ve piyasada büyük ölçüde zaten var;
-  beklenen −0,003…−0,010 görülmedi. Yeniden değerlendirme: haftalık ölçümde A/Ü ≥ 3 ardışık hafta SK geçerse yalnız oransız-yol A/Ü'ye bayraklı bağlanır.
+  beklenen −0,003…−0,010 görülmedi. Yeniden değerlendirme: haftalık ölçümde A/Ü ≥ 3 ardışık hafta SK geçerse yalnız oranlı liglerin model yolu A/Ü'süne (gösterim değişmeden) bayraklı bağlanır.
   Commit: dal `yh03-sut-guc` (a86905a4), sınama çalışması 40705069565.
 
 ### YH-04 · basket · Dinlenme günü, arka arkaya maç ve deplasman serisi düzeltmesi
