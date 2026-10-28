@@ -1,27 +1,27 @@
 {
  "tarih": "2026-10-28",
- "n": 1451,
+ "n": 1508,
  "ligler": {},
  "pazar": {
   "1": {
-   "n": 447,
-   "gercek": 0.6286,
+   "n": 456,
+   "gercek": 0.625,
    "beklenen": 0.641
   },
   "2": {
-   "n": 171,
-   "gercek": 0.5789,
-   "beklenen": 0.6156
+   "n": 194,
+   "gercek": 0.5773,
+   "beklenen": 0.6178
   },
   "A": {
-   "n": 341,
-   "gercek": 0.563,
-   "beklenen": 0.5818
+   "n": 355,
+   "gercek": 0.5662,
+   "beklenen": 0.5816
   },
   "U": {
-   "n": 482,
-   "gercek": 0.6037,
-   "beklenen": 0.6074
+   "n": 493,
+   "gercek": 0.6065,
+   "beklenen": 0.6063
   },
   "X": {
    "n": 10,
@@ -30,32 +30,32 @@
   }
  },
  "kabul": false,
- "aciklama": "Arşivde 1451 puanlanmış öneri var; lig katsayıları için en az 1.500 gerekli. Veri birikiyor.",
+ "aciklama": "Lig katsayıları ikinci yarıda tahmini iyileştirmedi (Brier 0.2311 → 0.2311); uygulanmıyor.",
  "teshis": {
   "pazar": {
    "1": {
-    "n": 447,
-    "gercek": 0.6286,
+    "n": 456,
+    "gercek": 0.625,
     "beklenen": 0.641,
-    "brier": 0.2148
+    "brier": 0.216
    },
    "2": {
-    "n": 171,
-    "gercek": 0.5789,
-    "beklenen": 0.6156,
-    "brier": 0.24131
+    "n": 194,
+    "gercek": 0.5773,
+    "beklenen": 0.6178,
+    "brier": 0.24061
    },
    "A": {
-    "n": 341,
-    "gercek": 0.563,
-    "beklenen": 0.5818,
-    "brier": 0.24588
+    "n": 355,
+    "gercek": 0.5662,
+    "beklenen": 0.5816,
+    "brier": 0.24522
    },
    "U": {
-    "n": 482,
-    "gercek": 0.6037,
-    "beklenen": 0.6074,
-    "brier": 0.23894
+    "n": 493,
+    "gercek": 0.6065,
+    "beklenen": 0.6063,
+    "brier": 0.23921
    },
    "X": {
     "n": 10,
@@ -66,29 +66,39 @@
   },
   "oran_bandi": {
    "<1.20": {
-    "n": 104,
-    "gercek": 0.7788,
-    "beklenen": 0.8509,
-    "brier": 0.17438
+    "n": 111,
+    "gercek": 0.7748,
+    "beklenen": 0.8517,
+    "brier": 0.17749
    },
    "1.20-1.50": {
-    "n": 640,
-    "gercek": 0.6422,
-    "beklenen": 0.6634,
-    "brier": 0.22569
+    "n": 662,
+    "gercek": 0.6375,
+    "beklenen": 0.663,
+    "brier": 0.22721
    },
    "1.50-2.00": {
-    "n": 641,
-    "gercek": 0.5335,
-    "beklenen": 0.5426,
-    "brier": 0.24803
+    "n": 664,
+    "gercek": 0.5392,
+    "beklenen": 0.5424,
+    "brier": 0.24715
    },
    ">2.00": {
-    "n": 66,
-    "gercek": 0.5,
-    "beklenen": 0.3898,
-    "brier": 0.26003
+    "n": 71,
+    "gercek": 0.493,
+    "beklenen": 0.3881,
+    "brier": 0.25871
    }
   }
- }
+ },
+ "dogrulama": {
+  "ayrim": "2026-10-25",
+  "brier_ham": 0.23108,
+  "brier_katsayili": 0.23108,
+  "test_n": 1027,
+  "yontem": "eb",
+  "tau": 0.0,
+  "brier_eski_yontem": 0.23108
+ },
+ "zayif_ligler": []
 }
