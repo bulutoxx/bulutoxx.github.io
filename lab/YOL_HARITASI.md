@@ -61,7 +61,14 @@ drift alarmı ve kapanış kilidi (yolda). Aşağıdaki maddeler bunların **üz
 - **Efor:** M · **Risk:** orta (sızıntı: yalnız maçtan önceki şutlar) · **Veri:** mevcut, ücretsiz.
 - **Nasıl sınanır:** `lab/fb_guc_lab.py derin` alanında SK (model yolu) + ayrı olarak piyasa üstü yığmada ΔLL üst sınırı < 0 ise `karisim` adayına bağlanır.
 - **Kaynak:** Wheatcroft (2021) J. Sports Analytics 7(2) [doi:10.3233/JSA-200462](https://doi.org/10.3233/JSA-200462), [arXiv:2001.09097](https://arxiv.org/abs/2001.09097) · Wheatcroft (2020) IJF "A profitable model for predicting the over/under market" [doi:10.1016/j.ijforecast.2019.11.001](https://doi.org/10.1016/j.ijforecast.2019.11.001)
-- **Durum:** bekliyor
+- **Durum:** reddedildi (2026-10-28; 1X2 ve piyasa üstü kapıyı geçmedi; 2,5 A/Ü model yolu sınırda → haftalık gölge ölçüm) — `lab/sut_guc_lab.py` → `data/sut_guc_lab.json`,
+  `sut-guc-lab.yml` haftalık (yalnız ölçüm). football-data 22 ana lig 2020–2026 isabetli şut (HST/AST), GAP λ/φ seçim diliminde (< 2024-07-01) seçildi → λ = 0,2, φ = 0,6;
+  yığınlayıcılar aylık genişleyen pencere, lig×gün blok bootstrap B = 2000, sınama n = 15.461 (2024-07 → 2026-10). Model yolu 1X2 (Poisson+Elo+pi → +GAP): ΔLL −0,00002
+  [GA −0,00054, +0,00047], yarılar −0,00036/+0,00031 → **geçmedi**. Model yolu 2,5 A/Ü: ΔLL −0,00033 [−0,00082, +0,00014], yarılar −0,00032/−0,00035, ΔBrier −0,00016,
+  isabet −0,11 puan, p = 0,085 > α = 0,05 → **geçmedi (sınırda)**. Piyasa üstü 1X2: +0,00007 [−0,00019, +0,00031]; piyasa+topluluk üstü: +0,00012 [−0,00011, +0,00036];
+  piyasa üstü 2,5 A/Ü: −0,00004 [−0,00025, +0,00017] → **geçmedi** (`karisim` adayına bağlanmadı). Yorum: isabetli şut bilgisi Poisson+Elo+pi ve piyasada büyük ölçüde zaten var;
+  beklenen −0,003…−0,010 görülmedi. Yeniden değerlendirme: haftalık ölçümde A/Ü ≥ 3 ardışık hafta SK geçerse yalnız oransız-yol A/Ü'ye bayraklı bağlanır.
+  Commit: dal `yh03-sut-guc` (a86905a4), sınama çalışması 40705069565.
 
 ### YH-04 · basket · Dinlenme günü, arka arkaya maç ve deplasman serisi düzeltmesi
 - **Açıklama:** `bk_games.json` maç tarihlerinden her takım için dinlenme günü (0 = arka arkaya), son 7 günde maç sayısı ve üst üste deplasman sayısı türetilir; ridge güç modelinin beklenen sayı farkına öğrenilen toplamsal düzeltme olarak eklenir (lig grubuna göre: pro / avrupa / kolej).
