@@ -269,7 +269,7 @@ drift alarmı ve kapanış kilidi (yolda). Aşağıdaki maddeler bunların **üz
 - **Efor:** M · **Risk:** düşük–orta (performans; yasaklı kelime taraması) · **Veri:** mevcut.
 - **Nasıl sınanır:** Duman + kalite testleri, açılış süresi artışı < 50 ms, `bot_coach` "neden" niyetli soruların faydalı oranı düşmüyor.
 - **Kaynak:** Lundberg & Lee (2017) NeurIPS "A unified approach to interpreting model predictions" [arXiv:1705.07874](https://arxiv.org/abs/1705.07874) · Joslyn & LeClerc (2012) [doi:10.1037/a0025185](https://doi.org/10.1037/a0025185)
-- **Durum:** işleniyor (2026-10-28, ajan)
+- **Durum:** yayında (v145, 2026-10-28) · kanıt: `js/katmanlar.js` katman `neden-v145` + `css/katmanlar.css`; maç penceresi öneri kutusunda "ⓘ Neden bu tahmin?", bülten ve Canlı sekmesi satırında uzun basma, basket penceresi, at koşu kartı / at profili (ayrı fonksiyon). İçerik aynı hesaplardan (fullPred/kpFix/recOf, idlPred/idlPick/liveCal, bkPredict, BX_AT.merged + sinyal) ve kilitli karne kovalarından; verisi olmayan madde gösterilmez, en çok 6 madde. Playwright 390 px: oranlı, oransız (güç modeli ve Poisson), bülten uzun basma, sahte canlı maç (pencere + Canlı satırı), basket, at koşusu → 62/62 (kart açılıyor, yüzde ekranla aynı, taşma yok, yasak kelime yok, 0 sayfa hatası); kart hesabı ≈ 1 ms, açılışta hesap yok; `lab/canli_gt_test.cjs` 62/62, `lab/canli_isaret_test.cjs` 20/20.
 
 ---
 
