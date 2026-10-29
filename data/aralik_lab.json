@@ -1,0 +1,1591 @@
+{
+ "tarih": "2026-10-29",
+ "madde": "YH-26",
+ "hedef_kapsama": 0.8,
+ "tolerans": 0.02,
+ "pencere": 400,
+ "min_kalibrasyon": 60,
+ "yontem": "Haftalık ileri yürüyüş (üretim ridge'i). Aralıklar yalnız önceki haftaların artıklarından (lig başına son 400 maç). Yöntem/γ seçimi her ligin ilk yarısında; karar ikinci yarıda, tarih ortancasıyla iki alt dilimde: kapsama %80 ± 2 puan ikisinde de ve ortalama genişlik ≤ sabit genişlik (T0).",
+ "kapi": "kapsama |k − 0,80| ≤ 0,02 her iki sınama yarısında; genişlik ≤ T0",
+ "gruplar": {
+  "pro": {
+   "toplam": {
+    "ligler": [
+     "nba",
+     "wnba",
+     "gl"
+    ],
+    "secim": {
+     "T0": {
+      "kapsama": null,
+      "genislik": null
+     },
+     "T1": {
+      "kapsama": 0.8095,
+      "genislik": 48.95
+     },
+     "C1": {
+      "kapsama": 0.8095,
+      "genislik": 48.69
+     },
+     "C2": {
+      "kapsama": 0.8013,
+      "genislik": 48.31
+     },
+     "C3_g0.002": {
+      "kapsama": 0.804,
+      "genislik": 47.97
+     },
+     "C3_g0.005": {
+      "kapsama": 0.7995,
+      "genislik": 47.59
+     },
+     "C3_g0.01": {
+      "kapsama": 0.7976,
+      "genislik": 47.32
+     }
+    },
+    "secilen": "C3_g0.01",
+    "sinama": {
+     "T0": {
+      "n": 1093,
+      "kapsama": 0.8234,
+      "genislik": 47.48,
+      "yarilar": [
+       {
+        "ad": "T1",
+        "n": 533,
+        "kapsama": 0.833,
+        "genislik": 47.84
+       },
+       {
+        "ad": "T2",
+        "n": 560,
+        "kapsama": 0.8143,
+        "genislik": 47.14
+       }
+      ],
+      "ligler": {
+       "nba": {
+        "n": 642,
+        "kapsama": 0.8287
+       },
+       "wnba": {
+        "n": 244,
+        "kapsama": 0.7951
+       },
+       "gl": {
+        "n": 207,
+        "kapsama": 0.8406
+       }
+      },
+      "son_alfa": null
+     },
+     "T1": {
+      "n": 1093,
+      "kapsama": 0.8225,
+      "genislik": 47.86,
+      "yarilar": [
+       {
+        "ad": "T1",
+        "n": 533,
+        "kapsama": 0.8274,
+        "genislik": 48.25
+       },
+       {
+        "ad": "T2",
+        "n": 560,
+        "kapsama": 0.8179,
+        "genislik": 47.48
+       }
+      ],
+      "ligler": {
+       "nba": {
+        "n": 642,
+        "kapsama": 0.8162
+       },
+       "wnba": {
+        "n": 244,
+        "kapsama": 0.8115
+       },
+       "gl": {
+        "n": 207,
+        "kapsama": 0.8551
+       }
+      },
+      "son_alfa": null
+     },
+     "C1": {
+      "n": 1093,
+      "kapsama": 0.8115,
+      "genislik": 46.56,
+      "yarilar": [
+       {
+        "ad": "T1",
+        "n": 533,
+        "kapsama": 0.8199,
+        "genislik": 47.32
+       },
+       {
+        "ad": "T2",
+        "n": 560,
+        "kapsama": 0.8036,
+        "genislik": 45.83
+       }
+      ],
+      "ligler": {
+       "nba": {
+        "n": 642,
+        "kapsama": 0.8084
+       },
+       "wnba": {
+        "n": 244,
+        "kapsama": 0.7992
+       },
+       "gl": {
+        "n": 207,
+        "kapsama": 0.8357
+       }
+      },
+      "son_alfa": null
+     },
+     "C2": {
+      "n": 1093,
+      "kapsama": 0.8079,
+      "genislik": 45.86,
+      "yarilar": [
+       {
+        "ad": "T1",
+        "n": 533,
+        "kapsama": 0.8124,
+        "genislik": 46.83
+       },
+       {
+        "ad": "T2",
+        "n": 560,
+        "kapsama": 0.8036,
+        "genislik": 44.93
+       }
+      ],
+      "ligler": {
+       "nba": {
+        "n": 642,
+        "kapsama": 0.8037
+       },
+       "wnba": {
+        "n": 244,
+        "kapsama": 0.8033
+       },
+       "gl": {
+        "n": 207,
+        "kapsama": 0.8261
+       }
+      },
+      "son_alfa": null
+     },
+     "C3_g0.002": {
+      "n": 1093,
+      "kapsama": 0.806,
+      "genislik": 45.78,
+      "yarilar": [
+       {
+        "ad": "T1",
+        "n": 533,
+        "kapsama": 0.8105,
+        "genislik": 46.18
+       },
+       {
+        "ad": "T2",
+        "n": 560,
+        "kapsama": 0.8018,
+        "genislik": 45.4
+       }
+      ],
+      "ligler": {
+       "nba": {
+        "n": 642,
+        "kapsama": 0.7991
+       },
+       "wnba": {
+        "n": 244,
+        "kapsama": 0.8115
+       },
+       "gl": {
+        "n": 207,
+        "kapsama": 0.8213
+       }
+      },
+      "son_alfa": {
+       "nba": 0.2136,
+       "wnba": 0.1972,
+       "gl": 0.2112
+      }
+     },
+     "C3_g0.005": {
+      "n": 1093,
+      "kapsama": 0.8033,
+      "genislik": 46.06,
+      "yarilar": [
+       {
+        "ad": "T1",
+        "n": 533,
+        "kapsama": 0.803,
+        "genislik": 45.69
+       },
+       {
+        "ad": "T2",
+        "n": 560,
+        "kapsama": 0.8036,
+        "genislik": 46.4
+       }
+      ],
+      "ligler": {
+       "nba": {
+        "n": 642,
+        "kapsama": 0.7975
+       },
+       "wnba": {
+        "n": 244,
+        "kapsama": 0.8156
+       },
+       "gl": {
+        "n": 207,
+        "kapsama": 0.8068
+       }
+      },
+      "son_alfa": {
+       "nba": 0.209,
+       "wnba": 0.193,
+       "gl": 0.213
+      }
+     },
+     "C3_g0.01": {
+      "n": 1093,
+      "kapsama": 0.8033,
+      "genislik": 46.35,
+      "yarilar": [
+       {
+        "ad": "T1",
+        "n": 533,
+        "kapsama": 0.7974,
+        "genislik": 45.41
+       },
+       {
+        "ad": "T2",
+        "n": 560,
+        "kapsama": 0.8089,
+        "genislik": 47.25
+       }
+      ],
+      "ligler": {
+       "nba": {
+        "n": 642,
+        "kapsama": 0.7944
+       },
+       "wnba": {
+        "n": 244,
+        "kapsama": 0.8197
+       },
+       "gl": {
+        "n": 207,
+        "kapsama": 0.8116
+       }
+      },
+      "son_alfa": {
+       "nba": 0.198,
+       "wnba": 0.206,
+       "gl": 0.206
+      }
+     }
+    },
+    "kapsama_ok": true,
+    "genislik_ok": true,
+    "gecti": true
+   },
+   "fark": {
+    "ligler": [
+     "nba",
+     "wnba",
+     "gl"
+    ],
+    "secim": {
+     "T0": {
+      "kapsama": null,
+      "genislik": null
+     },
+     "T1": {
+      "kapsama": 0.8132,
+      "genislik": 35.79
+     },
+     "C1": {
+      "kapsama": 0.8031,
+      "genislik": 34.88
+     },
+     "C2": {
+      "kapsama": 0.783,
+      "genislik": 34.08
+     },
+     "C3_g0.002": {
+      "kapsama": 0.7949,
+      "genislik": 34.73
+     },
+     "C3_g0.005": {
+      "kapsama": 0.794,
+      "genislik": 34.61
+     },
+     "C3_g0.01": {
+      "kapsama": 0.7949,
+      "genislik": 34.71
+     }
+    },
+    "secilen": "C2",
+    "sinama": {
+     "T0": {
+      "n": 1093,
+      "kapsama": 0.7722,
+      "genislik": 34.87,
+      "yarilar": [
+       {
+        "ad": "T1",
+        "n": 533,
+        "kapsama": 0.773,
+        "genislik": 34.7
+       },
+       {
+        "ad": "T2",
+        "n": 560,
+        "kapsama": 0.7714,
+        "genislik": 35.03
+       }
+      ],
+      "ligler": {
+       "nba": {
+        "n": 642,
+        "kapsama": 0.7741
+       },
+       "wnba": {
+        "n": 244,
+        "kapsama": 0.8115
+       },
+       "gl": {
+        "n": 207,
+        "kapsama": 0.7198
+       }
+      },
+      "son_alfa": null
+     },
+     "T1": {
+      "n": 1093,
+      "kapsama": 0.7923,
+      "genislik": 36.65,
+      "yarilar": [
+       {
+        "ad": "T1",
+        "n": 533,
+        "kapsama": 0.7992,
+        "genislik": 37.19
+       },
+       {
+        "ad": "T2",
+        "n": 560,
+        "kapsama": 0.7857,
+        "genislik": 36.14
+       }
+      ],
+      "ligler": {
+       "nba": {
+        "n": 642,
+        "kapsama": 0.796
+       },
+       "wnba": {
+        "n": 244,
+        "kapsama": 0.8033
+       },
+       "gl": {
+        "n": 207,
+        "kapsama": 0.7681
+       }
+      },
+      "son_alfa": null
+     },
+     "C1": {
+      "n": 1093,
+      "kapsama": 0.7841,
+      "genislik": 35.98,
+      "yarilar": [
+       {
+        "ad": "T1",
+        "n": 533,
+        "kapsama": 0.7824,
+        "genislik": 35.89
+       },
+       {
+        "ad": "T2",
+        "n": 560,
+        "kapsama": 0.7857,
+        "genislik": 36.05
+       }
+      ],
+      "ligler": {
+       "nba": {
+        "n": 642,
+        "kapsama": 0.7882
+       },
+       "wnba": {
+        "n": 244,
+        "kapsama": 0.8033
+       },
+       "gl": {
+        "n": 207,
+        "kapsama": 0.7488
+       }
+      },
+      "son_alfa": null
+     },
+     "C2": {
+      "n": 1093,
+      "kapsama": 0.7804,
+      "genislik": 35.49,
+      "yarilar": [
+       {
+        "ad": "T1",
+        "n": 533,
+        "kapsama": 0.7824,
+        "genislik": 35.66
+       },
+       {
+        "ad": "T2",
+        "n": 560,
+        "kapsama": 0.7786,
+        "genislik": 35.33
+       }
+      ],
+      "ligler": {
+       "nba": {
+        "n": 642,
+        "kapsama": 0.7866
+       },
+       "wnba": {
+        "n": 244,
+        "kapsama": 0.7992
+       },
+       "gl": {
+        "n": 207,
+        "kapsama": 0.7391
+       }
+      },
+      "son_alfa": null
+     },
+     "C3_g0.002": {
+      "n": 1093,
+      "kapsama": 0.7941,
+      "genislik": 36.65,
+      "yarilar": [
+       {
+        "ad": "T1",
+        "n": 533,
+        "kapsama": 0.7899,
+        "genislik": 36.53
+       },
+       {
+        "ad": "T2",
+        "n": 560,
+        "kapsama": 0.7982,
+        "genislik": 36.76
+       }
+      ],
+      "ligler": {
+       "nba": {
+        "n": 642,
+        "kapsama": 0.7975
+       },
+       "wnba": {
+        "n": 244,
+        "kapsama": 0.8033
+       },
+       "gl": {
+        "n": 207,
+        "kapsama": 0.7729
+       }
+      },
+      "son_alfa": {
+       "nba": 0.1896,
+       "wnba": 0.1992,
+       "gl": 0.1872
+      }
+     },
+     "C3_g0.005": {
+      "n": 1093,
+      "kapsama": 0.8024,
+      "genislik": 37.23,
+      "yarilar": [
+       {
+        "ad": "T1",
+        "n": 533,
+        "kapsama": 0.8068,
+        "genislik": 37.61
+       },
+       {
+        "ad": "T2",
+        "n": 560,
+        "kapsama": 0.7982,
+        "genislik": 36.87
+       }
+      ],
+      "ligler": {
+       "nba": {
+        "n": 642,
+        "kapsama": 0.8037
+       },
+       "wnba": {
+        "n": 244,
+        "kapsama": 0.8033
+       },
+       "gl": {
+        "n": 207,
+        "kapsama": 0.7971
+       }
+      },
+      "son_alfa": {
+       "nba": 0.189,
+       "wnba": 0.198,
+       "gl": 0.193
+      }
+     },
+     "C3_g0.01": {
+      "n": 1093,
+      "kapsama": 0.8051,
+      "genislik": 37.67,
+      "yarilar": [
+       {
+        "ad": "T1",
+        "n": 533,
+        "kapsama": 0.8068,
+        "genislik": 38.27
+       },
+       {
+        "ad": "T2",
+        "n": 560,
+        "kapsama": 0.8036,
+        "genislik": 37.1
+       }
+      ],
+      "ligler": {
+       "nba": {
+        "n": 642,
+        "kapsama": 0.8022
+       },
+       "wnba": {
+        "n": 244,
+        "kapsama": 0.8074
+       },
+       "gl": {
+        "n": 207,
+        "kapsama": 0.8116
+       }
+      },
+      "son_alfa": {
+       "nba": 0.188,
+       "wnba": 0.196,
+       "gl": 0.216
+      }
+     }
+    },
+    "kapsama_ok": false,
+    "genislik_ok": false,
+    "gecti": false
+   }
+  },
+  "avrupa": {
+   "toplam": {
+    "ligler": [
+     "el"
+    ],
+    "secim": {
+     "T0": {
+      "kapsama": null,
+      "genislik": null
+     },
+     "T1": {
+      "kapsama": 0.8544,
+      "genislik": 48.64
+     },
+     "C1": {
+      "kapsama": 0.8418,
+      "genislik": 47.27
+     },
+     "C2": {
+      "kapsama": 0.8481,
+      "genislik": 45.31
+     },
+     "C3_g0.002": {
+      "kapsama": 0.8354,
+      "genislik": 46.94
+     },
+     "C3_g0.005": {
+      "kapsama": 0.8354,
+      "genislik": 46.19
+     },
+     "C3_g0.01": {
+      "kapsama": 0.8354,
+      "genislik": 45.12
+     }
+    },
+    "secilen": "C3_g0.002",
+    "sinama": {
+     "T0": {
+      "n": 159,
+      "kapsama": 0.8239,
+      "genislik": 44.55,
+      "yarilar": [
+       {
+        "ad": "T1",
+        "n": 78,
+        "kapsama": 0.859,
+        "genislik": 44.55
+       },
+       {
+        "ad": "T2",
+        "n": 81,
+        "kapsama": 0.7901,
+        "genislik": 44.55
+       }
+      ],
+      "ligler": {
+       "el": {
+        "n": 159,
+        "kapsama": 0.8239
+       }
+      },
+      "son_alfa": null
+     },
+     "T1": {
+      "n": 159,
+      "kapsama": 0.8239,
+      "genislik": 45.94,
+      "yarilar": [
+       {
+        "ad": "T1",
+        "n": 78,
+        "kapsama": 0.859,
+        "genislik": 46.19
+       },
+       {
+        "ad": "T2",
+        "n": 81,
+        "kapsama": 0.7901,
+        "genislik": 45.71
+       }
+      ],
+      "ligler": {
+       "el": {
+        "n": 159,
+        "kapsama": 0.8239
+       }
+      },
+      "son_alfa": null
+     },
+     "C1": {
+      "n": 159,
+      "kapsama": 0.8176,
+      "genislik": 44.39,
+      "yarilar": [
+       {
+        "ad": "T1",
+        "n": 78,
+        "kapsama": 0.859,
+        "genislik": 44.94
+       },
+       {
+        "ad": "T2",
+        "n": 81,
+        "kapsama": 0.7778,
+        "genislik": 43.87
+       }
+      ],
+      "ligler": {
+       "el": {
+        "n": 159,
+        "kapsama": 0.8176
+       }
+      },
+      "son_alfa": null
+     },
+     "C2": {
+      "n": 159,
+      "kapsama": 0.805,
+      "genislik": 43.37,
+      "yarilar": [
+       {
+        "ad": "T1",
+        "n": 78,
+        "kapsama": 0.8462,
+        "genislik": 43.6
+       },
+       {
+        "ad": "T2",
+        "n": 81,
+        "kapsama": 0.7654,
+        "genislik": 43.16
+       }
+      ],
+      "ligler": {
+       "el": {
+        "n": 159,
+        "kapsama": 0.805
+       }
+      },
+      "son_alfa": null
+     },
+     "C3_g0.002": {
+      "n": 159,
+      "kapsama": 0.805,
+      "genislik": 42.36,
+      "yarilar": [
+       {
+        "ad": "T1",
+        "n": 78,
+        "kapsama": 0.8333,
+        "genislik": 42.88
+       },
+       {
+        "ad": "T2",
+        "n": 81,
+        "kapsama": 0.7778,
+        "genislik": 41.86
+       }
+      ],
+      "ligler": {
+       "el": {
+        "n": 159,
+        "kapsama": 0.805
+       }
+      },
+      "son_alfa": {
+       "el": 0.2128
+      }
+     },
+     "C3_g0.005": {
+      "n": 159,
+      "kapsama": 0.7799,
+      "genislik": 40.86,
+      "yarilar": [
+       {
+        "ad": "T1",
+        "n": 78,
+        "kapsama": 0.8205,
+        "genislik": 40.71
+       },
+       {
+        "ad": "T2",
+        "n": 81,
+        "kapsama": 0.7407,
+        "genislik": 41.0
+       }
+      ],
+      "ligler": {
+       "el": {
+        "n": 159,
+        "kapsama": 0.7799
+       }
+      },
+      "son_alfa": {
+       "el": 0.212
+      }
+     },
+     "C3_g0.01": {
+      "n": 159,
+      "kapsama": 0.761,
+      "genislik": 39.75,
+      "yarilar": [
+       {
+        "ad": "T1",
+        "n": 78,
+        "kapsama": 0.7949,
+        "genislik": 38.46
+       },
+       {
+        "ad": "T2",
+        "n": 81,
+        "kapsama": 0.7284,
+        "genislik": 40.99
+       }
+      ],
+      "ligler": {
+       "el": {
+        "n": 159,
+        "kapsama": 0.761
+       }
+      },
+      "son_alfa": {
+       "el": 0.194
+      }
+     }
+    },
+    "kapsama_ok": false,
+    "genislik_ok": true,
+    "gecti": false
+   },
+   "fark": {
+    "ligler": [
+     "el"
+    ],
+    "secim": {
+     "T0": {
+      "kapsama": null,
+      "genislik": null
+     },
+     "T1": {
+      "kapsama": 0.7911,
+      "genislik": 30.23
+     },
+     "C1": {
+      "kapsama": 0.8165,
+      "genislik": 30.94
+     },
+     "C2": {
+      "kapsama": 0.7848,
+      "genislik": 30.82
+     },
+     "C3_g0.002": {
+      "kapsama": 0.8165,
+      "genislik": 31.02
+     },
+     "C3_g0.005": {
+      "kapsama": 0.8228,
+      "genislik": 31.12
+     },
+     "C3_g0.01": {
+      "kapsama": 0.8165,
+      "genislik": 31.33
+     }
+    },
+    "secilen": "T1",
+    "sinama": {
+     "T0": {
+      "n": 159,
+      "kapsama": 0.8553,
+      "genislik": 30.55,
+      "yarilar": [
+       {
+        "ad": "T1",
+        "n": 78,
+        "kapsama": 0.859,
+        "genislik": 30.55
+       },
+       {
+        "ad": "T2",
+        "n": 81,
+        "kapsama": 0.8519,
+        "genislik": 30.55
+       }
+      ],
+      "ligler": {
+       "el": {
+        "n": 159,
+        "kapsama": 0.8553
+       }
+      },
+      "son_alfa": null
+     },
+     "T1": {
+      "n": 159,
+      "kapsama": 0.8239,
+      "genislik": 29.43,
+      "yarilar": [
+       {
+        "ad": "T1",
+        "n": 78,
+        "kapsama": 0.8333,
+        "genislik": 29.43
+       },
+       {
+        "ad": "T2",
+        "n": 81,
+        "kapsama": 0.8148,
+        "genislik": 29.42
+       }
+      ],
+      "ligler": {
+       "el": {
+        "n": 159,
+        "kapsama": 0.8239
+       }
+      },
+      "son_alfa": null
+     },
+     "C1": {
+      "n": 159,
+      "kapsama": 0.8428,
+      "genislik": 29.95,
+      "yarilar": [
+       {
+        "ad": "T1",
+        "n": 78,
+        "kapsama": 0.859,
+        "genislik": 29.99
+       },
+       {
+        "ad": "T2",
+        "n": 81,
+        "kapsama": 0.8272,
+        "genislik": 29.92
+       }
+      ],
+      "ligler": {
+       "el": {
+        "n": 159,
+        "kapsama": 0.8428
+       }
+      },
+      "son_alfa": null
+     },
+     "C2": {
+      "n": 159,
+      "kapsama": 0.8365,
+      "genislik": 29.58,
+      "yarilar": [
+       {
+        "ad": "T1",
+        "n": 78,
+        "kapsama": 0.859,
+        "genislik": 29.48
+       },
+       {
+        "ad": "T2",
+        "n": 81,
+        "kapsama": 0.8148,
+        "genislik": 29.67
+       }
+      ],
+      "ligler": {
+       "el": {
+        "n": 159,
+        "kapsama": 0.8365
+       }
+      },
+      "son_alfa": null
+     },
+     "C3_g0.002": {
+      "n": 159,
+      "kapsama": 0.8365,
+      "genislik": 29.31,
+      "yarilar": [
+       {
+        "ad": "T1",
+        "n": 78,
+        "kapsama": 0.859,
+        "genislik": 29.42
+       },
+       {
+        "ad": "T2",
+        "n": 81,
+        "kapsama": 0.8148,
+        "genislik": 29.21
+       }
+      ],
+      "ligler": {
+       "el": {
+        "n": 159,
+        "kapsama": 0.8365
+       }
+      },
+      "son_alfa": {
+       "el": 0.2168
+      }
+     },
+     "C3_g0.005": {
+      "n": 159,
+      "kapsama": 0.8113,
+      "genislik": 28.52,
+      "yarilar": [
+       {
+        "ad": "T1",
+        "n": 78,
+        "kapsama": 0.8077,
+        "genislik": 28.23
+       },
+       {
+        "ad": "T2",
+        "n": 81,
+        "kapsama": 0.8148,
+        "genislik": 28.8
+       }
+      ],
+      "ligler": {
+       "el": {
+        "n": 159,
+        "kapsama": 0.8113
+       }
+      },
+      "son_alfa": {
+       "el": 0.227
+      }
+     },
+     "C3_g0.01": {
+      "n": 159,
+      "kapsama": 0.805,
+      "genislik": 27.48,
+      "yarilar": [
+       {
+        "ad": "T1",
+        "n": 78,
+        "kapsama": 0.7949,
+        "genislik": 26.28
+       },
+       {
+        "ad": "T2",
+        "n": 81,
+        "kapsama": 0.8148,
+        "genislik": 28.64
+       }
+      ],
+      "ligler": {
+       "el": {
+        "n": 159,
+        "kapsama": 0.805
+       }
+      },
+      "son_alfa": {
+       "el": 0.234
+      }
+     }
+    },
+    "kapsama_ok": false,
+    "genislik_ok": true,
+    "gecti": false
+   }
+  },
+  "kolej": {
+   "toplam": {
+    "ligler": [
+     "ncaa",
+     "ncaaw"
+    ],
+    "secim": {
+     "T0": {
+      "kapsama": null,
+      "genislik": null
+     },
+     "T1": {
+      "kapsama": 0.8083,
+      "genislik": 44.95
+     },
+     "C1": {
+      "kapsama": 0.8117,
+      "genislik": 45.15
+     },
+     "C2": {
+      "kapsama": 0.8067,
+      "genislik": 44.62
+     },
+     "C3_g0.002": {
+      "kapsama": 0.8038,
+      "genislik": 44.48
+     },
+     "C3_g0.005": {
+      "kapsama": 0.8026,
+      "genislik": 44.31
+     },
+     "C3_g0.01": {
+      "kapsama": 0.8018,
+      "genislik": 44.2
+     }
+    },
+    "secilen": "C3_g0.01",
+    "sinama": {
+     "T0": {
+      "n": 4930,
+      "kapsama": 0.8239,
+      "genislik": 44.26,
+      "yarilar": [
+       {
+        "ad": "T1",
+        "n": 2446,
+        "kapsama": 0.8185,
+        "genislik": 44.25
+       },
+       {
+        "ad": "T2",
+        "n": 2484,
+        "kapsama": 0.8293,
+        "genislik": 44.26
+       }
+      ],
+      "ligler": {
+       "ncaa": {
+        "n": 2499,
+        "kapsama": 0.8099
+       },
+       "ncaaw": {
+        "n": 2431,
+        "kapsama": 0.8383
+       }
+      },
+      "son_alfa": null
+     },
+     "T1": {
+      "n": 4930,
+      "kapsama": 0.8041,
+      "genislik": 42.64,
+      "yarilar": [
+       {
+        "ad": "T1",
+        "n": 2446,
+        "kapsama": 0.8038,
+        "genislik": 43.12
+       },
+       {
+        "ad": "T2",
+        "n": 2484,
+        "kapsama": 0.8043,
+        "genislik": 42.16
+       }
+      ],
+      "ligler": {
+       "ncaa": {
+        "n": 2499,
+        "kapsama": 0.7987
+       },
+       "ncaaw": {
+        "n": 2431,
+        "kapsama": 0.8095
+       }
+      },
+      "son_alfa": null
+     },
+     "C1": {
+      "n": 4930,
+      "kapsama": 0.8041,
+      "genislik": 42.56,
+      "yarilar": [
+       {
+        "ad": "T1",
+        "n": 2446,
+        "kapsama": 0.8054,
+        "genislik": 43.17
+       },
+       {
+        "ad": "T2",
+        "n": 2484,
+        "kapsama": 0.8027,
+        "genislik": 41.96
+       }
+      ],
+      "ligler": {
+       "ncaa": {
+        "n": 2499,
+        "kapsama": 0.8043
+       },
+       "ncaaw": {
+        "n": 2431,
+        "kapsama": 0.8038
+       }
+      },
+      "son_alfa": null
+     },
+     "C2": {
+      "n": 4930,
+      "kapsama": 0.7909,
+      "genislik": 41.93,
+      "yarilar": [
+       {
+        "ad": "T1",
+        "n": 2446,
+        "kapsama": 0.7911,
+        "genislik": 42.49
+       },
+       {
+        "ad": "T2",
+        "n": 2484,
+        "kapsama": 0.7907,
+        "genislik": 41.38
+       }
+      ],
+      "ligler": {
+       "ncaa": {
+        "n": 2499,
+        "kapsama": 0.7919
+       },
+       "ncaaw": {
+        "n": 2431,
+        "kapsama": 0.7898
+       }
+      },
+      "son_alfa": null
+     },
+     "C3_g0.002": {
+      "n": 4930,
+      "kapsama": 0.7966,
+      "genislik": 41.96,
+      "yarilar": [
+       {
+        "ad": "T1",
+        "n": 2446,
+        "kapsama": 0.7964,
+        "genislik": 42.45
+       },
+       {
+        "ad": "T2",
+        "n": 2484,
+        "kapsama": 0.7967,
+        "genislik": 41.48
+       }
+      ],
+      "ligler": {
+       "ncaa": {
+        "n": 2499,
+        "kapsama": 0.7983
+       },
+       "ncaaw": {
+        "n": 2431,
+        "kapsama": 0.7947
+       }
+      },
+      "son_alfa": {
+       "ncaa": 0.2068,
+       "ncaaw": 0.1968
+      }
+     },
+     "C3_g0.005": {
+      "n": 4930,
+      "kapsama": 0.797,
+      "genislik": 42.0,
+      "yarilar": [
+       {
+        "ad": "T1",
+        "n": 2446,
+        "kapsama": 0.798,
+        "genislik": 42.46
+       },
+       {
+        "ad": "T2",
+        "n": 2484,
+        "kapsama": 0.7959,
+        "genislik": 41.54
+       }
+      ],
+      "ligler": {
+       "ncaa": {
+        "n": 2499,
+        "kapsama": 0.7979
+       },
+       "ncaaw": {
+        "n": 2431,
+        "kapsama": 0.796
+       }
+      },
+      "son_alfa": {
+       "ncaa": 0.207,
+       "ncaaw": 0.182
+      }
+     },
+     "C3_g0.01": {
+      "n": 4930,
+      "kapsama": 0.7978,
+      "genislik": 42.22,
+      "yarilar": [
+       {
+        "ad": "T1",
+        "n": 2446,
+        "kapsama": 0.7984,
+        "genislik": 42.78
+       },
+       {
+        "ad": "T2",
+        "n": 2484,
+        "kapsama": 0.7971,
+        "genislik": 41.65
+       }
+      ],
+      "ligler": {
+       "ncaa": {
+        "n": 2499,
+        "kapsama": 0.7983
+       },
+       "ncaaw": {
+        "n": 2431,
+        "kapsama": 0.7972
+       }
+      },
+      "son_alfa": {
+       "ncaa": 0.214,
+       "ncaaw": 0.164
+      }
+     }
+    },
+    "kapsama_ok": true,
+    "genislik_ok": true,
+    "gecti": true
+   },
+   "fark": {
+    "ligler": [
+     "ncaa",
+     "ncaaw"
+    ],
+    "secim": {
+     "T0": {
+      "kapsama": null,
+      "genislik": null
+     },
+     "T1": {
+      "kapsama": 0.8131,
+      "genislik": 33.83
+     },
+     "C1": {
+      "kapsama": 0.8166,
+      "genislik": 33.98
+     },
+     "C2": {
+      "kapsama": 0.8085,
+      "genislik": 33.16
+     },
+     "C3_g0.002": {
+      "kapsama": 0.8016,
+      "genislik": 32.98
+     },
+     "C3_g0.005": {
+      "kapsama": 0.8006,
+      "genislik": 32.84
+     },
+     "C3_g0.01": {
+      "kapsama": 0.8002,
+      "genislik": 32.85
+     }
+    },
+    "secilen": "C3_g0.005",
+    "sinama": {
+     "T0": {
+      "n": 4930,
+      "kapsama": 0.8454,
+      "genislik": 32.7,
+      "yarilar": [
+       {
+        "ad": "T1",
+        "n": 2446,
+        "kapsama": 0.8467,
+        "genislik": 32.7
+       },
+       {
+        "ad": "T2",
+        "n": 2484,
+        "kapsama": 0.8442,
+        "genislik": 32.7
+       }
+      ],
+      "ligler": {
+       "ncaa": {
+        "n": 2499,
+        "kapsama": 0.8547
+       },
+       "ncaaw": {
+        "n": 2431,
+        "kapsama": 0.8359
+       }
+      },
+      "son_alfa": null
+     },
+     "T1": {
+      "n": 4930,
+      "kapsama": 0.8034,
+      "genislik": 29.36,
+      "yarilar": [
+       {
+        "ad": "T1",
+        "n": 2446,
+        "kapsama": 0.8087,
+        "genislik": 29.23
+       },
+       {
+        "ad": "T2",
+        "n": 2484,
+        "kapsama": 0.7983,
+        "genislik": 29.48
+       }
+      ],
+      "ligler": {
+       "ncaa": {
+        "n": 2499,
+        "kapsama": 0.8075
+       },
+       "ncaaw": {
+        "n": 2431,
+        "kapsama": 0.7993
+       }
+      },
+      "son_alfa": null
+     },
+     "C1": {
+      "n": 4930,
+      "kapsama": 0.8032,
+      "genislik": 29.31,
+      "yarilar": [
+       {
+        "ad": "T1",
+        "n": 2446,
+        "kapsama": 0.8107,
+        "genislik": 29.34
+       },
+       {
+        "ad": "T2",
+        "n": 2484,
+        "kapsama": 0.7959,
+        "genislik": 29.28
+       }
+      ],
+      "ligler": {
+       "ncaa": {
+        "n": 2499,
+        "kapsama": 0.8063
+       },
+       "ncaaw": {
+        "n": 2431,
+        "kapsama": 0.8001
+       }
+      },
+      "son_alfa": null
+     },
+     "C2": {
+      "n": 4930,
+      "kapsama": 0.7909,
+      "genislik": 28.75,
+      "yarilar": [
+       {
+        "ad": "T1",
+        "n": 2446,
+        "kapsama": 0.8005,
+        "genislik": 28.65
+       },
+       {
+        "ad": "T2",
+        "n": 2484,
+        "kapsama": 0.7814,
+        "genislik": 28.84
+       }
+      ],
+      "ligler": {
+       "ncaa": {
+        "n": 2499,
+        "kapsama": 0.7919
+       },
+       "ncaaw": {
+        "n": 2431,
+        "kapsama": 0.7898
+       }
+      },
+      "son_alfa": null
+     },
+     "C3_g0.002": {
+      "n": 4930,
+      "kapsama": 0.7996,
+      "genislik": 29.16,
+      "yarilar": [
+       {
+        "ad": "T1",
+        "n": 2446,
+        "kapsama": 0.8005,
+        "genislik": 28.82
+       },
+       {
+        "ad": "T2",
+        "n": 2484,
+        "kapsama": 0.7987,
+        "genislik": 29.49
+       }
+      ],
+      "ligler": {
+       "ncaa": {
+        "n": 2499,
+        "kapsama": 0.8003
+       },
+       "ncaaw": {
+        "n": 2431,
+        "kapsama": 0.7988
+       }
+      },
+      "son_alfa": {
+       "ncaa": 0.2068,
+       "ncaaw": 0.2048
+      }
+     },
+     "C3_g0.005": {
+      "n": 4930,
+      "kapsama": 0.7998,
+      "genislik": 29.08,
+      "yarilar": [
+       {
+        "ad": "T1",
+        "n": 2446,
+        "kapsama": 0.8009,
+        "genislik": 28.84
+       },
+       {
+        "ad": "T2",
+        "n": 2484,
+        "kapsama": 0.7987,
+        "genislik": 29.32
+       }
+      ],
+      "ligler": {
+       "ncaa": {
+        "n": 2499,
+        "kapsama": 0.8007
+       },
+       "ncaaw": {
+        "n": 2431,
+        "kapsama": 0.7988
+       }
+      },
+      "son_alfa": {
+       "ncaa": 0.212,
+       "ncaaw": 0.197
+      }
+     },
+     "C3_g0.01": {
+      "n": 4930,
+      "kapsama": 0.7992,
+      "genislik": 29.29,
+      "yarilar": [
+       {
+        "ad": "T1",
+        "n": 2446,
+        "kapsama": 0.8013,
+        "genislik": 29.13
+       },
+       {
+        "ad": "T2",
+        "n": 2484,
+        "kapsama": 0.7971,
+        "genislik": 29.45
+       }
+      ],
+      "ligler": {
+       "ncaa": {
+        "n": 2499,
+        "kapsama": 0.7991
+       },
+       "ncaaw": {
+        "n": 2431,
+        "kapsama": 0.7993
+       }
+      },
+      "son_alfa": {
+       "ncaa": 0.184,
+       "ncaaw": 0.184
+      }
+     }
+    },
+    "kapsama_ok": true,
+    "genislik_ok": true,
+    "gecti": true
+   }
+  }
+ },
+ "yayin_ligleri": [
+  "gl",
+  "nba",
+  "ncaa",
+  "ncaaw",
+  "wnba"
+ ]
+}

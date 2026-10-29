@@ -371,3 +371,21 @@ D.addEventListener("click",e=>{ const b=e.target.closest&&e.target.closest("[dat
   new MutationObserver(run).observe(box,{childList:true}); run(); })();
 })();
 } catch (e) { if (typeof reportError === "function") reportError(e); else setTimeout(function () { throw e; }); } /* /id: neden-v145 */
+/* id: aralik-v146 */ try {
+(function(){
+// YH-26: basket %80 aralık (uyumlu / conformal). Yalnız lab/aralik_lab.py sınamasında kapsaması kanıtlanan lig × hedef için
+// (data/bk_aralik.json). Aralıklar OXXai takım-gücü tahmini üzerinde sınandığından, piyasa çizgisiyle birleştirilen maçta gösterilmez.
+const D=document; let AR=null;
+fetch("data/bk_aralik.json",{cache:"no-cache"}).then(r=>r.ok?r.json():null).then(j=>{ AR=j; }).catch(()=>{});
+const n0=x=>String(Math.round(x)), sg=x=>(x>0?"+":x<0?"−":"")+Math.abs(Math.round(x));
+function satir(f,p){ if(!AR||!AR.aktif||!p||p.mkt) return ""; const c=AR.ligler&&AR.ligler[f.lg]; if(!c) return "";
+  const L=p.L||{}, out=[];
+  if(c.toplam&&isFinite(p.tot)) out.push(`toplam <b>${n0(p.tot+c.toplam.alt)}–${n0(p.tot+c.toplam.ust)}</b> sayı`);
+  if(c.fark&&isFinite(p.mar)&&(L.kscale||1)===1&&!f.yd) out.push(`fark (ev − dep.) <b>${sg(p.mar+c.fark.alt)} … ${sg(p.mar+c.fark.ust)}</b>`);
+  if(!out.length) return "";
+  return `<p class="note ar-80" title="Geçmiş maçlarda bu aralık sonuçların yaklaşık %80'ini kapsadı (zaman sıralı sınama)">%80 aralık: ${out.join(" · ")}</p>`; }
+try{ const _bo=bkOpen; bkOpen=function(f){ const r=_bo.apply(this,arguments); try{ const bx=D.getElementById("bkd"), bar=bx&&bx.querySelector(".bk-bar");
+    if(bar&&!bx.querySelector(".ar-80")){ const h=satir(f,bkPredict(f)); if(h){ const nt=bar.nextElementSibling&&bar.nextElementSibling.matches("p.note")?bar.nextElementSibling:bar; nt.insertAdjacentHTML("afterend",h); } } }catch(e){} return r; }; }catch(e){}
+window.BX_ARALIK={satir, get veri(){ return AR; }};
+})();
+} catch (e) { if (typeof reportError === "function") reportError(e); else setTimeout(function () { throw e; }); } /* /id: aralik-v146 */

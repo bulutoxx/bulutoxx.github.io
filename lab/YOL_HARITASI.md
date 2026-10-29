@@ -64,7 +64,11 @@ drift alarmı ve kapanış kilidi (yolda). Aşağıdaki maddeler bunların **üz
 - **Efor:** M · **Risk:** düşük (yalnız gösterim; dağılım kayması → uyarlamalı sürüm) · **Veri:** mevcut, ücretsiz.
 - **Nasıl sınanır (kapı):** Zaman sıralı sınamada gerçekleşen kapsama hedefin ±2 puanı içinde, iki zaman yarısında da; aralık genişliği taban (sabit genişlik) yöntemden dar ya da eşit.
 - **Kaynak:** Angelopoulos & Bates (2023) "Conformal prediction: a gentle introduction" [arXiv:2107.07511](https://arxiv.org/abs/2107.07511) · Gibbs & Candès (2021) NeurIPS "Adaptive conformal inference under distribution shift" [arXiv:2106.00170](https://arxiv.org/abs/2106.00170)
-- **Durum:** bekliyor
+- **Durum:** yayında — kısmi (2026-10-29, v146; yalnız basket; 14 gün izleme) — `lab/aralik_lab.py` → `data/aralik_lab.json` + bayrak `data/bk_aralik.json`, haftalık yenileme `bk-tempo-lab.yml`; arayüz katmanı `aralik-v146` (`js/katmanlar.js`).
+  Üretim ridge'i haftalık ileri yürüyüş; aralıklar yalnız önceki haftaların artıklarından (lig başına son 400). Yöntem/γ her ligin ilk yarısında seçildi, karar ikinci yarıda (iki tarih yarısı). Taban T0 = seçim diliminde donmuş sabit genişlik.
+  **Geçti:** pro toplam (NBA/WNBA/GL) uyarlamalı conformal γ = 0,01 — n = 1.093, kapsama %79,7 / %80,9, genişlik 46,4 ≤ T0 47,5 · kolej toplam (γ = 0,01) — n = 4.930, %79,8 / %79,7, 42,2 ≤ 44,3 · kolej fark (γ = 0,005) — %80,1 / %79,9, 29,1 ≤ 32,7.
+  **Geçmedi:** pro fark (asimetrik; %78,2 / %77,9, 35,5 > T0 34,9) · Avrupa toplam/fark (n = 159; yarılar %83,3 / %77,8) · NBL/EC (yetersiz). Yayın koşulu lig başına da: sınamada ≥ 100 maç ve kapsama %80 ± 4.
+  Arayüz: aralık yalnız piyasa çizgisiyle birleştirilmemiş maçta (sınanan yol = takım-gücü tahmini); fark aralığı kscale = 1 ve dinlenme düzeltmesi yokken. Futbol gol beklentisi / olasılık bantları: sayım hedefi kesikli olduğundan %80 kapsamaya tam oturmaz — ayrı madde olarak ele alınmalı.
 
 ### YH-27 · basket · Dean Oliver dört faktör / verimlilik modeli
 - **Açıklama:** Kutu skorundan takım başına dört faktör (eFG%, top kaybı oranı, hücum ribaund oranı, serbest atış oranı; hücum ve savunma) ve hücum / savunma verimliliği (100 hücum başına sayı); yürüyen ortalamalar ridge'e ek girdi olarak fark ve kazanma olasılığında sınanır. YH-14 (tempo) bulgusu: sayı ridge'i tempo × verimi büyük ölçüde taşıyor — burada ek bilgi yalnız faktör ayrışımından beklenir.

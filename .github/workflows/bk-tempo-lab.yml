@@ -1,7 +1,8 @@
 name: OXXai basket tempo laboratuvari (YH-14)
 # Yalnız ölçüm: ESPN herkese açık skor tablosundaki takım istatistiklerinden hücum sayısı → tempo × verim toplam sayı modeli,
 # üretim ridge toplamına karşı zaman sıralı sınanır (lab/bk_tempo_lab.py). İstatistikler yalnız bellekte; yalnız
-# data/bk_tempo_lab.json (toplu metrik) yazılır; üretimi değiştirmez. Haftalık (çarşamba). Issue/mail/bildirim yok.
+# data/bk_tempo_lab.json (toplu metrik) yazılır; üretimi değiştirmez. YH-26: aynı işte lab/aralik_lab.py (%80 aralık kapısı →
+# data/aralik_lab.json + data/bk_aralik.json; arayüz yalnız geçen lig×hedefi gösterir). Haftalık (çarşamba). Issue/mail/bildirim yok.
 on:
   schedule:
     - cron: "37 3 * * 3"
@@ -34,6 +35,8 @@ jobs:
         run: python3 lab/adim.py bk-tempo-lab --onem bilgi -- timeout 2700 python lab/bk_tempo_lab.py
       - name: Sonuç (günlük)
         run: cat data/bk_tempo_lab.json || true
+      - name: 📏 YH-26 uyumlu aralık laboratuvarı (kapı + data/bk_aralik.json yayın bayrağı)
+        run: python3 lab/adim.py aralik-lab --onem bilgi -- timeout 600 python lab/aralik_lab.py
       - name: Yalnız türetilmiş çıktıyı kaydet (yalnız main)
         if: github.ref == 'refs/heads/main'
-        run: python3 lab/gonder.py -m "Basket tempo laboratuvarı $(date -u +%F) [skip ci]" data/bk_tempo_lab.json data/saglik
+        run: python3 lab/gonder.py -m "Basket tempo laboratuvarı $(date -u +%F) [skip ci]" data/bk_tempo_lab.json data/aralik_lab.json data/bk_aralik.json data/saglik
