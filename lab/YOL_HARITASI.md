@@ -31,8 +31,13 @@ drift alarmı ve kapanış kilidi (yolda). Aşağıdaki maddeler bunların **üz
 - **Beklenen kazanç:** Štrumbelj (2014) Shin olasılıklarının oransal yöntemden ve çoğu durumda diğerlerinden daha iyi kalibre olduğunu bildiriyor; yüksek marjlı (iddaa ~%18) oranlarda yöntem farkı büyür. Tipik ΔLL −0,0005 … −0,003.
 - **Efor:** S · **Risk:** düşük (bayrakla geri alınır; kalibrasyon katmanları power yolunda öğrenildiği için geçişte yeniden öğrenme gerekir) · **Veri:** mevcut, ücretsiz.
 - **Nasıl sınanır (kapı):** SK — zaman sıralı arşivde power'a göre ΔLL %95 GA (lig×gün blok bootstrap, B = 2000) üst sınırı < 0, iki zaman yarısında ΔLL < 0, ΔBrier ≤ 0; 1X2 ve A/Ü ayrı. Geçerse `data/devig.json {yontem}` bayrağı, Python–JS eşitlik testi, 14 gün izleme.
-- **Kaynak:** Štrumbelj (2014) IJF "On determining probability forecasts from betting odds" [doi:10.1016/j.ijforecast.2014.02.008](https://doi.org/10.1016/j.ijforecast.2014.02.008) · Shin (1993) Economic Journal [doi:10.2307/2234526](https://doi.org/10.2307/2234526) · Cheung (2015) "Fixed-odds betting and traditional odds" [SSRN](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2574463)
-- **Durum:** işleniyor (ajan)
+- **Kaynak:** Štrumbelj (2014) IJF 30(4) "On determining probability forecasts from betting odds" [EconBiz](https://econbiz.de/Record/on-determining-probability-forecasts-from-betting-odds-%C5%A1trumbelj-erik/10010517776) · Shin (1993) Economic Journal 103(420) "Measuring the incidence of insider trading in a market for state-contingent claims" [IDEAS](https://ideas.repec.org/a/ecj/econjl/v103y1993i420p1141-53.html) · Cheung (2015) "Fixed-odds betting and traditional odds" (çalışma notu; R `implied` paketinde `or` yöntemi)
+- **Durum:** gölgede (2026-10-29) — hiçbir yöntem power'ı standart kapıda geçmedi; üretim (power) değişmedi. `lab/marj_lab.py` → `data/marj_lab.json`, haftalık gölge ölçüm `keskin-lab.yml` (pazar).
+  ΔLL = aday − power, lig×gün blok bootstrap B = 2000. **iddaa kilitli arşivi** (uygulamanın gösterdiği oran, marj %17,9; 2026-10-24…29):
+  1X2 n = 1.705 — Shin −0,0020 [−0,0044, +0,0003] yarılar −0,0041 / +0,0001; odds-ratio −0,0019 [−0,0039, +0,0001] yarılar −0,0038 / +0,0001; oransal −0,0014 [−0,0067, +0,0039]; toplamsal −0,0010 [−0,0027, +0,0005] (yarılar −0,0018 / −0,0002).
+  A/Ü n = 1.353 — Shin = toplamsal −0,0012 [−0,0025, +0,0002] yarılar −0,0024 / +0,0001; odds-ratio −0,0008 [−0,0018, +0,0001]; oransal −0,0016 [−0,0047, +0,0014].
+  **Derin arşiv** (football-data 2021→ + season.json, marj %6,8): 1X2 n = 66.990 — power en iyi ya da eşdeğer (Shin +0,0001 [+0,00002, +0,0002], odds-ratio +0,0002, oransal +0,0008, toplamsal −0,00004 [−0,0001, +0,00002]); A/Ü n = 40.757 — tümü ±0,0002 içinde, power ≤.
+  Yorum: yüksek marjlı iddaa oranlarında Shin / odds-ratio yönü olumlu ama yalnız 5 günlük arşivde ve ikinci yarıda sıfır; düşük marjda power en iyi. Arşiv büyüdükçe (iddaa ≥ 5.000 maç) haftalık ölçüm yeniden karar verir; `aday` çıkarsa geçiş: tek fonksiyon (Python `devig` + JS `implied`), bayrak `data/devig.json {yontem}`, eşitlik testi, 14 gün izleme. Not: motorun öğrenme hedefi (`market_xg`) araştırmacı bot kararıyla zaten `shin` kullanıyor (`data/research.json`); bu madde yalnız sunulan olasılığı kapsar.
 
 ### YH-24 · futbol · ClubElo ücretsiz API ile bağımsız güç sinyali (kupa / oransız maçlar)
 - **Açıklama:** Club Elo günlük puanları (tüm Avrupa kulüpleri) oransız lig ve kupa maçlarında bağımsız güç sinyali olarak topluluğa (Maher-Poisson + Elo + pi) aday girdi; oranlı maçlarda yalnız konsey adayı. Şu an yalnız kupa çapası olarak kullanılıyor.
@@ -40,7 +45,7 @@ drift alarmı ve kapanış kilidi (yolda). Aşağıdaki maddeler bunların **üz
 - **Efor:** S · **Risk:** düşük–orta (takım adı eşleme; kaynak kesintisi) · **Veri:** Club Elo API, açık, atıf (yalnız türetilmiş puan depoya).
 - **Nasıl sınanır (kapı):** `fb_guc_lab.py` zaman sıralı SK; kupa alt kümesinde de ΔLL < 0.
 - **Kaynak:** [clubelo.com API](http://clubelo.com/API) · Hvattum & Arntzen (2010) [doi:10.1016/j.ijforecast.2009.10.002](https://doi.org/10.1016/j.ijforecast.2009.10.002)
-- **Durum:** işleniyor (ajan)
+- **Durum:** beklemede (2026-10-29): ClubElo ücretsiz API kapalı, kayıt kapalı; sayfa kazıma yapılmaz. Kendi Elo'muz zaten toplulukta (Elo+pi) — ayrı madde gerekmez
 
 ### YH-25 · futbol · Hiyerarşik Bayes güç modeli (Baio & Blangiardo 2010)
 - **Açıklama:** Takım hücum/savunma güçleri lig içinde ortak önselden (değiştirilebilir hiyerarşi) çekilir; az maçlı takımlar lig ortalamasına küçülür, büyük skorlar tek başına gücü uçurmaz (karışım önseli). Ampirik Bayes ya da Laplace yaklaşımıyla sıfır maliyetle Actions'ta çalışır. **Not:** YH-21 (küçük liglerde güç önseli) ile aynı model ailesi — birlikte uygulanabilir; biri yayına alınırsa diğeri `birleştirildi` yapılır.
