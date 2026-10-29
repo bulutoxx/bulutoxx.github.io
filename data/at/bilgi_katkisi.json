@@ -1,0 +1,176 @@
+{
+ "olusturma": "2026-10-29T02:25:38Z",
+ "madde": "YH-08",
+ "aciklama": "Benter ikinci aşaması: koşu içi koşullu logit p ∝ exp(a·ln p_sabah + b·ln q_kapanış). p_sabah: replay.py'nin gün gün sızıntısız oransız sabah olasılığı; q_kapanış: aynanın nihai oranı, marjı orantılı ayrılmış. a > 0 (GA alt sınırı > 0) → sabah modeli kapanış piyasasına bilgi ekliyor. GA: koşu-günü blok bootstrap.",
+ "durum": "doğrulandı",
+ "dogrulandi": true,
+ "alarm": false,
+ "B": 2000,
+ "atlanan": {
+  "oran geçersiz": 2
+ },
+ "tum": {
+  "n_kosu": 3282,
+  "n_gun": 195,
+  "donem": [
+   "2026-03-16",
+   "2026-10-23"
+  ],
+  "yeterli": true,
+  "a": 0.3141,
+  "a_ga95": [
+   0.2562,
+   0.3747
+  ],
+  "b": 0.8271,
+  "b_ga95": [
+   0.7644,
+   0.8906
+  ],
+  "ll_kapanis": 1.8277,
+  "ll_harman_orneklem_ici": 1.8121,
+  "p_a_sifir_alti": 0.0,
+  "ort_kosu_gun": 16.83
+ },
+ "son90": {
+  "n_kosu": 1112,
+  "n_gun": 66,
+  "donem": [
+   "2026-07-26",
+   "2026-10-23"
+  ],
+  "yeterli": true,
+  "a": 0.3679,
+  "a_ga95": [
+   0.2679,
+   0.4731
+  ],
+  "b": 0.8012,
+  "b_ga95": [
+   0.6993,
+   0.895
+  ],
+  "ll_kapanis": 1.8575,
+  "ll_harman_orneklem_ici": 1.8381,
+  "p_a_sifir_alti": 0.0,
+  "ort_kosu_gun": 16.85
+ },
+ "yarilar": [
+  {
+   "n_kosu": 1641,
+   "n_gun": 96,
+   "donem": [
+    "2026-03-16",
+    "2026-06-20"
+   ],
+   "yeterli": true,
+   "a": 0.2826,
+   "a_ga95": [
+    0.2023,
+    0.3754
+   ],
+   "b": 0.8546,
+   "b_ga95": [
+    0.7612,
+    0.9416
+   ],
+   "ll_kapanis": 1.8165,
+   "ll_harman_orneklem_ici": 1.8022,
+   "p_a_sifir_alti": 0.0,
+   "ort_kosu_gun": 17.09
+  },
+  {
+   "n_kosu": 1641,
+   "n_gun": 99,
+   "donem": [
+    "2026-06-22",
+    "2026-10-23"
+   ],
+   "yeterli": true,
+   "a": 0.3487,
+   "a_ga95": [
+    0.2639,
+    0.4399
+   ],
+   "b": 0.8014,
+   "b_ga95": [
+    0.718,
+    0.8895
+   ],
+   "ll_kapanis": 1.8389,
+   "ll_harman_orneklem_ici": 1.8216,
+   "p_a_sifir_alti": 0.0,
+   "ort_kosu_gun": 16.58
+  }
+ ],
+ "ileri_yuruyus": {
+  "n_kosu": 2492,
+  "dll": -0.01367,
+  "ga95": [
+   -0.01913,
+   -0.00794
+  ],
+  "yarilar": [
+   -0.00932,
+   -0.01802
+  ],
+  "aylik": [
+   {
+    "ay": "2026-05",
+    "n": 516,
+    "a": 0.3103,
+    "b": 0.887,
+    "dll": -0.0016
+   },
+   {
+    "ay": "2026-06",
+    "n": 455,
+    "a": 0.2594,
+    "b": 0.8905,
+    "dll": -0.0202
+   },
+   {
+    "ay": "2026-07",
+    "n": 504,
+    "a": 0.2925,
+    "b": 0.852,
+    "dll": -0.0141
+   },
+   {
+    "ay": "2026-08",
+    "n": 371,
+    "a": 0.3013,
+    "b": 0.8368,
+    "dll": -0.012
+   },
+   {
+    "ay": "2026-09",
+    "n": 342,
+    "a": 0.3073,
+    "b": 0.819,
+    "dll": -0.0173
+   },
+   {
+    "ay": "2026-10",
+    "n": 304,
+    "a": 0.3081,
+    "b": 0.8272,
+    "dll": -0.0217
+   }
+  ]
+ },
+ "yon": {
+  "n_kosu": 878,
+  "n_at": 8954,
+  "yeterli": true,
+  "egim": 0.555,
+  "ga95": [
+   0.5299,
+   0.5797
+  ],
+  "donem": [
+   "2026-04-13",
+   "2026-06-12"
+  ]
+ }
+}
