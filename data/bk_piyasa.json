@@ -1,6 +1,6 @@
 {
  "surum": "2026-10-28.1",
- "guncelleme": "2026-10-29 22:59",
+ "guncelleme": "2026-10-29 23:57",
  "aciklama": "Basket piyasa karnesi: kilitli model tahmini ile maç öncesi son piyasa oranı (marjı Shin ile ayrılmış) aynı maçlarda. Harman = Benter iki aşama (lig grubu, zaman sıralı ağırlık). Çapalı = model fark/toplamının handikap ve alt/üst çizgisine çekilmesi. GA: gün blokları bootstrap %95. Üretime yalnız OXXai kapısı + gölge sonrası girer.",
  "kurallar": {
   "kapi": "n ≥ 150, gün ≥ 20, ΔLL GA üst < 0, ΔBrier < 0, isabet düşmez",
@@ -91,7 +91,7 @@
    },
    "capali": {
     "n": 23,
-    "ll": 0.6567,
+    "ll": 0.6566,
     "brier": 0.2322,
     "isabet": 0.5217
    },
@@ -109,14 +109,14 @@
     "isabet": -0.1739
    },
    "fark_piyasa_model": {
-    "ll": 0.0865,
+    "ll": 0.0864,
     "ll_ga": null,
     "brier": 0.0383,
     "brier_ga": null,
     "isabet": -0.2174
    },
    "fark_capali_model": {
-    "ll": 0.0277,
+    "ll": 0.0276,
     "ll_ga": null,
     "brier": 0.0136,
     "brier_ga": null,
@@ -132,17 +132,17 @@
    "skor": {
     "fark_mse": {
      "model": 135.7096,
-     "piyasa": 161.7593,
-     "capali": 145.2728,
+     "piyasa": 161.7456,
+     "capali": 145.2671,
      "n": 23,
      "capali_eksi_model": [
-      9.5632,
+      9.5575,
       null
      ]
     },
     "toplam_mae": {
      "model": 13.6087,
-     "piyasa": 13.448,
+     "piyasa": 13.4479,
      "capali": 13.5214,
      "n": 23,
      "capali_eksi_model": [
@@ -153,8 +153,8 @@
    },
    "agirlik": {
     "a": 0.3095,
-    "b": 0.6504,
-    "w_m": 0.302,
+    "b": 0.6505,
+    "w_m": 0.3021,
     "w_t": 0.8775,
     "n_ogrenme": 23
    },
@@ -311,19 +311,19 @@
    "w_t": 0.8858,
    "n_ogrenme": 58
   },
+  "avrupa": {
+   "a": 0.3095,
+   "b": 0.6505,
+   "w_m": 0.3021,
+   "w_t": 0.8775,
+   "n_ogrenme": 23
+  },
   "kolej": {
    "a": 0.3,
    "b": 0.7,
    "w_m": 0.6,
    "w_t": 0.6,
    "n_ogrenme": 0
-  },
-  "avrupa": {
-   "a": 0.3095,
-   "b": 0.6504,
-   "w_m": 0.302,
-   "w_t": 0.8775,
-   "n_ogrenme": 23
   }
  },
  "uretimde": {},
@@ -522,12 +522,12 @@
    "n": 20,
    "ll_model": 0.6698,
    "ll_piyasa": 0.7449,
-   "ll_harman": 0.7175
+   "ll_harman": 0.7174
   },
   {
    "gun": "2026-10-28",
    "n": 18,
-   "ll_model": 0.5521,
+   "ll_model": 0.5522,
    "ll_piyasa": 0.5852,
    "ll_harman": 0.5645
   },
