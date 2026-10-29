@@ -53,7 +53,10 @@ drift alarmı ve kapanış kilidi (yolda). Aşağıdaki maddeler bunların **üz
 - **Efor:** M · **Risk:** orta (hesap süresi; Dixon-Coles ile uyum) · **Veri:** mevcut, ücretsiz.
 - **Nasıl sınanır (kapı):** `fb_guc_lab.py espn` / `derin` SK; sezonun ilk 8 haftasında ayrıca ΔLL < 0.
 - **Kaynak:** Baio & Blangiardo (2010) J. Applied Statistics [doi:10.1080/02664760802684177](https://doi.org/10.1080/02664760802684177)
-- **Durum:** bekliyor
+- **Durum:** reddedildi (2026-10-29) — `lab/hb_guc_lab.py` → `data/hb_guc_lab.json`; üretim değişmedi.
+  Aday: lig×hafta ampirik Bayes (eşlenik Gamma; τ² moment yöntemi, hücum/savunma ayrı, ligler arası önsele n0 ile çekme; isteğe bağlı gol tavanı), yalnız geçmiş maçlarla; ızgara (τ²_0, n0, tavan; 18) seçim diliminde (< 2026-04-01) → (0,03, 5, tavansız). Kıyas: üretim model yolu = topluluk C4 (Poisson decay 0,003 / prior 10 + Elo + pi, aylık genişleyen yığın), aday = aynı topluluk, Poisson girdisi HB.
+  Seçim diliminde iyi görünüyordu (C4 LL 1,0060 vs 1,0097, n = 2.503) ama **sınamada tutmadı** (n = 4.397, 28 oransız lig, lig×gün blok B = 2000): 1X2 ΔLL +0,0016 [−0,0003, +0,0034] yarılar +0,0009 / +0,0023, ΔBrier +0,0010, sezonun ilk 8 haftası (n = 828) +0,0045; A/Ü ΔLL +0,0011 [+0,0001, +0,0021]; yalnız Poisson ΔLL +0,0128 [+0,0085, +0,0169]. Alfa yatırımı (fb_model-2026): α 0,031 / 0,021, iki test geçmedi.
+  Yorum: lig başına kestirilen τ² (çoğu ligde 0,03–0,05) üretimin tek önselinden (prior 10 ≈ τ² 0,08) daha sıkı küçültüyor; Elo/pi zaten az maçlı takımları topluluğa taşıdığından ek küçültme bilgi eklemiyor. YH-21 (eşik altı kapsam) aynı `hb_fit`'i yeniden kullanabilir; orada ölçüt kapsam + taban modele göre ΔLL olduğu için ayrı sınanmalı.
 
 ### YH-26 · altyapı · Uyumlu (conformal) tahmin aralıkları
 - **Açıklama:** Olasılık ve gol / sayı beklentilerine dağılımdan bağımsız, kapsama güvenceli aralıklar: yürüyen pencerede (zaman sıralı, uyarlamalı conformal) kalibrasyon kümesinden uygunsuzluk puanları; basket toplam sayı ve fark, futbol gol beklentisi ve olasılık bantları için "%80 aralık". Arayüzde yalnız kapsaması tuttuğu kanıtlanmış aralık gösterilir.
