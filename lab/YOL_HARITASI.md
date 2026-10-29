@@ -26,6 +26,54 @@ drift alarmı ve kapanış kilidi (yolda). Aşağıdaki maddeler bunların **üz
 
 ---
 
+### YH-23 · futbol · Shin yöntemiyle marj ayıklama (ve odds-ratio) — sunulan piyasa olasılığı
+- **Açıklama:** Uygulamanın sunduğu piyasa olasılığı (`js/core.js implied()`, `fitMarket`, Python aynaları `ui_market_lam` / `pazar.py` / `collector.py`) marjı power yöntemiyle ayırıyor; motorun öğrenme hedefi (`market_xg`) ise araştırmacı botun seçtiği yöntemi (`data/research.json → devig`) kullanıyor. Shin (içeriden bilgi payı z), odds-ratio (Cheung 2015), oransal ve toplamsal yöntemler aynı arşivde (football-data derin arşivi + season.json; kilitli iddaa arşivi) 1X2 ve 2,5 A/Ü ayrı ayrı power'a karşı ölçülür; geçen yöntem tek fonksiyon olarak Python ve JS'de birebir aynı uygulanır.
+- **Beklenen kazanç:** Štrumbelj (2014) Shin olasılıklarının oransal yöntemden ve çoğu durumda diğerlerinden daha iyi kalibre olduğunu bildiriyor; yüksek marjlı (iddaa ~%18) oranlarda yöntem farkı büyür. Tipik ΔLL −0,0005 … −0,003.
+- **Efor:** S · **Risk:** düşük (bayrakla geri alınır; kalibrasyon katmanları power yolunda öğrenildiği için geçişte yeniden öğrenme gerekir) · **Veri:** mevcut, ücretsiz.
+- **Nasıl sınanır (kapı):** SK — zaman sıralı arşivde power'a göre ΔLL %95 GA (lig×gün blok bootstrap, B = 2000) üst sınırı < 0, iki zaman yarısında ΔLL < 0, ΔBrier ≤ 0; 1X2 ve A/Ü ayrı. Geçerse `data/devig.json {yontem}` bayrağı, Python–JS eşitlik testi, 14 gün izleme.
+- **Kaynak:** Štrumbelj (2014) IJF "On determining probability forecasts from betting odds" [doi:10.1016/j.ijforecast.2014.02.008](https://doi.org/10.1016/j.ijforecast.2014.02.008) · Shin (1993) Economic Journal [doi:10.2307/2234526](https://doi.org/10.2307/2234526) · Cheung (2015) "Fixed-odds betting and traditional odds" [SSRN](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2574463)
+- **Durum:** işleniyor (ajan)
+
+### YH-24 · futbol · ClubElo ücretsiz API ile bağımsız güç sinyali (kupa / oransız maçlar)
+- **Açıklama:** Club Elo günlük puanları (tüm Avrupa kulüpleri) oransız lig ve kupa maçlarında bağımsız güç sinyali olarak topluluğa (Maher-Poisson + Elo + pi) aday girdi; oranlı maçlarda yalnız konsey adayı. Şu an yalnız kupa çapası olarak kullanılıyor.
+- **Beklenen kazanç:** Oransız ve ligler arası (kupa, Avrupa) maçlarda ΔLL −0,002 … −0,008; kendi Elo'muzla yüksek ilişki nedeniyle lig içi katkı küçük.
+- **Efor:** S · **Risk:** düşük–orta (takım adı eşleme; kaynak kesintisi) · **Veri:** Club Elo API, açık, atıf (yalnız türetilmiş puan depoya).
+- **Nasıl sınanır (kapı):** `fb_guc_lab.py` zaman sıralı SK; kupa alt kümesinde de ΔLL < 0.
+- **Kaynak:** [clubelo.com API](http://clubelo.com/API) · Hvattum & Arntzen (2010) [doi:10.1016/j.ijforecast.2009.10.002](https://doi.org/10.1016/j.ijforecast.2009.10.002)
+- **Durum:** işleniyor (ajan)
+
+### YH-25 · futbol · Hiyerarşik Bayes güç modeli (Baio & Blangiardo 2010)
+- **Açıklama:** Takım hücum/savunma güçleri lig içinde ortak önselden (değiştirilebilir hiyerarşi) çekilir; az maçlı takımlar lig ortalamasına küçülür, büyük skorlar tek başına gücü uçurmaz (karışım önseli). Ampirik Bayes ya da Laplace yaklaşımıyla sıfır maliyetle Actions'ta çalışır. **Not:** YH-21 (küçük liglerde güç önseli) ile aynı model ailesi — birlikte uygulanabilir; biri yayına alınırsa diğeri `birleştirildi` yapılır.
+- **Beklenen kazanç:** Model yolunda ΔLL −0,002 … −0,006 (özellikle sezon başı ve küçük ligler); aşırı uyumun azalması.
+- **Efor:** M · **Risk:** orta (hesap süresi; Dixon-Coles ile uyum) · **Veri:** mevcut, ücretsiz.
+- **Nasıl sınanır (kapı):** `fb_guc_lab.py espn` / `derin` SK; sezonun ilk 8 haftasında ayrıca ΔLL < 0.
+- **Kaynak:** Baio & Blangiardo (2010) J. Applied Statistics [doi:10.1080/02664760802684177](https://doi.org/10.1080/02664760802684177)
+- **Durum:** bekliyor
+
+### YH-26 · altyapı · Uyumlu (conformal) tahmin aralıkları
+- **Açıklama:** Olasılık ve gol / sayı beklentilerine dağılımdan bağımsız, kapsama güvenceli aralıklar: yürüyen pencerede (zaman sıralı, uyarlamalı conformal) kalibrasyon kümesinden uygunsuzluk puanları; basket toplam sayı ve fark, futbol gol beklentisi ve olasılık bantları için "%80 aralık". Arayüzde yalnız kapsaması tuttuğu kanıtlanmış aralık gösterilir.
+- **Beklenen kazanç:** Belirsizliğin dürüst gösterimi; hedef kapsama ±2 puan içinde (şu an aralık yok). Doğrudan LL kazancı beklenmez.
+- **Efor:** M · **Risk:** düşük (yalnız gösterim; dağılım kayması → uyarlamalı sürüm) · **Veri:** mevcut, ücretsiz.
+- **Nasıl sınanır (kapı):** Zaman sıralı sınamada gerçekleşen kapsama hedefin ±2 puanı içinde, iki zaman yarısında da; aralık genişliği taban (sabit genişlik) yöntemden dar ya da eşit.
+- **Kaynak:** Angelopoulos & Bates (2023) "Conformal prediction: a gentle introduction" [arXiv:2107.07511](https://arxiv.org/abs/2107.07511) · Gibbs & Candès (2021) NeurIPS "Adaptive conformal inference under distribution shift" [arXiv:2106.00170](https://arxiv.org/abs/2106.00170)
+- **Durum:** bekliyor
+
+### YH-27 · basket · Dean Oliver dört faktör / verimlilik modeli
+- **Açıklama:** Kutu skorundan takım başına dört faktör (eFG%, top kaybı oranı, hücum ribaund oranı, serbest atış oranı; hücum ve savunma) ve hücum / savunma verimliliği (100 hücum başına sayı); yürüyen ortalamalar ridge'e ek girdi olarak fark ve kazanma olasılığında sınanır. YH-14 (tempo) bulgusu: sayı ridge'i tempo × verimi büyük ölçüde taşıyor — burada ek bilgi yalnız faktör ayrışımından beklenir.
+- **Beklenen kazanç:** Model yolu fark MAE −%1…−%3, kazanma ΔLL −0,002 … −0,006 (literatürde dört faktör kazanma varyansının büyük kısmını açıklar).
+- **Efor:** M · **Risk:** orta (YH-14 gibi fark çıkmayabilir; sızıntı → yalnız maç öncesi kutu skorları) · **Veri:** ESPN herkese açık kutu skorları, ücretsiz (ham veri commit edilmez).
+- **Nasıl sınanır (kapı):** `bk_tempo_lab.py` deseni, zaman sıralı SK; NBA / WNBA / diğer ayrı rapor.
+- **Kaynak:** Oliver (2004) *Basketball on Paper* · Kubatko ve ark. (2007) JQAS [doi:10.2202/1559-0410.1070](https://doi.org/10.2202/1559-0410.1070)
+- **Durum:** bekliyor
+
+### YH-28 · at · Bolton–Chapman / Benter çok aşamalı birleşim
+- **Açıklama:** YH-08 bulgusu: sabah modeli kapanış piyasasına bilgi ekliyor (**a = 0,314 [0,256, 0,375]**, b = 0,827, n = 3.282 koşu). Benter'in ikinci aşaması `p ∝ exp(a·ln p_model + b·ln q_piyasa)` şu an yalnız ölçüm; çok aşamalı birleşim bu ağırlıkları (alan büyüklüğü, koşu türü, piyasa derinliği / erken–geç oran kovaları gibi) koşullu öğrenip sunulan at olasılığına uygular; birinci aşama koşullu logit (Bolton–Chapman) zaten var.
+- **Beklenen kazanç:** YH-08 ileri yürüyüşü: harman − kapanış ΔLL −0,0137 [−0,0191, −0,0079]; koşullu ağırlıklarla ek −0,001 … −0,004. Kilit anında kapanış oranı yok — kazanç yalnız piyasa oranı mevcutken sunulan güncel olasılıkta.
+- **Efor:** M · **Risk:** orta (kilit anı / kapanış ayrımı; sızıntı) · **Veri:** mevcut izinli ayna kaynağı, ücretsiz (TJK / atyarisi.com yok).
+- **Nasıl sınanır (kapı):** Koşu-günü blok bootstrap, aylık ileri yürüyüş; mevcut harmana göre ΔLL %95 GA üst < 0, iki yarıda < 0.
+- **Kaynak:** Bolton & Chapman (1986) Management Science [doi:10.1287/mnsc.32.8.1040](https://doi.org/10.1287/mnsc.32.8.1040) · Benter (1994) [World Scientific](https://worldscientific.com/doi/abs/10.1142/9789812819192_0019)
+- **Durum:** bekliyor
+
 ### YH-01 · altyapı · Öneri CLV karnesi (kapanış çizgisi değeri)
 - **Açıklama:** Kapanış kilidi geldiğinde her kilitli öneri için `clv = ln(p_kapanış / p_kilit)` (marjı ayrılmış piyasa olasılığı; öneri tarafı) ve "kapanışı geçti" oranı hesaplanır; Motor sayfası, drift alarmı ve koruyucu için sonuçtan çok daha hızlı yakınsayan bir erken uyarı ölçütü olur. Model yolu (oransız) önerilerinde de modelin kilit anındaki olasılığı ile kapanış piyasası karşılaştırılır.
 - **Beklenen kazanç:** Doğrudan isabet değil, ölçüm hızı: CLV'nin varyansı sonuçtan çok küçük olduğundan bir değişikliğin iyi/kötü olduğu ~5–10 kat daha az maçla görülür. Kapanış oranı en bilgili tahmindir; kapanışa doğru hareket eden seçimler uzun vadede daha iyi sonuç verir.
