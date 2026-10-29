@@ -141,7 +141,13 @@ drift alarmı ve kapanış kilidi (yolda). Aşağıdaki maddeler bunların **üz
 - **Efor:** S · **Risk:** düşük · **Veri:** mevcut (yalnız izinli kaynak; TJK yok).
 - **Nasıl sınanır:** Yürüyen pencerede a'nın koşu-günü blok bootstrap GA'sı; a > 0 (alt sınır > 0) karnede "doğrulandı".
 - **Kaynak:** Benter (1994) "Computer based horse race handicapping and wagering systems" (Efficiency of Racetrack Betting Markets, World Scientific) [World Scientific](https://worldscientific.com/doi/abs/10.1142/9789812819192_0019) · Bolton & Chapman (1986) Management Science [doi:10.1287/mnsc.32.8.1040](https://doi.org/10.1287/mnsc.32.8.1040)
-- **Durum:** bekliyor
+- **Durum:** yayında (2026-10-29; ölçüm, karnede satır) — **doğrulandı**: sabah modeli kapanış piyasasına bilgi ekliyor. `lab/at/bilgi_katkisi.py` → `data/at/bilgi_katkisi.json` + `data/at/karne.json → bilgi_katkisi` (at-lab her çalışmada yeniden hesaplar; commit ff5bf7b / a1b6ef5, ölçüm 4c4e7d8).
+  p_sabah: replay.py'nin gün gün sızıntısız oransız olasılığı; q: aynanın nihai oranı (marj orantılı ayrılmış). Koşullu logit p ∝ exp(a·ln p_sabah + b·ln q),
+  koşu-günü blok bootstrap B = 2000. Tüm dönem (2026-03-16…10-23, n = 3.282 koşu / 195 gün): **a = 0,314 [0,256, 0,375]**, b = 0,827 [0,764, 0,891];
+  son 90 gün (n = 1.112): a = 0,368 [0,268, 0,473] (alarm yok); yarılar a = 0,283 [0,202, 0,375] / 0,349 [0,264, 0,440].
+  Aylık ileri yürüyüş (yalnız önceki aylarla öğrenilen a, b) harman − kapanış ΔLL −0,0137 [−0,0191, −0,0079], yarılar −0,0093 / −0,0180 (n = 2.492; her ay < 0).
+  (a) Yön: ln q_kapanış − ln q_erken'in ln p_sabah − ln q_erken'e eğimi 0,555 [0,530, 0,580] (n = 878 koşu, erken = koşudan ≥ 30 dk önce, 2026-04…06 görüntüleri):
+  piyasa sabah modelinin yönüne kayıyor. Üretim değişmedi (harman zaten yayında); karar: son 90 gün a GA'sı 0'ı kapsarsa karnede alarm.
 
 ### YH-09 · altyapı · Skor ayrışımı (güvenilirlik / çözünürlük) ve ECE'nin tüm karnelere eklenmesi
 - **Açıklama:** Brier'in Murphy ayrışımı (güvenilirlik − çözünürlük + belirsizlik) ve beklenen kalibrasyon hatası (ECE, eşit örnekli kovalar) futbol, basket, at, canlı karnelerine eklenir. Kötüleşmenin kalibrasyondan mı (düzeltilebilir: yeniden kalibre) yoksa çözünürlükten mi (model/veri sorunu) geldiğini drift alarmı ve koruyucu ayırt edebilir. Ana ölçüt log-kayıp kalır (RPS önerilmez).
