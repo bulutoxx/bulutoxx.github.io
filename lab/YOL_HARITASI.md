@@ -219,7 +219,10 @@ drift alarmı ve kapanış kilidi (yolda). Aşağıdaki maddeler bunların **üz
 - **Efor:** M · **Risk:** orta (EuroLeague kutu skoru biçimi farklı) · **Veri:** ESPN / EuroLeague herkese açık, ücretsiz; yalnız türetilmiş takım değerleri saklanır.
 - **Nasıl sınanır:** `bk_gelistir.py`: toplam MAE ve alt/üst LL için gün kümeli bootstrap üst sınırı < 0, iki dilimde de.
 - **Kaynak:** Kubatko, Oliver, Pelton, Rosenbaum (2007) JQAS "A starting point for analyzing basketball statistics" [doi:10.2202/1559-0410.1070](https://doi.org/10.2202/1559-0410.1070)
-- **Durum:** sınamada (2026-10-29) — `lab/bk_tempo_lab.py` → `data/bk_tempo_lab.json`, `bk-tempo-lab.yml` (haftalık + elle). ESPN skor tablosu takım istatistiklerinden hücum sayısı (FGA − OREB + TOV + 0,44·FTA; yoksa FGA + 0,44·FTA), tempo ve 100 hücum verimi ayrı ridge; adaylar `tempo` ve `harman` (ağırlık yalnız önceki haftalardan). İstatistikler yalnız bellekte.
+- **Durum:** reddedildi (2026-10-29; SK geçmedi, üretim değişmedi) — `lab/bk_tempo_lab.py` → `data/bk_tempo_lab.json`, `bk-tempo-lab.yml` haftalık yeniden ölçüm (yalnız ölçüm; run 40856566483, commit 6a8dbb9).
+  ESPN skor tablosu takım istatistikleri (kapsam NBA/WNBA/NCAA/NCAAW/G League ≈ %100, NBL %24; OREB/TOV yok → hücum ≈ FGA + 0,44·FTA), tempo ve 100 hücum verimi ayrı ridge, haftalık ileri yürüyüş, sınama n = 12.729.
+  `tempo`: ΔMAE toplam +0,009 [GA −0,0004, +0,018], A/Ü ΔLL +0,0004 [−0,00002, +0,0009], ΔBrier +0,0002, ilk dilim anlamlı kötü → **geçmedi**. `harman` (ağırlık yalnız önceki haftalardan; ort. w NBA 0, NCAA 0, G League 0,79):
+  ΔMAE +0,00002 [−0,0011, +0,0011], ΔLL 0,0000 [−0,00005, +0,00005] → **geçmedi** (fark yok). Yorum: sayı ridge'i (hücum/savunma) tempo × verim yapısını zaten taşıyor; beklenen −%2…−%5 MAE görülmedi. Yalnız G League'de küçük olumlu eğilim (n = 340, anlamsız).
 
 ### YH-15 · at · Koşu belirsizliğine göre seçici gösterim (pas eşiği)
 - **Açıklama:** Futboldaki "%58 altı pas" kuralının at karşılığı: koşu düzeyinde entropi, alan büyüklüğü ve ilk iki olasılık farkından "güven sınıfı" üret; Altın ve öne çıkan seçimler yalnız geçmişte kalibre olduğu sınıflarda gösterilir. Eşik yürüyen pencerede seçilir.
