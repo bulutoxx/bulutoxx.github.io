@@ -79,7 +79,7 @@ drift alarmı ve kapanış kilidi (yolda). Aşağıdaki maddeler bunların **üz
 - **Durum:** reddedildi (2026-10-29; SK geçmedi, üretim değişmedi) — `lab/bk_dortfaktor_lab.py` → `data/bk_dortfaktor_lab.json`, `bk-dortfaktor-lab.yml` haftalık yeniden ölçüm (yalnız ölçüm; sınama run 40964901925, commit f6ecdff).
   Pro ligler (NBA/WNBA/G League/NBL): ESPN maç özeti kutu skoru → dört faktörün tamamı (eFG%, FTr, TOV%, ORB%); kolej: skor tablosu → eFG%, FTr, ribaund payı. Faktör başına ridge (basket.fit) + önceki haftaların örneklem dışı satırlarıyla yığma; taban da aynı yığma (yalnız taban fark) — haftalık ileri yürüyüş, sınama n = 12.502.
   Kazanma ΔLL +0,0012 [GA −0,0003, +0,0027], ΔBrier +0,0005, p = 0,95; dilim 1 ΔLL +0,0003, dilim 2 +0,0021 [+0,00004, +0,0043] (anlamlı kötü) → **geçmedi**. Fark ΔMAE −0,033 sayı [−0,074, +0,005] (yalnız dilim 1'de anlamlı).
-  Grup: NBA n = 1.151 ΔLL +0,0025 [−0,0034, +0,0089] · WNBA n = 388 +0,0065 [−0,0006, +0,0144] (MAE anlamlı kötü) · kolej n = 10.709 +0,0007 [−0,0010, +0,0024] · diğer pro n = 254 — hiçbir grup geçmedi.
+  Grup: NBA n = 1.151 ΔLL +0,0025 [−0,0034, +0,0089] · WNBA n = 388 +0,0065 [−0,0006, +0,0144] (MAE anlamlı kötü) · kolej n = 10.709 +0,0007 [−0,0010, +0,0024] · G League n = 254 (NBL kapsam 54 maç → dışarıda) — hiçbir grup geçmedi.
   Yorum: YH-14 ile aynı — sayı ridge'i faktörlerin taşıdığı bilgiyi zaten içeriyor; faktör ayrışımı kazanma olasılığına ek bilgi katmıyor, yığma yalnız gürültü ekliyor.
 
 ### YH-28 · at · Bolton–Chapman / Benter çok aşamalı birleşim
