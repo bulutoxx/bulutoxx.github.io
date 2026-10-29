@@ -253,7 +253,7 @@ def k1_lam(row, w, beta):
 def kayip(rows, lam, rho):
     lh = np.array([lam(r)[0] for r in rows]); la = np.array([lam(r)[1] for r in rows])
     p, pO = olas(np.clip(lh, .15, 4.5), np.clip(la, .1, 4), rho)
-    res = np.array([0 if r["ft"][0] > r["ft"][1] else 1 if r["ft"][0] == r["ft"][1] else 2 for r in rows])
+    res = np.array([0 if r["ft"][0] > r["ft"][1] else 1 if r["ft"][0] == r["ft"][1] else 2 for r in rows], dtype=int)
     ov = np.array([sum(r["ft"]) > 2 for r in rows], float)
     ll = -np.log(np.clip(p[np.arange(len(rows)), res], EPS, 1))
     llo = FG.bll(pO, ov)
@@ -341,12 +341,17 @@ def main():
     te = [r for r in rows if r["d"] >= SINAMA0 and r["elo"]]
     f0 = lambda r: (r["lh"], r["la"])
     izgara = []
-    for w in W_IZGARA:
+    if not sel:     # Club Elo verisi yok (API kapalı / eşleşme 0): K1 ölçülemez, diğer aileler sürer
+        R["aileler"]["K1"] = {"ad": "Club Elo ile kupa/ligler arası güç büzülmesi (model.json cup.teams)",
+                              "atlandi": "seçim diliminde Elo'lu kupa maçı yok (elo_kaynagi=%s)" % elo.kaynak, "secim": {"n": 0}}
+        te = []
+    for w in (W_IZGARA if sel else ()):
         for b in B_IZGARA:
             l1, _, _ = kayip(sel, lambda r, w=w, b=b: k1_lam(r, w, b), rho); izgara.append((float(l1.mean()), w, b)); deneme["K1"] += 1
-    l0s, _, h0s = kayip(sel, f0, rho)
-    best = min(izgara)
-    R["aileler"]["K1"] = {"ad": "Club Elo ile kupa/ligler arası güç büzülmesi (model.json cup.teams)",
+    if sel:
+      l0s, _, h0s = kayip(sel, f0, rho)
+      best = min(izgara)
+      R["aileler"]["K1"] = {"ad": "Club Elo ile kupa/ligler arası güç büzülmesi (model.json cup.teams)",
                           "secim": {"n": len(sel), "ll_mevcut": round(float(l0s.mean()), 5), "en_iyi": {"ll": round(best[0], 5), "w": best[1], "beta": best[2]},
                                     "izgara_deneme": len(izgara), "ilk5": [{"ll": round(x[0], 5), "w": x[1], "beta": x[2]} for x in sorted(izgara)[:5]]},
                           "sinama_elo_yok_atlanan": sum(1 for r in rows if r["d"] >= SINAMA0 and not r["elo"])}
@@ -375,7 +380,10 @@ def main():
             R["aileler"]["K2"]["sinama"] = kapi_kupa(pair, f0, lambda r: (r["lh2"], r["la2"]), rho)
         log("K2", json.dumps(R["aileler"]["K2"], ensure_ascii=False)[:700])
     # ---------------- L1 (lig: piyasa + Elo farkı)
-    if time.time() - T0 < BUDGET:
+    if not kanon:
+        R["aileler"]["L1"] = {"ad": "Lig maçlarında piyasa olasılığına Club Elo farkı düzeltmesi",
+                              "atlandi": "Club Elo ile eşleşen lig takımı yok (elo_kaynagi=%s)" % elo.kaynak}
+    elif time.time() - T0 < BUDGET:
         Lr, S = lig_satirlari(dom, kanon, elo, P)
         d = np.array([m["d"] for m in Lr]); hs = np.array([m["ft"][0] for m in Lr]); as_ = np.array([m["ft"][1] for m in Lr])
         res = np.where(hs > as_, 0, np.where(hs == as_, 1, 2)); ov = (hs + as_) > 2
