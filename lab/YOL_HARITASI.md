@@ -199,7 +199,7 @@ drift alarmı ve kapanış kilidi (yolda). Aşağıdaki maddeler bunların **üz
 - **Efor:** M · **Risk:** orta (ESPN kapsamı ligden lige değişir; eksik istatistikte robot sessiz kalır) · **Veri:** ESPN herkese açık uç noktası, ücretsiz.
 - **Nasıl sınanır:** `fb_guc_lab.py espn` SK; ayrıca kapsam ≥ %60 olan liglerle sınırlı alt küme raporu.
 - **Kaynak:** Wheatcroft (2021) [doi:10.3233/JSA-200462](https://doi.org/10.3233/JSA-200462) · Mead, O'Hare, McMenemy (2023) PLoS ONE "Expected goals in football" [doi:10.1371/journal.pone.0282295](https://doi.org/10.1371/journal.pone.0282295)
-- **Durum:** bekliyor
+- **Durum:** ertelendi (2026-10-29; ön koşul sağlanmadı: YH-03 şut gücü kapıyı geçmedi — oranlı liglerde isabetli şut Poisson+Elo+pi üstüne bilgi eklemedi, n = 15.461). YH-03 haftalık gölge ölçümü A/Ü'de kapıyı geçerse yeniden `bekliyor` yapılır.
 
 ### YH-13 · arayüz · Şeffaf güvenilirlik paneli
 - **Açıklama:** Motor sayfasına kilitli kayıtlardan çizilen güvenilirlik eğrisi (söylenen % ↔ gerçekleşen %), son 30 / 90 gün, pazar seçimi; YH-01 ve YH-09 ölçütleri tek satırda. Yalnız ölçülmüş rakam; az örnekte kova gizlenir (n < 50).
@@ -219,7 +219,7 @@ drift alarmı ve kapanış kilidi (yolda). Aşağıdaki maddeler bunların **üz
 - **Efor:** M · **Risk:** orta (EuroLeague kutu skoru biçimi farklı) · **Veri:** ESPN / EuroLeague herkese açık, ücretsiz; yalnız türetilmiş takım değerleri saklanır.
 - **Nasıl sınanır:** `bk_gelistir.py`: toplam MAE ve alt/üst LL için gün kümeli bootstrap üst sınırı < 0, iki dilimde de.
 - **Kaynak:** Kubatko, Oliver, Pelton, Rosenbaum (2007) JQAS "A starting point for analyzing basketball statistics" [doi:10.2202/1559-0410.1070](https://doi.org/10.2202/1559-0410.1070)
-- **Durum:** bekliyor
+- **Durum:** sınamada (2026-10-29) — `lab/bk_tempo_lab.py` → `data/bk_tempo_lab.json`, `bk-tempo-lab.yml` (haftalık + elle). ESPN skor tablosu takım istatistiklerinden hücum sayısı (FGA − OREB + TOV + 0,44·FTA; yoksa FGA + 0,44·FTA), tempo ve 100 hücum verimi ayrı ridge; adaylar `tempo` ve `harman` (ağırlık yalnız önceki haftalardan). İstatistikler yalnız bellekte.
 
 ### YH-15 · at · Koşu belirsizliğine göre seçici gösterim (pas eşiği)
 - **Açıklama:** Futboldaki "%58 altı pas" kuralının at karşılığı: koşu düzeyinde entropi, alan büyüklüğü ve ilk iki olasılık farkından "güven sınıfı" üret; Altın ve öne çıkan seçimler yalnız geçmişte kalibre olduğu sınıflarda gösterilir. Eşik yürüyen pencerede seçilir.
