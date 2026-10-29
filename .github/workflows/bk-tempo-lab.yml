@@ -1,0 +1,39 @@
+name: OXXai basket tempo laboratuvari (YH-14)
+# Yalnız ölçüm: ESPN herkese açık skor tablosundaki takım istatistiklerinden hücum sayısı → tempo × verim toplam sayı modeli,
+# üretim ridge toplamına karşı zaman sıralı sınanır (lab/bk_tempo_lab.py). İstatistikler yalnız bellekte; yalnız
+# data/bk_tempo_lab.json (toplu metrik) yazılır; üretimi değiştirmez. Haftalık (çarşamba). Issue/mail/bildirim yok.
+on:
+  schedule:
+    - cron: "37 3 * * 3"
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: bk-tempo-lab
+  cancel-in-progress: false
+jobs:
+  lab:
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install numpy==2.1.3
+      - name: 🗃️ Ham veri önbelleği (bk_games — ESPN skorları; herkese açık release'e girmez, yalnız actions/cache)
+        uses: actions/cache/restore@v4
+        with:
+          path: data/bk_games.json
+          key: arsiv-bk-games-${{ github.run_id }}
+          restore-keys: arsiv-bk-games-
+      - name: 🗃️ Önbellek yoksa git yedeği
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 lab/adim.py arsiv-indir --onem bilgi -- python3 lab/arsiv.py indir data/bk_games.json
+      - name: Tempo modeli deneyi
+        run: python3 lab/adim.py bk-tempo-lab --onem bilgi -- timeout 2700 python lab/bk_tempo_lab.py
+      - name: Sonuç (günlük)
+        run: cat data/bk_tempo_lab.json || true
+      - name: Yalnız türetilmiş çıktıyı kaydet (yalnız main)
+        if: github.ref == 'refs/heads/main'
+        run: python3 lab/gonder.py -m "Basket tempo laboratuvarı $(date -u +%F) [skip ci]" data/bk_tempo_lab.json data/saglik
