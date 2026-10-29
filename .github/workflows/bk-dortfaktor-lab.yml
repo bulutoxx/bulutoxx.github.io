@@ -6,9 +6,6 @@ on:
   schedule:
     - cron: "47 4 * * 4"
   workflow_dispatch:
-  push:
-    branches: [yh27-dortfaktor]
-    paths: [lab/bk_dortfaktor_lab.py, .github/workflows/bk-dortfaktor-lab.yml]
 permissions:
   contents: write
 concurrency:
