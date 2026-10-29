@@ -4,8 +4,8 @@
    [
     0.5,
     0.55,
-    3339,
-    0.5169,
+    3338,
+    0.5171,
     0.525
    ],
    [
@@ -45,16 +45,16 @@
    ]
   ],
   "min_odd": 1.15,
-  "n": 9545,
-  "hit": 0.5868,
+  "n": 9544,
+  "hit": 0.5869,
   "dogrulama": {
    "sezon": 2026,
    "ogrenme": [
     [
      0.5,
      0.55,
-     2620,
-     0.5153,
+     2619,
+     0.5155,
      0.525
     ],
     [
@@ -144,49 +144,49 @@
  },
  "live": {
   "all": {
-   "n": 521,
-   "r1x2": 0.547,
-   "logloss": 0.9735,
-   "ou25": 0.5739,
-   "ft_exact": 0.1267,
-   "market_r1x2": 0.5316,
-   "market_logloss": 0.9773,
-   "market_n": 348
+   "n": 576,
+   "r1x2": 0.5399,
+   "logloss": 0.9776,
+   "ou25": 0.5781,
+   "ft_exact": 0.125,
+   "market_r1x2": 0.5227,
+   "market_logloss": 0.9854,
+   "market_n": 396
   },
   "d30": {
-   "n": 521,
-   "r1x2": 0.547,
-   "logloss": 0.9735,
-   "ou25": 0.5739,
-   "ft_exact": 0.1267,
-   "market_r1x2": 0.5316,
-   "market_logloss": 0.9773,
-   "market_n": 348
+   "n": 576,
+   "r1x2": 0.5399,
+   "logloss": 0.9776,
+   "ou25": 0.5781,
+   "ft_exact": 0.125,
+   "market_r1x2": 0.5227,
+   "market_logloss": 0.9854,
+   "market_n": 396
   },
-  "pending": 603,
+  "pending": 620,
   "kilit": {
    "acilis": {
-    "n": 521,
+    "n": 576,
     "model": {
-     "ll": 0.9735,
-     "brier": 0.5783,
-     "beraberlik": 0.2537
+     "ll": 0.9776,
+     "brier": 0.5807,
+     "beraberlik": 0.2549
     },
-    "beraberlik_gercek": 0.2265,
+    "beraberlik_gercek": 0.2378,
     "oranli": {
-     "n": 348,
+     "n": 396,
      "model": {
-      "ll": 0.986,
-      "brier": 0.5867,
-      "beraberlik": 0.2528
+      "ll": 0.991,
+      "brier": 0.5895,
+      "beraberlik": 0.2547
      },
      "piyasa": {
-      "ll": 0.9773,
-      "brier": 0.5798,
-      "beraberlik": 0.2464
+      "ll": 0.9854,
+      "brier": 0.5848,
+      "beraberlik": 0.2459
      },
-     "beraberlik_gercek": 0.2328,
-     "fark_ll": 0.0087
+     "beraberlik_gercek": 0.2475,
+     "fark_ll": 0.0056
     },
     "oranli_sunulan": {
      "n": 0
@@ -196,87 +196,140 @@
     }
    },
    "kapanis": {
-    "n": 0,
+    "n": 52,
+    "model": {
+     "ll": 0.9866,
+     "brier": 0.5807,
+     "beraberlik": 0.2719
+    },
+    "acilis_model": {
+     "ll": 0.9877,
+     "brier": 0.5803,
+     "beraberlik": 0.2682
+    },
+    "beraberlik_gercek": 0.3077,
     "oranli": {
-     "n": 0
+     "n": 50,
+     "model": {
+      "ll": 0.9837,
+      "brier": 0.5783,
+      "beraberlik": 0.2731
+     },
+     "piyasa": {
+      "ll": 0.9923,
+      "brier": 0.5839,
+      "beraberlik": 0.2454
+     },
+     "acilis_model": {
+      "ll": 0.9794,
+      "brier": 0.5743,
+      "beraberlik": 0.2687
+     },
+     "beraberlik_gercek": 0.32,
+     "fark_ll": -0.0086
     },
     "oranli_sunulan": {
-     "n": 0
+     "n": 50,
+     "model": {
+      "ll": 0.9837,
+      "brier": 0.5783,
+      "beraberlik": 0.2731
+     },
+     "piyasa": {
+      "ll": 0.9923,
+      "brier": 0.5839,
+      "beraberlik": 0.2454
+     },
+     "sunulan": {
+      "ll": 0.994,
+      "brier": 0.5832,
+      "beraberlik": 0.2415
+     },
+     "beraberlik_gercek": 0.32,
+     "fark_ll": -0.0086
     },
     "ou": {
-     "n": 0
+     "n": 49,
+     "model_ll": 0.6755,
+     "piyasa_ll": 0.6821,
+     "model_brier": 0.2411,
+     "piyasa_brier": 0.2445
     }
    },
-   "kapsam": 0.0,
+   "kapsam": 0.0903,
    "acilis_kilit_saat": {
     "ortanca": 33.6,
     "p90": 57.6,
-    "n": 203
+    "n": 258
+   },
+   "kapanis_kilit_dk": {
+    "ortanca": 59,
+    "n": 52
    },
    "aciklama": "acilis = maçtan önceki ilk kilit (p, mp, ps); kapanis = maça ≤75 dk kala bir kez yazılan ikinci kilit (pc, mpc, psc). model = motorun model yolu, piyasa = oran payı, sunulan = uygulamanın oranlı maçta gösterdiği. fark_ll = model − piyasa."
   }
  },
  "cup": {
-  "mu": 1.179,
+  "mu": 1.18,
   "gamma": 1.349,
   "n": 675,
   "strength": {
-   "dk": -0.37,
-   "br2": -0.5,
-   "sc": -0.797,
-   "br": -0.5,
-   "gr": -0.536,
-   "ven": -0.5,
-   "crc": -0.5,
-   "per": -0.5,
-   "rsa": -0.5,
-   "en": 0.233,
-   "gua": -0.5,
-   "hon": -0.5,
-   "es": -0.03,
-   "sc3": -0.5,
-   "slv": -0.5,
-   "en2": -0.35,
-   "bol": -0.5,
-   "cn": -0.5,
-   "en3": -0.5,
-   "en5": -0.5,
-   "fi": -0.848,
-   "mx2": -0.5,
-   "ar2": -0.5,
-   "ksa": -0.5,
-   "nl2": -0.5,
-   "en4": -0.5,
-   "ch": -0.334,
-   "at": -0.679,
-   "pt": -0.288,
-   "es2": -0.5,
-   "ecu": -0.5,
-   "uru": -0.5,
-   "tr1": -0.306,
-   "col": -0.5,
-   "pl": -0.595,
-   "nl": -0.462,
    "de": -0.069,
-   "fr2": -0.6,
-   "ar": -0.5,
-   "ie": -0.957,
-   "be": -0.325,
-   "no": -0.453,
-   "fr": -0.126,
-   "usl": -0.5,
-   "ro": -0.753,
-   "par": -0.5,
-   "chi": -0.5,
-   "us": -0.5,
-   "sc2": -0.75,
-   "it": -0.157,
    "de2": -0.45,
-   "jp": -0.5,
+   "uru": -0.5,
    "mx": -0.5,
-   "sc4": -0.5,
-   "se": -0.719,
+   "par": -0.5,
+   "ar": -0.5,
+   "chi": -0.5,
+   "tr1": -0.306,
+   "ar2": -0.5,
+   "gua": -0.5,
+   "sc": -0.797,
+   "be": -0.325,
+   "crc": -0.5,
+   "ksa": -0.5,
+   "ch": -0.334,
+   "bol": -0.5,
+   "fr2": -0.6,
+   "sc2": -0.75,
+   "gr": -0.536,
    "it2": -0.55,
+   "en4": -0.5,
+   "br": -0.5,
+   "ven": -0.5,
+   "sc3": -0.5,
+   "en3": -0.5,
+   "slv": -0.5,
+   "se": -0.719,
+   "br2": -0.5,
+   "cn": -0.5,
+   "en": 0.233,
+   "jp": -0.5,
+   "nl": -0.462,
+   "en2": -0.35,
+   "ecu": -0.5,
+   "mx2": -0.5,
+   "pt": -0.287,
+   "no": -0.453,
+   "at": -0.679,
+   "es": -0.03,
+   "hon": -0.5,
+   "per": -0.5,
+   "it": -0.157,
+   "en5": -0.5,
+   "nl2": -0.5,
+   "dk": -0.369,
+   "fi": -0.848,
+   "fr": -0.126,
+   "rsa": -0.5,
+   "col": -0.5,
+   "usl": -0.5,
+   "es2": -0.5,
+   "ie": -0.957,
+   "us": -0.5,
+   "ro": -0.753,
+   "pl": -0.595,
+   "sc4": -0.5,
    "ru": -0.4
   },
   "unknown": -0.5,
@@ -292,7 +345,7 @@
     null
    ],
    "AZ Alkmaar": [
-    0.773,
+    0.772,
     1.228,
     "nl"
    ],
@@ -307,7 +360,7 @@
     "sc"
    ],
    "Ajax": [
-    0.905,
+    0.904,
     1.197,
     "nl"
    ],
@@ -322,8 +375,8 @@
     null
    ],
    "Arsenal": [
-    1.728,
-    0.466,
+    1.727,
+    0.467,
     "en"
    ],
    "Aston Villa": [
@@ -338,31 +391,31 @@
    ],
    "Athletic Club": [
     0.797,
-    1.06,
+    1.061,
     null
    ],
    "Atlético Madrid": [
     1.313,
-    0.782,
+    0.783,
     "es"
    ],
    "Barcelona": [
-    2.171,
+    2.169,
     0.776,
     "es"
    ],
    "Basel": [
     0.685,
-    1.399,
+    1.4,
     "ch"
    ],
    "Bayer Leverkusen": [
     1.166,
-    0.922,
+    0.923,
     "de"
    ],
    "Bayern München": [
-    1.909,
+    1.908,
     0.703,
     "de"
    ],
@@ -377,7 +430,7 @@
     "tr1"
    ],
    "Bodo/Glimt": [
-    1.062,
+    1.061,
     1.097,
     "no"
    ],
@@ -393,11 +446,11 @@
    ],
    "Borussia Dortmund": [
     1.134,
-    0.785,
+    0.786,
     "de"
    ],
    "Bournemouth": [
-    1.357,
+    1.356,
     0.798,
     "en"
    ],
@@ -422,23 +475,23 @@
     null
    ],
    "Celta Vigo": [
-    0.864,
+    0.863,
     0.93,
     "es"
    ],
    "Celtic": [
     0.732,
-    1.562,
+    1.563,
     "sc"
    ],
    "Chelsea": [
-    1.695,
+    1.694,
     0.738,
     "en"
    ],
    "Club Brugge": [
-    1.181,
-    1.006,
+    1.18,
+    1.007,
     "be"
    ],
    "Como": [
@@ -467,7 +520,7 @@
     null
    ],
    "Egnatia": [
-    0.635,
+    0.634,
     0.983,
     null
    ],
@@ -478,7 +531,7 @@
    ],
    "FC Copenhagen": [
     0.896,
-    1.037,
+    1.038,
     "dk"
    ],
    "FC Noah": [
@@ -492,12 +545,12 @@
     "ro"
    ],
    "FK Qarabag": [
-    1.175,
+    1.174,
     1.767,
     null
    ],
    "Fenerbahçe": [
-    1.139,
+    1.138,
     0.958,
     "tr1"
    ],
@@ -522,7 +575,7 @@
     "tr1"
    ],
    "Genk": [
-    0.86,
+    0.859,
     1.22,
     "be"
    ],
@@ -533,7 +586,7 @@
    ],
    "Getafe": [
     0.618,
-    0.994,
+    0.995,
     "es"
    ],
    "Go Ahead Eagles": [
@@ -588,7 +641,7 @@
    ],
    "Jablonec": [
     1.048,
-    1.387,
+    1.388,
     null
    ],
    "Jagiellonia": [
@@ -607,7 +660,7 @@
     null
    ],
    "Kairat Almaty": [
-    0.684,
+    0.683,
     1.765,
     null
    ],
@@ -628,12 +681,12 @@
    ],
    "Lausanne": [
     0.545,
-    1.415,
+    1.416,
     "ch"
    ],
    "Lech Poznan": [
     0.819,
-    1.536,
+    1.537,
     "pl"
    ],
    "Legia": [
@@ -667,7 +720,7 @@
     null
    ],
    "Liverpool": [
-    1.611,
+    1.61,
     0.67,
     "en"
    ],
@@ -678,7 +731,7 @@
    ],
    "Lugano": [
     0.865,
-    1.089,
+    1.09,
     "ch"
    ],
    "Lyon": [
@@ -688,7 +741,7 @@
    ],
    "Maccabi Tel-Aviv": [
     0.208,
-    2.048,
+    2.049,
     null
    ],
    "Mainz 05": [
@@ -702,12 +755,12 @@
     "se"
    ],
    "Manchester City": [
-    1.882,
+    1.881,
     0.614,
     "en"
    ],
    "Manchester United": [
-    1.48,
+    1.479,
     0.776,
     "en"
    ],
@@ -718,11 +771,11 @@
    ],
    "Midtjylland": [
     0.9,
-    1.138,
+    1.139,
     "dk"
    ],
    "Milan": [
-    1.107,
+    1.106,
     0.875,
     "it"
    ],
@@ -733,7 +786,7 @@
    ],
    "Monaco": [
     1.049,
-    0.969,
+    0.97,
     "fr"
    ],
    "NK Celje": [
@@ -742,7 +795,7 @@
     null
    ],
    "Napoli": [
-    1.041,
+    1.04,
     0.929,
     "it"
    ],
@@ -762,7 +815,7 @@
     "nl"
    ],
    "Nordsjaelland": [
-    0.837,
+    0.836,
     1.246,
     "dk"
    ],
@@ -778,7 +831,7 @@
    ],
    "Olympiakos": [
     0.911,
-    0.91,
+    0.911,
     "gr"
    ],
    "Omonia Nicosia": [
@@ -787,13 +840,13 @@
     null
    ],
    "PAOK": [
-    0.844,
+    0.843,
     1.372,
     "gr"
    ],
    "PSV Eindhoven": [
-    1.023,
-    1.188,
+    1.022,
+    1.189,
     "nl"
    ],
    "Pafos": [
@@ -807,22 +860,22 @@
     "gr"
    ],
    "Paris Saint-Germain": [
-    1.569,
-    0.723,
+    1.568,
+    0.724,
     "fr"
    ],
    "Porto": [
     1.204,
-    0.76,
+    0.761,
     "pt"
    ],
    "RB Leipzig": [
-    1.211,
+    1.21,
     0.981,
     "de"
    ],
    "Raków Czestochowa": [
-    0.76,
+    0.759,
     0.837,
     null
    ],
@@ -842,12 +895,12 @@
     "es"
    ],
    "Real Madrid": [
-    1.797,
+    1.796,
     0.744,
     "es"
    ],
    "Real Sociedad": [
-    1.138,
+    1.137,
     1.079,
     "es"
    ],
@@ -857,12 +910,12 @@
     null
    ],
    "Rennes": [
-    1.106,
+    1.105,
     1.104,
     "fr"
    ],
    "Riga FC": [
-    0.536,
+    0.535,
     1.149,
     null
    ],
@@ -873,22 +926,22 @@
    ],
    "Roma": [
     1.22,
-    0.862,
+    0.863,
     "it"
    ],
    "SC Freiburg": [
-    0.966,
+    0.965,
     0.994,
     "de"
    ],
    "SK Rapid": [
     0.709,
-    1.574,
+    1.575,
     "at"
    ],
    "Sabah FK": [
     0.674,
-    1.366,
+    1.367,
     null
    ],
    "Salzburg": [
@@ -897,7 +950,7 @@
     "at"
    ],
    "Samsunspor": [
-    0.659,
+    0.66,
     1.507,
     "tr1"
    ],
@@ -908,7 +961,7 @@
    ],
    "Shamrock Rovers": [
     0.464,
-    2.031,
+    2.032,
     "ie"
    ],
    "Shelbourne": [
@@ -928,7 +981,7 @@
    ],
    "Slovan Bratislava": [
     0.401,
-    1.99,
+    1.991,
     null
    ],
    "Sp Braga": [
@@ -937,7 +990,7 @@
     "pt"
    ],
    "Sp Lisbon": [
-    1.287,
+    1.286,
     0.974,
     "pt"
    ],
@@ -947,7 +1000,7 @@
     null
    ],
    "St Truiden": [
-    0.797,
+    0.796,
     1.385,
     "be"
    ],
@@ -962,7 +1015,7 @@
     "fr"
    ],
    "Sturm Graz": [
-    0.615,
+    0.614,
     1.776,
     "at"
    ],
@@ -982,8 +1035,8 @@
     null
    ],
    "Tottenham": [
-    1.295,
-    0.754,
+    1.294,
+    0.755,
     "en"
    ],
    "Trabzonspor": [
@@ -993,12 +1046,12 @@
    ],
    "Twente": [
     0.835,
-    1.166,
+    1.167,
     "nl"
    ],
    "Univ. Craiova": [
     0.726,
-    1.379,
+    1.38,
     "ro"
    ],
    "Utrecht": [
@@ -1038,13 +1091,13 @@
    ]
   }
  },
- "updated": "2026-10-29 02:47",
- "tuned": "2026-10-29 02:47",
- "fp": "2a0dd781b9a89c52",
+ "updated": "2026-10-29 04:09",
+ "tuned": "2026-10-29 04:09",
+ "fp": "b4590e156da66c8c",
  "engine": "2026-10-25.ml80",
  "data_v": 3,
- "checks": 218,
- "trainings": 71,
+ "checks": 219,
+ "trainings": 72,
  "tuned_n": 13050,
  "params": {
   "decay": 0.018,
@@ -1077,7 +1130,7 @@
   "brier": 0.6051,
   "r1x2": 0.5014,
   "ou25": 0.5705,
-  "btts": 0.5614,
+  "btts": 0.5612,
   "ft_exact": 0.1293,
   "nh": 8229,
   "ht_exact": 0.2912,
@@ -1102,13 +1155,13 @@
   "score_test": {
    "mod": {
     "exact": 0.1293,
-    "res": 0.3477,
-    "ou": 0.4834,
+    "res": 0.3476,
+    "ou": 0.4833,
     "distinct": 12,
     "top": [
      [
       "1-1",
-      10462
+      10463
      ],
      [
       "2-0",
@@ -1129,7 +1182,7 @@
     ]
    },
    "tutarli": {
-    "exact": 0.1137,
+    "exact": 0.1136,
     "res": 0.5014,
     "ou": 0.5705,
     "distinct": 13,
@@ -1144,21 +1197,21 @@
      ],
      [
       "1-2",
-      1964
+      1966
      ],
      [
       "0-1",
-      1789
+      1788
      ],
      [
       "3-0",
-      334
+      333
      ]
     ]
    },
    "secilen": "tutarli"
   },
-  "ft_exact_c": 0.1137,
+  "ft_exact_c": 0.1136,
   "by_league": {
    "tr1": {
     "n": 327,
@@ -1202,7 +1255,7 @@
    },
    "sc": {
     "n": 230,
-    "r1x2": 0.5478
+    "r1x2": 0.5435
    },
    "en2": {
     "n": 632,
@@ -1302,7 +1355,7 @@
    },
    "se": {
     "n": 242,
-    "r1x2": 0.5
+    "r1x2": 0.5041
    },
    "ch": {
     "n": 231,
@@ -1337,13 +1390,13 @@
     "dk": 1.14,
     "kabul": true,
     "yol": "sunulan",
-    "w_oranli": 0.547,
+    "w_oranli": 0.542,
     "ayrim": "2026-05-15",
-    "n_piyasa": 64738,
-    "n_derin": 51688,
+    "n_piyasa": 64746,
+    "n_derin": 51696,
     "son30": {
      "kimlik": {
-      "amac": 1.33956,
+      "amac": 1.33962,
       "piyasa_ll_1x2": 0.99954,
       "piyasa_ll_ou": 0.66791,
       "model_ll_1x2": 1.01114,
@@ -1356,7 +1409,7 @@
       "altin_hit": 0.7586
      },
      "aday": {
-      "amac": 1.33898,
+      "amac": 1.33905,
       "piyasa_ll_1x2": 0.99864,
       "piyasa_ll_ou": 0.66791,
       "model_ll_1x2": 1.01132,
@@ -1369,7 +1422,7 @@
       "altin_hit": 0.7579
      },
      "eski_model_yolu": {
-      "amac": 1.33979,
+      "amac": 1.33985,
       "piyasa_ll_1x2": 1.00051,
       "piyasa_ll_ou": 0.66844,
       "model_ll_1x2": 1.01098,
@@ -1396,39 +1449,39 @@
      ],
      "kat_sayisi": 5,
      "kazanilan_kat": 5,
-     "n_sinama": 51166,
+     "n_sinama": 51174,
      "aday": {
-      "n": 51166,
+      "n": 51174,
       "oneri_brier": 0.23468,
-      "oneri_ll": 0.66108,
-      "n70": 4758,
-      "hit70": 0.781,
+      "oneri_ll": 0.66109,
+      "n70": 4759,
+      "hit70": 0.7808,
       "altin_n": 1177,
       "altin_hit": 0.8173,
       "piyasa_amac": 1.33831
      },
      "mevcut_sonuc": {
-      "n": 51166,
+      "n": 51174,
       "oneri_brier": 0.23522,
       "oneri_ll": 0.66228,
-      "n70": 6143,
-      "hit70": 0.7553,
+      "n70": 6144,
+      "hit70": 0.7552,
       "altin_n": 1518,
       "altin_hit": 0.8103,
-      "piyasa_amac": 1.34028
+      "piyasa_amac": 1.34027
      },
      "fark_ci95": {
       "altin_hit": [
-       -0.00368,
-       0.01742
+       -0.0029,
+       0.01975
       ],
       "hit70": [
-       0.01925,
-       0.03139
+       0.01904,
+       0.03194
       ],
       "oneri_brier": [
-       -0.00082,
-       -0.00027
+       -0.00085,
+       -0.00028
       ]
      },
      "katlar": [
@@ -1472,10 +1525,10 @@
         1.0,
         1.14
        ],
-       "n": 10149,
-       "piyasa_amac": 1.3432,
-       "piyasa_amac_mevcut": 1.34549,
-       "model_amac": 1.35063,
+       "n": 10157,
+       "piyasa_amac": 1.34317,
+       "piyasa_amac_mevcut": 1.34546,
+       "model_amac": 1.35062,
        "model_amac_mevcut": 1.35083
       },
       {
@@ -1498,15 +1551,15 @@
    },
    "kilitli": {
     "kabul": false,
-    "neden": "geçemedi: arşiv 5 gün (< 14), Δ amaç güven aralığı sıfırı dışlamıyor, iki zaman yarısı aynı yönde değil, Brier kötüleşiyor",
+    "neden": "geçemedi: arşiv 6 gün (< 14), Δ amaç güven aralığı sıfırı dışlamıyor, iki zaman yarısı aynı yönde değil, Brier kötüleşiyor",
     "yol": "kilitli",
     "devig": "power",
-    "n": 1657,
-    "n_sinama": 995,
-    "gun": 5,
-    "gun_sinama": 4,
+    "n": 1659,
+    "n_sinama": 996,
+    "gun": 6,
+    "gun_sinama": 5,
     "ilk": "2026-10-24",
-    "son": "2026-10-28",
+    "son": "2026-10-29",
     "mevcut": [
      1.05,
      1.02,
@@ -1522,110 +1575,110 @@
     "dk": 1.08,
     "katlar": [
      {
-      "egitim_n": 662,
-      "sinama_n": 248,
-      "secilen": [
-       0.84,
-       0.98,
-       1.24
-      ],
-      "fark": -0.00889
-     },
-     {
-      "egitim_n": 910,
+      "egitim_n": 663,
       "sinama_n": 249,
       "secilen": [
        0.84,
        0.98,
        1.24
       ],
-      "fark": 0.01651
+      "fark": -0.00944
      },
      {
-      "egitim_n": 1159,
+      "egitim_n": 912,
+      "sinama_n": 249,
+      "secilen": [
+       0.84,
+       0.98,
+       1.24
+      ],
+      "fark": 0.0177
+     },
+     {
+      "egitim_n": 1161,
       "sinama_n": 249,
       "secilen": [
        0.88,
        1.0,
        1.2
       ],
-      "fark": 0.00793
+      "fark": 0.00652
      },
      {
-      "egitim_n": 1408,
+      "egitim_n": 1410,
       "sinama_n": 249,
       "secilen": [
        0.91,
        1.0,
        1.14
       ],
-      "fark": -0.00772
+      "fark": -0.00644
      }
     ],
     "fark": {
-     "amac": 0.00197,
+     "amac": 0.00209,
      "amac_ci95": [
-      -0.005,
-      0.01624
+      -0.00489,
+      0.01815
      ],
      "amac_ci95_lig_gun": [
-      -0.00592,
-      0.00921
+      -0.00537,
+      0.00907
      ],
-     "yari1": 0.00384,
-     "yari2": 0.00011,
-     "brier_1x2": 0.00229,
+     "yari1": 0.00413,
+     "yari2": 4e-05,
+     "brier_1x2": 0.00237,
      "brier_1x2_ci95": [
-      -0.00121,
-      0.01172
+      -0.00117,
+      0.01329
      ],
-     "oneri_brier": 0.00316,
+     "oneri_brier": 0.0032,
      "oneri_brier_ci95": [
-      -0.0018,
-      0.01239
+      -0.00211,
+      0.01175
      ]
     },
     "once": {
-     "n": 995,
-     "amac": 1.22799,
-     "ll_1x2": 0.96736,
-     "ll_ou": 0.67096,
-     "brier_1x2": 0.57271,
-     "beraberlik_tahmin": 0.2351,
-     "beraberlik_gercek": 0.2302,
-     "oneri_ort": 0.6243,
-     "oneri_gercek": 0.6191,
-     "oneri_brier": 0.22938,
-     "oneri_ll": 0.65055,
+     "n": 996,
+     "amac": 1.22656,
+     "ll_1x2": 0.96601,
+     "ll_ou": 0.67054,
+     "brier_1x2": 0.57177,
+     "beraberlik_tahmin": 0.235,
+     "beraberlik_gercek": 0.2299,
+     "oneri_ort": 0.6245,
+     "oneri_gercek": 0.6205,
+     "oneri_brier": 0.22903,
+     "oneri_ll": 0.6498,
      "bantlar": [
       {
        "bant": "0.50-0.60",
-       "n": 383,
+       "n": 382,
        "tahmin": 0.5519,
-       "gercek": 0.5718,
+       "gercek": 0.5733,
        "ci95": [
-        0.522,
-        0.62
+        0.523,
+        0.622
        ]
       },
       {
        "bant": "0.60-0.70",
-       "n": 290,
-       "tahmin": 0.6413,
-       "gercek": 0.6345,
+       "n": 291,
+       "tahmin": 0.6412,
+       "gercek": 0.6357,
        "ci95": [
-        0.578,
-        0.688
+        0.579,
+        0.689
        ]
       },
       {
        "bant": "0.70-0.78",
-       "n": 126,
-       "tahmin": 0.7332,
-       "gercek": 0.6587,
+       "n": 127,
+       "tahmin": 0.7336,
+       "gercek": 0.6614,
        "ci95": [
-        0.572,
-        0.736
+        0.575,
+        0.738
        ]
       },
       {
@@ -1670,26 +1723,26 @@
      }
     },
     "sonra": {
-     "n": 995,
-     "amac": 1.22996,
-     "ll_1x2": 0.96944,
-     "ll_ou": 0.67068,
-     "brier_1x2": 0.57501,
-     "beraberlik_tahmin": 0.2723,
-     "beraberlik_gercek": 0.2302,
-     "oneri_ort": 0.5964,
-     "oneri_gercek": 0.6121,
-     "oneri_brier": 0.23255,
-     "oneri_ll": 0.65653,
+     "n": 996,
+     "amac": 1.22864,
+     "ll_1x2": 0.9682,
+     "ll_ou": 0.67029,
+     "brier_1x2": 0.57413,
+     "beraberlik_tahmin": 0.2722,
+     "beraberlik_gercek": 0.2299,
+     "oneri_ort": 0.5965,
+     "oneri_gercek": 0.6135,
+     "oneri_brier": 0.23223,
+     "oneri_ll": 0.65587,
      "bantlar": [
       {
        "bant": "0.50-0.60",
        "n": 449,
        "tahmin": 0.5517,
-       "gercek": 0.5791,
+       "gercek": 0.5813,
        "ci95": [
-        0.533,
-        0.624
+        0.535,
+        0.626
        ]
       },
       {
@@ -1704,12 +1757,12 @@
       },
       {
        "bant": "0.70-0.78",
-       "n": 89,
-       "tahmin": 0.7333,
-       "gercek": 0.7191,
+       "n": 90,
+       "tahmin": 0.7332,
+       "gercek": 0.7222,
        "ci95": [
-        0.618,
-        0.802
+        0.622,
+        0.804
        ]
       },
       {
@@ -1754,17 +1807,17 @@
      }
     },
     "mevcut_tum_arsiv": {
-     "n": 1657,
-     "amac": 1.25825,
-     "ll_1x2": 0.98985,
-     "ll_ou": 0.68003,
-     "brier_1x2": 0.58998,
+     "n": 1659,
+     "amac": 1.25758,
+     "ll_1x2": 0.98914,
+     "ll_ou": 0.6799,
+     "brier_1x2": 0.58948,
      "beraberlik_tahmin": 0.2375,
-     "beraberlik_gercek": 0.2529,
-     "oneri_ort": 0.6211,
-     "oneri_gercek": 0.6053,
-     "oneri_brier": 0.23267,
-     "oneri_ll": 0.65822,
+     "beraberlik_gercek": 0.2526,
+     "oneri_ort": 0.6212,
+     "oneri_gercek": 0.6058,
+     "oneri_brier": 0.23251,
+     "oneri_ll": 0.65788,
      "bantlar": [
       {
        "bant": "0.50-0.60",
@@ -1778,22 +1831,22 @@
       },
       {
        "bant": "0.60-0.70",
-       "n": 496,
-       "tahmin": 0.6405,
-       "gercek": 0.6169,
+       "n": 497,
+       "tahmin": 0.6404,
+       "gercek": 0.6177,
        "ci95": [
-        0.573,
+        0.574,
         0.659
        ]
       },
       {
        "bant": "0.70-0.78",
-       "n": 211,
-       "tahmin": 0.7346,
-       "gercek": 0.6825,
+       "n": 212,
+       "tahmin": 0.7348,
+       "gercek": 0.684,
        "ci95": [
-        0.617,
-        0.742
+        0.619,
+        0.743
        ]
       },
       {
@@ -1966,19 +2019,19 @@
   },
   "uzun_vade": {
    "mevcut": {
-    "n": 16008,
-    "kapsam": 0.931,
-    "r1x2": 0.4779,
-    "logloss": 1.0387,
-    "ou25": 0.5564,
+    "n": 15997,
+    "kapsam": 0.93,
+    "r1x2": 0.4773,
+    "logloss": 1.0388,
+    "ou25": 0.556,
     "decay": 0.018
    },
    "decay_0.01": {
-    "n": 16008,
-    "kapsam": 0.931,
-    "r1x2": 0.4818,
-    "logloss": 1.0338,
-    "ou25": 0.556,
+    "n": 15997,
+    "kapsam": 0.93,
+    "r1x2": 0.4812,
+    "logloss": 1.034,
+    "ou25": 0.5563,
     "decay": 0.01
    },
    "uzun_vade_decay": 0.01
@@ -2036,21 +2089,21 @@
   "fr2-2627": 90,
   "ar": 673,
   "at": 246,
-  "br": 533,
+  "br": 532,
   "cn": 320,
   "dk": 246,
-  "fi": 241,
+  "fi": 239,
   "ie": 225,
   "jp": 260,
   "mx": 434,
   "no": 298,
   "pl": 387,
-  "ro": 395,
-  "ru": 233,
-  "se": 297,
+  "ro": 393,
+  "ru": 232,
+  "se": 296,
   "ch": 282,
   "us": 642,
-  "col": "47 yeni, 2 istek",
+  "col": "48 yeni, 2 istek",
   "mx2": "33 yeni, 2 istek",
   "nwsl": "24 yeni, 2 istek",
   "chi": "16 yeni, 2 istek",
@@ -2069,7 +2122,7 @@
   "usl": "50 yeni, 2 istek",
   "hon": "18 yeni, 2 istek",
   "crc": "20 yeni, 2 istek",
-  "gua": "31 yeni, 2 istek",
+  "gua": "32 yeni, 2 istek",
   "slv": "28 yeni, 2 istek",
   "ind": "18 yeni, 2 istek",
   "rsa": "8 yeni, 2 istek",
@@ -2157,7 +2210,7 @@
    "name": "İskoçya Premiership",
    "asOf": "2026-10-25",
    "n": 60,
-   "n_all": 283,
+   "n_all": 282,
    "avg": 2.82
   },
   "en2": {
@@ -2255,7 +2308,7 @@
    "name": "Brezilya Serie A",
    "asOf": "2026-10-26",
    "n": 319,
-   "n_all": 533,
+   "n_all": 532,
    "avg": 2.66
   },
   "cn": {
@@ -2276,7 +2329,7 @@
    "name": "Finlandiya Veikkausliiga",
    "asOf": "2026-10-25",
    "n": 170,
-   "n_all": 241,
+   "n_all": 239,
    "avg": 2.53
   },
   "ie": {
@@ -2318,21 +2371,21 @@
    "name": "Romanya Liga 1",
    "asOf": "2026-10-26",
    "n": 104,
-   "n_all": 395,
+   "n_all": 393,
    "avg": 2.74
   },
   "ru": {
    "name": "Rusya Premier Lig",
    "asOf": "2026-08-02",
    "n": 16,
-   "n_all": 233,
+   "n_all": 232,
    "avg": 3.19
   },
   "se": {
    "name": "İsveç Allsvenskan",
    "asOf": "2026-10-25",
    "n": 200,
-   "n_all": 297,
+   "n_all": 296,
    "avg": 2.92
   },
   "ch": {
@@ -2352,15 +2405,15 @@
   "col": {
    "name": "Kolombiya Primera A",
    "asOf": "2026-10-28",
-   "n": 359,
-   "n_all": 543,
+   "n": 360,
+   "n_all": 542,
    "avg": 2.52
   },
   "mx2": {
    "name": "Meksika Expansion MX",
    "asOf": "2026-10-25",
    "n": 112,
-   "n_all": 346,
+   "n_all": 345,
    "avg": 3.28
   },
   "nwsl": {
@@ -2374,21 +2427,21 @@
    "name": "Şili Primera División",
    "asOf": "2026-10-26",
    "n": 199,
-   "n_all": 297,
+   "n_all": 296,
    "avg": 2.88
   },
   "per": {
    "name": "Peru Liga 1",
    "asOf": "2026-10-28",
    "n": 274,
-   "n_all": 408,
+   "n_all": 406,
    "avg": 2.81
   },
   "ecu": {
    "name": "Ekvador LigaPro",
    "asOf": "2026-10-26",
    "n": 271,
-   "n_all": 401,
+   "n_all": 400,
    "avg": 2.32
   },
   "uru": {
@@ -2402,35 +2455,35 @@
    "name": "Paraguay Primera",
    "asOf": "2026-10-25",
    "n": 228,
-   "n_all": 327,
+   "n_all": 325,
    "avg": 2.44
   },
   "ven": {
    "name": "Venezuela Primera",
    "asOf": "2026-10-27",
    "n": 212,
-   "n_all": 295,
+   "n_all": 294,
    "avg": 2.57
   },
   "bol": {
    "name": "Bolivya Primera",
    "asOf": "2026-10-27",
    "n": 184,
-   "n_all": 302,
+   "n_all": 300,
    "avg": 3.03
   },
   "ar2": {
    "name": "Arjantin Primera Nacional",
    "asOf": "2026-10-26",
    "n": 629,
-   "n_all": 818,
+   "n_all": 817,
    "avg": 1.96
   },
   "br2": {
    "name": "Brezilya Serie B",
    "asOf": "2026-10-27",
    "n": 350,
-   "n_all": 532,
+   "n_all": 531,
    "avg": 2.33
   },
   "ksa": {
@@ -2472,20 +2525,20 @@
    "name": "Honduras Liga Nacional",
    "asOf": "2026-10-25",
    "n": 66,
-   "n_all": 300,
+   "n_all": 299,
    "avg": 2.61
   },
   "crc": {
    "name": "Kosta Rika Primera",
    "asOf": "2026-10-26",
    "n": 65,
-   "n_all": 248,
+   "n_all": 247,
    "avg": 2.77
   },
   "gua": {
    "name": "Guatemala Liga Nacional",
-   "asOf": "2026-10-25",
-   "n": 96,
+   "asOf": "2026-10-28",
+   "n": 97,
    "n_all": 371,
    "avg": 2.77
   },
@@ -2568,13 +2621,13 @@
   }
  },
  "veritabani": {
-  "sezon_maci": 25301,
+  "sezon_maci": 25278,
   "derin_maci": 62129,
   "derin_dosya": 190,
   "arsiv": {
    "gun": 9,
-   "kayit": 1966,
-   "puanli": 1657,
+   "kayit": 1967,
+   "puanli": 1659,
    "ilk": "2026-10-22",
    "eski_gun": 0
   }
