@@ -1,0 +1,39 @@
+name: OXXai basket dort faktor laboratuvari (YH-27)
+# Yalnız ölçüm: ESPN herkese açık kutu skorlarından Dean Oliver dört faktörü (eFG%, FTr, TOV%, ORB%; kolejde eFG%, FTr, ribaund payı)
+# → faktör ridge'leri + yığma, üretim ridge farkına karşı zaman sıralı sınanır (lab/bk_dortfaktor_lab.py). İstatistikler yalnız bellekte;
+# yalnız data/bk_dortfaktor_lab.json (toplu metrik) yazılır; üretimi değiştirmez. Haftalık (perşembe). Issue/mail/bildirim yok.
+on:
+  schedule:
+    - cron: "47 4 * * 4"
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: bk-dortfaktor-lab
+  cancel-in-progress: false
+jobs:
+  lab:
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install numpy==2.1.3
+      - name: 🗃️ Ham veri önbelleği (bk_games — ESPN skorları; yalnız actions/cache)
+        uses: actions/cache/restore@v4
+        with:
+          path: data/bk_games.json
+          key: arsiv-bk-games-${{ github.run_id }}
+          restore-keys: arsiv-bk-games-
+      - name: 🗃️ Önbellek yoksa git yedeği
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 lab/adim.py arsiv-indir --onem bilgi -- python3 lab/arsiv.py indir data/bk_games.json
+      - name: Dört faktör deneyi
+        run: python3 lab/adim.py bk-dortfaktor-lab --onem bilgi -- timeout 3000 python lab/bk_dortfaktor_lab.py
+      - name: Sonuç (günlük)
+        run: cat data/bk_dortfaktor_lab.json || true
+      - name: Yalnız türetilmiş çıktıyı kaydet (yalnız main)
+        if: github.ref == 'refs/heads/main'
+        run: python3 lab/gonder.py -m "Basket dört faktör laboratuvarı $(date -u +%F) [skip ci]" data/bk_dortfaktor_lab.json data/saglik
