@@ -45,6 +45,8 @@ jobs:
         run: python3 lab/adim.py ek-kaynak --onem bilgi -- python3 lab/at/ek_kaynak.py
       - name: Gece boru hattı (eğitim, kapı, kilit, karne, rapor)
         run: python3 lab/adim.py gece -- python lab/at/gece.py
+      - name: Sabah modelinin kapanış piyasasına bilgi katkısı (YH-08; ölçüm, bilgi amaçlı)
+        run: python3 lab/adim.py bilgi-katkisi --onem bilgi -- timeout 600 python lab/at/bilgi_katkisi.py
       - name: Sızıntı testi (kapalı-sol pencere, gün içi sıra; bilgi amaçlı)
         run: python3 lab/adim.py sizinti-testi --onem bilgi -- timeout 300 python lab/at/test_sizinti.py
       - name: Araştırmacı (yalnız GitHub arama API'si)
