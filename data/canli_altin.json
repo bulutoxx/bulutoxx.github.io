@@ -105,24 +105,32 @@
  "durum": "mevcut",
  "not": "seçim kuralını sağlayan yeni eşik yok; mevcut değerler korunur",
  "isaret": {
-  "esik": 0.8,
-  "kapanis": 0.77,
+  "esik": 0.85,
+  "kapanis": 0.82,
   "dkmax": 75,
   "durum": "deneme",
-  "baslangic": "2026-10-28T18:04Z",
-  "bitis": "2026-10-30T18:04Z",
+  "baslangic": "2026-10-30T21:51Z",
+  "bitis": "2026-11-01T21:51Z",
   "uzatma": 0,
-  "yukseltildi": false,
+  "yukseltildi": true,
   "kapi": {
    "kural": "48 sa (+3 sa puanlama) sonunda maç başına ilk işaret: n ≥ 15 ve Wilson %95 alt ≥ 0.75 → kalıcı; Wilson alt < 0.75 → eşik 0.85 (en çok bir kez; o da tutmazsa durdurulur); n < 15 → deneme 48 sa uzar",
-   "karar": null
+   "karar": "yukseltildi",
+   "zaman": "2026-10-30T21:51Z",
+   "deneme": {
+    "n": 15,
+    "tuttu": 12,
+    "gercek": 0.8,
+    "wilson_alt": 0.5481,
+    "ort_p": 0.8531
+   }
   },
   "olcum": {
-   "n": 15,
-   "tuttu": 12,
-   "gercek": 0.8,
-   "wilson_alt": 0.5481,
-   "ort_p": 0.8531,
+   "n": 16,
+   "tuttu": 13,
+   "gercek": 0.8125,
+   "wilson_alt": 0.5699,
+   "ort_p": 0.8617,
    "deneme": {
     "n": 15,
     "tuttu": 12,
@@ -130,7 +138,19 @@
     "wilson_alt": 0.5481,
     "ort_p": 0.8531
    },
-   "zaman": "2026-10-30T20:55Z"
-  }
+   "zaman": "2026-10-30T21:51Z"
+  },
+  "gecmis": [
+   {
+    "esik": 0.8,
+    "baslangic": "2026-10-28T18:04Z",
+    "bitis": "2026-10-30T18:04Z",
+    "n": 15,
+    "tuttu": 12,
+    "gercek": 0.8,
+    "wilson_alt": 0.5481,
+    "ort_p": 0.8531
+   }
+  ]
  }
 }
