@@ -26,7 +26,7 @@ def tur_kovasi(sinif):
         return "maiden"
     if "handikap" in s or "kısa vade" in s:
         return "handikap"
-    if "şartlı" in s or "sartli" in s or "satış" in s:
+    if "şartl" in s or "sartl" in s or "satış" in s:
         return "sartli"
     if s.startswith("kv") or "g 1" in s or "g 2" in s or "g 3" in s or "grup" in s:
         return "kv_grup"
