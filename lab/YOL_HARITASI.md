@@ -88,7 +88,8 @@ drift alarmı ve kapanış kilidi (yolda). Aşağıdaki maddeler bunların **üz
 - **Efor:** M · **Risk:** orta (kilit anı / kapanış ayrımı; sızıntı) · **Veri:** mevcut izinli ayna kaynağı, ücretsiz (TJK / atyarisi.com yok).
 - **Nasıl sınanır (kapı):** Koşu-günü blok bootstrap, aylık ileri yürüyüş; mevcut harmana göre ΔLL %95 GA üst < 0, iki yarıda < 0.
 - **Kaynak:** Bolton & Chapman (1986) Management Science [doi:10.1287/mnsc.32.8.1040](https://doi.org/10.1287/mnsc.32.8.1040) · Benter (1994) [World Scientific](https://worldscientific.com/doi/abs/10.1142/9789812819192_0019)
-- **Durum:** bekliyor
+- **Durum:** reddedildi (2026-10-30; kapı geçmedi, üretim değişmedi) — `lab/at/benter_kosullu_lab.py` → `data/at/benter_kosullu_lab.json`, `at-benter-lab.yml` haftalık yeniden ölçüm (cumartesi; yalnız ölçüm).
+  Aylık ileri yürüyüş, n = 2.492 koşu / 149 gün (2026-05 … 2026-10; toplam 3.282 koşu). Birincil aday K4 (alan + tür + favori q + hipodrom kovaları, L2 λ = 30) − tek (a, b) harman: **ΔLL +0,00524 [+0,00218, +0,00838]**, yarılar +0,00854 / +0,00194 (kötüleşme). Tek aile adayları da geçmedi: alan +0,00162 [−0,00013, +0,00349], tür +0,00129 [+0,00014, +0,00250], favori q +0,00215 [+0,00058, +0,00369], hipodrom +0,00084 [−0,00084, +0,00254]; λ = 5 / 150 duyarlılığı +0,00722 / +0,00256. Sonuç: koşullu ağırlıklar örneklem dışında aşırı uyuyor; tek (a, b) yeterli. Sınama run 40991220382, commit e464b62.
 
 ### YH-01 · altyapı · Öneri CLV karnesi (kapanış çizgisi değeri)
 - **Açıklama:** Kapanış kilidi geldiğinde her kilitli öneri için `clv = ln(p_kapanış / p_kilit)` (marjı ayrılmış piyasa olasılığı; öneri tarafı) ve "kapanışı geçti" oranı hesaplanır; Motor sayfası, drift alarmı ve koruyucu için sonuçtan çok daha hızlı yakınsayan bir erken uyarı ölçütü olur. Model yolu (oransız) önerilerinde de modelin kilit anındaki olasılığı ile kapanış piyasası karşılaştırılır.
