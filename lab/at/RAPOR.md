@@ -1,6 +1,6 @@
 # OXXai 🐎 At Yarışı Laboratuvarı — Rapor
 
-_Otomatik üretildi: 2026-10-29T10:13:03+00:00 · model sürümü `20261028T0118` · hobi amaçlıdır, garanti değildir · 18+_
+_Otomatik üretildi: 2026-10-30T01:04:40+00:00 · model sürümü `20261028T0118` · hobi amaçlıdır, garanti değildir · 18+_
 
 ## Yeniden oynatma (replay): 2026-03-16 → 2026-10-23
 
@@ -260,7 +260,7 @@ Kapılı deneyler (aynı 3.282 sınama koşusu; ΔLL = yeni − önceki kabul, k
 
 - Piyasa keskinleştirme kontrolü (q^β tek başına): keskin − piyasa -0.0009 [-0.0035, +0.0019]; **harman − keskin piyasa -0.0122 [-0.0185, -0.0061]** (model ancak bu negatifse piyasaya bilgi katıyor demektir); harman − piyasa -0.0131 [-0.0195, -0.0066]; yalnız model − piyasa +0.0889 [+0.0704, +0.1074].
 - Hız figürü gün değişkeni: Beyer projeksiyonu (atların önceki figürleri) yerine kazanan − par − sınıf ofseti kullanılsaydı yalnız-model LL +0.0101 [+0.0054, +0.0149] kötüleşirdi (cins/sınıf karışımı yüzünden); projeksiyon yayında.
-- İndirimli Harville (ikili/üçlü sıralı log-loss, sınama): yalnız model γ,δ öğrenilmiş 3.7076 / 5.4794 vs düz Harville 3.7171 / 5.5213; harman 3.6067 / 5.3669 vs 3.6174 / 5.4150 (3266 koşu).
+- İndirimli Harville (ikili/üçlü sıralı log-loss, sınama): yalnız model γ,δ öğrenilmiş 3.7076 / 5.4794 vs düz Harville 3.7172 / 5.5213; harman 3.6067 / 5.3669 vs 3.6174 / 5.4150 (3266 koşu).
 - Sızıntı testi (`lab/at/test_sizinti.py`, her gece): aynı (at, gün) satırları özdeş; rastgele günlerde yalnız geçmişten yeniden kurulan durum tam tabloyla birebir aynı; gün içi koşu sırası özellikleri değiştirmiyor.
 
 ## Özet: v2 güncellemesi (25.10.2026)
@@ -416,7 +416,7 @@ Yorum: sabah tahmininde en çok taşıyan bilgiler reytingler (at/jokey/antrenö
 ## Kapı (sürekli öğrenme)
 
 - Kural: tarif (özellikler/ayarlar) değişirse yeni model ancak **aynı sınama koşularında** yalnız-model log-loss'u düşürür, ilk seçim isabetini düşürmez ve harman log-loss'unu 0,001'den fazla bozmazsa kabul edilir. Tarif aynıysa özellikler her gece yeni sonuçlarla güncellenir, katsayılar haftada bir yeniden eğitilir (KORU = bu gece yenileme günü değil); ortak koşularda belirgin bozulma (veri sorunu) olursa dünkü model korunur. İz: `data/at/sinama_izi.json`.
-- Son karar (2026-10-29T10:13:03+00:00): **KORU** — aynı tarif; katsayılar 1 günlük (haftalık yenileme), özellikler bu gece yeni sonuçlarla güncellendi
+- Son karar (2026-10-30T01:04:40+00:00): **KORU** — aynı tarif; katsayılar 1 günlük (haftalık yenileme), özellikler bu gece yeni sonuçlarla güncellendi
 - Yeni: yalnız model log-loss 1.8521, ilk seçim %32.4; harman 1.7907. Kıyas: yalnız model 1.8521, ilk seçim %32.4; harman 1.7907.
 
 ## Canlı karne (kilitlenmiş tahminler, sonuç gelince)
@@ -436,7 +436,7 @@ Koşudan önce kilitlenmiş tahminler. 16 koşu `mod_hatali` (26 Ekim: erken hav
 | 2026-10-26 | – (hepsi etkilendi) | 16 / 3.1197 / %25.0 |
 | 2026-10-27 | 3 / 1.8106 / %66.7 | 3 / 1.8106 / %66.7 |
 
-## Gösteri: 2026-10-29 İstanbul tahminleri
+## Gösteri: 2026-10-30 İstanbul tahminleri
 
 - Bu gün için İstanbul programı/kilidi yok.
 
