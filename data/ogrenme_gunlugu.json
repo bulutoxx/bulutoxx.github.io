@@ -1,7 +1,7 @@
 {
  "v": 1,
  "sayac": {
-  "futbol-2026": 25,
+  "futbol-2026": 26,
   "basket-2026": 3
  },
  "kayitlar": [
@@ -3294,9 +3294,127 @@
    "sure_sn": 3.4,
    "karar": "ret",
    "neden": "seçim diliminde iyileşme yok; sınama alt sınırı ≤ 0 (α=0.0000)"
+  },
+  {
+   "tarih": "2026-10-30",
+   "anahtar": "pazar:2&KGY",
+   "tur": "pazar",
+   "alan": "futbol",
+   "aciklama": "2&KGY: OXXai olasılığı sistemli düşük → Platt düzeltmesi (seçim diliminde öğrenilir)",
+   "sinyal": {
+    "n": 267,
+    "tutan": 62.0,
+    "beklenen": 39.06,
+    "z": 3.97,
+    "kaynak": "pazar_karne.canli (kilitli predlog)"
+   },
+   "deger": {
+    "a": 0.0783,
+    "b": 1.067
+   },
+   "uygulandi": false,
+   "kaynak": "surekli-deney",
+   "olcut": "bacak Brier iyileşmesi",
+   "alfa": 0.0,
+   "alfa_ham": 2.0243333333333333e-05,
+   "deneme_no": 26,
+   "test_yapildi": true,
+   "istatistik_gecti": false,
+   "secim": {
+    "gun": [
+     "2026-01-01",
+     "2026-08-07"
+    ],
+    "fark": 0.0,
+    "taban": {
+     "n": 420,
+     "tutan": 204,
+     "isabet": 0.4857,
+     "beklenen": 229.27,
+     "brier": 0.2266
+    },
+    "aday": {
+     "n": 420,
+     "tutan": 204,
+     "isabet": 0.4857,
+     "beklenen": 229.27,
+     "brier": 0.2266
+    }
+   },
+   "sinama": {
+    "gun": [
+     "2026-08-08",
+     "2026-10-29"
+    ],
+    "fark": 0.0,
+    "alt_sinir": 0.0,
+    "bootstrap_B": 2000,
+    "taban": {
+     "n": 210,
+     "tutan": 120,
+     "isabet": 0.5714,
+     "beklenen": 118.98,
+     "brier": 0.2323
+    },
+    "aday": {
+     "n": 210,
+     "tutan": 120,
+     "isabet": 0.5714,
+     "beklenen": 118.98,
+     "brier": 0.2323
+    },
+    "bacak_taban": {
+     "n": 517,
+     "tutan": 412,
+     "isabet": 0.7969,
+     "beklenen": 407.13,
+     "brier": 0.1594
+    },
+    "bacak_aday": {
+     "n": 517,
+     "tutan": 412,
+     "isabet": 0.7969,
+     "beklenen": 407.13,
+     "brier": 0.1594
+    }
+   },
+   "koruma": {
+    "altin_taban": {
+     "n": 64,
+     "tutan": 49,
+     "isabet": 0.7656,
+     "beklenen": 52.38,
+     "brier": 0.1835
+    },
+    "altin_aday": {
+     "n": 64,
+     "tutan": 49,
+     "isabet": 0.7656,
+     "beklenen": 52.38,
+     "brier": 0.1835
+    },
+    "guclu_taban": {
+     "n": 238,
+     "tutan": 188,
+     "isabet": 0.7899,
+     "beklenen": 183.12,
+     "brier": 0.1678
+    },
+    "guclu_aday": {
+     "n": 238,
+     "tutan": 188,
+     "isabet": 0.7899,
+     "beklenen": 183.12,
+     "brier": 0.1678
+    }
+   },
+   "servet_sonra": 4.049e-05,
+   "sure_sn": 6.9,
+   "karar": "ret",
+   "neden": "seçim diliminde iyileşme yok; sınama alt sınırı ≤ 0 (α=0.0000)"
   }
  ],
- "guncelleme": "2026-10-30T15:54Z",
+ "guncelleme": "2026-10-30T17:12Z",
  "kurallar": {
   "gecelik_aday": 3,
   "secim_sinama": "günler 2/3 seçim, 1/3 sınama (ileriye dönük sanal oynatma, bu yılın maçları)",
@@ -3315,8 +3433,8 @@
  },
  "alfa_yatirimi": {
   "futbol-2026": {
-   "servet": 6.073e-05,
-   "test": 19,
+   "servet": 4.049e-05,
+   "test": 20,
    "kesif_kabul": 0
   },
   "basket-2026": {
