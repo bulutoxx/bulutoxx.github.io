@@ -1,0 +1,47 @@
+name: OXXai at Benter kosullu birlesim laboratuvari (YH-28)
+# Yalnız ölçüm: Benter ikinci aşamasının koşullu sürümü (alan, tür, favori q, hipodrom kovalarına göre a, b; L2 küçültme)
+# tek (a, b) harmana karşı aylık ileri yürüyüşle sınanır (lab/at/benter_kosullu_lab.py). Üretimi değiştirmez.
+# Veri: github.com/cenkozgur/tjk-data aynası sığ klonlanır (_tjk-data, gitignore'da); tjk.org'a istek YOK. Ham veri commit edilmez;
+# yalnız data/at/benter_kosullu_lab.json (toplu metrik) yazılır. Haftalık (cumartesi). Issue/mail/bildirim yok.
+on:
+  schedule:
+    - cron: "41 5 * * 6"
+  workflow_dispatch:
+  push:
+    branches: ["yh28-*"]
+    paths: ["lab/at/benter_kosullu_lab.py", ".github/workflows/at-benter-lab.yml"]
+permissions:
+  contents: write
+concurrency:
+  group: at-benter-lab
+  cancel-in-progress: false
+jobs:
+  lab:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      AT_KAYNAK: ./_tjk-data
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install -q numpy
+      - name: 🗃️ Ham veri önbelleği (replay_kosular; yalnız actions/cache)
+        uses: actions/cache/restore@v4
+        with:
+          path: data/at/replay_kosular.json
+          key: arsiv-replay-kosular-${{ github.run_id }}
+          restore-keys: arsiv-replay-kosular-
+      - name: 🗃️ Önbellek yoksa arşiv yedeği
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 lab/adim.py arsiv-indir --onem bilgi -- python3 lab/arsiv.py indir data/at/replay_kosular.json
+      - name: Aynayı sığ klonla (yalnız okunur, depoya yazılmaz)
+        run: python3 lab/adim.py ayna -- git clone -q --depth 1 https://github.com/cenkozgur/tjk-data _tjk-data
+      - name: Koşullu Benter deneyi
+        run: python3 lab/adim.py at-benter-lab --onem bilgi -- timeout 1500 python lab/at/benter_kosullu_lab.py
+      - name: Sonuç (günlük)
+        run: cat data/at/benter_kosullu_lab.json || true
+      - name: Yalnız türetilmiş çıktıyı kaydet (yalnız main)
+        if: github.ref == 'refs/heads/main'
+        run: python3 lab/gonder.py -m "At Benter koşullu laboratuvarı $(date -u +%F) [skip ci]" data/at/benter_kosullu_lab.json data/saglik
