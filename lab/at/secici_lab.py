@@ -15,6 +15,7 @@ import numpy as np
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 CIKTI = os.path.join(ROOT, "data", "at", "secici_lab.json")
+BAYRAK = os.path.join(ROOT, "data", "at", "secici.json")   # uygulamanın okuduğu küçük parametre/bayrak dosyası
 MIN_EGITIM = 600          # ilk sınama ayından önce en az bu kadar koşu
 P_ESIK = 0.025
 
@@ -124,6 +125,22 @@ def ileri_yuruyus(S, yol, kapsam):
     return kayit
 
 
+def uretim_param(S, yol, kapsam):
+    """Tüm geçmişle (yalnız biten koşular) güven puanı katsayıları ve eşik; uygulama yeni koşulara uygular."""
+    if yol == "harman":
+        S = [s for s in S if s["q"] is not None]
+        a, b = harman_uydur([s["ps"] for s in S], [s["q"] for s in S], [s["y"] for s in S])
+        P = lambda s: (lambda l: np.exp(l - l.max()) / np.exp(l - l.max()).sum())(a * np.log(s["ps"]) + b * np.log(s["q"]))
+    else:
+        P = lambda s: s["ps"]
+    X = np.array([ozellik(P(s)) for s in S]); y = np.array([float(s["y"][P(s).argmax()]) for s in S])
+    mu, sd = X.mean(0), X.std(0) + 1e-9
+    w = lojistik((X - mu) / sd, y)
+    esik = float(np.quantile(np.c_[np.ones(len(X)), (X - mu) / sd] @ w, 1 - kapsam))
+    r = lambda v: [round(float(x), 6) for x in v]
+    return {"w": r(w), "mu": r(mu), "sd": r(sd), "esik": round(esik, 6), "n": len(S)}
+
+
 def fark(kayit, sec_idx):
     h = np.array([k[1] for k in kayit]); s = np.array([k[sec_idx] for k in kayit])
     return float(h[s].mean() - h.mean()) if s.any() else 0.0
@@ -191,6 +208,16 @@ def main():
     os.makedirs(os.path.dirname(CIKTI), exist_ok=True)
     json.dump(out, open(CIKTI, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     print(json.dumps(out, ensure_ascii=False, indent=1))
+    # Bayrak: kapı geçtiyse uygulama "belirsiz koşu" etiketini gösterir; geçmezse aktif=false (etiket kendiliğinden kalkar).
+    hb = R["harman"]
+    bay = {"guncelleme": out["olusturma"], "madde": "YH-15", "aktif": gecti, "kapsam_hedef": A.kapsam,
+           "ozellik": ["p1", "p1-p2", "H/ln n", "ln n"],
+           "sabah": uretim_param(S, "sabah", A.kapsam),
+           "harman": uretim_param(S, "harman", A.kapsam) if out["oranli_kosu"] >= MIN_EGITIM else None,
+           "olcum": {"sabah": {k: b["aday"][k] for k in ("kapsam", "isabet", "isabet_pas", "fark", "ga95")} | {"isabet_tum": b["isabet_tum"], "n": b["n"]},
+                     "harman": ({k: hb["aday"][k] for k in ("kapsam", "isabet", "isabet_pas", "fark", "ga95")} | {"isabet_tum": hb["isabet_tum"], "n": hb["n"]}) if hb else None}}
+    json.dump(bay, open(BAYRAK, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+    print("BAYRAK " + json.dumps(bay, ensure_ascii=False))
     return 0
 
 
