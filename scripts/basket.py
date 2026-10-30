@@ -441,6 +441,13 @@ def dinlenme_hazirla(fixtures, store_games):
 def lock_and_grade(plog, fixtures, fits, Ps, store_games, today, YD=None):
     import bk_piyasa as BP
     YD = YD or {}
+    try:   # 🩹 YH-16 gölge: taze sakatlık sinyali (kilitli tahmini değiştirmez; maç başlayana dek skg tazelenir)
+        import bk_sakatlik as BS; SK = BS.sinyal_hazir()
+    except Exception as ex:
+        BS = None; SK = {}; print("sakatlık sinyali atlandı:", ex.__class__.__name__, str(ex)[:120], flush=True)
+    def _sk(e):
+        s = BS.mac_sinyali(SK, e) if (BS and SK) else None
+        if s: e["skg"] = s; e.setdefault("skg0", s)
     have = {e["id"] for e in plog}
     now_iso = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M")
     fx = {f["id"]: f for f in fixtures}
@@ -452,6 +459,7 @@ def lock_and_grade(plog, fixtures, fits, Ps, store_games, today, YD=None):
         pz = BP.pz_al(f)
         if pz: e["pz"] = dict(pz, ts=now_iso + "Z"); e.setdefault("pz0", e["pz"])
         e.setdefault("dt", f["dt"])
+        _sk(e)
     for f in fixtures:
         if f["id"] in have or f.get("state") in ("in", "post") or f.get("live") or f["dt"][:16] <= now_iso: continue
         F = fits.get(f["lg"]); pm = pred_means(F, f["h"], f["a"], f.get("neutral", False), Ps.get(f["lg"], {}).get("newp")) if F else None
@@ -465,6 +473,7 @@ def lock_and_grade(plog, fixtures, fits, Ps, store_games, today, YD=None):
         if f.get("odds"): e["odds"] = f["odds"]
         pz = BP.pz_al(f)
         if pz: e["pz"] = dict(pz, ts=now_iso + "Z"); e["pz0"] = e["pz"]
+        _sk(e)
         plog.append(e); have.add(f["id"])
     res = {}
     for lg, st in store_games.items():
@@ -685,6 +694,12 @@ def main():
         BD.kaydet(A_)
     except Exception as e:
         print("dinlenme izleme atlandı:", e.__class__.__name__, str(e)[:120], flush=True)
+    try:   # 🩹 YH-16 gölge özeti (önsel Δ ile LL farkı; kapı ≥ 300 maç / ≥ 80 sinyalli)
+        import bk_sakatlik as BS
+        A_ = BS.oku()
+        if A_: A_["golge"] = BS.golge_ozet(plog, out_lg); BS.kaydet(A_)
+    except Exception as e:
+        print("sakatlık gölge özeti atlandı:", e.__class__.__name__, str(e)[:120], flush=True)
     # 📈 piyasa karnesi (data/bk_piyasa.json) + yalnız kapıdan ve gölgeden geçmiş gruplarda çapalı tahmin (cp)
     cp_fx = {}
     try:
