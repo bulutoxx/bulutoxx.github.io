@@ -67,6 +67,14 @@ jobs:
         run: python3 lab/adim.py drift --onem bilgi -- timeout 300 python3 lab/drift.py
       - name: 🥇 Canlı altın eşiği (48 saatlik canlı kapı + günde bir veriye dayalı eşik ölçümü; lab/canli_altin_lab.py → data/canli_altin.json)
         run: python3 lab/adim.py canli-altin --onem bilgi -- timeout 300 python3 lab/canli_altin_lab.py gunluk
+      - name: 🩹 Basket sakatlık önbelleği (oyuncu ortalamaları yalnız burada; depoya ve siteye girmez)
+        uses: actions/cache@v4
+        with:
+          path: .bk_sakatlik_onbellek
+          key: bk-sakatlik-${{ github.run_id }}
+          restore-keys: bk-sakatlik-
+      - name: 🩹 Basket sakatlık raporu (YH-16 gölge; ESPN NBA/WNBA, yalnız türetilmiş takım kaybı → data/bk_sakatlik.json)
+        run: python3 lab/adim.py bk-sakatlik --onem bilgi -- timeout 240 python3 scripts/bk_sakatlik.py
       - name: Basketbol verilerini indir ve modeli eğit
         run: python3 lab/adim.py basket -- python scripts/basket.py
         env:

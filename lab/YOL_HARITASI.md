@@ -307,7 +307,9 @@ drift alarmı ve kapanış kilidi (yolda). Aşağıdaki maddeler bunların **üz
 - **Efor:** M · **Risk:** orta (rapor zamanlaması → sızıntı; yalnız kilit anından önceki rapor) · **Veri:** ESPN herkese açık, ücretsiz.
 - **Nasıl sınanır:** Gölge kayıt (≥ 300 maç, ≥ 80 sinyalli) → `tazeveri` tipi kapı, SK.
 - **Kaynak:** Kubatko ve ark. (2007) [doi:10.2202/1559-0410.1070](https://doi.org/10.2202/1559-0410.1070) · [FiveThirtyEight RAPTOR / kadro düzeltmesi](https://fivethirtyeight.com/methodology/how-our-nba-predictions-work/)
-- **Durum:** bekliyor
+- **Durum:** gölgede, kayıt başladı (2026-10-30; kapı veri bekliyor, üretime etkisi yok) — `scripts/bk_sakatlik.py` (update.yml adımı `bk-sakatlik`, saatlik) → `data/bk_sakatlik.json` (yalnız takım düzeyi `dk` = Σ w·dakika/240, `pt` = Σ w·sayı; w: Out 1 · Doubtful 0,75 · Questionable/DTD 0,5 · Probable 0,1; oyuncu ortalamaları yalnız `actions/cache` `.bk_sakatlik_onbellek/`).
+  `basket.py lock_and_grade`: kilitli ph/pa değişmez; maç başlayana dek `skg = {x: [dk_dep−dk_ev, pt_dep−pt_ev], d: 0,5·x₂, ts}` tazelenir (`skg0` = kilit anı), yalnız ≤ 3 saat taze sinyal; başlamış maça yazılmaz. Gölge özeti `golge` (lig başına n, sinyalli, önsel ΔLL).
+  Ağsız birim sınaması `lab/bk_sakatlik_test.py` 14/14 (ayrıştırma, kayıp hesabı, bayat sinyal reddi, sızıntısızlık, kilit değişmezliği). Kapı: ≥ 300 sonuçlanmış NBA/WNBA maçı ve ≥ 80 sinyalli → β geçmiş artıklardan ridge (skg son görüntü), zaman sıralı SK; geçerse yalnız kilit anı sinyaliyle (`skg0`) üretime.
 
 ### YH-17 · altyapı · Sıralı (her an geçerli) test ile gölge sürenin kısaltılması
 - **Açıklama:** Gölge ölçüm ve 14 gün izleme sabit süreli. Karışım SPRT / e-değer tabanlı "her an geçerli" güven dizileri, istenildiği an bakılsa bile I. tür hata kontrolünü korur; açık iyileşmede erken yayın, açık kötüleşmede erken geri alma sağlar. Alfa yatırımıyla uyumlu (e-değerler LORD/alfa yatırımına bağlanabilir).
