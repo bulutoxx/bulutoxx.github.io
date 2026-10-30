@@ -134,15 +134,15 @@
   // =====================================================================
   function body(rt){
     if(!AT.d){ if(AT.busy||!AT.model&&!AT.days.length&&!S.loadedOnce) return skel();
-      if(AT.kyn&&AT.kyn.bugun===istDay(new Date())&&AT.kyn.durum!=="program_yok") return kynCard()+istHtml(true);
-      return `<div class="a2-card a2-empty"><div class="e" aria-hidden="true">🗓️</div><b>Yakın günlerde koşu programı yok</b><p>Laboratuvar her sabah 05:23 ve öğlen 12:23'te yeni programı işler. Hipodromlar genelde pazartesi dinlenir.</p><button class="a2-btn q" type="button" data-re>Yeniden dene</button></div>${istHtml(true)}`; }
+      if(AT.kyn&&AT.kyn.bugun===istDay(new Date())&&AT.kyn.durum!=="program_yok") return titleRow()+kynCard()+istHtml(true);
+      return titleRow()+`<div class="a2-card a2-empty"><div class="e" aria-hidden="true">🗓️</div><b>Yakın günlerde koşu programı yok</b><p>Laboratuvar her sabah 05:23 ve öğlen 12:23'te yeni programı işler. Hipodromlar genelde pazartesi dinlenir.</p><button class="a2-btn q" type="button" data-re>Yeniden dene</button></div>${istHtml(true)}`; }
     const V={bugun:vBugun,program:vProgram,turler:vTurler,sonuc:vSonuc,kupon:vKupon,kosu:vKosu,at:vAt,jokey:a=>person("jokey",a[0]),antrenor:a=>person("antrenor",a[0]),takip:vTakip,istatistik:()=>istHtml(false)}[rt.v]||vBugun;
     return V(rt.a); }
   const skel=()=>`<div class="a2-sk" style="height:56px"></div><div class="a2-sk" style="height:150px"></div><div class="a2-sk" style="height:120px"></div><div class="a2-sk" style="height:64px"></div><p class="a2-sr">Yükleniyor</p>`;
   const notFound=t=>`<div class="a2-card a2-empty"><div class="e" aria-hidden="true">🔎</div><b>${E(t)}</b><p>Bu kayıt seçili günün verisinde yok (eski bir bağlantı olabilir).</p><a class="a2-btn q" href="#at/program" data-tab="program">Programa dön</a></div>`;
   const foot=()=>{ const Dd=D(); return `<p class="a2-foot">${Dd&&Dd.kilit_zamani_tsi?`Kilit: ${E(Dd.kilit_zamani_tsi)} · model ${E(Dd.model_surumu||"")}. `:""}Veri: herkese açık yarış sonuç arşivi (GitHub aynası); OXXai resmî yarış sitesine istek atmaz. Hobi amaçlı olasılıktır, garanti değildir. Para tutarı gösterilmez · 18+</p>`; };
   const dayChips=()=>AT.days.length>1?`<div class="a2-chips" role="group" aria-label="Gün seç">${AT.days.map(x=>`<button class="a2-chip" type="button" data-day="${x}" aria-pressed="${x===AT.d}">${E(dLbl(x))}</button>`).join("")}</div>`:"";
-  function titleRow(){ const R=races(); return `<div class="a2-hd"><h1><img class="at-emb a2-emb" src="icons/oxxai-at.webp" alt="" aria-hidden="true" decoding="async" onerror="this.onerror=null;this.src='icons/oxxai-at.png'">At Yarışı<span class="a2-dn">DENEME</span><small>${E(dLbl(AT.d))} · ${hips().length} hipodrom · ${R.length} koşu</small></h1>
+  function titleRow(){ const R=races(); return `<div class="a2-hd"><h1><img class="at-emb a2-emb" src="icons/oxxai-at.webp" alt="" aria-hidden="true" decoding="async" onerror="this.onerror=null;this.src='icons/oxxai-at.png'">At Yarışı<span class="a2-dn">DENEME</span><small>${AT.d?`${E(dLbl(AT.d))} · ${hips().length} hipodrom · ${R.length} koşu`:"Program bekleniyor"}</small></h1>
     <a class="a2-ib" href="#at/istatistik" aria-label="İstatistik: model karnesi ve jokey sıralaması">${IC.stat}</a><a class="a2-ib" href="#at/takip" aria-label="Takip listem${tkN()?" ("+tkN()+")":""}">${tkN()?IC.starF:IC.star}</a></div>`; }
   // ---------- kaynak durumu (data/at/kaynak_durum.json · lab/at/kaynak_durum.py): bugünün programı yoksa dürüstçe söyle ----------
   function kynCard(){ const t=istDay(new Date()); if(AT.days.includes(t)) return ""; const k=AT.kyn&&AT.kyn.bugun===t?AT.kyn:null;
