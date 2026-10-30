@@ -1,9 +1,8 @@
 {
- "zaman": "2026-10-30T15:53Z",
+ "zaman": "2026-10-30T16:50Z",
  "alarm": true,
  "sorunlar": [
   "acik-lab.yml: adım başarısız: acik-lab (çıkış 1, 1/1 tur)",
-  "kalite alarmı (qa.json): at_arama: ekran açılamadı (locator.waitFor: Timeout 60000ms exceeded.)",
   "at kaynak gecikmesi: bugünün (2026-10-30) programı aynada yok; ayna son güncelleme 2026-10-27 22:58 TSİ"
  ],
  "kalici_alarm": [],
@@ -37,14 +36,14 @@
   },
   "at-canli.yml": {
    "at-canli.json": {
-    "run": "41080969479",
-    "guncelleme": "2026-10-30T15:50:01Z",
+    "run": "41088432792",
+    "guncelleme": "2026-10-30T16:43:50Z",
     "basarisiz": [],
     "bilgi_hata": []
    },
    "at-kaynak.json": {
     "run": null,
-    "guncelleme": "2026-10-30T15:48:31Z",
+    "guncelleme": "2026-10-30T16:42:20Z",
     "basarisiz": [],
     "bilgi_hata": []
    }
@@ -91,37 +90,26 @@
   },
   "kurtarici.yml": {
    "kurtarici.json": {
-    "run": "41052975250",
-    "guncelleme": "2026-10-30T12:07:31Z",
+    "run": "41084809334",
+    "guncelleme": "2026-10-30T15:53:23Z",
     "basarisiz": [],
     "bilgi_hata": []
    }
   },
   "live-log.yml": {
    "live-log.json": {
-    "run": "41077926967",
-    "guncelleme": "2026-10-30T15:33:45Z",
+    "run": "41086241137",
+    "guncelleme": "2026-10-30T16:27:49Z",
     "basarisiz": [],
     "bilgi_hata": []
    }
   },
   "otonom-ekip.yml": {
    "otonom-ekip.json": {
-    "run": "40999613354",
-    "guncelleme": "2026-10-30T03:55:52Z",
+    "run": "41084955748",
+    "guncelleme": "2026-10-30T15:58:47Z",
     "basarisiz": [],
-    "bilgi_hata": [
-     {
-      "adim": "kalite",
-      "rc": 1,
-      "hata_tur": "1/1",
-      "hata_24s": 1,
-      "sinif": "gecici",
-      "imza": "otonom-ekip.yml/kalite",
-      "onem": "bilgi",
-      "bitis": "2026-10-30T03:54:41Z"
-     }
-    ]
+    "bilgi_hata": []
    }
   },
   "surekli-deney.yml": {
@@ -170,8 +158,8 @@
     "bilgi_hata": []
    },
    "update.json": {
-    "run": "41077132135",
-    "guncelleme": "2026-10-30T15:05:35Z",
+    "run": "41085470967",
+    "guncelleme": "2026-10-30T16:00:20Z",
     "basarisiz": [],
     "bilgi_hata": []
    }
@@ -181,7 +169,7 @@
   {
    "ad": "Fikstür ve oranlar",
    "dosya": "data/fixtures.json",
-   "yas_saat": 0.79,
+   "yas_saat": 0.83,
    "beklenen_saat": 4.0,
    "is_akisi": "update.yml",
    "bayat": false
@@ -189,7 +177,7 @@
   {
    "ad": "Futbol modeli",
    "dosya": "data/model.json",
-   "yas_saat": 0.82,
+   "yas_saat": 0.85,
    "beklenen_saat": 4.0,
    "is_akisi": "update.yml",
    "bayat": false
@@ -197,7 +185,7 @@
   {
    "ad": "Günlük karne (toplayıcı)",
    "dosya": "data/daily.json",
-   "yas_saat": 0.8,
+   "yas_saat": 0.85,
    "beklenen_saat": 4.0,
    "is_akisi": "update.yml",
    "bayat": false
@@ -205,7 +193,7 @@
   {
    "ad": "Kilitli tahmin günlüğü (predlog)",
    "dosya": "data/predlog.json",
-   "yas_saat": 0.79,
+   "yas_saat": 0.83,
    "beklenen_saat": 12.0,
    "is_akisi": "update.yml",
    "bayat": false
@@ -213,7 +201,7 @@
   {
    "ad": "Canlı kayıt nabzı",
    "dosya": "data/health.json",
-   "yas_saat": 0.34,
+   "yas_saat": 0.38,
    "beklenen_saat": 1.5,
    "is_akisi": "live-log.yml",
    "bayat": false
@@ -221,12 +209,10 @@
  ],
  "kalite": {
   "qa.json": {
-   "alarm": true,
-   "zaman": "2026-10-30T03:51:32.582Z",
-   "hatalar": [
-    "at_arama: ekran açılamadı (locator.waitFor: Timeout 60000ms exceeded.)"
-   ],
-   "acilis_ms": 2576
+   "alarm": false,
+   "zaman": "2026-10-30T15:54:52.606Z",
+   "hatalar": [],
+   "acilis_ms": 2724
   },
   "qa_kapi.json": {
    "alarm": false,
