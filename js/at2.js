@@ -50,12 +50,21 @@
   function st(r){ const c=X.cRace(r); if(c&&c.sonuc) return "bitti"; const t=tsOf(dayOf(r.kosu_id),r.saat);
     if(isFinite(t)&&NOW()>=t) return "kosuldu"; if(c&&(c.durum==="oran_var"||(c.atlar||[]).some(h=>h.p_oran!=null))) return "oran"; return "bekliyor"; }
   const open=r=>{ const s=st(r); return s==="bekliyor"||s==="oran"; };
+  // YH-15 seçici gösterim: güven puanı = lojistik(p1, p1−p2, normalize entropi, ln alan) · data/at/secici.json (lab/at/secici_lab.py); aktif=false → etiket yok
+  function belirsiz(r,m){ try{ const S=AT.sec; if(!S||!S.aktif||!r||!r.kosu_id||!open(r)) return null; m=m||M(r);
+      const oranli=st(r)==="oran", Q=(oranli&&S.harman)||S.sabah; if(!Q||!Q.w) return null;
+      const v=m.A.map(h=>+(oranli?h.p:h.ps)).filter(x=>isFinite(x)&&x>0); if(v.length<2) return null;
+      const t=v.reduce((a,b)=>a+b,0), p=v.map(x=>x/t).sort((a,b)=>b-a), n=p.length;
+      const x=[p[0],p[0]-p[1],-p.reduce((a,q)=>a+q*Math.log(q),0)/Math.log(n),Math.log(n)];
+      const z=x.reduce((a,xi,i)=>a+Q.w[i+1]*(xi-Q.mu[i])/Q.sd[i],Q.w[0]);
+      return z<Q.esik?((S.olcum||{})[oranli&&S.harman?"harman":"sabah"]||{}):null; }catch(e){ return null; } }
+  const bzPill=(r,m)=>belirsiz(r,m)?`<span class="a2-pill" title="Olasılıklar birbirine yakın; ilk seçim bu tür koşularda daha az tutuyor">≈ Belirsiz koşu</span>`:"";
   function stPill(r,m){ const s=st(r);
     if(s==="bitti"){ m=m||M(r); const ok=m.son.tuttu!=null?!!m.son.tuttu:(m.A[0]&&String(m.son.kazanan)===m.A[0].no); return `<span class="a2-pill ${ok?"ok":"no"}">${ok?"✓":"✗"} Bitti</span>`; }
     const dt=tsOf(dayOf(r.kosu_id),r.saat)-NOW();
     if(s==="kosuldu") return dt>-4*60e3?`<span class="a2-pill w">Koşuluyor</span>`:`<span class="a2-pill w">Sonuç bekleniyor</span>`;
-    if(isFinite(dt)&&dt<=10*60e3) return `<span class="a2-pill or">Başlamak üzere</span>`;
-    if(s==="oran") return `<span class="a2-pill or">Oranla güncel</span>`; return `<span class="a2-pill">Sabah tahmini</span>`; }
+    if(isFinite(dt)&&dt<=10*60e3) return `<span class="a2-pill or">Başlamak üzere</span>`+bzPill(r,m);
+    if(s==="oran") return `<span class="a2-pill or">Oranla güncel</span>`+bzPill(r,m); return `<span class="a2-pill">Sabah tahmini</span>`+bzPill(r,m); }
   const golds=()=>D()?X.goldOfDay(D()):[];
   const dLbl=d=>X.dLbl(d);
   const ALT=()=>AT.alt&&AT.alt[AT.d]||null;
@@ -207,6 +216,7 @@
     h+=`<h1 class="a2-h2">${E(r.hipodrom)} · ${r.kosu}. Koşu</h1>
       <div class="a2-rh"><span class="a2-pill">${E(dLbl(dayOf(r.kosu_id)))} ${E(r.saat)}</span><span class="a2-pill">${E(r.mesafe)} m</span><span class="a2-pill">${E(r.pist)}</span><span class="a2-pill">${E(r.sinif)}</span><span class="a2-pill">${m.A.length} at</span>${stPill(r,m)}</div>`;
     if(r.kosudan_once===false) h+=`<span class="a2-tag">Koşudan sonra kilitlendi · karneye sayılmaz</span>`;
+    { const bz=belirsiz(r,m); if(bz) h+=`<p class="a2-note">≈ <b>Belirsiz koşu:</b> olasılıklar birbirine yakın, model bu koşuda emin değil.${bz.isabet_pas!=null&&bz.isabet_tum!=null?` Geçmişte böyle koşularda ilk seçim %${Math.round(bz.isabet_pas*100)} tuttu (tüm koşularda %${Math.round(bz.isabet_tum*100)}).`:""} İlk seçimi temkinli değerlendir.</p>`; }
     if(m.son){ const nm=no=>(m.A.find(y=>y.no===String(no))||{}).ad||"";
       h+=`<div class="a2-card gold"><div class="a2-ch"><h2>🏁 Sonuç</h2><small>piyasa oranı ${fx(m.son.ganyan)}</small></div><div class="a2-res">${(m.son.sira||[]).map((no,i)=>`<div><span class="pl">${i+1}.</span><span class="a2-no${i===0?" w":""}">${E(no)}</span><span class="a2-hn"><b>${E(nm(no))}</b></span><span class="a2-hp"><small>model ${P((m.A.find(y=>y.no===String(no))||{}).ps)}</small></span></div>`).join("")}</div>
         <p class="a2-note" style="margin-top:10px">Modelin ilk seçimi ${E(m.son.model_ilk)} ${E(nm(m.son.model_ilk))}: ${m.son.tuttu?'<b class="up">kazandı ✓</b>':'<b class="dn">kazanamadı ✗</b>'}${m.son.kosan?` · ${m.son.kosan} at koştu`:""}${m.son.esit?" · eşit derece var":""}.</p></div>`; }

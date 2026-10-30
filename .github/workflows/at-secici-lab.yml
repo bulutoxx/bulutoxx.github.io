@@ -1,0 +1,47 @@
+name: OXXai at secici gosterim laboratuvari (YH-15)
+# Yalnız ölçüm: koşu belirsizliğine göre seçici gösterim (güven puanı + pas eşiği, kapsam %75) aynı kapsamda
+# rastgele seçime karşı aylık ileri yürüyüşle sınanır (lab/at/secici_lab.py). Kapı geçerse data/at/secici.json bayrağı (aktif) ile uygulamada "Belirsiz koşu" etiketi açılır; geçmezse kendiliğinden kapanır.
+# Veri: github.com/cenkozgur/tjk-data aynası sığ klonlanır (_tjk-data, gitignore'da); tjk.org'a istek YOK. Ham veri commit edilmez;
+# yalnız data/at/secici_lab.json (toplu metrik) ve data/at/secici.json (katsayı + bayrak) yazılır. Haftalık (cumartesi). Issue/mail/bildirim yok.
+on:
+  schedule:
+    - cron: "17 6 * * 6"
+  workflow_dispatch:
+  push:
+    branches: ["yh15-*"]
+    paths: ["lab/at/secici_lab.py", ".github/workflows/at-secici-lab.yml"]
+permissions:
+  contents: write
+concurrency:
+  group: at-secici-lab
+  cancel-in-progress: false
+jobs:
+  lab:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      AT_KAYNAK: ./_tjk-data
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install -q numpy
+      - name: 🗃️ Ham veri önbelleği (replay_kosular; yalnız actions/cache)
+        uses: actions/cache/restore@v4
+        with:
+          path: data/at/replay_kosular.json
+          key: arsiv-replay-kosular-${{ github.run_id }}
+          restore-keys: arsiv-replay-kosular-
+      - name: 🗃️ Önbellek yoksa arşiv yedeği
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 lab/adim.py arsiv-indir --onem bilgi -- python3 lab/arsiv.py indir data/at/replay_kosular.json
+      - name: Aynayı sığ klonla (yalnız okunur, depoya yazılmaz)
+        run: python3 lab/adim.py ayna -- git clone -q --depth 1 https://github.com/cenkozgur/tjk-data _tjk-data
+      - name: Seçici gösterim deneyi
+        run: python3 lab/adim.py at-secici-lab --onem bilgi -- timeout 1500 python lab/at/secici_lab.py
+      - name: Sonuç (günlük)
+        run: cat data/at/secici_lab.json || true
+      - name: Yalnız türetilmiş çıktıyı kaydet (yalnız main)
+        if: github.ref == 'refs/heads/main'
+        run: python3 lab/gonder.py -m "At seçici gösterim laboratuvarı $(date -u +%F) [skip ci]" data/at/secici_lab.json data/at/secici.json data/saglik
