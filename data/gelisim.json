@@ -1,34 +1,6 @@
 {
  "olaylar": [
   {
-   "tarih": "2026-10-28",
-   "tur": "olcum",
-   "baslik": "Keskin piyasa önceliği sınandı",
-   "detay": "Düşük marjlı keskin piyasanın oranları, ortalama piyasa oranı yerine öğrenme girdisi olarak 68 bin maçta yıl yıl sınandı. Maç sonucu (1X2) için fark istatistiksel olarak anlamlı değil (reddedildi); 2,5 alt/üst için küçük ama tutarlı bir iyileşme var (maç başına log-kayıp −0,00018). Etki çok küçük olduğundan uygulamaya alınmadı; her hafta yeniden ölçülüyor.",
-   "anahtar": "keskin-piyasa-yh02"
-  },
-  {
-   "tarih": "2026-10-28",
-   "tur": "olcum",
-   "baslik": "Öneri kapanış çizgisi ölçümü başladı",
-   "detay": "Her kilitli önerinin oranı, maç başlamadan önceki son oranla karşılaştırılıyor (kapanış çizgisi değeri). İlk 5 günde (1.791 öneri) oranların %87'si kilitten sonra hiç oynamadı ve kapanış yönündeki küçük hareket sonucu öngörmedi; bu yüzden şimdilik yalnız arka planda ölçülüyor, yeterli veri birikince yeniden sınanacak.",
-   "anahtar": "clv-karne-golge"
-  },
-  {
-   "tarih": "2026-10-28",
-   "tur": "duzeltme",
-   "baslik": "Son dakikalarda canlı tavsiye ve altın yok",
-   "detay": "75. dakika ve sonrasında canlı tavsiye verilmiyor ve bu seçimler canlı karneye sayılmıyor (isabeti olduğundan yüksek gösteriyordu). Ölçüm: 75. dakika sonrası %95+ denen seçimlerin gerçek isabeti %81,6 idi (n=49).",
-   "anahtar": "canli-altin-95"
-  },
-  {
-   "tarih": "2026-10-28",
-   "tur": "duzeltme",
-   "baslik": "Canlı skor ekranda anlık güncelleniyor",
-   "detay": "Açık maç penceresi artık açılış anındaki skorda kalmıyor: sayfa açıkken 15 saniyede bir canlı bülten tazelenir, gol, kart ve devre değişince pencere kendiliğinden yeniden çizilir. Takip ve arama listesindeki canlı satırlar ile KUPO'daki canlı maçlar da aynı sıklıkla güncellenir; uygulamaya geri dönünce hemen tazelenir. Sayfa arka plandayken istek atılmaz.",
-   "anahtar": "canli-nabiz-v134"
-  },
-  {
    "tarih": "2026-10-27",
    "tur": "yenilik",
    "baslik": "Canlı maçta 2. tahmin ve ilk yarı gol tahmini",
@@ -1063,6 +1035,20 @@
    "baslik": "Gol sayısı dağılımı sınandı (oransız ligler)",
    "detay": "Model yolunda Poisson yerine yayılımı ayrıca öğrenen üç sayım dağılımı (negatif binom, Conway–Maxwell–Poisson, Weibull sayım) 4.417 oransız lig maçında zaman sıralı sınandı. Oransız liglerde gol sayıları Poisson'a çok yakın çıktı: 2,5 alt/üst için fark anlamlı değil, net skor ve maç sonucu hafif kötüleşti. Bu yüzden uygulamaya alınmadı (reddedildi); mevcut model aynen çalışıyor.",
    "anahtar": "sayim-dagilimi-yh18"
+  },
+  {
+   "tarih": "2026-10-31",
+   "tur": "olcum",
+   "baslik": "Sürekli laboratuvar ölçümü",
+   "detay": "Ligler: de, de2, en, en2; 1521 maç. Hiçbir açık kaynak karışımı piyasayı iki sezonda da geçemedi; mevcut sistem korunur.",
+   "anahtar": "2026-10-31-surekli-autolab"
+  },
+  {
+   "tarih": "2026-10-31",
+   "tur": "ogrenme",
+   "baslik": "Sürekli deney: bugünkü denemeler",
+   "detay": "1 karar: 1 ret, 0 gölgeye alındı, 0 uygulandı; gölgede bekleyen 0.",
+   "anahtar": "2026-10-31-surekli-ozet"
   }
  ],
  "guncel": "2026-10-30"
