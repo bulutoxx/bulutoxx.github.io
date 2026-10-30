@@ -15,7 +15,7 @@
       AT.days=[]; offs.forEach((o,i)=>{ const d=got[i]; if(d&&d.kosular&&d.kosular.length){ AT.data[d.tarih]=d; AT.days.push(d.tarih); } });
       AT.days.sort(); if(!AT.d||!AT.data[AT.d]) AT.d=AT.days.includes(dISO(0))?dISO(0):AT.days[AT.days.length-1]||null;
       const [m,k]=await Promise.all([j("data/at/model.json"),j("data/at/karne.json")]); AT.model=m; AT.karne=k;
-      AT.jok=await j("data/at/jokeyler.json"); AT.altK=await j("data/at/altili_karne.json"); AT.kyn=await j("data/at/kaynak_durum.json");
+      AT.jok=await j("data/at/jokeyler.json"); AT.altK=await j("data/at/altili_karne.json"); AT.kyn=await j("data/at/kaynak_durum.json"); AT.sec=await j("data/at/secici.json");
       AT.alt=AT.alt||{}; const als=await Promise.all(AT.days.map(d=>j("data/at/altili/"+d+".json"))); AT.days.forEach((d,i)=>{ if(als[i]&&als[i].altililar) AT.alt[d]=als[i]; });
       AT.canli=AT.canli||{}; const cs=await Promise.all(AT.days.map(d=>j("data/at/canli/"+d+".json"))); AT.days.forEach((d,i)=>{ if(cs[i]&&cs[i].kosular) AT.canli[d]=cs[i]; });
     }finally{ AT.busy=false; } render(); }

@@ -202,7 +202,7 @@ def main():
            "aciklama": "Seçici gösterim (pas eşiği): güven puanı = lojistik(p1, p1−p2, normalize entropi, ln alan), aylık ileri "
                        "yürüyüş; eşik eğitimde %25'lik dilim (hedef kapsam %75). Fark = seçilenlerin ilk seçim isabeti − tüm koşular "
                        "(aynı kapsamda rastgele seçimin beklentisi). Kapı (sabah): koşu günü blok bootstrap GA alt > 0, iki yarıda > 0, "
-                       "p ≤ 0,025. Üretimi değiştirmez.",
+                       "p ≤ 0,025. Kapı geçerse data/at/secici.json bayrağı aktif (uygulamada Belirsiz koşu etiketi).",
            "kapsam_hedef": A.kapsam, "B": A.B, "kosu": len(S), "oranli_kosu": sum(s["q"] is not None for s in S),
            "atlanan": atla, "sonuc": R, "kapi_gecti": gecti}
     os.makedirs(os.path.dirname(CIKTI), exist_ok=True)

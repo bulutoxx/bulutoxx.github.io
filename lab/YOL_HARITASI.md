@@ -295,7 +295,11 @@ drift alarmı ve kapanış kilidi (yolda). Aşağıdaki maddeler bunların **üz
 - **Efor:** S · **Risk:** düşük · **Veri:** mevcut.
 - **Nasıl sınanır:** Zaman sıralı: aynı kapsamda rastgele seçime göre isabet farkının GA alt sınırı > 0; yalnız-model ve harman ayrı.
 - **Kaynak:** Geifman & El-Yaniv (2017) NeurIPS "Selective classification for deep neural networks" [arXiv:1705.08500](https://arxiv.org/abs/1705.08500)
-- **Durum:** bekliyor
+- **Durum:** yayında (2026-10-30, v148; bayraklı, 14 gün izleme) — `lab/at/secici_lab.py` → `data/at/secici_lab.json` + bayrak/katsayı `data/at/secici.json`, `at-secici-lab.yml` haftalık yeniden ölçüm (kapı geçmezse `aktif=false`, etiket kendiliğinden kalkar).
+  Güven puanı = lojistik(p1, p1−p2, normalize entropi, ln alan), aylık ileri yürüyüş, eşik eğitimde %25'lik dilim. Sınama 2026-05-01…10-23, n = 2.494 koşu / 149 gün:
+  **sabah**: kapsam %69, seçilenlerde ilk seçim isabeti %33,3 vs tüm koşular %29,3 → fark +3,96 puan [GA +2,90, +5,04], yarılar +4,1 / +3,9, p < 0,001 → **geçti**; pas edilenlerde isabet %20,5.
+  **harman** (ayrı): kapsam %72, %37,8 vs %33,4 → +4,4 puan [+3,35, +5,51]. Bilgi: aynı kapsamda yalnız p1 eşiği de geçiyor (+3,35 [+2,3, +4,4]); entropi/alan p1'in üstüne anlamlı katkı vermedi (+0,62 [−0,28, +1,49]).
+  Uygulama: açık koşularda "≈ Belirsiz koşu" etiketi + koşu ekranında ölçülmüş not (`js/at2.js belirsiz()`); Altın kuralı (p ≥ %35, fark ≥ 12) değişmedi. İzleme notu: ilk canlı 50 koşuda etiket oranı %52 (alanlar replay ortalamasından büyük: ln n 2,37 vs 2,24).
 
 ### YH-16 · basket · Sakatlık raporu (NBA / WNBA) — dakika ağırlıklı kayıp
 - **Açıklama:** ESPN takım sakatlık listesinden "oynamaz / şüpheli" oyuncular; oyuncunun son maçlardaki dakika payı × takım içi etki (kutu skorundan basit artı-eksi ya da sayı payı) ile beklenen fark düzeltmesi. Yalnız türetilmiş takım düzeltmesi depoya; oyuncu düzeyi birikim önbellekte (futbol `kadro.py` ilkesi).
