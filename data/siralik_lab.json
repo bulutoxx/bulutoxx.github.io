@@ -1,0 +1,337 @@
+{
+ "madde": "YH-17",
+ "tarih": "2026-10-30",
+ "yontem": "asimptotik güven dizisi (Robbins normal karışımı, blok ortalaması, σ̂ eklentili), α=0.05 iki yanlı, ρ t*=14 bloka ayarlı, ısınma 5 blok",
+ "sifir_benzetim": {
+  "bagimsiz": {
+   "tekrar": 10000,
+   "bakis": 90,
+   "yanlis_red_iki_yanli": 0.0261,
+   "mc_ga95": [
+    0.023,
+    0.0292
+   ],
+   "yanlis_iyi_tek_yanli": 0.0132,
+   "saf_her_gun_bak_90": 0.5578,
+   "saf_her_gun_bak_14": 0.4478,
+   "sabit_tek_bakis_14": 0.0622
+  },
+  "ar0.3": {
+   "tekrar": 10000,
+   "bakis": 90,
+   "yanlis_red_iki_yanli": 0.1099,
+   "mc_ga95": [
+    0.1038,
+    0.116
+   ],
+   "yanlis_iyi_tek_yanli": 0.0552,
+   "saf_her_gun_bak_90": 0.8121,
+   "saf_her_gun_bak_14": 0.6597,
+   "sabit_tek_bakis_14": 0.186
+  }
+ },
+ "karar_suresi": {
+  "tasarim_etki_sd": 0.7488,
+  "satirlar": [
+   {
+    "etki_kat": 0.5,
+    "sabit_guc_14": 0.433,
+    "siralik_guc_14": 0.182,
+    "siralik_guc_42": 0.498,
+    "ort_karar_blok": 31.5,
+    "medyan_karar_blok": 42.0,
+    "yanlis_yon": 0.0,
+    "sure_orani_14e": 2.25
+   },
+   {
+    "etki_kat": 1.0,
+    "sabit_guc_14": 0.856,
+    "siralik_guc_14": 0.632,
+    "siralik_guc_42": 0.965,
+    "ort_karar_blok": 14.27,
+    "medyan_karar_blok": 11.0,
+    "yanlis_yon": 0.0,
+    "sure_orani_14e": 1.019
+   },
+   {
+    "etki_kat": 1.5,
+    "sabit_guc_14": 0.965,
+    "siralik_guc_14": 0.889,
+    "siralik_guc_42": 0.996,
+    "ort_karar_blok": 8.6,
+    "medyan_karar_blok": 7.0,
+    "yanlis_yon": 0.0,
+    "sure_orani_14e": 0.614
+   },
+   {
+    "etki_kat": 2.0,
+    "sabit_guc_14": 0.988,
+    "siralik_guc_14": 0.967,
+    "siralik_guc_42": 0.999,
+    "ort_karar_blok": 6.65,
+    "medyan_karar_blok": 5.0,
+    "yanlis_yon": 0.0,
+    "sure_orani_14e": 0.475
+   },
+   {
+    "etki_kat": 3.0,
+    "sabit_guc_14": 0.997,
+    "siralik_guc_14": 0.994,
+    "siralik_guc_42": 1.0,
+    "ort_karar_blok": 5.48,
+    "medyan_karar_blok": 5.0,
+    "yanlis_yon": 0.0,
+    "sure_orani_14e": 0.392
+   }
+  ]
+ },
+ "gecmis_kapi": {
+  "kararlar": {
+   "t/t*=0.5": {
+    "katsayi": 3.084,
+    "n": 78,
+    "uyum_ll": 0.9615,
+    "uyum_tam": 1.0,
+    "gecen_kaybi": 0,
+    "erken_ret_kotu": 4
+   },
+   "t/t*=1.0": {
+    "katsayi": 3.035,
+    "n": 78,
+    "uyum_ll": 0.9615,
+    "uyum_tam": 1.0,
+    "gecen_kaybi": 0,
+    "erken_ret_kotu": 4
+   },
+   "t/t*=2.0": {
+    "katsayi": 3.061,
+    "n": 78,
+    "uyum_ll": 0.9615,
+    "uyum_tam": 1.0,
+    "gecen_kaybi": 0,
+    "erken_ret_kotu": 4
+   }
+  },
+  "n_gecti": 3,
+  "gecenler": [
+   {
+    "dosya": "bk_canli_lab.json",
+    "yol": "/kapi_yeni",
+    "dll": -0.00365,
+    "ga": [
+     -0.00505,
+     -0.00221
+    ],
+    "siralik_ll_gecti": true
+   },
+   {
+    "dosya": "bk_gelistir.json",
+    "yol": "/adaylar/B_ortak_hca",
+    "dll": -0.01877,
+    "ga": [
+     -0.02367,
+     -0.01405
+    ],
+    "siralik_ll_gecti": true
+   },
+   {
+    "dosya": "bk_gelistir.json",
+    "yol": "/adaylar/B_ortak_hca_kolej",
+    "dll": -0.01883,
+    "ga": [
+     -0.02391,
+     -0.01423
+    ],
+    "siralik_ll_gecti": true
+   }
+  ]
+ },
+ "koruyucu_tekrar": {
+  "n": 10,
+  "uyum": 1.0,
+  "degisiklikler": [
+   {
+    "tarih": "2026-10-25",
+    "fark": [
+     "canli_platt"
+    ],
+    "koruyucu": "kalıcı (isabet korunuyor)",
+    "olcut": "ham",
+    "n_once": 481,
+    "gun": 6,
+    "n_sonra": 1424,
+    "siralik": "devam",
+    "siralik_gun": null,
+    "koruyucu_400_gun": 1,
+    "son_ort": -0.0113,
+    "son_ust": 0.0239,
+    "uyum": true
+   },
+   {
+    "tarih": "2026-10-25",
+    "fark": [
+     "motor sürümü",
+     "cal_yol"
+    ],
+    "koruyucu": "kalıcı (isabet korunuyor)",
+    "olcut": "ham",
+    "n_once": 481,
+    "gun": 6,
+    "n_sonra": 1424,
+    "siralik": "devam",
+    "siralik_gun": null,
+    "koruyucu_400_gun": 1,
+    "son_ort": -0.0113,
+    "son_ust": 0.0239,
+    "uyum": true
+   },
+   {
+    "tarih": "2026-10-25",
+    "fark": [
+     "motor sürümü",
+     "dk",
+     "cal_yol"
+    ],
+    "koruyucu": "kalıcı (isabet korunuyor)",
+    "olcut": "ham",
+    "n_once": 481,
+    "gun": 6,
+    "n_sonra": 1424,
+    "siralik": "devam",
+    "siralik_gun": null,
+    "koruyucu_400_gun": 1,
+    "son_ort": -0.0113,
+    "son_ust": 0.0239,
+    "uyum": true
+   },
+   {
+    "tarih": "2026-10-26",
+    "fark": [
+     "gscale"
+    ],
+    "koruyucu": "kalıcı (isabet korunuyor)",
+    "olcut": "ham",
+    "n_once": 1087,
+    "gun": 5,
+    "n_sonra": 818,
+    "siralik": "devam",
+    "siralik_gun": null,
+    "koruyucu_400_gun": 3,
+    "son_ort": -0.0092,
+    "son_ust": 0.0269,
+    "uyum": true
+   },
+   {
+    "tarih": "2026-10-26",
+    "fark": [
+     "elo_kupa"
+    ],
+    "koruyucu": "kalıcı (isabet korunuyor)",
+    "olcut": "ham",
+    "n_once": 1087,
+    "gun": 5,
+    "n_sonra": 818,
+    "siralik": "devam",
+    "siralik_gun": null,
+    "koruyucu_400_gun": 3,
+    "son_ort": -0.0092,
+    "son_ust": 0.0269,
+    "uyum": true
+   },
+   {
+    "tarih": "2026-10-27",
+    "fark": [
+     "decay"
+    ],
+    "koruyucu": "kalıcı (isabet korunuyor)",
+    "olcut": "ham",
+    "n_once": 1207,
+    "gun": 4,
+    "n_sonra": 698,
+    "siralik": "devam",
+    "siralik_gun": null,
+    "koruyucu_400_gun": 2,
+    "son_ort": -0.0066,
+    "son_ust": null,
+    "uyum": true
+   },
+   {
+    "tarih": "2026-10-28",
+    "fark": [
+     "canli_platt"
+    ],
+    "koruyucu": "kalıcı (isabet korunuyor)",
+    "olcut": "sunulan",
+    "n_once": 421,
+    "gun": 3,
+    "n_sonra": 461,
+    "siralik": "devam",
+    "siralik_gun": null,
+    "koruyucu_400_gun": 3,
+    "son_ort": 0.0039,
+    "son_ust": null,
+    "uyum": true
+   },
+   {
+    "tarih": "2026-10-28",
+    "fark": [
+     "devig"
+    ],
+    "koruyucu": "kalıcı (isabet korunuyor)",
+    "olcut": "sunulan",
+    "n_once": 421,
+    "gun": 3,
+    "n_sonra": 461,
+    "siralik": "devam",
+    "siralik_gun": null,
+    "koruyucu_400_gun": 3,
+    "son_ort": 0.0039,
+    "son_ust": null,
+    "uyum": true
+   },
+   {
+    "tarih": "2026-10-28",
+    "fark": [
+     "decay",
+     "gscale"
+    ],
+    "koruyucu": "kalıcı (isabet korunuyor)",
+    "olcut": "sunulan",
+    "n_once": 421,
+    "gun": 3,
+    "n_sonra": 461,
+    "siralik": "devam",
+    "siralik_gun": null,
+    "koruyucu_400_gun": 3,
+    "son_ort": 0.0039,
+    "son_ust": null,
+    "uyum": true
+   },
+   {
+    "tarih": "2026-10-29",
+    "fark": [
+     "gscale"
+    ],
+    "koruyucu": "izleniyor",
+    "olcut": "ham",
+    "n_once": 1657,
+    "gun": 2,
+    "n_sonra": 248,
+    "siralik": "devam",
+    "siralik_gun": null,
+    "koruyucu_400_gun": null,
+    "son_ort": -0.0051,
+    "son_ust": null,
+    "uyum": true
+   }
+  ],
+  "not": "birim = gün; önce dönemi sabit (14 gün), α 0,025 + 0,025 birleşim; eşdeğerlik marjı 0,01 Brier (koruyucu eşiğiyle aynı)."
+ },
+ "kapi": {
+  "yanlis_red_le_0.05": true,
+  "uyum_ge_0.90": true,
+  "gecti": true
+ },
+ "uretime_etki": "yok (gölge; eski kapı karar verir)",
+ "sure_sn": 1.0
+}

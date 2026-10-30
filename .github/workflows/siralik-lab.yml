@@ -1,0 +1,29 @@
+name: OXXai sirali test laboratuvari (YH-17)
+# Yalnız ölçüm: her an geçerli güven dizisi (lab/siralik.py) — sıfır benzetimi (10.000 tekrar), geçmiş kapı kararlarıyla uyum,
+# koruyucu 14 gün izleme kararlarının sıralı tekrarı. Eski kapıyla paralel gölge; üretimi değiştirmez. Yalnız data/siralik_lab.json
+# (toplu metrik) yazılır. Haftalık (salı). Issue/mail/bildirim yok.
+on:
+  schedule:
+    - cron: "53 3 * * 2"
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: siralik-lab
+  cancel-in-progress: false
+jobs:
+  lab:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install numpy==2.1.3 scipy==1.14.1
+      - name: Sıralı test ölçümü
+        run: python3 lab/adim.py siralik-lab --onem bilgi -- timeout 900 python lab/siralik_lab.py
+      - name: Sonuç (günlük)
+        run: python3 -c "import json;print(json.load(open('data/siralik_lab.json'))['kapi'])" || true
+      - name: Yalnız türetilmiş çıktıyı kaydet (yalnız main)
+        if: github.ref == 'refs/heads/main'
+        run: python3 lab/gonder.py -m "Sıralı test laboratuvarı $(date -u +%F) [skip ci]" data/siralik_lab.json data/saglik
