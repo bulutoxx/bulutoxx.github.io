@@ -325,7 +325,9 @@ drift alarmı ve kapanış kilidi (yolda). Aşağıdaki maddeler bunların **üz
 - **Efor:** M · **Risk:** orta (ızgara ve DC uyumu) · **Veri:** mevcut.
 - **Nasıl sınanır:** `fb_guc_lab.py` 2,5 Ü ve net skor LL için SK.
 - **Kaynak:** Boshnakov, Kharrat, McHale (2017) IJF [doi:10.1016/j.ijforecast.2016.11.006](https://doi.org/10.1016/j.ijforecast.2016.11.006) · Karlis & Ntzoufras (2003) JRSS-D [doi:10.1111/1467-9884.00366](https://doi.org/10.1111/1467-9884.00366)
-- **Durum:** bekliyor
+- **Durum:** reddedildi (2026-10-30; kapı geçmedi, üretim değişmedi) — `lab/sayim_lab.py` → `data/sayim_lab.json`. Aynı ileri yürüyüş λ'sı (oransız Poisson decay 0,003 / prior 10) ve aynı Dixon-Coles ızgarası; yalnız marjinal şekli değişir (ortalama eşlemeli NB, Conway–Maxwell–Poisson, Weibull sayım; c = 1 / ν = 1 denetimi Poisson'dan ≤ 0,00012 sapma). Şekil parametresi her ay yalnız geçmiş aylarla seçildi.
+  **Oransız ligler (karar alanı)**, sınama 2026-04-01+ n = 4.417 (28 lig): CMP ve Weibull her ay Poisson'u seçti (fark 0); NB (r = 100) 2,5 A/Ü ΔLL −0,00009 [GA −0,0002, +0,00001], p 0,047 > α_t 0,0136, net skor ΔLL +0,00025, 1X2 +0,00012 → **geçmedi**. Artık yayılım ev 1,035 / dep 1,018 (Poisson'a çok yakın).
+  Sağlamlık (oranlı ligler, model yolu, yalnız rapor — `data/sayim_lab_derin.json`, n = 15.444): hafif eksik yayılım (CMP ν = 1,1) 2,5 A/Ü ΔLL −0,00016 [−0,00029, −0,00003], net skor −0,0014; ancak 1,5/3,5 A/Ü kötüleşiyor ve bu yol oranlı maçlarda sunulmuyor. Alfa yatırımı `fb_model-2026` testi düşüldü.
 
 ### YH-19 · canlı · Kırmızı kart etkisinin kayıtlardan öğrenilmesi
 - **Açıklama:** CG'de kırmızı kart çarpanları sabit (0,72 / 1,25). Kayıtlı canlı anlık görüntülerde kart olayı biriktikçe (≥ 150 kartlı maç) çarpanlar dakika ve skor durumuna göre Bayes küçültmeyle (önsel = mevcut sabitler) öğrenilir.

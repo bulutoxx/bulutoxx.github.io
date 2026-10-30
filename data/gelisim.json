@@ -144,7 +144,7 @@
    "tarih": "2026-10-27",
    "tur": "yenilik",
    "baslik": "Sürüm v119",
-   "detay": "'Kupon' kelimesi her yerde KUPO oldu: + KUPO, KUPO'ya ekle, KUPO'larım, Altın KUPO, OXXai'nin KUPO'ları. OXXai 'kupo' yazımını da anlar. Adında kesme işareti olan KUPO'larda ekranın donmasına yol açan hata düzeltildi.",
+   "detay": "Eski adlandırma her yerde KUPO oldu: + KUPO, KUPO'ya ekle, KUPO'larım, Altın KUPO, OXXai'nin KUPO'ları. OXXai 'kupo' yazımını da anlar. Adında kesme işareti olan KUPO'larda ekranın donmasına yol açan hata düzeltildi.",
    "anahtar": "2026-10-27-v119"
   },
   {
@@ -172,7 +172,7 @@
    "tarih": "2026-10-27",
    "tur": "yenilik",
    "baslik": "Sürüm v114",
-   "detay": "Tüm uygulamada 'bahis' dili kaldırıldı: At bölümündeki sekme artık 'Türler', '6'lı Tahmin', 'Kazanan', 'Derece', 'tek at', 'piyasa oranı'. Yasal uyarılar korunarak 'şans oyunu' ifadesiyle yazıldı. Şans oyunu sitelerine giden kaynak bağlantıları kaldırıldı.",
+   "detay": "Tüm uygulamada şans oyunu dili kaldırıldı: At bölümündeki sekme artık 'Türler', '6'lı Tahmin', 'Kazanan', 'Derece', 'tek at', 'piyasa oranı'. Yasal uyarılar korunarak 'şans oyunu' ifadesiyle yazıldı. Şans oyunu sitelerine giden kaynak bağlantıları kaldırıldı.",
    "anahtar": "2026-10-27-v114"
   },
   {
@@ -606,7 +606,7 @@
    "tarih": "2026-10-25",
    "tur": "yenilik",
    "baslik": "🐎 At Yarışı (deneme) bölümü açıldı",
-   "detay": "Menü › Analiz › At Yarışı: her gün İstanbul, Ankara, İzmir, Adana ve diğer hipodromlarda koşu koşu kazanma ve ilk 2 olasılıkları, ikili önerisi. Model 14 bin geçmiş koşudan öğrenir, her gece yeniden eğitilir ve yalnız isabeti artıran ayarı kabul eder. Dürüst durum: şu an ganyan favorisi seviyesinde (ilk seçim %34, favori %35); geliştirme sürüyor. Veri herkese açık TJK sonuç arşivinden; TJK sitesine istek atılmaz.",
+   "detay": "Menü › Analiz › At Yarışı: her gün İstanbul, Ankara, İzmir, Adana ve diğer hipodromlarda koşu koşu kazanma ve ilk 2 olasılıkları, ikili önerisi. Model 14 bin geçmiş koşudan öğrenir, her gece yeniden eğitilir ve yalnız isabeti artıran ayarı kabul eder. Dürüst durum: şu an piyasa favorisi seviyesinde (ilk seçim %34, favori %35); geliştirme sürüyor. Veri herkese açık TJK sonuç arşivinden; TJK sitesine istek atılmaz.",
    "anahtar": "2026-10-25-at73"
   },
   {
@@ -1056,6 +1056,13 @@
    "baslik": "Canlı altın işaret eşiği yükseltildi",
    "detay": "%80+ işaretler 12/15 (%80, Wilson alt %55) tuttu; güven alt sınırı %75'in altında. Eşik %85'e yükseldi, yeni 48 saat deneme.",
    "anahtar": "canli-isaret-2026-10-30-yukseltildi"
+  },
+  {
+   "tarih": "2026-10-30",
+   "tur": "olcum",
+   "baslik": "Gol sayısı dağılımı sınandı (oransız ligler)",
+   "detay": "Model yolunda Poisson yerine yayılımı ayrıca öğrenen üç sayım dağılımı (negatif binom, Conway–Maxwell–Poisson, Weibull sayım) 4.417 oransız lig maçında zaman sıralı sınandı. Oransız liglerde gol sayıları Poisson'a çok yakın çıktı: 2,5 alt/üst için fark anlamlı değil, net skor ve maç sonucu hafif kötüleşti. Bu yüzden uygulamaya alınmadı (reddedildi); mevcut model aynen çalışıyor.",
+   "anahtar": "sayim-dagilimi-yh18"
   }
  ],
  "guncel": "2026-10-30"
