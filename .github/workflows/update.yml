@@ -75,6 +75,14 @@ jobs:
           restore-keys: bk-sakatlik-
       - name: 🩹 Basket sakatlık raporu (YH-16 gölge; ESPN NBA/WNBA, yalnız türetilmiş takım kaybı → data/bk_sakatlik.json)
         run: python3 lab/adim.py bk-sakatlik --onem bilgi -- timeout 240 python3 scripts/bk_sakatlik.py
+      - name: 🌍 Milli Elo önbelleği (CC0 ham sonuç dosyası yalnız burada; depoya girmez)
+        uses: actions/cache@v4
+        with:
+          path: .milli_elo_onbellek
+          key: milli-elo-${{ github.run_id }}
+          restore-keys: milli-elo-
+      - name: 🌍 Milli takım Elo (YH-20; CC0 → yalnız türetilmiş puan data/milli_elo.json + kilitli gölge data/milli_elo_golge.json)
+        run: python3 lab/adim.py milli-elo --onem bilgi -- timeout 120 python3 scripts/milli_elo.py
       - name: Basketbol verilerini indir ve modeli eğit
         run: python3 lab/adim.py basket -- python scripts/basket.py
         env:
