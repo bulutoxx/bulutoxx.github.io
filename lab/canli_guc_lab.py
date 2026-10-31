@@ -218,6 +218,71 @@ def fit_gec(X, base):
     return unpack_gec(v, base)
 
 
+# ---------------------------------------------------------------- YH-19 · kırmızı kart çarpanlarının kayıtlardan öğrenilmesi — 3. aşama
+# Önsel = mevcut sabitler (Titman ve ark. 2015): kendi kırmızı 0,72, rakip kırmızı 1,25. Öğrenme yalnız kartlı anlık görüntülerde,
+# diğer parametreler sabit; log ölçekte Gauss önsel (std KART_SD) = Bayes küçültme. Aynı maçın ardışık anlık görüntüleri ilişkili
+# olduğundan her maç toplamda 1 ağırlık taşır (aşırı güveni önler). Kartsız satırlarda çarpan 1 → genel etki = kartlı alt küme etkisi.
+# KAPI: toplam ≥ KART_MIN_MAC kartlı sonuçlu maç ve sınamada ≥ KART_MIN_TEST kartlı maç; kartlı alt kümede birleşik (MS + 2,5)
+# ΔLL maç-blok %95 GA üst < 0, iki zaman yarısında ΔLL < 0, ΔBrier MS ≤ 0 ve 2,5 ≤ 0. Geçmezse sabitler (0,72 / 1,25) kalır.
+KART_NOTR = {"rc_own": 0.72, "rc_opp": 1.25}
+KART_SD = 0.2
+KART_MIN_MAC, KART_MIN_TEST, KART_MIN_EGITIM = 150, 100, 20
+
+
+def _kartli(X):
+    m = (np.nan_to_num(X["rh"]) + np.nan_to_num(X["ra"])) > 0
+    return {k: v[m] for k, v in X.items()}
+
+
+def fit_kart(Xc, ids_c, base):
+    """Kartlı satırlar (Xc) ve maç kimlikleri → küçültülmüş rc_own / rc_opp."""
+    if len(Xc["t"]) == 0: return dict(base, **KART_NOTR)
+    u, inv, cnt = np.unique(ids_c, return_inverse=True, return_counts=True); w = 1.0 / cnt[inv]
+    v0 = np.log([KART_NOTR["rc_own"], KART_NOTR["rc_opp"]])
+    def unp(v): return dict(base, rc_own=float(min(1.0, max(0.4, math.exp(v[0])))), rc_opp=float(min(1.8, max(1.0, math.exp(v[1])))))
+    def f(v):
+        l1, _, l2, _ = losses(cg_probs(Xc, unp(v)), Xc)
+        return float(((l1 + l2) * w).sum()) + 0.5 * float(np.sum(((v - v0) / KART_SD) ** 2))
+    v, _ = nelder_mead(f, v0, step=.1, it=300)
+    return unp(v)
+
+
+def kart_rows(snaps, fin, ids):
+    R = [r for r in snaps if r["id"] in ids and ((r["rc"][0] or 0) + (r["rc"][1] or 0)) > 0]
+    return rows_of(R, fin, set(ids), extra=False), np.array([r["id"] for r in R])
+
+
+def kart_eval(fin, snaps, P):
+    """Zaman sıralı: sınama günü D için çarpanlar yalnız D başlamadan sonucu kesin kartlı maçlarla öğrenilir."""
+    kart_mac = sorted({r["id"] for r in snaps if ((r["rc"][0] or 0) + (r["rc"][1] or 0)) > 0})
+    out = {"kartli_mac": len(kart_mac), "kartli_anlik": int(sum(1 for r in snaps if ((r["rc"][0] or 0) + (r["rc"][1] or 0)) > 0)),
+           "mac": len({r["id"] for r in snaps}), "onsel": KART_NOTR, "onsel_sd_log": KART_SD}
+    days = sorted({r["d"] for r in snaps}); D_ll = []; D_bm = []; D_bo = []; I = []; T = []; gun = []
+    for D in days[1:]:
+        t0 = day_start(D); tr = {k for k, M in fin.items() if M["ts"] + 2.5 * 3600 < t0}
+        Xte, ite = kart_rows(snaps, fin, {r["id"] for r in snaps if r["d"] == D})
+        if len(Xte["t"]) == 0: continue
+        Xtr, itr = kart_rows(snaps, fin, tr)
+        Pk = fit_kart(Xtr, itr, P) if len(set(itr.tolist())) >= KART_MIN_EGITIM else dict(P, **KART_NOTR)
+        a = losses(cg_probs(Xte, dict(P, **KART_NOTR)), Xte); b = losses(cg_probs(Xte, Pk), Xte)
+        D_ll.append((b[0] + b[2]) - (a[0] + a[2])); D_bm.append(b[1] - a[1]); D_bo.append(b[3] - a[3]); I += ite.tolist(); T += [D] * len(ite)
+        gun.append({"gun": D, "egitim_kartli_mac": len(set(itr.tolist())), "sinama_kartli_mac": len(set(ite.tolist())),
+                    "rc_own": round(Pk["rc_own"], 4), "rc_opp": round(Pk["rc_opp"], 4)})
+    out["gunler"] = gun
+    if D_ll:
+        dl = np.concatenate(D_ll); I = np.array(I); T = np.array(T); ci, pw = boot(dl, I)
+        hm = T <= sorted(T)[len(T) // 2]
+        yar = [round(float(dl[hm].mean()), 5), round(float(dl[~hm].mean()), 5) if (~hm).any() else None]
+        out["sinama"] = {"n": int(len(dl)), "kartli_mac": len(set(I.tolist())), "d_ll": round(float(dl.mean()), 5), "ga95": ci, "p_iyi": pw,
+                         "yarilar": yar, "d_brier_ms": round(float(np.concatenate(D_bm).mean()), 5), "d_brier_o25": round(float(np.concatenate(D_bo).mean()), 5)}
+    S = out.get("sinama")
+    ok = bool(S and out["kartli_mac"] >= KART_MIN_MAC and S["kartli_mac"] >= KART_MIN_TEST and S["ga95"][1] < 0
+              and all(y is not None and y < 0 for y in S["yarilar"]) and S["d_brier_ms"] <= 0 and S["d_brier_o25"] <= 0)
+    out["kapi"] = {"kural": f"toplam ≥ {KART_MIN_MAC} kartlı maç, sınamada ≥ {KART_MIN_TEST}; kartlı alt kümede birleşik ΔLL %95 GA üst < 0, iki yarıda < 0, ΔBrier MS ve 2,5 ≤ 0",
+                   "gecti": ok, "durum": "geçti" if ok else ("veri bekliyor" if out["kartli_mac"] < KART_MIN_MAC else "geçmedi")}
+    return out
+
+
 # ---------------------------------------------------------------- seçim (pick) Platt'ı — uygulamanın liveCal'ı
 def pick_rows(snaps, ids):
     return [r for r in snaps if r["id"] in ids and r.get("ok") is not None]
@@ -392,8 +457,13 @@ def main(argv):
         if GECR["kapi"]["gecti"]: P = fit_gec(Xall, P)          # v136: geç dakika parametreleri yalnız kapıyı geçerse (yoksa nötr)
         else: P = dict(P, **GEC_NOTR)
         GECR["uygulanan"] = {k: round(P[k], 5) for k in GEC}
+        KARTR = kart_eval(fin, snaps, P)                         # YH-19: kart çarpanları yalnız kapıyı geçerse öğrenilmiş değer
+        if KARTR["kapi"]["gecti"]:
+            Xk, ik = kart_rows(snaps, fin, set(fin)); P = fit_kart(Xk, ik, P)
+        else: P = dict(P, **KART_NOTR)
+        KARTR["uygulanan"] = {k: round(P[k], 5) for k in KART_NOTR}
         out.update({"kullan": bool(ok), "params": {k: round(P[k], 5) for k in list(FREE) + ["e1", "e2", "rmin", "g_l2", "g_ldl", "rc_own", "rc_opp", "nmax"]},
-                    "gec": GECR,
+                    "gec": GECR, "kart": KARTR,
                     "kal": None, "egitim_satir": int(len(Xall["t"])), "egitim_mac": len(fin),
                     "sinama": {"yontem": "genişleyen pencere, gün bazlı; eğitim = sınama günü başlamadan sonucu kesin maçlar", "n": res["n"], "mac": res["mac"],
                                "tablo": T, "karsilastirma": K, "secim": SEC, "kazanilan_gun": win_days, "gun_sayisi": len(res["gunler"]), "gunler": res["gunler"]},
@@ -402,6 +472,7 @@ def main(argv):
     print(json.dumps({k: v for k, v in out.items() if k != "sinama"}, ensure_ascii=False, indent=1))
     if E: print(json.dumps({k: out["sinama"][k] for k in ("n", "mac", "tablo", "karsilastirma", "secim", "kazanilan_gun", "gun_sayisi")}, ensure_ascii=False, indent=1))
     if E: print(json.dumps(out.get("gec"), ensure_ascii=False, indent=1))
+    if E: print(json.dumps({k: v for k, v in (out.get("kart") or {}).items() if k != "gunler"}, ensure_ascii=False, indent=1))
     if "--uygula" in argv:
         json.dump(out, open(os.path.join(DATA, "canli_guc.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
         print("yazıldı: data/canli_guc.json")
