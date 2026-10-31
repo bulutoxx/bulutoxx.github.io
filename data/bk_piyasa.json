@@ -1,6 +1,6 @@
 {
  "surum": "2026-10-28.1",
- "guncelleme": "2026-10-31 20:45",
+ "guncelleme": "2026-10-31 21:19",
  "aciklama": "Basket piyasa karnesi: kilitli model tahmini ile maç öncesi son piyasa oranı (marjı Shin ile ayrılmış) aynı maçlarda. Harman = Benter iki aşama (lig grubu, zaman sıralı ağırlık). Çapalı = model fark/toplamının handikap ve alt/üst çizgisine çekilmesi. GA: gün blokları bootstrap %95. Üretime yalnız OXXai kapısı + gölge sonrası girer.",
  "kurallar": {
   "kapi": "n ≥ 150, gün ≥ 20, ΔLL GA üst < 0, ΔBrier < 0, isabet düşmez",
@@ -304,6 +304,13 @@
   }
  },
  "agirlik": {
+  "kolej": {
+   "a": 0.3,
+   "b": 0.7,
+   "w_m": 0.6,
+   "w_t": 0.6,
+   "n_ogrenme": 0
+  },
   "pro": {
    "a": 0.2594,
    "b": 0.7567,
@@ -317,13 +324,6 @@
    "w_m": 0.2548,
    "w_t": 1.0,
    "n_ogrenme": 32
-  },
-  "kolej": {
-   "a": 0.3,
-   "b": 0.7,
-   "w_m": 0.6,
-   "w_t": 0.6,
-   "n_ogrenme": 0
   }
  },
  "uretimde": {},
@@ -463,7 +463,6 @@
   "Portekiz Basketbol Ligi": 3,
   "Arjantin LNB": 2,
   "Fransa Pro A": 3,
-  "Slovenya 1. A SKL": 2,
   "İspanya Liga ACB": 6,
   "Almanya BBL": 4,
   "İtalya Serie B": 10,
@@ -478,19 +477,19 @@
   "Çekya NBL": 3,
   "G. Kore Güney Kore Basketbol Ligi": 3,
   "Japonya B.Ligi": 8,
-  "İspanya LEB Oro": 7,
-  "Almanya Pro A": 3,
+  "Slovenya 1. A SKL": 1,
+  "İspanya LEB Oro": 5,
   "İtalya Serie A": 6,
   "G. Kore Güney Kore Kadın Basket Ligi": 1,
   "ABA Liga, Group B": 2,
+  "Almanya Pro A": 2,
   "BNXT Ligi": 2,
   "İtalya Serie A2": 6,
   "Çin CBA": 2,
-  "İspanya Kadınlar Basketbol Ligi": 2,
+  "İspanya Kadınlar Basketbol Ligi": 1,
   "Fransa Pro B": 1,
   "Europe Kupası": 2,
   "ABA Liga, Group A": 1,
-  "Slovakya Extraliga": 2,
   "Uruguay Basketbol Ligi": 1
  },
  "gunluk": [
