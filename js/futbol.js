@@ -175,20 +175,35 @@
 // v84: Canlı sekmesinde maç arama — takım veya lig adıyla canlı listeyi süzer (futbol ve basketbol)
 (function(){
   IDLV.q="";
-  const _l=idlListHtml; idlListHtml=function(sp,q){ if(q===undefined){ const v=$("v-canli"); if(v&&!v.hidden&&IDLV.q) q=IDLV.q; } return _l.call(this,sp,q); };
+  const _l=idlListHtml; idlListHtml=function(sp,q){ let cv=false; if(q===undefined){ const v=$("v-canli"); if(v&&!v.hidden&&IDLV.q){ q=IDLV.q; cv=true; } } const h=_l.call(this,sp,q);
+    // v151: canlı listede sonuç yoksa "yok" deyip bırakma: başlamış (canlı listede olmayan) ve sıradaki eşleşmeleri göster, dokununca oraya kaydır
+    if(cv&&sp===1&&IDL.ok[1]&&/idl-empty/.test(h)){ try{ const c=window.nxAraSay&&window.nxAraSay(); if(c&&(c.s||c.n)) return `<button type="button" class="panel idl-empty cv-alt" data-cvalt="1"><b>Canlı listede yok</b><small>${[c.s?c.s+" başlamış maç":"",c.n?c.n+" sıradaki maç":""].filter(Boolean).join(" · ")} aşağıda ↓</small></button>`; }catch(e){} }
+    return h; };
+  document.addEventListener("click",e=>{ const b=e.target.closest&&e.target.closest("[data-cvalt]"); if(!b) return; const x=document.querySelector("#nxBox .nx-st, #nxBox .nx-h"); if(x) x.scrollIntoView({behavior:"smooth",block:"start"}); });
   function mount(){ const cw=document.querySelector("#v-canli .wrap"); if(!cw||$("cvQ")) return;
     const el=document.createElement("div"); el.className="cv-q"; el.id="cvQ"; el.onclick=e=>{ if(e.target===el) $("cvQi").focus(); };
     el.innerHTML=`<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input id="cvQi" type="search" placeholder="Canlı maç ara: takım veya lig" autocomplete="off" enterkeyhint="search" aria-label="Canlı maç ara"><button type="button" id="cvQx" aria-label="Aramayı temizle" hidden>✕</button>`;
     const idl=$("idlBox"); idl?idl.before(el):cw.prepend(el);
-    let t; $("cvQi").oninput=e=>{ clearTimeout(t); t=setTimeout(()=>{ IDLV.q=e.target.value.trim(); $("cvQx").hidden=!IDLV.q; try{ idlRenderAll(); }catch(_){} try{ cvLegacy(); }catch(_){} },180); };
-    $("cvQx").onclick=()=>{ $("cvQi").value=""; IDLV.q=""; $("cvQx").hidden=true; try{ idlRenderAll(); }catch(_){} try{ cvLegacy(); }catch(_){} $("cvQi").focus(); }; }
+    let t; const apply=v=>{ clearTimeout(t); IDLV.q=String(v||"").trim(); $("cvQx").hidden=!IDLV.q; try{ idlRenderAll(); }catch(_){} try{ cvLegacy(); }catch(_){} };
+    $("cvQi").oninput=e=>{ clearTimeout(t); t=setTimeout(()=>apply(e.target.value),180); };
+    const clear=()=>{ $("cvQi").value=""; apply(""); $("cvQi").focus(); };
+    // v151: Enter hemen uygular (dokunmatikte klavyeyi kapatır), Esc temizler
+    $("cvQi").onkeydown=e=>{ if(e.key==="Enter"){ e.preventDefault(); apply(e.target.value); try{ if(matchMedia("(pointer:coarse)").matches) e.target.blur(); }catch(_){} }
+      else if(e.key==="Escape"||e.key==="Esc"){ e.preventDefault(); e.stopPropagation(); if(e.target.value||IDLV.q) clear(); else e.target.blur(); } };
+    $("cvQx").onclick=clear;
+    window.cvQSync=()=>{ const i=$("cvQi"); if(!i) return; const v=i.value.trim(); if(v!==(IDLV.q||"")) apply(v); else $("cvQx").hidden=!IDLV.q; }; }
   // yedek liste (resmi bülten alınamazsa görünen ESPN listesi) için basit süzme
-  function cvLegacy(){ const L=$("liveList"); if(!L) return; const q=(IDLV.q||"").toLocaleLowerCase("tr");
-    L.querySelectorAll(":scope > *").forEach(x=>{ x.style.display=!q||x.textContent.toLocaleLowerCase("tr").includes(q)?"":"none"; }); }
+  // v151: Türkçe karakter / aksan toleranslı (norm: ç→c, ş→s, ı→i, ö→o, ü→u, ğ→g)
+  function cvLegacy(){ const L=$("liveList"); if(!L) return; const q=IDLV.q||"";
+    L.querySelectorAll(":scope > *").forEach(x=>{ let on=!q; if(!on){ try{ on=qMatch(q,[x.textContent]); }catch(_){ on=x.textContent.toLocaleLowerCase("tr").includes(q.toLocaleLowerCase("tr")); } } x.style.display=on?"":"none"; }); }
   window.cvLegacy=cvLegacy;
   // arama kutusu her zaman altın kupon ile liste arasında kalsın
   const _ira=idlRenderAll; idlRenderAll=function(){ const r=_ira.apply(this,arguments); try{ mount(); const el=$("cvQ"), idl=$("idlBox"); if(el&&idl&&el.nextElementSibling!==idl) idl.before(el); if(IDLV.q) cvLegacy(); }catch(e){} return r; };
   mount();
+  // v151: Canlı'ya dönüşte / sayfa geri yüklenince kutudaki değer ile süzme eşitlenir
+  const sync=()=>setTimeout(()=>{ try{ window.cvQSync&&window.cvQSync(); }catch(_){} },40);
+  document.addEventListener("click",e=>{ if(e.target.closest&&e.target.closest('[data-v="canli"]')) sync(); },true);
+  window.addEventListener("pageshow",sync);
 })();
 } catch (e) { if (typeof reportError === "function") reportError(e); else setTimeout(function () { throw e; }); } /* /id: canli-ara-v84 */
 /* id: tahmin-canli-v85 */ try {

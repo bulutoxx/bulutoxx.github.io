@@ -50,21 +50,25 @@ const fakeSb = { data: { events: [
     return { seal: s ? s.textContent : null, late: x ? x.textContent : null, on: r.classList.contains("ai-on"), box1: box ? (box.querySelector("small") || {}).textContent : null,
       st: window.aiST.get(String(id)) || null, pr: (r.querySelector(".lv-pr") || {}).textContent || "" }; }, id);
   const lgf = await p.evaluate(() => LGF.isaret);
-  ok(lgf && lgf.esik === 0.8 && lgf.kapanis === 0.77 && lgf.dkmax === 75, `bayrak okundu: ${JSON.stringify(lgf && { esik: lgf.esik, kapanis: lgf.kapanis, dkmax: lgf.dkmax, durum: lgf.durum })}`);
+  // eşikler bayraktan (data/canli_altin.json → isaret) okunur; sabit değer yazılmaz (bayrak 0,80 → 0,85 değişince test bozulmasın)
+  const DOSYA = JSON.parse(fs.readFileSync(path.join(ROOT, "data", "canli_altin.json"), "utf8")).isaret || {};
+  ok(lgf && lgf.esik > 0.5 && lgf.esik < 1 && lgf.kapanis < lgf.esik && lgf.dkmax > 45 && (DOSYA.esik == null || DOSYA.esik === lgf.esik), `bayrak okundu: ${JSON.stringify(lgf && { esik: lgf.esik, kapanis: lgf.kapanis, dkmax: lgf.dkmax, durum: lgf.durum })}`);
+  const E = lgf.esik, K = lgf.kapanis, DK = lgf.dkmax, P = x => Math.round(x * 100);
+  const ARA = Math.round((K + Math.min(0.01, (E - K) / 2)) * 100) / 100, ALT = Math.round((K - 0.01) * 100) / 100, UST = Math.round((E + 0.01) * 100) / 100;
 
   // (a)
   let A = await row(8001);
   const pa = await p.evaluate(() => { const m = IDL.byId[1][8001], K = idlPick(m, idlPred(m)); const c = K.all.filter(c => c.o && c.o >= 1.03 && c.p >= .6).sort((a, b) => b.p - a.p)[0]; return c ? liveCal(c.p).p : Math.max(...K.all.map(c => c.p)); });
-  ok(A && !A.seal && !A.on && pa < 0.8, `(a) 5. dk 0-0: en iyi seçim %${Math.round(pa * 100)} < %80 → rozet yok`);
+  ok(A && !A.seal && !A.on && pa < E, `(a) 5. dk 0-0: en iyi seçim %${Math.round(pa * 100)} < %${P(E)} → rozet yok`);
   // (b)
   let B = await row(8002);
   const pctB = B && B.seal ? +(/%(\d+)/.exec(B.seal) || [])[1] : null;
-  ok(B && B.seal && B.on && /^ALTIN · MS 1 %\d+$/.test(B.seal.trim()) && pctB >= 80, `(b) 30. dk 2-0: Canlı sekmesi satırında rozet "${B && B.seal}"`);
+  ok(B && B.seal && B.on && /^ALTIN · MS 1 %\d+$/.test(B.seal.trim()) && pctB >= P(E), `(b) 30. dk 2-0: Canlı sekmesi satırında rozet "${B && B.seal}"`);
   ok(B && B.box1 === "%" + pctB, `(e) rozet yüzdesi = satırdaki MS 1 yüzdesi (${B && B.box1} / %${pctB})`);
   await p.evaluate(() => document.querySelector('#v-canli .lv-c[data-id="8002"]').scrollIntoView({ block: "center" }));
   await p.screenshot({ path: path.join(SHOTS, "isaret_01_canli_satir.png") });
   const note = await p.evaluate(() => (document.querySelector("#idlBox .ai-note") || {}).textContent || "");
-  ok(/Canlı altın işaret/.test(note) && /75\. dk sonrası/.test(note) && /garanti değildir/.test(note), `Canlı sekmesinde açıklama notu: "${note.slice(0, 80)}…"`);
+  ok(/Canlı altın işaret/.test(note) && new RegExp(DK + "\\. dk sonrası").test(note) && /garanti değildir/.test(note), `Canlı sekmesinde açıklama notu: "${note.slice(0, 80)}…"`);
   // dokununca açıklama, maç açılmaz
   await p.evaluate(() => document.querySelector('#v-canli .lv-c[data-id="8002"] .ai-seal').click());
   await p.waitForTimeout(200);
@@ -89,14 +93,14 @@ const fakeSb = { data: { events: [
   // (c) histerezis: olasılık zorla %78 → kalır, %76 → kalkar, %78 (kapalıyken) → açılmaz
   await p.evaluate(() => { const _p = idlPred; window.__f = null; idlPred = function (m) { const P = _p.apply(this, arguments); const f = window.__f && window.__f[m.id]; return f != null && P ? Object.assign({}, P, { H: f, D: (1 - f) * .6, A: (1 - f) * .4, nextH: Math.min(P.nextH, .5) }) : P; }; });
   const force = async f => { await p.evaluate(f => { window.__f = { 8002: f }; }, f); await reload(); return row(8002); };
-  let C = await force(0.78);
-  ok(C && C.seal && /%78$/.test(C.seal.trim()) && C.box1 === "%78", `(c) %78'e düştü → rozet kalır (histerezis) "${C && C.seal}", satır ${C && C.box1}`);
-  C = await force(0.76);
-  ok(C && !C.seal && !C.on, `(c) %76 → rozet kalkar`);
-  C = await force(0.78);
-  ok(C && !C.seal, `(c) kapalıyken %78 → yeniden açılmaz (açılış eşiği %80)`);
-  C = await force(0.81);
-  ok(C && C.seal && /%81$/.test(C.seal.trim()), `(c) %81 → yeniden açılır "${C && C.seal}"`);
+  let C = await force(ARA);
+  ok(C && C.seal && new RegExp("%" + P(ARA) + "$").test(C.seal.trim()) && C.box1 === "%" + P(ARA), `(c) %${P(ARA)}'e düştü → rozet kalır (histerezis) "${C && C.seal}", satır ${C && C.box1}`);
+  C = await force(ALT);
+  ok(C && !C.seal && !C.on, `(c) %${P(ALT)} → rozet kalkar`);
+  C = await force(ARA);
+  ok(C && !C.seal, `(c) kapalıyken %${P(ARA)} → yeniden açılmaz (açılış eşiği %${P(E)})`);
+  C = await force(UST);
+  ok(C && C.seal && new RegExp("%" + P(UST) + "$").test(C.seal.trim()), `(c) %${P(UST)} → yeniden açılır "${C && C.seal}"`);
   // bülten satırı: canlı nabız yenilemesinde (IDL.load, yeniden çizim yok) rozet yerinde güncellenir
   const nb = await p.evaluate(async () => { document.querySelector('nav.tabs button[data-v="bulten"]').click(); await new Promise(r => setTimeout(r, 300)); BT.q = "Testspor"; renderBulten();
     const q = () => { const r = document.querySelector('#btList .lv-c[data-id="8002"]'); return r ? ((r.querySelector(".ai-seal") || {}).textContent || "") : "satır yok"; };
@@ -105,13 +109,13 @@ const fakeSb = { data: { events: [
   ok(nb[0] && nb[1] === "" && /%90$/.test(nb[2]), `bülten satırı nabız yenilemesinde yerinde güncellenir ${JSON.stringify(nb)}`);
   await p.waitForTimeout(300);
   // (d) 76. dk
-  S.b.min = 76; await p.evaluate(() => { window.__f = { 8002: 0.95 }; }); await reload();
+  S.b.min = DK + 1; await p.evaluate(() => { window.__f = { 8002: 0.95 }; }); await reload();
   const D = await row(8002);
-  ok(D && !D.seal && !D.on && D.late && /Son dakikalarda/.test(D.late), `(d) 76. dk: rozet yok, not "${D && D.late}"`);
+  ok(D && !D.seal && !D.on && D.late && /Son dakikalarda/.test(D.late), `(d) ${DK + 1}. dk: rozet yok, not "${D && D.late}"`);
   await p.evaluate(() => document.querySelector('#v-canli .lv-c[data-id="8002"]').scrollIntoView({ block: "center" }));
   await p.screenshot({ path: path.join(SHOTS, "isaret_04_76dk.png") });
   const msD = await p.evaluate(async () => { openMatch(IDL.byId[1][8002]); await new Promise(r => setTimeout(r, 500)); const el = $("msheet"); const r = { seal: !!el.querySelector(".ai-ms .ai-seal"), late: (el.querySelector(".ai-ms .ai-x") || {}).textContent || "" }; closeMatch(); return r; });
-  ok(!msD.seal && /Son dakikalarda/.test(msD.late), `(d) 76. dk pencerede rozet yok, not görünür`);
+  ok(!msD.seal && /Son dakikalarda/.test(msD.late), `(d) ${DK + 1}. dk pencerede rozet yok, not görünür`);
   // karne satırı
   const kr = await p.evaluate(() => window.aiKarne());
   ok(/Canlı altın işaret/.test(kr) && /(Veri birikiyor|işaretli maç)/.test(kr), `karne satırı: ${kr.replace(/<[^>]+>/g, "").slice(0, 90)}…`);

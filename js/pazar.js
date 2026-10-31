@@ -12,22 +12,53 @@
   function range(){ const now=Date.now(), d0=Date.parse(istDay(new Date())+"T00:00:00+03:00");
     if(NX.win==="bug") return [now,d0+864e5]; if(NX.win==="yar") return [d0+864e5,d0+2*864e5];
     const w=WIN.find(x=>x[0]===NX.win); return [now,now+(w?w[2]:3*3600e3)]; }
-  function list(){ const q=fold(IDLV&&IDLV.q||""), now=Date.now(); let [a,b]=range(); if(q){ a=now; b=now+7*864e5; }
+  function list(noLg){ const q=fold(IDLV&&IDLV.q||""), now=Date.now(); let [a,b]=range(); if(q){ a=now; b=now+7*864e5; }
     let L=[]; try{ L=Pick.list().filter(m=>!m.live&&!m.started&&m.dt&&m.dt.getTime()>=a&&m.dt.getTime()<b); }catch(e){}
     NX.auto=false;
     if(!q&&NX.win==="bug"&&!L.some(m=>!m.live&&!m.started)){ try{ L=Pick.list().filter(m=>!m.live&&!m.started&&m.dt&&m.dt.getTime()>=now&&m.dt.getTime()<now+864e5); NX.auto=L.length>0; }catch(e){} }
-    const lv=(typeof IDL!=="undefined"&&IDL.live&&IDL.live[1])||[]; L=L.filter(m=>!lv.some(x=>tmEq(x.h,m.h)&&tmEq(x.a,m.a)));
     L=L.map(m=>({m,lg:lgN(m)}));
-    if(NX.lg) L=L.filter(x=>x.lg===NX.lg);
-    if(q) L=L.filter(x=>fold(x.m.h+" "+x.m.a+" "+x.lg).includes(q));
+    if(q){ const B=L; L=B.filter(x=>qmC(IDLV.q,x.m.h,x.m.a,x.lg,1)); if(!L.length&&q.length>=4) L=B.filter(x=>qmC(IDLV.q,x.m.h,x.m.a,x.lg));   // v151: önce hızlı (Türkçe karakter + kısaltma + takma ad), sonuç yoksa yazım hatası toleranslı
+      }
+    const lv=(typeof IDL!=="undefined"&&IDL.live&&IDL.live[1])||[]; if(lv.length) L=L.filter(x=>!lv.some(y=>tmEq(y.h,x.m.h)&&tmEq(y.a,x.m.a)));
+    if(NX.lg&&!noLg) L=L.filter(x=>x.lg===NX.lg);
     return L.sort((x,y)=>x.m.dt-y.m.dt); }
+  // v151: aynı sorgu için eşleşme sonucu önbellekte (10 sn yenileme ve her çizimde 1300+ maçta bulanık arama tekrarlanmaz)
+  const QM={q:null,m:new Map()};
+  function qmF(q,fs){ try{ const n=norm(q); if(!n) return true; const fa=typeof qAlias==="function"?qAlias(fs):fs, hay=fa.map(x=>norm(String(x||""))).join(" | ");
+      if(hay.includes(n)) return true; const qt=qTok(q).filter(w=>!/^\d+$/.test(w)); if(!qt.length) return false; const ft=hay.split(/[^a-z0-9]+/);
+      return qt.every(w=>ft.some(t=>t.startsWith(w))); }catch(e){ return qm(q,fs); } }
+  function qmC(q,h,a,lg,fast){ if(QM.q!==q){ QM.q=q; QM.m=new Map(); } const k=(fast?"f":"")+h+"\u0001"+a+"\u0001"+lg; let r=QM.m.get(k); if(r===undefined){ r=fast?qmF(q,[h,a,lg]):qm(q,[h,a,lg]); QM.m.set(k,r); } return r; }
+  // v151: arama Türkçe karakter / kısaltma / takma ad toleranslı (qMatch); yoksa düz katlanmış içerme
+  const qm=(q,fs)=>{ try{ if(typeof qMatch==="function") return qMatch(q,fs); }catch(e){} return fold(fs.join(" ")).includes(fold(q)); };
+  // v151: başlamış ama iddaa canlı listesinde olmayan maçlar (liste yüklenmemiş / gecikmiş / eşleşmemiş): son 150 dk'da başlamış
+  // fikstürler + ESPN canlı olayları. Aramada "Sıradaki maçlar"ın üstünde gösterilir; ESPN skoru varsa skor, yoksa "Başladı".
+  function espnPool(){ const P=[]; try{ P.push(...Object.values(Live.events()||{})); }catch(e){} try{ P.push(...Object.values(Pick.extra||{})); }catch(e){} return P; }
+  function startedL(){ const q=IDLV&&IDLV.q; if(!q) return [];
+    const now=Date.now(), lv=(typeof IDL!=="undefined"&&IDL.live&&IDL.live[1])||[], by=(typeof IDL!=="undefined"&&IDL.byId&&IDL.byId[1])||{}, E=espnPool(), out=[];
+    const inLv=m=>(m.iid&&by[m.iid])||lv.some(x=>tmEq(x.h,m.h)&&tmEq(x.a,m.a));
+    const dup=m=>out.some(x=>tmEq(x.m.h,m.h)&&tmEq(x.m.a,m.a));
+    const evOf=m=>{ let b=null; for(const e of E){ if(!tmEq(e.h,m.h)||!tmEq(e.a,m.a)) continue; if(!b||(e.state==="in"&&b.state!=="in")) b=e; } return b; };
+    for(const f of (typeof FIXTURES!=="undefined"?FIXTURES:[])){ let dt; try{ dt=ukToDate(f.d,f.t); }catch(e){ continue; } const t=dt.getTime(); if(!(t<=now&&t>now-150*60e3)) continue;
+      const m={src:"fx",lg:f.lg,dt,live:false,h:f.h,a:f.a,odds:!!f.odds,started:true,iid:f.iid}, lg=lgN(m);
+      if(!(qmC(q,m.h,m.a,lg,1)||qmC(q,m.h,m.a,lg))||inLv(m)||dup(m)) continue;
+      const e=evOf(m); if(e&&e.state==="post"&&now-t>130*60e3) continue; out.push({m,lg,e}); }
+    for(const e of E){ if(e.state!=="in") continue; const dt=new Date(e.date);
+      const m={src:"espn",id:e.id,lg:e.lg,dt,live:true,clock:e.clock,h:e.h,a:e.a,hl:e.hl,al:e.al,hs:e.hs,as:e.as}, lg=lgN(m);
+      if(!qmC(q,m.h,m.a,lg)||inLv(m)||dup(m)) continue; out.push({m,lg,e}); }
+    return out.sort((x,y)=>x.m.dt-y.m.dt); }
+  window.nxAraSay=()=>{ try{ if(!(IDLV&&IDLV.q)) return null; return {s:startedL().length, n:list(true).length}; }catch(e){ return null; } };
+  function startedHtml(){ const S=startedL(); if(!S.length) return "";
+    return `<div class="nx-h nx-sth"><b>Başlamış maçlar</b><small>${S.length} maç</small></div>`+S.map(({m,lg,e})=>{ const t=ist(m.dt,{hour:"2-digit",minute:"2-digit"});
+      const sc=e&&e.hs!=null&&e.as!=null&&(e.state==="in"||e.state==="post")?`${e.hs}-${e.as}`:"";
+      const r=sc?`<span class="nx-p nx-lv"><em>${e.state==="post"?"Bitti":"Canlı"}</em>${esc(sc)}<i>${esc(e.state==="post"?"maç sonu":(e.clock||e.detail||""))}</i></span>`:`<span class="nx-p nx-lv nx-bk"><em>Başladı</em><i>canlı skor bekleniyor</i></span>`;
+      return `<div class="kx-fxw nx-st"><div class="fxrow"${omA(m)} role="button" tabindex="0"><span class="nx-tm">${esc(t)}</span><span class="nx-m"><span class="tm"><b>${esc(m.h)}</b> – <b>${esc(m.a)}</b></span><small>${esc(lg)}</small></span>${r}</div></div>`; }).join(""); }
   function pick(m){ try{ const f=fxOf(m); const p=quickPred(m,f); if(!p||!p.pm) return null;
       const R=recOf({H:p.pm[0],D:p.pm[1],A:p.pm[2],o25:p.o25m},f); return R?{n:R.n,p:R.cp,o:R.o,t:R.tier,l:R.label}:null; }catch(e){ return null; } }
-  function html(){ const L=list(), q=IDLV&&IDLV.q;
-        const all=(()=>{ const s=NX.lg; NX.lg=""; const r=[...new Set(list().map(x=>x.lg))]; NX.lg=s; return r; })();
-    const cnt={}; (()=>{ const s=NX.lg; NX.lg=""; list().forEach(x=>cnt[x.lg]=(cnt[x.lg]||0)+1); NX.lg=s; })();
+  function html(){ const A=list(true), L=NX.lg?A.filter(x=>x.lg===NX.lg):A, q=IDLV&&IDLV.q;   // v151: liste çizim başına bir kez
+    const all=[...new Set(A.map(x=>x.lg))];
+    const cnt={}; A.forEach(x=>cnt[x.lg]=(cnt[x.lg]||0)+1);
     const topL=all.sort((x,y)=>(cnt[y]||0)-(cnt[x]||0)).slice(0,14);
-    let h=`<div class="nx-h"><b>Sıradaki maçlar</b><small>${q?`"${esc(q)}" için 7 gün`:`${L.length} maç`}</small></div>`+(NX.auto&&!q?`<p class="nx-auto">Bugün başlamamış maç kalmadı · sonraki 24 saatin maçları gösteriliyor</p>`:"");
+    let h=(q?startedHtml():"")+`<div class="nx-h"><b>Sıradaki maçlar</b><small>${q?`"${esc(q)}" için 7 gün`:`${L.length} maç`}</small></div>`+(NX.auto&&!q?`<p class="nx-auto">Bugün başlamamış maç kalmadı · sonraki 24 saatin maçları gösteriliyor</p>`:"");
     try{ const D=lastFull(); if(D){ const g=D.guclu&&D.guclu.n?D.guclu:null, y=D.d===istDay(new Date(Date.now()-864e5));
         h+=`<button type="button" class="dayban nx-ban" data-nxr="${esc(D.d)}"><span>${y?"Dün":esc(ist(new Date(D.d+"T12:00:00+03:00"),{day:"numeric",month:"long"}))}</span><b>${g?`güçlü önerilerin ${trYz(Math.round(g.hit*100))} tuttu`:`önerilerin ${trYz(Math.round(D.hit*100))} tuttu`}</b><small>${g?`${Math.round(g.hit*g.n)}/${g.n}`:""} ›</small></button>`; } }catch(e){}
     try{ const G=L.filter(x=>goldOf(x.m)); if(G.length&&!q) h+=`<div class="nx-gold"><span class="gold-seal"><img src="icons/oxxai-mark.webp" alt="">ALTIN</span><span><b>${G.length} altın tahmin</b> ${esc(NX.win==="yar"?"yarın":NX.auto?"sonraki 24 saatte":"bu aralıkta")} · ${G.map(x=>esc(x.m.h)).slice(0,3).join(", ")}${G.length>3?"…":""}</span></div>`; }catch(e){}
@@ -46,15 +77,17 @@
       let box=$("nxBox"); const idl=$("idlBox");
       if(!box){ box=document.createElement("div"); box.id="nxBox"; }
       if(idl&&box.previousElementSibling!==idl) idl.after(box); else if(!idl&&!box.parentNode) cw.appendChild(box);
-      box.innerHTML=html(); try{ kxPaint(); }catch(e){} }catch(e){} }
+      NX.pq=IDLV.q||""; const h=html(); if(box.__h!==h||!box.firstChild){ box.innerHTML=h; box.__h=h; } try{ kxPaint(); }catch(e){} }catch(e){} }
   document.addEventListener("click",e=>{ const r=e.target.closest("#nxBox [data-nxr]"); if(r){ try{ RS.day=r.dataset.nxr; $("navRes").click(); }catch(_){} return; } },true);
   document.addEventListener("click",e=>{ const b=e.target.closest("#nxBox [data-nxw],#nxBox [data-nxl],#nxBox [data-nxm]"); if(!b) return;
     if(b.dataset.nxw!=null){ NX.win=b.dataset.nxw; NX.lim=300; } else if(b.dataset.nxl!=null){ NX.lg=b.dataset.nxl; NX.lim=300; } else NX.lim+=300;
     try{ buzz(6); }catch(_){} paint(); });
   try{ const _r=idlRenderAll; idlRenderAll=function(){ const r=_r.apply(this,arguments); paint(); return r; }; }catch(e){}
   document.addEventListener("click",e=>{ if(e.target.closest('nav.tabs button[data-v="canli"]')) setTimeout(paint,60); },true);
-  try{ const i=document.getElementById("cvQi"); if(i){ i.addEventListener("input",()=>setTimeout(paint,220)); } }catch(e){}
-  setTimeout(()=>{ try{ const i=document.getElementById("cvQi"); if(i&&!i.dataset.nx){ i.dataset.nx=1; i.addEventListener("input",()=>setTimeout(paint,220)); } }catch(e){} },2500);
+  // v151: tuş başına çizim yerine (önceden her tuşta iki kez, eski sorguyla) yalnız sorgu değiştiyse ve yazma durunca; asıl çizim idlRenderAll ile gelir
+  let pT=0; const onIn=()=>{ clearTimeout(pT); pT=setTimeout(()=>{ if((IDLV.q||"")!==NX.pq) paint(); },320); };
+  try{ const i=document.getElementById("cvQi"); if(i&&!i.dataset.nx){ i.dataset.nx=1; i.addEventListener("input",onIn); } }catch(e){}
+  setTimeout(()=>{ try{ const i=document.getElementById("cvQi"); if(i&&!i.dataset.nx){ i.dataset.nx=1; i.addEventListener("input",onIn); } }catch(e){} },2500);
   setInterval(()=>{ const v=$("v-canli"); if(v&&!v.hidden&&!document.hidden) paint(); },60000);
   try{ const i=$("cvQi"); if(i) i.placeholder="Maç ara: takım veya lig (canlı ve sıradaki)"; }catch(e){}
   setTimeout(()=>{ try{ const i=$("cvQi"); if(i) i.placeholder="Maç ara: takım veya lig (canlı ve sıradaki)"; }catch(e){} },2600);

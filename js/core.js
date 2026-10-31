@@ -2937,13 +2937,29 @@ function qSim(a,b){ if(a===b) return 1; if(a.length<2||b.length<2) return 0;
   const bg=w=>{ const o=new Map(); for(let i=0;i<w.length-1;i++){ const k=w.slice(i,i+2); o.set(k,(o.get(k)||0)+1); } return o; };
   const A=bg(a), B=bg(b); let n=0; for(const [k,v] of A) n+=Math.min(v,B.get(k)||0); return 2*n/((a.length-1)+(b.length-1)); }
 // Arama: önce düz içerme, olmazsa her kelime için benzerlik (yazım hatasına dayanıklı: "fc kurum" → "FC Kurim")
+// v151: takım adlarına bilinen takma adlar eklenir (Bayern München ↔ Münih, Leverkusen ↔ Bayer Leverkusen…); önbellekli
+const _qaC=new Map(); let _qaI=null, _qaK=null;
+function qAlias(fields){ try{ if(typeof TEAMS==="undefined"||typeof tmTok!=="function") return fields;
+  if(!_qaI){ _qaI=new Map(); _qaK=new Map();
+    for(const t of TEAMS){ for(const k of t.keys) if(!_qaK.has(k)) _qaK.set(k,t); for(const w of new Set(tmTok(t.name))){ if(!_qaI.has(w)) _qaI.set(w,[]); _qaI.get(w).push(t); } } }
+  const out=fields.slice();
+  for(const f of fields){ const s=String(f||""); if(!s||s.length>48) continue; let a=_qaC.get(s);
+    if(a===undefined){ a=""; let x=_qaK.get(norm(s));
+      if(!x){ for(const w of tmTok(s)){ const C=_qaI.get(w); if(C){ x=C.find(t=>tmEq(t.name,s)); if(x) break; } } }
+      if(x) a=x.keys.join(" "); if(_qaC.size>20000) _qaC.clear(); _qaC.set(s,a); }
+    if(a) out.push(a); }
+  return out; }catch(e){ return fields; } }
 function qMatch(q, fields){
   const n=norm(q); if(!n) return true;
   const hay=fields.map(f=>norm(String(f||""))).join(" | ");
   if(hay.includes(n)) return true;
-  const qt=qTok(q); if(!qt.length) return false;
-  const ft=fields.flatMap(qTok);
-  return qt.every(w=>ft.some(t=>t.startsWith(w)||(w.length>=4&&qSim(w,t)>=.7)||(w.length>=4&&t.length>=4&&(t.includes(w)||w.includes(t)))||(w.length>=4&&qLev(w,t.slice(0,w.length+1))<=(w.length>=7?2:1))));
+  let qt=qTok(q); if(!qt.length) return false;
+  const fa=qAlias(fields); if(fa.length>fields.length&&fa.slice(fields.length).some(a=>a.includes(n))) return true;
+  const ft=fa.flatMap(qTok);
+  const hit=w=>ft.some(t=>t.startsWith(w)||(w.length>=4&&qSim(w,t)>=.7)||(w.length>=4&&t.length>=4&&(t.includes(w)||w.includes(t)))||(w.length>=4&&qLev(w,t.slice(0,w.length+1))<=(w.length>=7?2:1)));
+  if(qt.every(hit)) return true;
+  // v151: "Bayer 04", "Mainz 05" gibi yalnız rakamdan oluşan ekler takım adında yoksa yok sayılır (en az bir harfli kelime eşleşmeli)
+  const qw=qt.filter(w=>!/^\d+$/.test(w)); return qw.length>0&&qw.length<qt.length&&qw.every(hit);
 }
 function ccFlag(cc){ cc=String(cc||"").toUpperCase(); if(cc==="GB"||cc==="EN"||cc==="UK") return "🏴"; if(cc==="EU"||cc==="UEFA") return "🇪🇺";
   if(!/^[A-Z]{2}$/.test(cc)) return "⚽"; return String.fromCodePoint(...[...cc].map(c=>127397+c.charCodeAt(0))); }
