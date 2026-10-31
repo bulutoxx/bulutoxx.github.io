@@ -1,6 +1,6 @@
 {
  "surum": "2026-10-28.1",
- "guncelleme": "2026-10-31 19:49",
+ "guncelleme": "2026-10-31 20:45",
  "aciklama": "Basket piyasa karnesi: kilitli model tahmini ile maç öncesi son piyasa oranı (marjı Shin ile ayrılmış) aynı maçlarda. Harman = Benter iki aşama (lig grubu, zaman sıralı ağırlık). Çapalı = model fark/toplamının handikap ve alt/üst çizgisine çekilmesi. GA: gün blokları bootstrap %95. Üretime yalnız OXXai kapısı + gölge sonrası girer.",
  "kurallar": {
   "kapi": "n ≥ 150, gün ≥ 20, ΔLL GA üst < 0, ΔBrier < 0, isabet düşmez",
@@ -304,6 +304,13 @@
   }
  },
  "agirlik": {
+  "pro": {
+   "a": 0.2594,
+   "b": 0.7567,
+   "w_m": 0.8752,
+   "w_t": 0.9881,
+   "n_ogrenme": 75
+  },
   "avrupa": {
    "a": 0.3206,
    "b": 0.6477,
@@ -317,13 +324,6 @@
    "w_m": 0.6,
    "w_t": 0.6,
    "n_ogrenme": 0
-  },
-  "pro": {
-   "a": 0.2594,
-   "b": 0.7567,
-   "w_m": 0.8752,
-   "w_t": 0.9881,
-   "n_ogrenme": 75
   }
  },
  "uretimde": {},
@@ -450,24 +450,22 @@
   },
   "ncaaw": {
    "kilitli": 419,
-   "oranli": 0,
+   "oranli": 1,
    "sonuclu_oranli": 0,
    "iddaa_ms": 0,
    "iddaa_hnd": 0,
    "iddaa_au": 0,
-   "espn": 0
+   "espn": 1
   }
  },
  "sentetik_yarismalar": {
   "Japonya B2.Ligi": 5,
-  "Slovakya Extraliga": 4,
   "Portekiz Basketbol Ligi": 3,
   "Arjantin LNB": 2,
-  "Fransa Pro A": 6,
-  "Macaristan NB I": 3,
+  "Fransa Pro A": 3,
   "Slovenya 1. A SKL": 2,
-  "İspanya Liga ACB": 7,
-  "Almanya BBL": 6,
+  "İspanya Liga ACB": 6,
+  "Almanya BBL": 4,
   "İtalya Serie B": 10,
   "Yunanistan A1": 1,
   "Fransa Kadınlar Basketbol Ligi": 5,
@@ -475,25 +473,24 @@
   "İtalya A1 Kadınlar": 2,
   "ABD Kolej Basketbol Ligi": 4,
   "Avusturya Bundesliga": 1,
-  "İspanya Kadınlar Basketbol Ligi": 4,
   "VTB Birleşik Ligi": 2,
   "İngiltere SLB": 3,
   "Çekya NBL": 3,
   "G. Kore Güney Kore Basketbol Ligi": 3,
-  "İspanya LEB Oro": 8,
   "Japonya B.Ligi": 8,
-  "Almanya Pro A": 6,
+  "İspanya LEB Oro": 7,
+  "Almanya Pro A": 3,
   "İtalya Serie A": 6,
   "G. Kore Güney Kore Kadın Basket Ligi": 1,
   "ABA Liga, Group B": 2,
   "BNXT Ligi": 2,
-  "Türkiye Basketbol Süper Ligi": 1,
   "İtalya Serie A2": 6,
   "Çin CBA": 2,
-  "Danimarka Basketligaen": 1,
+  "İspanya Kadınlar Basketbol Ligi": 2,
   "Fransa Pro B": 1,
   "Europe Kupası": 2,
   "ABA Liga, Group A": 1,
+  "Slovakya Extraliga": 2,
   "Uruguay Basketbol Ligi": 1
  },
  "gunluk": [
