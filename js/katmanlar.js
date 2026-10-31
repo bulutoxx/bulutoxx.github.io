@@ -465,3 +465,35 @@ window.BX_ARALIK={satir, get veri(){ return AR; }};
   W.OXX_DT.durum=()=>({kacan:KAC.slice(),bekle,baslik:D.title,izlenen:izlenen()});
 })();
 } catch (e) { if (typeof reportError === "function") reportError(e); else setTimeout(function () { throw e; }); } /* /id: masaustu-v150 */
+/* id: at-kapali-v152 */ try {
+// =====================================================================
+// v152 · At yarışı bölümü kapalıyken uygulama davranışı (bayrak: data/ozellik.json, kapı: baslangic.js "ozellik-v152").
+//  • showSport("at") / goView("at") → Bülten'e yönlenir; #at… adresi temizlenir (derin bağlantı, geri tuşu, kayıtlı spor seçimi).
+//  • OXXai at sorularına kısa "bölüm kapalı" cevabı verir (at katmanının cevabından önce).
+//  • Bayrak at:true gelirse hiçbir şey yapmaz (eski davranış birebir); bayrak bilinmezken at isteği bayrağı bekler.
+// =====================================================================
+(function(){
+  const W=window, OZ=W.OXX_OZ; if(!OZ) return;
+  const kapali=()=>OZ.at!==true;
+  const atHash=()=>/^#at(\/|$)/.test(location.hash||"");
+  let _ss=null;
+  function yonlen(){ try{ if(atHash()) history.replaceState(history.state,"",location.pathname+location.search); }catch(e){}
+    try{ if(_ss) _ss.call(W,"fb"); }catch(e){} }
+  if(typeof showSport==="function"){ _ss=showSport;
+    showSport=function(s){ if(s!=="at"||!kapali()) return _ss.apply(this,arguments);
+      if(OZ.at===null){ const t=this, a=arguments; OZ.hazir.then(on=>{ if(on) _ss.apply(t,a); else yonlen(); }); return; }
+      return yonlen(); }; }
+  if(typeof goView==="function"){ const _gv=goView;
+    goView=function(v){ if(v==="at"&&OZ.at===false) return _gv.call(this,"bulten","bulten"); return _gv.apply(this,arguments); }; }
+  OZ.hazir.then(on=>{ if(on) return; if(atHash()) yonlen();
+    try{ const v=document.getElementById("v-at"); if(v&&!v.hidden) yonlen(); }catch(e){} });
+  // ---------- OXXai ----------
+  const NZ=t=>String(t||"").toLocaleLowerCase("tr").replace(/ç/g,"c").replace(/ğ/g,"g").replace(/ı/g,"i").replace(/ö/g,"o").replace(/ş/g,"s").replace(/ü/g,"u").replace(/[^a-z0-9 .]/g," ").replace(/\s+/g," ").trim();
+  const AKEY=/\b(at yarisi|at yarislari|atyarisi|kosu|kosular|kosusu|ganyan|hipodrom|jokey|plase|veliefendi|atlar|padok|altin atlar)\b|\bat (bolum|yaris|kupo)\w*/;
+  const ALTK=/\b(6 ?li|altili)\b/, FUTK=/\b(kupon|kuponu|mac|maci|maclar|futbol|basket|iddaa|lig)\b/;
+  const CEVAP={html:"🐎 At yarışı bölümü şu an kapalı (veri kaynağı güncellenmiyor). Kaynak yeniden güncellenince bölüm geri açılacak. Futbol ve basket tahminleri aynen çalışıyor.",chips:["Bugün hangi maçlar var","En güvenli maçlar"]};
+  OZ.atSorusu=raw=>{ const n=NZ(raw); return AKEY.test(n)||(ALTK.test(n)&&!FUTK.test(n)); };
+  if(typeof botAnswer==="function"){ const _ba=botAnswer;
+    botAnswer=async function(raw){ try{ if(kapali()&&OZ.atSorusu(raw)) return Object.assign({},CEVAP); }catch(e){} return _ba.apply(this,arguments); }; }
+})();
+} catch (e) { if (typeof reportError === "function") reportError(e); else setTimeout(function () { throw e; }); } /* /id: at-kapali-v152 */

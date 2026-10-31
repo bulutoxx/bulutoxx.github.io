@@ -32,7 +32,7 @@ KAYNAK = ["index.html", "sw.js", "manifest.webmanifest", "brain-worker.js"]   # 
 KOK_DOSYA = ["index.html", "sw.js", "manifest.webmanifest", "brain-worker.js", "yayin.json"]
 # Taramanın kaçırabileceği ya da başka bloklarda kurulan dinamik yollar (glob, depo köküne göre).
 BILINEN = [
-    "data/version.json", "data/ratings.json", "data/fixtures.json", "data/logos.json", "data/season.json",
+    "data/version.json", "data/ozellik.json", "data/ratings.json", "data/fixtures.json", "data/logos.json", "data/season.json",
     "data/basket.json", "data/iddaa.json", "data/daily.json", "data/model.json", "data/qa.json",
     "data/archive/*.json",                 # günlük arşiv (data/archive/<gün>.json)
     "data/oxx_kupon/*.json", "data/oxx_kupon/at/*.json",

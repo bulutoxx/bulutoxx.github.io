@@ -37,6 +37,8 @@ jobs:
         run: python3 lab/adim.py canli-piyasa --onem bilgi -- timeout 900 python lab/canli_piyasa_lab.py --uygula
       - name: 📈 Gelişim günlüğü
         run: python3 lab/adim.py koruyucu -- python lab/guardian.py
+      - name: 🐎 At kaynak nöbetçisi (at bölümü kapalıyken; aynanın son commit karması değişti mi — yalnız yazar, at işlerini tetiklemez)
+        run: python3 lab/adim.py at-nobetci --onem bilgi -- timeout 120 python3 lab/at/nobetci.py
       - name: Sonucu kaydet
         run: |
           python3 lab/gonder.py -m "Otomatik laboratuvar sonucu $(date -u +%F) [guncelle]" \

@@ -36,6 +36,27 @@ Hiçbir yapay zekâ servisine (Claude vb.) bağlı değildir; tüm botlar GitHub
    açık kaynak bileşenler yalnız uygun lisanslı (penaltyblog: MIT) ve laboratuvarda yarıştırılarak kullanılır.
 6. **Ücretsiz kalır.** Depo herkese açık olduğundan GitHub Actions ve Pages ücretsizdir; ücretli API gerekmez.
 
+## ⏸️ At bölümü kapalı (v152, 2026-10-31) — geri alınabilir
+
+**At yarışı bölümü şu an KAPALI.** Açık sonuç/program aynası 27.10.2026'dan beri güncellenmiyor; kullanıcı kararıyla gizlendi.
+Kod (js/at*.js, lab/at/), iş akışı dosyaları ve geçmiş at verisi (data/at/) depoda duruyor; hiçbir şey silinmedi.
+
+- **Bayrak:** `data/ozellik.json` → `"at": false`. Dosya gelmezse (ağ hatası / yok) varsayılan da kapalı.
+- **Uygulama:** `js/baslangic.js` `ozellik-v152` (en erken katman): `<html class="at-kapali">` (index.html'de de yazılı) + stil-bas'taki
+  kurallar At düğmesi, menü girişi, #v-at, hatırlatma şeridi, Ayarlar'daki at satırları/sesleri, güvenilirlik "At" sekmesi,
+  at KUPO paylaş panellerini gizler; `data/at/…` ve `data/oxx_kupon/at/…` istekleri ağa çıkmaz (404 + `null`); localStorage
+  `bx-kuponlar` okunurken `spor:"at"` KUPO'lar listeden çıkar, yazılırken diskteki at KUPO'ları geri eklenir (**silinmez**).
+  `js/katmanlar.js` `at-kapali-v152`: `showSport("at")`/`goView("at")`/`#at…` → Bülten; OXXai at sorularına "bölüm kapalı" der.
+  At paketleri yüklenmeye devam eder (global bağımlılık zinciri bozulmasın); veri gelmediği için hiçbir şey çizmez.
+- **İş akışları:** `at-canli.yml`, `at-lab.yml` GitHub'da devre dışı (dosyalar depoda). Kurtarıcı bayrak kapalıyken bu ikisini izlemez/tetiklemez,
+  at tazeliği ve at kaynak gecikmesi alarm sayılmaz. `lab/qa.mjs` at ekranları yerine `at_kapali` denetimi yapar.
+  Yol haritasında `· at ·` maddeleri "beklemede".
+- **Nöbetçi:** `lab/at/nobetci.py` (auto-lab.yml, günde bir): aynanın HEAD karması değişirse `data/saglik/at-kaynak.json` → `at_kaynak_dondu: <tarih>`.
+  Yalnız yazar, hiçbir şeyi tetiklemez.
+- **Geri açmak:** (1) `data/ozellik.json` → `"at": true`; (2) `gh api -X PUT repos/bulutoxx/bulutoxx.github.io/actions/workflows/at-canli.yml/enable`
+  ve aynısı `at-lab.yml` için; (3) yol haritasındaki at maddelerini önceki durumlarına döndür. Uygulama kodu değişmeden eski hâline döner
+  (bayrak true iken katmanlar hiçbir şey yapmaz; gizlenen at KUPO'ları geri gelir).
+
 ## Yanılma payını düşürme ilkeleri
 
 Futbolda tek maçın sonucu doğası gereği belirsizdir; hiçbir model her maçı bilemez. Yanılma payı şu dört yolla düşük tutulur:
@@ -135,7 +156,7 @@ global kapsam ve sarmalayıcı zincirleri — `quickPred=function…`, `msRender
 | Dosya | İçindeki katmanlar (eski `<script id>`, sırayla) |
 |---|---|
 | *(satır içi, head)* `<style id="stil-bas">` | ilk boyama stili (kritik CSS; dışarı alınınca Fast 3G'de ilk boyama 0,8 → 2,1 sn gecikti) |
-| js/baslangic.js | ui-v122-yardim, perf-v118, istek-v124, ui-v92 |
+| js/baslangic.js | ui-v122-yardim, perf-v118, istek-v124, ui-v92, ozellik-v152 (özellik bayrağı kapısı; bilerek en erken pakette) |
 | *(satır içi)* `<script id="surum">` | `const APP_V="…";` — update.yml (`sed ^const APP_V=`) ve oxxLatestV buradan okur; **sürüm burada artırılır** |
 | js/core.js | ana çekirdek (id'siz eski büyük blok; `"use strict"` dosyanın başında, bu yüzden tek başına) |
 | js/bot.js · js/ekran.js · js/at.js · js/futbol.js | bot-v69, bot-v70 · core-v69, ui-v70, pw-v70, canli-v70 · at-v73 · rec-v77 … oxxai-bot-v88 |

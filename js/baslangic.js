@@ -278,3 +278,68 @@
   });
 })();
 } catch (e) { if (typeof reportError === "function") reportError(e); else setTimeout(function () { throw e; }); } /* /id: ui-v92 */
+/* id: ozellik-v152 */ try {
+// =====================================================================
+// v152 · Özellik bayrakları (data/ozellik.json) — At yarışı bölümü GERİ ALINABİLİR kapatma.
+// Kaynak (açık sonuç/program aynası) 27.10.2026'dan beri güncellenmiyor; kullanıcı kararıyla at bölümü gizlendi.
+// Kod ve geçmiş at verisi depoda kalır; geri açmak: data/ozellik.json {"at": true} (+ at-canli.yml, at-lab.yml enable).
+// Bu katman EN ERKEN yüklenen pakette (baslangic.js) çünkü fetch ve localStorage kapısı diğer tüm katmanlardan önce kurulmalı:
+//  • <html class="at-kapali"> (index.html'de de yazılı): stil-bas'taki kurallar at girişlerini gizler. Bayrak at:true gelirse kaldırılır.
+//  • Bayrak gelene kadar ve gelmezse (ağ hatası / dosya yok) varsayılan: KAPALI.
+//  • data/at/… ve data/oxx_kupon/at/… istekleri ağa çıkmaz (404 + "null" gövde; çağıranlar zaten null'u tolere eder).
+//    Bayrak henüz bilinmiyorsa istek bayrağı bekler: at:true ise aynen gider (eski davranış birebir).
+//  • localStorage "bx-kuponlar": kapalıyken okuma sırasında spor:"at" KUPO'ları listeden çıkarılır (KUPO ekranı, sayaçlar ve
+//    paylaş listeleri onları görmez), yazma sırasında diskteki at KUPO'ları geri eklenir → kullanıcının at KUPO'ları SİLİNMEZ.
+// Uygulama katmanları (showSport/goView/bot yönlendirmesi): js/katmanlar.js "at-kapali-v152".
+// =====================================================================
+(function(){
+  const W=window, R=document.documentElement, KAP="at-kapali";
+  const OZ=W.OXX_OZ={at:null, hazir:null, kaynak:null};   // at: null = henüz bilinmiyor (kapalı sayılır) · true · false
+  try{ R.classList.add(KAP); }catch(e){}
+  const of=W.fetch;
+  let bitir; OZ.hazir=new Promise(r=>{ bitir=r; });
+  let tamam=false;
+  function karar(on,kaynak){ if(tamam) return; tamam=true; OZ.at=!!on; OZ.kaynak=kaynak;
+    try{ if(OZ.at) R.classList.remove(KAP); else R.classList.add(KAP); }catch(e){}
+    if(OZ.at) geriYukle();
+    bitir(OZ.at);
+    try{ W.dispatchEvent(new CustomEvent("oxx:ozellik",{detail:{at:OZ.at}})); }catch(e){} }
+  try{
+    of.call(W,"data/ozellik.json?t="+Date.now(),{cache:"no-store"}).then(r=>r&&r.ok?r.json():null)
+      .then(j=>karar(!!(j&&j.at===true),j?"dosya":"yok")).catch(()=>karar(false,"hata"));
+  }catch(e){ karar(false,"hata"); }
+  setTimeout(()=>karar(false,"zaman-asimi"),12000);
+  OZ.atAcik=()=>OZ.at===true;
+
+  // ---------- veri istekleri ----------
+  const AT_RE=/(^|\/)data\/(at|oxx_kupon\/at)\//;
+  const bos=()=>new Response("null",{status:404,statusText:"At bolumu kapali",headers:{"Content-Type":"application/json"}});
+  if(typeof of==="function") W.fetch=function(input,init){ let u=""; try{ u=typeof input==="string"?input:(input&&input.url)||String(input||""); }catch(e){}
+    if(!AT_RE.test(u)) return of.apply(W,arguments);
+    const a=arguments;
+    if(OZ.at===true) return of.apply(W,a);
+    if(OZ.at===false) return Promise.resolve(bos());
+    return OZ.hazir.then(on=>on?of.apply(W,a):bos()); };
+
+  // ---------- KUPO deposu: at KUPO'ları gizli ama korunur ----------
+  const LSK="bx-kuponlar", isAtK=c=>!!c&&c.spor==="at";
+  let LS=null; try{ LS=W.localStorage; }catch(e){}
+  const SP=W.Storage&&W.Storage.prototype;
+  if(LS&&SP){ const oGet=SP.getItem, oSet=SP.setItem;
+    SP.getItem=function(k){ const v=oGet.apply(this,arguments);
+      if(k!==LSK||this!==LS||OZ.at===true||!v) return v;
+      try{ const L=JSON.parse(v); if(!Array.isArray(L)||!L.some(isAtK)) return v; return JSON.stringify(L.filter(c=>!isAtK(c))); }catch(e){ return v; } };
+    SP.setItem=function(k,v){
+      if(k===LSK&&this===LS&&OZ.at!==true){ try{ const yeni=JSON.parse(String(v)), eski=JSON.parse(oGet.call(this,LSK)||"null");
+          if(Array.isArray(yeni)&&Array.isArray(eski)){ let sil=[]; try{ sil=JSON.parse(oGet.call(this,"bx-kuponlar-sil")||"[]")||[]; }catch(e){}
+            const ids=new Set(yeni.map(c=>c&&c.id)), ek=eski.filter(c=>isAtK(c)&&!ids.has(c.id)&&!(Array.isArray(sil)&&sil.includes(c.id)));
+            if(ek.length) v=JSON.stringify(yeni.concat(ek)); } }catch(e){} }
+      return oSet.apply(this,[k,v]); };
+    OZ.hamKupo=()=>{ try{ return JSON.parse(oGet.call(LS,LSK)||"[]"); }catch(e){ return []; } }; }
+  // bayrak geç (KUPO deposu yüklendikten sonra) açık gelirse gizlenen at KUPO'larını belleğe geri koy
+  function geriYukle(){ try{ const KX=W.KX; if(!KX||!Array.isArray(KX.L)||!OZ.hamKupo) return;
+      const ids=new Set(KX.L.map(c=>c.id)), ek=OZ.hamKupo().filter(c=>isAtK(c)&&!ids.has(c.id)); if(!ek.length) return;
+      ek.forEach(c=>{ if(!Array.isArray(c.items)) c.items=[]; KX.L.push(c); });
+      setTimeout(()=>{ try{ if(typeof W.kxRefresh==="function") W.kxRefresh(); }catch(e){} },0); }catch(e){} }
+})();
+} catch (e) { if (typeof reportError === "function") reportError(e); else setTimeout(function () { throw e; }); } /* /id: ozellik-v152 */

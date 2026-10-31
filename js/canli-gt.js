@@ -400,7 +400,7 @@
     h+=K.map(([k,sp,b])=>kupHtml(k,sp,b,D)).join("");
     if(!D.futbol&&d===t) h+=`<p class="oxk-note">Futbol KUPO'ları henüz kilitlenmedi.</p>`;
     if(!D.basket&&D.futbol) h+=`<p class="oxk-note">Bugün basket KUPO'su yok (en olası seçimler eşiği geçmedi ya da maç yok).</p>`;
-    h+=`<p class="oxk-ft">${fbL&&!D.geriye_donuk?`Kilit ${E(String(fbL).slice(11,16))}: KUPO'lar kilitten sonra değişmez. `:""}Olasılık bacakların çarpımıdır (maçlar bağımsız sayılır). At KUPO'ları At › KUPO sekmesinde. ${E(D.uyari||"Hobi amaçlı · 18+")}</p>`;
+    h+=`<p class="oxk-ft">${fbL&&!D.geriye_donuk?`Kilit ${E(String(fbL).slice(11,16))}: KUPO'lar kilitten sonra değişmez. `:""}Olasılık bacakların çarpımıdır (maçlar bağımsız sayılır). ${window.OXX_OZ&&!window.OXX_OZ.atAcik()?"":"At KUPO'ları At › KUPO sekmesinde. "}${E(D.uyari||"Hobi amaçlı · 18+")}</p>`;
     return h; }
   // karne satırı
   const ozet=(o,cls,lbl)=>{ o=o||{n:0}; const b=o.bacak||null;

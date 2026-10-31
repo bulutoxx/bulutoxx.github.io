@@ -10,6 +10,10 @@ Hazırlanma: 2026-10-28 · Kapsam: futbol, basket, at, canlı, altyapı, arayüz
 4. Değişmez kurallar: sıfır maliyet (ücretli API / sunucu yok); kilitli tahmin asla değişmez; uygulamada görünen metinde "bahis", "ganyan", "banko", "bulut", "kupon" kelimeleri yok; TJK ve atyarisi.com alanlarına (alt alanlar ve archive.org kopyaları dahil) hiçbir istek yok.
 5. Futbol ve at modelleri ayrı tutulur (ortak kod yalnız ölçüm yardımcıları); ek kaynak adresleri yalnız secret'ta, depoda yazılmaz; ham üçüncü taraf verisi commit edilmez (yalnız türetilmiş özet).
 
+> **v152 (2026-10-31): At yarışı bölümü kapalı.** Açık sonuç/program aynası 27.10.2026'dan beri güncellenmiyor; kullanıcı kararıyla
+> uygulamada gizlendi, `at-canli.yml` / `at-lab.yml` devre dışı. `· at ·` maddeleri **beklemede**: otonom döngü bunları almaz.
+> Kaynak güncellenince (`data/saglik/at-kaynak.json` → `at_kaynak_dondu`) önce bölüm geri açılır, sonra maddeler eski durumuna döner.
+
 ## Mevcut sistem (tekrar önerilmeyenler)
 
 Maher-Poisson + Elo + pi-rating topluluğu (oransız ligler, `scripts/guc.py`), iki yarı Dixon-Coles, piyasa (power/Shin/hibrit marj) +
@@ -88,7 +92,7 @@ drift alarmı ve kapanış kilidi (yolda). Aşağıdaki maddeler bunların **üz
 - **Efor:** M · **Risk:** orta (kilit anı / kapanış ayrımı; sızıntı) · **Veri:** mevcut izinli ayna kaynağı, ücretsiz (TJK / atyarisi.com yok).
 - **Nasıl sınanır (kapı):** Koşu-günü blok bootstrap, aylık ileri yürüyüş; mevcut harmana göre ΔLL %95 GA üst < 0, iki yarıda < 0.
 - **Kaynak:** Bolton & Chapman (1986) Management Science [doi:10.1287/mnsc.32.8.1040](https://doi.org/10.1287/mnsc.32.8.1040) · Benter (1994) [World Scientific](https://worldscientific.com/doi/abs/10.1142/9789812819192_0019)
-- **Durum:** reddedildi (2026-10-30; kapı geçmedi, üretim değişmedi) — `lab/at/benter_kosullu_lab.py` → `data/at/benter_kosullu_lab.json`, `at-benter-lab.yml` haftalık yeniden ölçüm (cumartesi; yalnız ölçüm).
+- **Durum:** beklemede (at bölümü kapalı, 2026-10-31, v152: kaynak aynası 27.10.2026'dan beri güncellenmiyor; otonom döngü bu maddeyi almaz — bölüm `data/ozellik.json` "at": true ile açılınca önceki duruma döner). Önceki durum: reddedildi (2026-10-30; kapı geçmedi, üretim değişmedi) — `lab/at/benter_kosullu_lab.py` → `data/at/benter_kosullu_lab.json`, `at-benter-lab.yml` haftalık yeniden ölçüm (cumartesi; yalnız ölçüm).
   Aylık ileri yürüyüş, n = 2.492 koşu / 149 gün (2026-05 … 2026-10; toplam 3.282 koşu). Birincil aday K4 (alan + tür + favori q + hipodrom kovaları, L2 λ = 30) − tek (a, b) harman: **ΔLL +0,00524 [+0,00218, +0,00838]**, yarılar +0,00854 / +0,00194 (kötüleşme). Tek aile adayları da geçmedi: alan +0,00162 [−0,00013, +0,00349], tür +0,00129 [+0,00014, +0,00250], favori q +0,00215 [+0,00058, +0,00369], hipodrom +0,00084 [−0,00084, +0,00254]; λ = 5 / 150 duyarlılığı +0,00722 / +0,00256. Sonuç: koşullu ağırlıklar örneklem dışında aşırı uyuyor; tek (a, b) yeterli. Sınama run 40991220382, commit e464b62.
 
 ### YH-01 · altyapı · Öneri CLV karnesi (kapanış çizgisi değeri)
@@ -206,7 +210,7 @@ drift alarmı ve kapanış kilidi (yolda). Aşağıdaki maddeler bunların **üz
 - **Efor:** S · **Risk:** düşük · **Veri:** mevcut (yalnız izinli kaynak; TJK yok).
 - **Nasıl sınanır:** Yürüyen pencerede a'nın koşu-günü blok bootstrap GA'sı; a > 0 (alt sınır > 0) karnede "doğrulandı".
 - **Kaynak:** Benter (1994) "Computer based horse race handicapping and wagering systems" (Efficiency of Racetrack Betting Markets, World Scientific) [World Scientific](https://worldscientific.com/doi/abs/10.1142/9789812819192_0019) · Bolton & Chapman (1986) Management Science [doi:10.1287/mnsc.32.8.1040](https://doi.org/10.1287/mnsc.32.8.1040)
-- **Durum:** yayında (2026-10-29; ölçüm, karnede satır) — **doğrulandı**: sabah modeli kapanış piyasasına bilgi ekliyor. `lab/at/bilgi_katkisi.py` → `data/at/bilgi_katkisi.json` + `data/at/karne.json → bilgi_katkisi` (at-lab her çalışmada yeniden hesaplar; commit ff5bf7b / a1b6ef5, ölçüm 4c4e7d8).
+- **Durum:** beklemede (at bölümü kapalı, 2026-10-31, v152: kaynak aynası 27.10.2026'dan beri güncellenmiyor; otonom döngü bu maddeyi almaz — bölüm `data/ozellik.json` "at": true ile açılınca önceki duruma döner). Önceki durum: yayında (2026-10-29; ölçüm, karnede satır) — **doğrulandı**: sabah modeli kapanış piyasasına bilgi ekliyor. `lab/at/bilgi_katkisi.py` → `data/at/bilgi_katkisi.json` + `data/at/karne.json → bilgi_katkisi` (at-lab her çalışmada yeniden hesaplar; commit ff5bf7b / a1b6ef5, ölçüm 4c4e7d8).
   p_sabah: replay.py'nin gün gün sızıntısız oransız olasılığı; q: aynanın nihai oranı (marj orantılı ayrılmış). Koşullu logit p ∝ exp(a·ln p_sabah + b·ln q),
   koşu-günü blok bootstrap B = 2000. Tüm dönem (2026-03-16…10-23, n = 3.282 koşu / 195 gün): **a = 0,314 [0,256, 0,375]**, b = 0,827 [0,764, 0,891];
   son 90 gün (n = 1.112): a = 0,368 [0,268, 0,473] (alarm yok); yarılar a = 0,283 [0,202, 0,375] / 0,349 [0,264, 0,440].
@@ -295,7 +299,7 @@ drift alarmı ve kapanış kilidi (yolda). Aşağıdaki maddeler bunların **üz
 - **Efor:** S · **Risk:** düşük · **Veri:** mevcut.
 - **Nasıl sınanır:** Zaman sıralı: aynı kapsamda rastgele seçime göre isabet farkının GA alt sınırı > 0; yalnız-model ve harman ayrı.
 - **Kaynak:** Geifman & El-Yaniv (2017) NeurIPS "Selective classification for deep neural networks" [arXiv:1705.08500](https://arxiv.org/abs/1705.08500)
-- **Durum:** yayında (2026-10-30, v148; bayraklı, 14 gün izleme) — `lab/at/secici_lab.py` → `data/at/secici_lab.json` + bayrak/katsayı `data/at/secici.json`, `at-secici-lab.yml` haftalık yeniden ölçüm (kapı geçmezse `aktif=false`, etiket kendiliğinden kalkar).
+- **Durum:** beklemede (at bölümü kapalı, 2026-10-31, v152: kaynak aynası 27.10.2026'dan beri güncellenmiyor; otonom döngü bu maddeyi almaz — bölüm `data/ozellik.json` "at": true ile açılınca önceki duruma döner). Önceki durum: yayında (2026-10-30, v148; bayraklı, 14 gün izleme) — `lab/at/secici_lab.py` → `data/at/secici_lab.json` + bayrak/katsayı `data/at/secici.json`, `at-secici-lab.yml` haftalık yeniden ölçüm (kapı geçmezse `aktif=false`, etiket kendiliğinden kalkar).
   Güven puanı = lojistik(p1, p1−p2, normalize entropi, ln alan), aylık ileri yürüyüş, eşik eğitimde %25'lik dilim. Sınama 2026-05-01…10-23, n = 2.494 koşu / 149 gün:
   **sabah**: kapsam %69, seçilenlerde ilk seçim isabeti %33,3 vs tüm koşular %29,3 → fark +3,96 puan [GA +2,90, +5,04], yarılar +4,1 / +3,9, p < 0,001 → **geçti**; pas edilenlerde isabet %20,5.
   **harman** (ayrı): kapsam %72, %37,8 vs %33,4 → +4,4 puan [+3,35, +5,51]. Bilgi: aynı kapsamda yalnız p1 eşiği de geçiyor (+3,35 [+2,3, +4,4]); entropi/alan p1'in üstüne anlamlı katkı vermedi (+0,62 [−0,28, +1,49]).

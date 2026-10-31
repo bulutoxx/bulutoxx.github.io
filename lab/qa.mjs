@@ -1,5 +1,6 @@
 // 🎨 Tasarımcı / kalite botu (Playwright, ücretsiz). Uygulamayı gerçek bir telefon ekranında açar, ana ekranları gezer ve ölçer:
-//   Bülten, Canlı, Sonuçlar, Menü, POWER NOW, KUPO, OXXai sohbeti, At (Bugün, Program, Türler, Sonuç, KUPO, arama).
+//   Bülten, Canlı, Sonuçlar, Menü, POWER NOW, KUPO, OXXai sohbeti, At (Bugün, Program, Türler, Sonuç, KUPO, arama;
+//   v152: yalnız data/ozellik.json at:true iken — kapalıyken "at_kapali" denetimi).
 //   Her ekranda: ekran açıldı mı / dolu mu, pageerror sayısı, yatay taşma, görünür metinde yasak kelime.
 //   Performans bütçesi: index.html boyutu, uygulama paketleri (js/, css/; v143) toplamı, ilk ekranın veri boyutu, en uzun ana iş parçacığı görevi.
 // Sonuç QA_CIKTI dosyasına (varsayılan data/qa.json) yazılır. Alarm varsa çıkış kodu 1 olur: lab/adim.py bunu sağlık kaydına
@@ -268,8 +269,27 @@ try {
     ardisik = S.ok ? 0 : ardisik + 1;
   }
 
-  // At yarışı: spor seçici → sekmeler → arama
+  // At yarışı: spor seçici → sekmeler → arama. v152: bölüm data/ozellik.json bayrağına bağlı (at:false → gizli olmalı;
+  // bu durumda at ekranları yerine "at_kapali" denetimi: At düğmesi/menü girişi görünmüyor, #at/program Bülten'e yönleniyor, data/at/ isteği yok).
+  const AT_ACIK = await p.evaluate(async () => { const O = window.OXX_OZ; if (!O) return true; try { return !!(await O.hazir); } catch (e) { return false; } }).catch(() => false);
+  out.at_bolumu = AT_ACIK ? "acik" : "kapali";
+  if (!AT_ACIK) {
+    ekran = "at_kapali";
+    try {
+      const d = await p.evaluate(() => { const g = el => !!(el && el.offsetParent); return {
+        dugme: [...document.querySelectorAll('.sport-sw button[data-s="at"]')].some(g), menu: g(document.getElementById("moreAt")),
+        istek: performance.getEntriesByType("resource").filter(e => /\/data\/(at|oxx_kupon\/at)\//.test(e.name)).length }; });
+      if (d.dugme || d.menu) hata(`at_kapali: at girişi görünüyor (düğme ${d.dugme}, menü ${d.menu})`);
+      if (d.istek) hata(`at_kapali: ${d.istek} data/at/ isteği yapıldı`);
+      await p.evaluate(() => { location.hash = "#at/program"; });
+      await bekle(1500);
+      const y = await p.evaluate(() => { const v = document.getElementById("v-at"), b = document.getElementById("v-bulten"); return { at: !!(v && !v.hidden), bulten: !!(b && !b.hidden), hash: location.hash }; });
+      if (y.at || !y.bulten || /^#at/.test(y.hash)) hata(`at_kapali: #at/program Bülten'e yönlenmedi (${JSON.stringify(y)})`);
+      out.sayfalar.at_kapali = { ok: !(d.dugme || d.menu || d.istek || y.at || !y.bulten), ...d, yonlenme: y };
+    } catch (e) { hata(`at_kapali: denetlenemedi (${String(e.message || e).split("\n")[0].slice(0, 140)})`); }
+  }
   const AT_SEKME = [["at_bugun", "bugun"], ["at_program", "program"], ["at_turler", "turler"], ["at_sonuc", "sonuc"], ["at_kupo", "kupon"]];
+  if (AT_ACIK) {
   await kontrol("at_bugun", async () => {
     await tikla(NAV("bulten")); await bekle(400);
     await tikla('.sport-sw button[data-s="at"]');
@@ -290,6 +310,7 @@ try {
     await p.fill("#a5q", "ahmet");      // yaygın jokey/antrenör adı; sonuç listesi dolmalı
     await p.waitForSelector("#a5res .a5-r", { state: "visible", timeout: 90000 });
   }, { enAz: 40, dene: false });
+  }
   ekran = "son";
   if (MOD === "tam") { try { await tikla(NAV("bulten")); } catch (e) { } }
 

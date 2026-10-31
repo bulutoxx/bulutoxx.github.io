@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="tr">
+<html lang="tr" class="at-kapali">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -1648,6 +1648,10 @@ details.sx>.sx-in>.panel,details.sx>.sx-in>.pw-card{margin-top:0}
 .v70-fb button::after{content:"";position:absolute;inset:-8px -3px}
 /* role=button öğelerinde klavye odağı görünür olsun */
 [role="button"]:focus-visible{outline:2px solid var(--cyan);outline-offset:2px;border-radius:var(--r-xs)}
+/* ===== ozellik-v152: at bölümü kapalıyken (html.at-kapali; data/ozellik.json at:false) tüm at girişleri gizli ===== */
+html.at-kapali #v-at,html.at-kapali #moreAt,html.at-kapali .sport-sw button[data-s="at"],html.at-kapali #a5Strip,html.at-kapali #a5SetH,html.at-kapali #a5Set,
+html.at-kapali #gvSeg button[data-t="at"],html.at-kapali #kpA,html.at-kapali #kpAt,html.at-kapali #atkSheet,html.at-kapali #at3Bar,html.at-kapali #oxkAt,
+html.at-kapali #sesSet .cell:has(input[data-ses="sesAt"]),html.at-kapali #sesDinle .ses-g:has([data-sesp="atCagri"]){display:none!important}
 </style>
 
 
@@ -1931,10 +1935,10 @@ details.sx>.sx-in>.panel,details.sx>.sx-in>.pw-card{margin-top:0}
 <div id="goal" class="goal" hidden></div>
 <div class="toast" id="toast" hidden></div>
 
-<script src="js/baslangic.js?v=7f0bf10950"></script>
+<script src="js/baslangic.js?v=1759e6b75f"></script>
 
 <script id="surum">
-const APP_V="2026-10-31.151";
+const APP_V="2026-10-31.152";
 </script>
 <script src="js/core.js?v=4c38457194"></script>
 
@@ -1960,7 +1964,7 @@ const APP_V="2026-10-31.151";
 
 <script src="js/at2.js?v=e8391b65d7"></script>
 
-<script src="js/canli-gt.js?v=fe3aed81e4"></script>
+<script src="js/canli-gt.js?v=fe23fd1f6a"></script>
 
 <script src="js/at5.js?v=f43230d92c"></script>
 
@@ -2096,6 +2100,6 @@ button.gold-seal.ai-seal:active{transform:scale(.97)}
 </style>
 <script src="js/canli-isaret.js?v=f07ded97da"></script>
 <link rel="stylesheet" id="ara-geri-v142-css" href="css/katmanlar.css?v=c584ef9caa">
-<script src="js/katmanlar.js?v=d665b03b80"></script>
+<script src="js/katmanlar.js?v=acb1b63c17"></script>
 </body>
 </html>

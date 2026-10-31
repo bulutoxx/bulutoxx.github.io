@@ -35,6 +35,18 @@ ISLER = {
     "surekli-deney.yml": ("Sürekli deney",          8.0,  None),
 }
 
+# v152: at yarışı bölümü data/ozellik.json bayrağına bağlı ("at": false → kapalı; dosya yoksa da kapalı). Kapalıyken at iş akışları
+# (GitHub'da devre dışı) izlenmez, yeniden tetiklenmez; at tazeliği ve at kaynak gecikmesi alarm sayılmaz.
+AT_ISLER = ("at-canli.yml", "at-lab.yml")
+
+
+def at_acik():
+    try:
+        return json.load(open(os.path.join(ROOT, "data", "ozellik.json"), encoding="utf-8")).get("at") is True
+    except Exception:
+        return False
+
+
 # Tazelik: (ad, dosya şablonu, zaman kaynağı, beklenen en fazla yaş (saat), sorumlu iş akışı, koşul)
 #   zaman kaynağı: "commit" = dosyanın son commit zamanı; "alan:<anahtar>[:TR]" = dosyanın içindeki zaman alanı
 TAZELIK = [
@@ -105,6 +117,8 @@ def tazelik(simdi):
     out = []
     for ad, sablon, kaynak, beklenen, wf, kosul in TAZELIK:
         yol = sablon.format(bugun=bugun)
+        if kosul == "at_gunu" and not at_acik():
+            continue                     # at bölümü kapalı: at canlı dosyası beklenmez
         if kosul == "at_gunu":
             # yalnız yarış günü (sabah kilidi var) ve TSİ 12:00–23:59 arası beklenir
             if not os.path.exists(os.path.join(ROOT, "data", "at", "tahmin", f"{bugun}.json")) or not (12 <= tr.hour <= 23):
@@ -164,6 +178,7 @@ def kalite_alarmlari():
 
 def kaynak_alarmlari():
     """data/saglik/at-kaynak.json (lab/at/kaynak_durum.py): açık arşiv aynasının gecikmesi. Yeniden tetikleme düzeltmez → yalnız rapor."""
+    if not at_acik(): return []          # at bölümü kapalı: kaynak gecikmesi bilinen durum, alarm değil
     D = jl(os.path.join(SAGLIK_DIZIN, "at-kaynak.json"), {}) or {}
     if not isinstance(D, dict) or not D.get("alarm"): return []
     return [f"at kaynak gecikmesi: {x}" for x in (D.get("sorunlar") or ["alarm"])[:4]]
@@ -176,7 +191,10 @@ def main():
     eski = jl(CIKTI, {}) or {}
     tetik_gecmisi = dict(eski.get("saglik_tetik") or {})
     run_bilgi = {}
+    atk = not at_acik()
     for dosya, (ad, sinir_saat, saatler) in ISLER.items():
+        if atk and dosya in AT_ISLER:
+            durum.append({"is": ad, "durum": "kapalı (at bölümü kapalı; data/ozellik.json)"}); run_bilgi[dosya] = None; continue
         try:
             runs = gh("run", "list", "-w", dosya, "-L", "15", "--json",
                       "databaseId,status,conclusion,createdAt,updatedAt,attempt,event")
@@ -239,6 +257,7 @@ def main():
     sorun_is = {}
     kalici_alarm = []           # 5) kalıcı hatalar: yalnız rapor, yeniden tetikleme yok
     for wf, dosyalar in adimlar.items():
+        if atk and wf in AT_ISLER: continue   # at bölümü kapalı: eski at adım kayıtları sorun sayılmaz
         for f, oz in dosyalar.items():
             for b in oz["basarisiz"] + oz["bilgi_hata"]:
                 if b["sinif"] == "kalici":
