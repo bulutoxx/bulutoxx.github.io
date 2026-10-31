@@ -1,8 +1,8 @@
 // OXXai çevrimdışı önbellek: uygulama dosyaları önbellekten, sayfa ve veriler önce ağdan
-const C = "oxxai-v148";
+const C = "oxxai-v149";
 const SHELL = ["./", "index.html", "manifest.webmanifest", "icons/oxxai2-192.png", "icons/oxxai2-512.png", "icons/oxxai-mark.webp", "icons/oxxai-word.webp", "icons/oxxai-mark-crown-s.webp", "icons/oxxai-logo.webp", "icons/oxxai-splash.webp", "icons/oxxai-at.webp",
   // uygulama paketleri (index.html sırasıyla; ?v= içerik özeti, lab/yayin_listesi.py kur/damga günceller)
-  "js/baslangic.js?v=7f0bf10950", "js/core.js?v=d9281c0a93", "js/bot.js?v=a83e9e8f1b", "js/ekran.js?v=e1865ef08a", "js/at.js?v=354cb8bbd9", "js/futbol.js?v=abd153d16d", "css/govde.css?v=e23efdc0e2", "css/govde-2.css?v=e10604acf4", "js/kupo.js?v=06fcfa8886", "js/at-kupo.js?v=05d843f9e7", "js/pazar.js?v=a07be951bf", "js/at2.js?v=e8391b65d7", "js/canli-gt.js?v=fe3aed81e4", "js/at5.js?v=f43230d92c", "js/arayuz.js?v=b9ef4cd29f", "js/ses.js?v=9600871145", "js/paylas.js?v=c9e0debe8f", "js/guvenilirlik.js?v=d0b55a7c7e", "js/canli-isaret.js?v=f07ded97da", "css/katmanlar.css?v=d930ae7354", "js/katmanlar.js?v=3230a243e4"];
+  "js/baslangic.js?v=7f0bf10950", "js/core.js?v=d9281c0a93", "js/bot.js?v=a83e9e8f1b", "js/ekran.js?v=e1865ef08a", "js/at.js?v=354cb8bbd9", "js/futbol.js?v=abd153d16d", "css/govde.css?v=e23efdc0e2", "css/govde-2.css?v=e10604acf4", "js/kupo.js?v=06fcfa8886", "js/at-kupo.js?v=05d843f9e7", "js/pazar.js?v=a07be951bf", "js/at2.js?v=e8391b65d7", "js/canli-gt.js?v=fe3aed81e4", "js/at5.js?v=f43230d92c", "js/arayuz.js?v=b9ef4cd29f", "js/ses.js?v=9600871145", "js/paylas.js?v=c9e0debe8f", "js/guvenilirlik.js?v=d0b55a7c7e", "js/canli-isaret.js?v=f07ded97da", "css/katmanlar.css?v=36a7424d67", "js/katmanlar.js?v=3230a243e4"];
 self.addEventListener("install", e => { e.waitUntil(caches.open(C).then(c => c.addAll(SHELL)).then(() => self.skipWaiting())); });
 self.addEventListener("activate", e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => (k.startsWith("oxxai-") || k.startsWith("bulutoxx-")) && k !== C).map(k => caches.delete(k)))).then(() => self.clients.claim())); });
 self.addEventListener("fetch", e => {

@@ -46,3 +46,11 @@ border:1px solid rgba(233,199,102,.38);background:rgba(233,199,102,.08);color:va
 .nd-f{margin:12px 0 0;color:var(--ink3);font-size:13px}
 .nd-x{position:absolute;top:8px;right:8px;width:44px;height:44px;border-radius:50%;border:1px solid var(--line2);background:rgba(255,255,255,.06);color:var(--ink);font-size:16px;cursor:pointer}
 @media (prefers-reduced-motion:reduce){.nd-ov{animation:none}.nd-b{transition:none}}
+/* ===== pw-sabit-v149 ===== */
+/* POWER NOW düğmesi (nav.tabs içinde) ekranda sabit: iOS'ta kök sayfanın elastik aşırı kaydırması sabit alt menüyü de sürüklüyordu.
+   Kök kaydırıcıda aşırı kaydırma kapalı (uygulamanın kendi aşağı çekip yenileme davranışı yok; yenileme üst çubuktaki düğmeden),
+   tam ekran kaydırılan katmanlarda kaydırma alttaki sayfaya zincirlenmez; alt menü kendi birleşik katmanında çizilir. */
+html,body{overscroll-behavior-y:none}
+.msheet,.bkd,.nd-c,.gbox,.pk-list,.bt-log{overscroll-behavior:contain}
+nav.tabs{-webkit-transform:translate3d(0,0,0);transform:translate3d(0,0,0);-webkit-backface-visibility:hidden;backface-visibility:hidden}
+nav.tabs .pw-btn{touch-action:manipulation}
