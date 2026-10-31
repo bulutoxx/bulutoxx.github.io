@@ -107,17 +107,30 @@ def p1x2(dr, M):
 
 
 def sirali_lojit(z, y, w=None):
-    """θ1, θ2, b en çok olabilirlik (y: 0 ev, 1 X, 2 dep)."""
+    """θ1, θ2, b en çok olabilirlik (y: 0 ev, 1 X, 2 dep). Yalnız numpy: sayısal Newton + geri adım (scipy gerekmez)."""
     import numpy as np
-    from scipy.optimize import minimize
     z = np.asarray(z, float); y = np.asarray(y); w = np.ones_like(z) if w is None else np.asarray(w, float)
     def nll(p):
-        t1, dt, b = p; t2 = t1 + math.exp(dt)
+        t1, dt, b = p; t2 = t1 + math.exp(min(dt, 20))
         pa = 1 / (1 + np.exp(-(t1 - b * z))); pax = 1 / (1 + np.exp(-(t2 - b * z)))
         pr = np.where(y == 2, pa, np.where(y == 1, pax - pa, 1 - pax))
-        return -(w * np.log(np.clip(pr, 1e-9, 1))).sum() / w.sum()
-    r = minimize(nll, [-0.9, 0.0, 2.2], method="Nelder-Mead", options={"xatol": 1e-5, "fatol": 1e-8, "maxiter": 4000})
-    t1, dt, b = r.x
+        return float(-(w * np.log(np.clip(pr, 1e-12, 1))).sum() / w.sum())
+    x = np.array([-0.9, 0.0, 2.2]); f = nll(x); h = 1e-4; I = np.eye(3)
+    for _ in range(60):
+        g = np.array([(nll(x + h * I[k]) - nll(x - h * I[k])) / (2 * h) for k in range(3)])
+        Hm = np.array([[(nll(x + h * I[i] + h * I[j]) - nll(x + h * I[i] - h * I[j]) - nll(x - h * I[i] + h * I[j]) + nll(x - h * I[i] - h * I[j])) / (4 * h * h)
+                        for j in range(3)] for i in range(3)])
+        try: adim = np.linalg.solve(Hm + 1e-9 * I, g)
+        except np.linalg.LinAlgError: adim = g
+        if not np.all(np.isfinite(adim)) or g @ adim <= 0: adim = g
+        t = 1.0
+        while t > 1e-6:
+            xn = x - t * adim; fn = nll(xn)
+            if fn < f: break
+            t *= 0.5
+        if t <= 1e-6 or f - fn < 1e-12: break
+        x, f = xn, fn
+    t1, dt, b = x
     return {"t1": round(float(t1), 5), "t2": round(float(t1 + math.exp(dt)), 5), "b": round(float(b), 5)}
 
 

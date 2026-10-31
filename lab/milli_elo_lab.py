@@ -75,6 +75,8 @@ def ileri(oyn, P, bas, bit, D):
 
 
 def main():
+    try: onceki = json.load(open(os.path.join(DATA, "milli_elo_lab.json"), encoding="utf-8"))
+    except Exception: onceki = {}
     metin = ME.indir()
     oyn, _ = ME.satirlar(metin)
     D = hazirla(oyn); d, yil, y, ntr, fifa, hz = D
@@ -135,8 +137,6 @@ def main():
              "not": "Taban = geçmiş 12 yılın 1X2 sıklığı (ev / tarafsız ayrı). Piyasaya karşı ölçüm yalnız kilitli gölge kayıttan."}
     json.dump(karne, open(os.path.join(DATA, "milli_elo_lab.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     # alfa yatırımı yalnız ilk kararda işlenir (haftalık yeniden ölçüm serveti tekrar tekrar değiştirmez)
-    try: onceki = json.load(open(os.path.join(DATA, "milli_elo_lab.json"), encoding="utf-8"))
-    except Exception: onceki = {}
     karne["alfa_islendi"] = onceki.get("alfa_islendi")
     if A and not karne["alfa_islendi"]:
         O.yatirim_guncelle(A, alan_k, alfa, gecti)
