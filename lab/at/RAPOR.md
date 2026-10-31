@@ -1,6 +1,6 @@
 # OXXai 🐎 At Yarışı Laboratuvarı — Rapor
 
-_Otomatik üretildi: 2026-10-30T10:42:38+00:00 · model sürümü `20261028T0118` · hobi amaçlıdır, garanti değildir · 18+_
+_Otomatik üretildi: 2026-10-31T01:06:04+00:00 · model sürümü `20261028T0118` · hobi amaçlıdır, garanti değildir · 18+_
 
 ## Yeniden oynatma (replay): 2026-03-16 → 2026-10-23
 
@@ -416,7 +416,7 @@ Yorum: sabah tahmininde en çok taşıyan bilgiler reytingler (at/jokey/antrenö
 ## Kapı (sürekli öğrenme)
 
 - Kural: tarif (özellikler/ayarlar) değişirse yeni model ancak **aynı sınama koşularında** yalnız-model log-loss'u düşürür, ilk seçim isabetini düşürmez ve harman log-loss'unu 0,001'den fazla bozmazsa kabul edilir. Tarif aynıysa özellikler her gece yeni sonuçlarla güncellenir, katsayılar haftada bir yeniden eğitilir (KORU = bu gece yenileme günü değil); ortak koşularda belirgin bozulma (veri sorunu) olursa dünkü model korunur. İz: `data/at/sinama_izi.json`.
-- Son karar (2026-10-30T10:42:38+00:00): **KORU** — aynı tarif; katsayılar 2 günlük (haftalık yenileme), özellikler bu gece yeni sonuçlarla güncellendi
+- Son karar (2026-10-31T01:06:04+00:00): **KORU** — aynı tarif; katsayılar 2 günlük (haftalık yenileme), özellikler bu gece yeni sonuçlarla güncellendi
 - Yeni: yalnız model log-loss 1.8521, ilk seçim %32.4; harman 1.7907. Kıyas: yalnız model 1.8521, ilk seçim %32.4; harman 1.7907.
 
 ## Canlı karne (kilitlenmiş tahminler, sonuç gelince)
@@ -436,7 +436,7 @@ Koşudan önce kilitlenmiş tahminler. 16 koşu `mod_hatali` (26 Ekim: erken hav
 | 2026-10-26 | – (hepsi etkilendi) | 16 / 3.1197 / %25.0 |
 | 2026-10-27 | 3 / 1.8106 / %66.7 | 3 / 1.8106 / %66.7 |
 
-## Gösteri: 2026-10-30 İstanbul tahminleri
+## Gösteri: 2026-10-31 İstanbul tahminleri
 
 - Bu gün için İstanbul programı/kilidi yok.
 
