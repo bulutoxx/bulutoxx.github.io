@@ -54,3 +54,25 @@ html,body{overscroll-behavior-y:none}
 .msheet,.bkd,.nd-c,.gbox,.pk-list,.bt-log{overscroll-behavior:contain}
 nav.tabs{-webkit-transform:translate3d(0,0,0);transform:translate3d(0,0,0);-webkit-backface-visibility:hidden;backface-visibility:hidden}
 nav.tabs .pw-btn{touch-action:manipulation}
+/* ===== masaustu-v150 ===== */
+/* Masaüstü (≥1024px): daha geniş okunur sütun, alt menü içerikle aynı genişlikte ortada; kaydırmada ağır efektler sadeleşir.
+   Telefon düzeni değişmez (tüm kurallar bu medya sorgusunda; yalnız alt boşluk değişkeni her genişlikte, telefonda mevcut değerin altında kalır). */
+main.page{padding-bottom:max(calc(120px + env(safe-area-inset-bottom,0px)),calc(var(--oxx-alt,0px) + 24px))}
+@media (min-width:1024px){
+  :root{--dt-w:920px}
+  .page,.topbar .in,nav.tabs .in,#a5Strip{max-width:var(--dt-w)}
+  html{scroll-padding-top:calc(var(--tbh,66px) + 24px);scroll-padding-bottom:calc(var(--oxx-alt,110px) + 16px)}
+  /* kaydırma: sabit (fixed) gövde arka planı her karede ana iş parçacığında yeniden boyanıyordu → ayrı sabit katman */
+  body{background:transparent;background-attachment:scroll}
+  body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+    background:radial-gradient(1200px 600px at 100% -10%,rgba(47,123,255,.20),transparent 60%),radial-gradient(900px 500px at -20% 10%,rgba(34,211,255,.12),transparent 60%),var(--bg)}
+  /* tam genişlik bulanık cam (backdrop-filter) üst bant / alt menü / yapışkan bülten başlığı: her kaydırma karesinde yeniden bulanıklaştırılıyordu.
+     Masaüstünde opak zemin: alttaki metin bandın arkasından yarı görünüp "kesik" durmaz */
+  .topbar{background:#050912;-webkit-backdrop-filter:none;backdrop-filter:none}
+  nav.tabs{background:#060a14;-webkit-backdrop-filter:none;backdrop-filter:none}
+  .bt-head.cmp{background:#050912;-webkit-backdrop-filter:none;backdrop-filter:none}
+  /* sekme giriş animasyonu bittikten sonra görünüm katmanı (sayfa boyu: 1366×29000 px) birleştiricide tutulmasın */
+  section.view{animation-fill-mode:backwards}
+  nav.tabs button{cursor:pointer}
+  nav.tabs button:not(.pw-btn):hover{color:var(--ink)}
+}

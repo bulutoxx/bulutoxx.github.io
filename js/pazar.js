@@ -4,7 +4,11 @@
   const NX={win:"bug", lg:"", lim:300};
   const WIN=[["bug","Bugün (24:00'e kadar)",0],["1s","1 saat",3600e3],["3s","3 saat",3*3600e3],["yar","Yarın",0],["7g","7 gün",7*864e5]];
   const fold=x=>String(x||"").toLocaleLowerCase("tr").normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/ı/g,"i");
-  function lgN(m){ try{ const f=FIXTURES.find(x=>x.lg===m.lg&&x.h===m.h&&x.a===m.a); return (f&&(f.cn||f.ln))||botLgName(m.lg); }catch(e){ return m.lg||""; } }
+  // v150: maç → fikstür eşlemesi her satırda FIXTURES.find yerine dizin üzerinden (aynı ilk eşleşme)
+  let FXI=null, FXA=null, FXN=-1;
+  const fxOf=m=>{ if(FXA!==FIXTURES||FXN!==FIXTURES.length){ FXA=FIXTURES; FXN=FIXTURES.length; FXI=new Map(); for(const x of FIXTURES){ const k=x.lg+"\u0001"+x.h+"\u0001"+x.a; if(!FXI.has(k)) FXI.set(k,x); } }
+    return FXI.get(m.lg+"\u0001"+m.h+"\u0001"+m.a); };
+  function lgN(m){ try{ const f=fxOf(m); return (f&&(f.cn||f.ln))||botLgName(m.lg); }catch(e){ return m.lg||""; } }
   function range(){ const now=Date.now(), d0=Date.parse(istDay(new Date())+"T00:00:00+03:00");
     if(NX.win==="bug") return [now,d0+864e5]; if(NX.win==="yar") return [d0+864e5,d0+2*864e5];
     const w=WIN.find(x=>x[0]===NX.win); return [now,now+(w?w[2]:3*3600e3)]; }
@@ -17,7 +21,7 @@
     if(NX.lg) L=L.filter(x=>x.lg===NX.lg);
     if(q) L=L.filter(x=>fold(x.m.h+" "+x.m.a+" "+x.lg).includes(q));
     return L.sort((x,y)=>x.m.dt-y.m.dt); }
-  function pick(m){ try{ const f=FIXTURES.find(x=>x.lg===m.lg&&x.h===m.h&&x.a===m.a); const p=quickPred(m,f); if(!p||!p.pm) return null;
+  function pick(m){ try{ const f=fxOf(m); const p=quickPred(m,f); if(!p||!p.pm) return null;
       const R=recOf({H:p.pm[0],D:p.pm[1],A:p.pm[2],o25:p.o25m},f); return R?{n:R.n,p:R.cp,o:R.o,t:R.tier,l:R.label}:null; }catch(e){ return null; } }
   function html(){ const L=list(), q=IDLV&&IDLV.q;
         const all=(()=>{ const s=NX.lg; NX.lg=""; const r=[...new Set(list().map(x=>x.lg))]; NX.lg=s; return r; })();

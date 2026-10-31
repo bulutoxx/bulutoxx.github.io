@@ -1022,7 +1022,7 @@ const Goal={
     const taraf=Sound.taraf?Sound.taraf(e,side):"notr";
     el.hidden=false; const anons=o&&o.takip?Sound.goal({taraf, takim:team, h:e.h, a:e.a, hs:e.hs, as:e.as}):false; buzz(taraf==="rakip"?[40,60,40]:[60,40,60,40,180]);
     if(!anons) Voice.say(`Gol! ${team}. Skor ${e.h} ${e.hs}, ${e.a} ${e.as}.${g&&g.who?" Golü atan "+g.who+".":""}`);
-    if(document.hidden && "Notification" in window && Notification.permission==="granted"){
+    if((typeof window.oxxDtBildir==="function"?window.oxxDtBildir():document.hidden) && "Notification" in window && Notification.permission==="granted"){   // v150: masaüstünde pencere odakta değilken de (Ayarlar › Sesler › Masaüstü bildirimleri)
       const opt={body:`${e.h} ${e.hs} - ${e.as} ${e.a}${by?"\n"+by:""}`, icon:"icons/oxxai2-192.png", badge:"icons/oxxai2-192.png", tag:"goal-"+e.id, renotify:true};
       (navigator.serviceWorker && navigator.serviceWorker.ready ? navigator.serviceWorker.ready.then(r=>r.showNotification("GOL! "+team,opt)) : Promise.reject())
         .catch(()=>{ try{ new Notification("GOL! "+team,opt); }catch(_){} });

@@ -27,7 +27,7 @@ const sigB=()=>[BT.q,BT.f,BT.day,BT.lg].join("|");
 let bLast="", bPend=false;
 try{ const _rb=renderBulten; renderBulten=function(){
 if(BT.q&&odak("btQ")&&sigB()===bLast&&$$("btList")&&$$("btList").children.length){ bPend=true; return; }
-const ara=!!BT.q, yeni=ara&&sigB()!==bLast; const y=scrollY;
+const ara=!!BT.q, yeni=ara&&sigB()!==bLast; const y=ara?scrollY:0;   // v150: aramada değilse scrollY okunmaz (zorunlu yerleşim yok)
 const r=_rb.apply(this,arguments); bLast=ara?sigB():""; bPend=false;
 if(ara){ if(Math.abs(scrollY-y)>1) W.scrollTo(0,y); if(yeni) hizala("btList","#v-bulten .bt-head"); }
 return r; }; }catch(e){}
@@ -389,3 +389,79 @@ try{ const _bo=bkOpen; bkOpen=function(f){ const r=_bo.apply(this,arguments); tr
 window.BX_ARALIK={satir, get veri(){ return AR; }};
 })();
 } catch (e) { if (typeof reportError === "function") reportError(e); else setTimeout(function () { throw e; }); } /* /id: aralik-v146 */
+/* id: masaustu-v150 */ try {
+// =====================================================================
+// OXXai v150 · MASAÜSTÜ: akıcı gezinme, gol uyarısı / ses / sistem bildirimi
+// Kök nedenler (şikâyet: "desktopta menü çok ağır ilerliyor", "gol uyarısı ve sesler gelmiyor"):
+//  1) goldOf() her satırda goldCalc() → imza için Pick.list() (1300+ maç) çağırıyordu: Canlı/Bülten çiziminde satır × maç
+//     (≈2500 × 1357) döngü → sekme geçişinde 0,5–2 sn uzun görev, bülten kaydırırken yeni parça yüklenince takılma.
+//     Çözüm: aynı eşzamanlı çizim içinde goldCalc() sonucu bir kez hesaplanır (mikro görev sonunda sıfırlanır; sonuç birebir aynı).
+//  2) Masaüstünde sayfa çoğu zaman arka planda / başka pencerenin altında (document.hidden) kalıyor: zamanlayıcılar duruyor,
+//     ses ve uyarılar "gizli" diye atlanıyor, gol kartı 7 sn sonra kimse görmeden kapanıyordu.
+//     Çözüm (yalnız fare + hover cihazlarda; telefonda hiçbir şey değişmez): takip edilen canlı maç varken arka planda 30 sn'de
+//     bir canlı skor tazelenir; gol kartı kullanıcı dönene kadar açık kalır; sekme başlığında "⚽ GOL!" ve simgede rozet;
+//     dönünce kaçırılan olayların kısa özeti; Ayarlar › Sesler › "Masaüstü bildirimleri" açıksa (izin yalnız dokununca istenir)
+//     pencere arkadayken sistem bildirimi.
+// =====================================================================
+(function(){ "use strict";
+  const W=window, D=document;
+  // ---------- 1) Altın hesabı: çizim başına bir kez ----------
+  try{ if(typeof goldCalc==="function"){ const _gc=goldCalc; let memo=null, plan=false;
+      goldCalc=function(){ if(memo) return memo; const r=_gc.apply(this,arguments); memo=r;
+        if(!plan){ plan=true; Promise.resolve().then(()=>{ memo=null; plan=false; }); } return r; }; } }catch(e){}
+
+  // ---------- alt boşluk: içerik alt menü + POWER NOW + yüzen çubukların arkasında kalmasın (her genişlikte; CSS en az 120 px tutar) ----------
+  function altOlc(){ try{ const H=W.innerHeight; let top=H;
+      D.querySelectorAll("nav.tabs, nav.tabs .pw-logo, #at3Bar").forEach(el=>{ if(!el.offsetParent&&getComputedStyle(el).position!=="fixed") return; const r=el.getBoundingClientRect(); if(r.width>0&&r.height>0&&r.bottom>H*.6&&r.top<top) top=r.top; });
+      const v=Math.max(0,Math.round(H-top)); if(v!==altOlc.v){ altOlc.v=v; D.documentElement.style.setProperty("--oxx-alt",v+"px"); } }catch(e){} }
+  altOlc(); W.addEventListener("resize",altOlc,{passive:true}); D.addEventListener("click",()=>setTimeout(altOlc,350),{capture:true,passive:true}); setTimeout(altOlc,1500);
+  // ---------- 2) Masaüstü uyarıları ----------
+  const DT=(()=>{ try{ return matchMedia("(hover:hover) and (pointer:fine)").matches; }catch(e){ return false; } })();
+  W.OXX_DT={ dt:DT };
+  if(!DT) return;
+  const away=()=>D.hidden===true||(typeof D.hasFocus==="function"&&!D.hasFocus());
+  const hasN=()=>"Notification" in W;
+  const pr=()=>{ try{ return PREFS; }catch(e){ return {}; } };
+  W.oxxDtBildir=function(){ return pr().dtBildirim!==false&&away(); };
+  const KAC=[]; let bekle=false, baslik0=null, ikon0=null;
+  // sekme başlığı + simge rozeti
+  function isaret(txt){ try{ if(baslik0==null) baslik0=D.title; D.title="⚽ GOL! "+txt; }catch(e){}
+    try{ const L=[...D.querySelectorAll('link[rel="icon"]')]; if(!L.length) return; if(!ikon0) ikon0=L.map(l=>l.getAttribute("href"));
+      const img=new Image(); img.onload=()=>{ try{ const c=D.createElement("canvas"); c.width=c.height=64; const x=c.getContext("2d"); x.drawImage(img,0,0,64,64);
+        x.beginPath(); x.arc(46,18,16,0,Math.PI*2); x.fillStyle="#FF3B30"; x.fill(); x.lineWidth=4; x.strokeStyle="#03060D"; x.stroke();
+        x.fillStyle="#fff"; x.font="bold 22px system-ui,sans-serif"; x.textAlign="center"; x.textBaseline="middle"; x.fillText(String(Math.min(9,KAC.length||1)),46,19);
+        const u=c.toDataURL("image/png"); L.forEach(l=>l.setAttribute("href",u)); }catch(e){} }; img.src=ikon0[0]; }catch(e){} }
+  function temizle(){ try{ if(baslik0!=null){ D.title=baslik0; baslik0=null; } }catch(e){}
+    try{ if(ikon0){ const L=[...D.querySelectorAll('link[rel="icon"]')]; L.forEach((l,i)=>l.setAttribute("href",ikon0[i]||ikon0[0])); ikon0=null; } }catch(e){} }
+  W.oxxDtKacan=function(name,msg){ if(!away()) return; KAC.push(String(msg||"")); };
+  // gol kartı: kullanıcı yokken kapanmasın
+  try{ const _nx=Goal.next; Goal.next=function(){ const it=this.queue[0]; const r=_nx.apply(this,arguments);
+      try{ if(it&&this.open&&away()){ clearTimeout(this.t); this.t=0; bekle=true; const e=it.e, t=`${e.h} ${e.hs}-${e.as} ${e.a}`; KAC.push("⚽ "+t); isaret(t); } }catch(e){}
+      return r; }; }catch(e){}
+  function don(){ if(away()) return; temizle();
+    if(KAC.length){ const n=KAC.filter(x=>/^⚽/.test(x)).length, L=KAC.splice(0);
+      try{ toast((n?`Sen yokken ${n} gol oldu · `:"Sen yokken · ")+L.slice(-3).map(x=>x.replace(/^⚽\s*/,"")).join(" · ")); }catch(e){} }
+    if(bekle){ bekle=false; try{ if(Goal.open){ clearTimeout(Goal.t); Goal.t=setTimeout(()=>{ const b=D.getElementById("goalClose"); if(b) b.click(); },7000); } }catch(e){} } }
+  D.addEventListener("visibilitychange",don); W.addEventListener("focus",don);
+  // arka planda takip edilen canlı maçlar: 30 sn'de bir canlı skor (yerel setTimeout; ortak planlayıcı gizliyken durur)
+  function izlenen(){ try{ return (IDL.live[1]||[]).some(m=>FOLLOW.has("i"+m.id)&&m.st!==3); }catch(e){ return false; } }
+  let son=0;
+  (function dongu(){ setTimeout(()=>{ try{ if(D.hidden&&izlenen()&&Date.now()-son>=28e3&&Date.now()-((IDL.at&&IDL.at[1])||0)>=25e3){ son=Date.now(); IDL.load(1,true).catch(()=>{}); } }catch(e){} dongu(); },30e3); })();
+  // ---------- Ayarlar › Sesler › Masaüstü bildirimleri ----------
+  const E=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  const acik=()=>hasN()&&Notification.permission==="granted"&&pr().dtBildirim!==false;
+  const altTx=()=>!hasN()?"Bu tarayıcı sistem bildirimi desteklemiyor":Notification.permission==="denied"?"Tarayıcı izni kapalı · adres çubuğundaki site ayarlarından açabilirsin":acik()?"Pencere arkadayken gol olunca sistem bildirimi":"Açınca tarayıcı bir kez izin ister";
+  function hucre(set){ if(!set||set.querySelector("#dtBil")) return;
+    set.insertAdjacentHTML("beforeend",`<div class="cell dt-bil"><span class="ic gold" aria-hidden="true">🔔</span><span class="tx"><b>Masaüstü bildirimleri</b><small id="dtBilTx">${E(altTx())}</small></span><label class="sw"><input type="checkbox" id="dtBil" ${acik()?"checked":""} ${hasN()?"":"disabled"} aria-label="Masaüstü bildirimleri"><i></i></label></div>`);
+    const inp=set.querySelector("#dtBil"), tx=set.querySelector("#dtBilTx");
+    inp.addEventListener("change",async()=>{ const P=pr();
+      if(inp.checked){ let p=Notification.permission; if(p==="default"){ try{ p=await Notification.requestPermission(); }catch(e){} }
+        if(p==="granted"){ P.dtBildirim=true; try{ toast("Masaüstü bildirimleri açık · pencere arkadayken gol olunca haber veririm"); }catch(e){} }
+        else { inp.checked=false; P.dtBildirim=false; try{ toast("Tarayıcı izin vermedi · adres çubuğundaki site ayarlarından açabilirsin"); }catch(e){} } }
+      else P.dtBildirim=false;
+      try{ savePrefs(); }catch(e){} if(tx) tx.textContent=altTx(); }); }
+  const sh=D.getElementById("sheet");
+  if(sh) new MutationObserver(()=>{ const s=sh.querySelector("#sesSet"); if(s) hucre(s); }).observe(sh,{childList:true});
+  W.OXX_DT.durum=()=>({kacan:KAC.slice(),bekle,baslik:D.title,izlenen:izlenen()});
+})();
+} catch (e) { if (typeof reportError === "function") reportError(e); else setTimeout(function () { throw e; }); } /* /id: masaustu-v150 */

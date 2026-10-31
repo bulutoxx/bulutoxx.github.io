@@ -260,6 +260,7 @@
     tap:"Düğme",tab:"Sekme geçişi",acik:"Anahtar açık",kapali:"Anahtar kapalı",ac:"Pencere açıldı",kapa:"Pencere kapandı",kaydir:"Kaydırma",power:"Power Now",msgIn:"OXXai mesajı geldi",msgOut:"Mesaj gönderildi",star:"Takibe al",ready:"OXXai imza motifi"};
 
   // ---------- canlı motor ----------
+  const DT=(()=>{ try{ return matchMedia("(hover:hover) and (pointer:fine)").matches; }catch(e){ return false; } })();   // v150: masaüstü (telefonda false)
   let ctx=null, bus=null, unlocked=false, lastAny=0, tapH=null, evEnd=0, sent=0;
   const lastN={}, LOG=[];
   const volG=v=>{ v=v==null?+PREFS.sesVol:+v; if(!isFinite(v)) v=.8; v=Math.max(0,Math.min(1,v)); return v<=0?0:Math.pow(v,1.6); };
@@ -295,7 +296,7 @@
   function olay(name,o){ o=o||{}; if(!R[name]) return false;
     if(!PREFS.sound) return false;                       // titreşim / sessiz modda ses yok
     if(!o.preview&&PREFS[CAT[name]]===false) return false;
-    if(D.hidden) return false;
+    if(D.hidden&&!(DT&&!UI.has(name))) return false;  // v150: masaüstünde (fare + hover) maç olayı sesi başka sekmedeyken de çalar; menü sesleri susar
     const now=performance.now();
     if(UI.has(name)){ if(name==="tap"&&now-lastAny<45) return false; if(now-(lastN[name]||0)<(name==="kaydir"?240:70)) return false; if(name!=="tap") cancelTap(); }
     else { if(!o.preview&&now-(lastN[name]||0)<800) return false; if(!o.preview&&name==="atSerit"&&["atCagri","atStart","atKazandi"].some(n=>now-(lastN[n]||0)<3000)) return false; cancelTap(); }
@@ -341,7 +342,7 @@
       if(sp===1&&(p.st===3||(p.min||0)>=80)) ev("macBitti",`🏁 Maç bitti · ${p.h} ${p.hs}-${p.as} ${p.a}`);
       if(sp===2&&p.q>=4) ev("bkBitti",`🏀 Maç bitti · ${p.h} ${p.hs}-${p.as} ${p.a}`); }
     PR[sp]=true; }
-  function ev(name,msg){ if(D.hidden) return; try{ toast(msg); }catch(e){} try{ buzz(name==="kirmizi"?[50,40,50]:[20,40,20]); }catch(e){} olay(name); }
+  function ev(name,msg){ if(D.hidden){ if(DT){ olay(name); try{ if(W.oxxDtKacan) W.oxxDtKacan(name,msg); }catch(e){} } return; } try{ toast(msg); }catch(e){} try{ buzz(name==="kirmizi"?[50,40,50]:[20,40,20]); }catch(e){} olay(name); }
   try{ const _l=IDL.load; IDL.load=async function(sp,f){ const a0=this.at[sp]; const r=await _l.apply(this,arguments); try{ if((sp===1||sp===2)&&this.at[sp]!==a0&&this.ok[sp]) idlDiff(sp); }catch(e){} return r; }; }catch(e){}
   // b) ESPN canlı skor listesi (yıldız: bulutoxx-fav)
   const EZ=new Map(); let ePr=false;
