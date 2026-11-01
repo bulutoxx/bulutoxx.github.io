@@ -1,0 +1,141 @@
+{
+ "tarih": "2026-11-01",
+ "madde": "YH-32",
+ "erisim": {
+  "wikidata": true,
+  "open_meteo": true
+ },
+ "karar": "veri bekliyor",
+ "kapi_gecti": false,
+ "n_mac": 9589,
+ "n_takim": 479,
+ "n_takim_koordinatli": 301,
+ "n_havali": 678,
+ "sinama_kapsam": 0.0715,
+ "n_sinama_havali": 425,
+ "hava_cagri": 500,
+ "hava_durum": "butce",
+ "katlar": [
+  {
+   "kat": "2026-01-01",
+   "n_sinama": 822,
+   "n_sinama_havali": 58,
+   "n_egitim_havali": 253,
+   "a_yagis": 0.0,
+   "b_ruzgar": 0.0
+  },
+  {
+   "kat": "2026-02-01",
+   "n_sinama": 880,
+   "n_sinama_havali": 66,
+   "n_egitim_havali": 311,
+   "a_yagis": 0.4,
+   "b_ruzgar": -0.16
+  },
+  {
+   "kat": "2026-03-01",
+   "n_sinama": 820,
+   "n_sinama_havali": 55,
+   "n_egitim_havali": 377,
+   "a_yagis": 0.36,
+   "b_ruzgar": -0.36
+  },
+  {
+   "kat": "2026-04-01",
+   "n_sinama": 868,
+   "n_sinama_havali": 60,
+   "n_egitim_havali": 432,
+   "a_yagis": 0.4,
+   "b_ruzgar": -0.24
+  },
+  {
+   "kat": "2026-05-01",
+   "n_sinama": 527,
+   "n_sinama_havali": 55,
+   "n_egitim_havali": 492,
+   "a_yagis": 0.4,
+   "b_ruzgar": -0.34
+  },
+  {
+   "kat": "2026-07-01",
+   "n_sinama": 1,
+   "n_sinama_havali": 0,
+   "n_egitim_havali": 547,
+   "a_yagis": 0.4,
+   "b_ruzgar": -0.3
+  },
+  {
+   "kat": "2026-08-01",
+   "n_sinama": 605,
+   "n_sinama_havali": 37,
+   "n_egitim_havali": 547,
+   "a_yagis": 0.4,
+   "b_ruzgar": -0.3
+  },
+  {
+   "kat": "2026-09-01",
+   "n_sinama": 732,
+   "n_sinama_havali": 52,
+   "n_egitim_havali": 584,
+   "a_yagis": 0.38,
+   "b_ruzgar": -0.3
+  },
+  {
+   "kat": "2026-10-01",
+   "n_sinama": 688,
+   "n_sinama_havali": 42,
+   "n_egitim_havali": 636,
+   "a_yagis": 0.4,
+   "b_ruzgar": -0.34
+  }
+ ],
+ "sonuc": {
+  "dll": {
+   "fark": -0.002409,
+   "ga95": [
+    -0.012981,
+    0.008406
+   ],
+   "p_tek": 0.3265,
+   "n": 425,
+   "blok": 298,
+   "yari1": -0.008752,
+   "yari2": 0.003729
+  },
+  "dbrier": {
+   "fark": -0.001793,
+   "ga95": [
+    -0.006626,
+    0.003072
+   ],
+   "p_tek": 0.229,
+   "n": 425,
+   "blok": 298
+  },
+  "yarilar_siniri": "2026-04-18",
+  "alfa_t": 0.0,
+  "alt_kume": {
+   "yagisli_5mm": {
+    "n": 25,
+    "dll": 0.06967,
+    "ust_gercek": 0.64,
+    "ust_piyasa": 0.4851
+   },
+   "ruzgarli_30": {
+    "n": 7,
+    "dll": 0.01368,
+    "ust_gercek": 0.7143,
+    "ust_piyasa": 0.5673
+   },
+   "kuru_sakin": {
+    "n": 270,
+    "dll": -0.00146,
+    "ust_gercek": 0.5222,
+    "ust_piyasa": 0.4919
+   }
+  }
+ },
+ "tasarim": "logit q = logit p_power(üst) + a·log1p(yağış 12–22 mm) + b·max(0, rüzgâr−20)/10; aylık genişleyen katlar",
+ "atif": "Hava verisi: Open-Meteo.com (CC BY 4.0); stat koordinatları: Wikidata (CC0)",
+ "alfa_islendi": null
+}
