@@ -36,8 +36,8 @@ OM = "https://archive-api.open-meteo.com/v1/archive"
 ONB = os.path.join(ROOT, ".hava_onbellek")
 KOORD = os.path.join(DATA, "stadyum_koord.json")
 BUTCE_SN = float(os.environ.get("HAVA_BUDGET", "2700"))
-MAKS_CAGRI = int(os.environ.get("HAVA_MAKS_CAGRI", "4200"))
-ARALIK = 0.8                     # sn / Open-Meteo çağrısı (saatlik kota altında kalmak için)
+MAKS_CAGRI = int(os.environ.get("HAVA_MAKS_CAGRI", "4200"))   # konum-gün (Open-Meteo ağırlığı)
+ARALIK = 1.0                     # sn / Open-Meteo isteği
 IZ = np.round(np.arange(-0.4, 0.401, 0.02), 3)
 MIN_KAPSAM, MIN_N = 0.80, 1500
 KULUP = {"Q476028", "Q103229495", "Q15944511", "Q847017", "Q12973014"}
@@ -82,36 +82,54 @@ def varliklar(ids):
     return out
 
 
-def koordinat_bul(ad):
-    for q in (ad, ad + " FC", ad + " F.C."):
+ULKE = {"en": {"Q145", "Q21", "Q25"}, "sc": {"Q145", "Q22"}, "es": {"Q29", "Q228"}, "it": {"Q38", "Q238"}, "de": {"Q183"},
+        "fr": {"Q142", "Q235"}, "nl": {"Q55"}, "pt": {"Q45"}, "be": {"Q31"}, "gr": {"Q41"}, "tr": {"Q43"}}
+
+
+def _aday(lg, ids):
+    E = varliklar(ids); izin = ULKE.get(lg.rstrip("0123456789"), set())
+    for i in ids:
+        cl = E.get(i, {}).get("claims", {})
+        if not (set(_idler(cl, "P31")) & KULUP or "Q2736" in _idler(cl, "P641")): continue
+        ul = set(_idler(cl, "P17"))
+        if ul and izin and not (ul & izin): continue
+        for st in _idler(cl, "P115")[:2]:
+            k = _p625(varliklar([st]).get(st, {}).get("claims", {}))
+            if k and avrupa(*k): return [round(k[0], 3), round(k[1], 3), "stat"]
+        k = _p625(cl)
+        if k and avrupa(*k): return [round(k[0], 3), round(k[1], 3), "kulup"]
+    return None
+
+
+def koordinat_bul(lg, ad):
+    # 1) tam metin arama, yalnız futbol kulübü öğeleri (haswbstatement); 2) ad araması (eski yol)
+    for q in (f"{ad} haswbstatement:P31=Q476028", f"{ad.replace('.', ' ')} haswbstatement:P31=Q476028"):
+        r = al(f"{WD}?action=query&list=search&format=json&srlimit=6&srsearch={urllib.parse.quote(q)}")
+        ids = [x["title"] for x in (r.get("query", {}).get("search", []) if isinstance(r, dict) else []) if x.get("title", "").startswith("Q")]
+        if ids:
+            k = _aday(lg, ids)
+            if k: return k
+    for q in (ad, ad + " FC"):
         r = al(f"{WD}?action=wbsearchentities&format=json&language=en&type=item&limit=7&search={urllib.parse.quote(q)}")
-        if not isinstance(r, dict): continue
-        ids = [x["id"] for x in r.get("search", [])]
-        if not ids: continue
-        E = varliklar(ids)
-        for i in ids:
-            cl = E.get(i, {}).get("claims", {})
-            if not (set(_idler(cl, "P31")) & KULUP or "Q2736" in _idler(cl, "P641")): continue
-            for st in _idler(cl, "P115")[:2]:
-                k = _p625(varliklar([st]).get(st, {}).get("claims", {}))
-                if k and avrupa(*k): return [round(k[0], 3), round(k[1], 3), "stat"]
-            k = _p625(cl)
-            if k and avrupa(*k): return [round(k[0], 3), round(k[1], 3), "kulup"]
+        ids = [x["id"] for x in r.get("search", [])] if isinstance(r, dict) else []
+        if ids:
+            k = _aday(lg, ids)
+            if k: return k
     return None
 
 
 def koordinatlar(takimlar):
     try: K = json.load(open(KOORD, encoding="utf-8"))
     except Exception: K = {}
-    tablo = K.get("tablo", {}); dene = K.get("bulunamadi", {})
+    tablo = K.get("tablo", {}); dene = K.get("bulunamadi", {}) if K.get("surum") == 2 else {}
     yeni = 0
     for t in sorted(takimlar):
         if t in tablo or dene.get(t, "") >= (date.today() - timedelta(days=30)).isoformat(): continue
         if time.time() - T0 > 900: break
-        k = koordinat_bul(t.split("|", 1)[1])
+        k = koordinat_bul(*t.split("|", 1))
         if k: tablo[t] = k; dene.pop(t, None); yeni += 1
         else: dene[t] = date.today().isoformat()
-    K = {"kaynak": "Wikidata (CC0) — kulüp → iç saha stadı (P115) → koordinat (P625); yalnız türetilmiş tablo",
+    K = {"surum": 2, "kaynak": "Wikidata (CC0) — kulüp → iç saha stadı (P115) → koordinat (P625); yalnız türetilmiş tablo",
          "guncelleme": date.today().isoformat(), "n": len(tablo), "tablo": dict(sorted(tablo.items())),
          "bulunamadi": dict(sorted(dene.items()))}
     json.dump(K, open(KOORD, "w", encoding="utf-8"), ensure_ascii=False, indent=0)
@@ -121,38 +139,44 @@ def koordinatlar(takimlar):
 
 # ---------------------------------------------------------------- hava (Open-Meteo, CC BY 4.0) — ham değer yalnız önbellekte
 def hava_topla(istek):
-    """istek: {(la, lo): set(tarih)} → önbellek {"la,lo": {tarih: [yagis_top, ruzgar_ort, sicaklik_ort]}}."""
+    """istek: {(la, lo): set(tarih)} → önbellek {"la,lo": {tarih: [yagis_top, ruzgar_ort, sicaklik_ort] | None}}.
+    Gün başına TEK istek, o gün maçı olan tüm konumlar birlikte (≤ 40 konum / istek): ağırlık = konum-gün sayısı, gecikme az."""
     os.makedirs(ONB, exist_ok=True)
     yol = os.path.join(ONB, "hava.json")
     try: C = json.load(open(yol, encoding="utf-8"))
     except Exception: C = {}
     son = (date.today() - timedelta(days=6)).isoformat()
-    cagri = 0; durum = "tamam"
-    for (la, lo), gunler in sorted(istek.items()):
-        k = f"{la},{lo}"; var = C.setdefault(k, {})
-        eksik = sorted(g for g in gunler if g not in var and g <= son)
-        while eksik:
-            if cagri >= MAKS_CAGRI or time.time() - T0 > BUTCE_SN: durum = "butce"; break
-            bas = eksik[0]; bit = (date.fromisoformat(bas) + timedelta(days=13)).isoformat()
-            t1 = time.time()
-            r = al(f"{OM}?latitude={la}&longitude={lo}&start_date={bas}&end_date={min(bit, son)}"
-                   f"&hourly=precipitation,wind_speed_10m,temperature_2m&timezone=auto")
-            cagri += 1
+    gun_yer = {}
+    for (la, lo), gunler in istek.items():
+        var = C.setdefault(f"{la},{lo}", {})
+        for g in gunler:
+            if g not in var and g <= son: gun_yer.setdefault(g, []).append((la, lo))
+    cagri = agirlik = 0; durum = "tamam"
+    for g in sorted(gun_yer, reverse=True):          # önce yeni günler (sınama dilimi)
+        L = sorted(gun_yer[g])
+        for i in range(0, len(L), 40):
+            if agirlik >= MAKS_CAGRI or time.time() - T0 > BUTCE_SN: durum = "butce"; break
+            P = L[i:i + 40]; t1 = time.time()
+            r = al(f"{OM}?latitude={','.join(str(a) for a, _ in P)}&longitude={','.join(str(b) for _, b in P)}"
+                   f"&start_date={g}&end_date={g}&hourly=precipitation,wind_speed_10m,temperature_2m&timezone=auto")
+            cagri += 1; agirlik += len(P)
             if r == "KOTA": durum = "kota"; break
-            if isinstance(r, dict) and "hourly" in r:
-                H = r["hourly"]; gun = {}
-                for t, p, w, s in zip(H["time"], H["precipitation"], H["wind_speed_10m"], H["temperature_2m"]):
-                    if 12 <= int(t[11:13]) <= 21 and None not in (p, w, s): gun.setdefault(t[:10], []).append((p, w, s))
-                for g, L in gun.items():
-                    a = np.array(L); var[g] = [round(float(a[:, 0].sum()), 2), round(float(a[:, 1].mean()), 1), round(float(a[:, 2].mean()), 1)]
-            for g in [g for g in eksik if bas <= g <= bit]:
-                var.setdefault(g, None)          # erişildi ama değer yok → tekrar istenmez
-            eksik = [g for g in eksik if g > bit]
+            if isinstance(r, dict): r = [r]
+            for (la, lo), x in zip(P, r if isinstance(r, list) else [None] * len(P)):
+                v = None
+                if isinstance(x, dict) and "hourly" in x:
+                    H = x["hourly"]
+                    a = [(p, w, s) for t, p, w, s in zip(H["time"], H["precipitation"], H["wind_speed_10m"], H["temperature_2m"])
+                         if t[:10] == g and 12 <= int(t[11:13]) <= 21 and None not in (p, w, s)]
+                    if a:
+                        a = np.array(a); v = [round(float(a[:, 0].sum()), 2), round(float(a[:, 1].mean()), 1), round(float(a[:, 2].mean()), 1)]
+                if v is not None or isinstance(r, list): C[f"{la},{lo}"][g] = v
             time.sleep(max(0.0, ARALIK - (time.time() - t1)))
+            if cagri % 25 == 0: json.dump(C, open(yol, "w", encoding="utf-8"))
         if durum != "tamam": break
     json.dump(C, open(yol, "w", encoding="utf-8"))
-    print(f"hava: {cagri} çağrı, durum {durum}")
-    return C, cagri, durum
+    print(f"hava: {cagri} istek, {agirlik} konum-gün, durum {durum}")
+    return C, agirlik, durum
 
 
 # ---------------------------------------------------------------- deney

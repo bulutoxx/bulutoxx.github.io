@@ -28,10 +28,12 @@ jobs:
           key: hava-onbellek-${{ github.run_id }}
           restore-keys: hava-onbellek-
       - name: Hava deneyi
-        env: { HAVA_BUDGET: "2700", HAVA_MAKS_CAGRI: "3200" }
-        run: python3 lab/adim.py hava-lab --onem bilgi -- timeout 3000 python lab/hava_lab.py
+        env: { HAVA_BUDGET: "2700", HAVA_MAKS_CAGRI: "4500" }
+        run: |
+          mkdir -p .hava_onbellek
+          python3 lab/adim.py hava-lab --onem bilgi -- timeout 3000 python lab/hava_lab.py
       - name: 🗃️ Önbelleği sakla
-        if: always() && hashFiles('.hava_onbellek/hava.json') != ''
+        if: always()
         uses: actions/cache/save@v4
         with:
           path: .hava_onbellek
