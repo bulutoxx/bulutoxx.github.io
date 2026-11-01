@@ -1,6 +1,6 @@
 {
  "surum": "2026-10-28.1",
- "guncelleme": "2026-11-01 08:01",
+ "guncelleme": "2026-11-01 08:57",
  "aciklama": "Basket piyasa karnesi: kilitli model tahmini ile maç öncesi son piyasa oranı (marjı Shin ile ayrılmış) aynı maçlarda. Harman = Benter iki aşama (lig grubu, zaman sıralı ağırlık). Çapalı = model fark/toplamının handikap ve alt/üst çizgisine çekilmesi. GA: gün blokları bootstrap %95. Üretime yalnız OXXai kapısı + gölge sonrası girer.",
  "kurallar": {
   "kapi": "n ≥ 150, gün ≥ 20, ΔLL GA üst < 0, ΔBrier < 0, isabet düşmez",
@@ -304,13 +304,6 @@
   }
  },
  "agirlik": {
-  "kolej": {
-   "a": 0.3,
-   "b": 0.7,
-   "w_m": 0.6,
-   "w_t": 0.6,
-   "n_ogrenme": 0
-  },
   "avrupa": {
    "a": 0.3206,
    "b": 0.6477,
@@ -324,6 +317,13 @@
    "w_m": 0.8539,
    "w_t": 0.9516,
    "n_ogrenme": 83
+  },
+  "kolej": {
+   "a": 0.3,
+   "b": 0.7,
+   "w_m": 0.6,
+   "w_t": 0.6,
+   "n_ogrenme": 0
   }
  },
  "uretimde": {},
@@ -398,9 +398,9 @@
    "kilitli": 130,
    "oranli": 75,
    "sonuclu_oranli": 71,
-   "iddaa_ms": 51,
-   "iddaa_hnd": 31,
-   "iddaa_au": 51,
+   "iddaa_ms": 55,
+   "iddaa_hnd": 35,
+   "iddaa_au": 55,
    "espn": 75
   },
   "el": {
@@ -432,20 +432,20 @@
   },
   "nbl": {
    "kilitli": 20,
-   "oranli": 10,
+   "oranli": 11,
    "sonuclu_oranli": 8,
-   "iddaa_ms": 10,
-   "iddaa_hnd": 8,
-   "iddaa_au": 10,
+   "iddaa_ms": 11,
+   "iddaa_hnd": 9,
+   "iddaa_au": 11,
    "espn": 0
   },
   "ncaa": {
    "kilitli": 473,
    "oranli": 76,
    "sonuclu_oranli": 0,
-   "iddaa_ms": 2,
-   "iddaa_hnd": 2,
-   "iddaa_au": 2,
+   "iddaa_ms": 28,
+   "iddaa_hnd": 28,
+   "iddaa_au": 28,
    "espn": 76
   },
   "ncaaw": {
@@ -459,17 +459,15 @@
   }
  },
  "sentetik_yarismalar": {
-  "Japonya B2.Ligi": 5,
-  "Japonya B.Ligi": 9,
   "Portekiz Basketbol Ligi": 2,
-  "Arjantin LNB": 2,
+  "Arjantin LNB": 3,
   "İtalya Serie A": 4,
-  "İtalya Serie B": 11,
+  "İtalya Serie B": 13,
   "Yunanistan A1": 1,
   "Polonya PLK": 3,
   "Fransa Kadınlar Basketbol Ligi": 3,
   "İtalya A1 Kadınlar": 2,
-  "ABD Kolej Basketbol Ligi": 4,
+  "ABD Kolej Basketbol Ligi": 8,
   "Avusturya Bundesliga": 1,
   "VTB Birleşik Ligi": 2,
   "İsveç Basketbol Ligi": 1,
@@ -480,15 +478,18 @@
   "Fransa Pro A": 2,
   "ABA Liga, Group B": 2,
   "Almanya Pro A": 1,
+  "Japonya B.Ligi": 3,
   "G. Kore Güney Kore Basketbol Ligi": 1,
   "İspanya Liga ACB": 4,
   "İtalya Serie A2": 6,
   "BNXT Ligi": 1,
-  "Çin CBA": 1,
   "Almanya BBL": 3,
+  "Çin CBA": 1,
   "İspanya Kadınlar Basketbol Ligi": 1,
   "Europe Kupası": 2,
-  "ABA Liga, Group A": 1
+  "ABA Liga, Group A": 1,
+  "Japonya B2.Ligi": 1,
+  "Meksika LNBP, Playofflar": 2
  },
  "gunluk": [
   {
