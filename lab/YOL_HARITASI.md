@@ -30,6 +30,38 @@ drift alarmı ve kapanış kilidi (yolda). Aşağıdaki maddeler bunların **üz
 
 ---
 
+### YH-29 · futbol · Sezon sonu maç önemi ("ölü" takım motivasyonu) — piyasa üstü
+- **Açıklama:** Matematiksel olarak hiçbir hedefi kalmamış takım (şampiyonluğa yetişemez ve kesin kurtulmuş / kesin düşmüş) piyasa olasılığına göre daha kötü mü oynuyor? Puan tablosu her maçtan önce yalnız önceki günlerin sonuçlarıyla kurulur; aday piyasa olasılığına tek eğim ekler (1X2: β·d, beraberlik γ; 2,5: η·ölü sayısı).
+- **Beklenen kazanç:** Literatürde maç önemi değişkenleri anlamlı; sabit oranlı piyasada kısmen fiyatlanmamış. Tipik ΔLL −0,0002 … −0,001 (yalnız sezon sonu maçlarında).
+- **Efor:** S · **Risk:** düşük · **Veri:** derin arşiv (mevcut, ücretsiz).
+- **Nasıl sınanır (kapı):** SK — 1 Temmuz sınırlı yürüyen pencere, parametreler yalnız eğitim katında; lig×gün blok bootstrap B = 2000; 1X2 ve 2,5 ayrı.
+- **Kaynak:** Goddard & Asimakopoulos (2004) J. Forecasting 23(1) "Forecasting football results and the efficiency of fixed-odds betting" [doi:10.1002/for.877](https://doi.org/10.1002/for.877)
+- **Durum:** reddedildi (2026-11-01; kapı geçmedi, üretim değişmedi) — `lab/motivasyon_lab.py` → `data/motivasyon_lab.json`. Önceden kayıtlı tasarım: puan bölme / play-off / ortalama ile düşme olan ligler dışarıda (at, be, ro, ar, mx, us), her takımı eşit maçlı tam fikstür şartı → 122 lig-sezon, **n = 41.985 maç** (4.287 ölü taraflı); sınama 2022-07-01 → (4 kat, n = 33.961). 1X2: ΔLL **+0,00002 [GA −0,00006, +0,00011]**, yarılar +0,00012 / −0,00007, ΔBrier +0,00001; ölü taraflı alt küme ΔLL +0,0002 (n 3.458). 2,5 A/Ü: ΔLL −0,00006 [−0,00028, +0,00017], yarılar −0,00007 / −0,00005, ölü taraflı alt küme −0,0006 (n 2.861) → GA üst > 0, geçmedi. Öğrenilen eğimler sıfıra yakın (β −0,04 … +0,02; η +0,06 … +0,10). Betimsel: ölü ev sahibi kazanma %42,2 (piyasa %43,0), ölü deplasman %27,8 (piyasa %30,2) — yön literatürle uyumlu ama piyasa büyük ölçüde fiyatlıyor. Alfa yatırımı (fb_model-2026): 2 test, α 0,0257, servet 0,0770 → 0,0243.
+
+### YH-30 · futbol · Hafta ortası maç yükü (Avrupa kupası / kupa maçı sonrası lig maçı) — piyasa üstü
+- **Açıklama:** Son 72–96 saatte resmi maç oynamış takım (ESPN kupa ve Avrupa maçları `season.json` kupa ligleri) için dinlenme farkı; aday piyasa olasılığına tek eğim ekler (YH-29 ile aynı iskelet: `lab/motivasyon_lab.py` örnek alınır). Deplasman yolculuğu (Avrupa deplasmanı) ayrı gösterge.
+- **Beklenen kazanç:** Literatür karışık (turnuva verisinde dinlenme etkisi küçük); piyasa kısmen fiyatlıyor. Tipik ΔLL 0 … −0,0005.
+- **Efor:** S–M · **Risk:** düşük (takım adı eşleme: kupa ve lig kayıtları aynı ESPN kimliği) · **Veri:** mevcut (yalnız son iki sezon; derin arşivde kupa yok → n sınırlı).
+- **Nasıl sınanır (kapı):** SK, zaman sıralı; ≥ 1.500 yüklü maç yoksa "veri yetersiz" ile gölgede kalır.
+- **Kaynak:** Scoppa (2015) J. Sports Economics 16(5) "Fatigue and team performance in soccer: evidence from the FIFA World Cup and the UEFA European Championship"
+- **Durum:** bekliyor
+
+### YH-31 · altyapı · Venn–Abers kalibrasyonu (kilitli iddaa arşivi, sunulan 1X2 / 2,5)
+- **Açıklama:** Kilitli arşiv kalibrasyonunun (ml90: T/g/dk) üstüne, öneri olasılığına (recOf) ikili Venn–Abers (izotonik çift) kalibrasyonu; tek sayı olarak p = p1 / (1 − p0 + p1). Beta kalibrasyonu (YH-06) Platt'tan ayırt edilemedi; Venn–Abers parametrik olmayan, küçük örneklemde geçerlilik güvenceli.
+- **Beklenen kazanç:** Belirli oran bantlarındaki sapmalarda (analyst teşhisi: < 1,20 bandında beklenen %83,3 / gerçek %78,8) ΔLL −0,001 … −0,004 öneri düzeyinde.
+- **Efor:** S · **Risk:** düşük (bayraklı) · **Veri:** kilitli arşiv (≥ 14 gün, gün-blok).
+- **Nasıl sınanır (kapı):** ml90 protokolü (genişleyen pencere, gün-blok bootstrap) + SK; Altın isabeti düşmüyor.
+- **Kaynak:** Vovk & Petej (2014) UAI "Venn–Abers predictors" [arXiv:1211.0025](https://arxiv.org/abs/1211.0025)
+- **Durum:** bekliyor
+
+### YH-32 · futbol · Hava durumu (Open-Meteo, CC BY 4.0) — 2,5 A/Ü
+- **Açıklama:** Stadyum koordinatı (Wikidata CC0, yalnız türetilmiş takım → koordinat tablosu) + maç saatindeki yağış / rüzgâr / sıcaklık (Open-Meteo geçmiş ve tahmin API'si, anahtarsız); 2,5 A/Ü piyasa olasılığına eğim.
+- **Beklenen kazanç:** Şiddetli yağış / rüzgârda gol sayısı düşer; piyasa kısmen fiyatlar. Tipik ΔLL 0 … −0,001 (yalnız uç hava maçlarında).
+- **Efor:** M–L · **Risk:** orta (koordinat eşleme; Actions'tan erişim sınanmalı — at bölümünde bu ortamdan erişilemediği not edilmişti) · **Veri:** ücretsiz, atıf.
+- **Nasıl sınanır (kapı):** SK, zaman sıralı; önce erişim ve kapsam denetimi (≥ %80 maç koordinatlı), yoksa `beklemede`.
+- **Kaynak:** [open-meteo.com](https://open-meteo.com/) (CC BY 4.0)
+- **Durum:** bekliyor
+
 ### YH-23 · futbol · Shin yöntemiyle marj ayıklama (ve odds-ratio) — sunulan piyasa olasılığı
 - **Açıklama:** Uygulamanın sunduğu piyasa olasılığı (`js/core.js implied()`, `fitMarket`, Python aynaları `ui_market_lam` / `pazar.py` / `collector.py`) marjı power yöntemiyle ayırıyor; motorun öğrenme hedefi (`market_xg`) ise araştırmacı botun seçtiği yöntemi (`data/research.json → devig`) kullanıyor. Shin (içeriden bilgi payı z), odds-ratio (Cheung 2015), oransal ve toplamsal yöntemler aynı arşivde (football-data derin arşivi + season.json; kilitli iddaa arşivi) 1X2 ve 2,5 A/Ü ayrı ayrı power'a karşı ölçülür; geçen yöntem tek fonksiyon olarak Python ve JS'de birebir aynı uygulanır.
 - **Beklenen kazanç:** Štrumbelj (2014) Shin olasılıklarının oransal yöntemden ve çoğu durumda diğerlerinden daha iyi kalibre olduğunu bildiriyor; yüksek marjlı (iddaa ~%18) oranlarda yöntem farkı büyür. Tipik ΔLL −0,0005 … −0,003.
