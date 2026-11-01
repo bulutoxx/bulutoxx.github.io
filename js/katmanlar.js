@@ -497,3 +497,54 @@ window.BX_ARALIK={satir, get veri(){ return AR; }};
     botAnswer=async function(raw){ try{ if(kapali()&&OZ.atSorusu(raw)) return Object.assign({},CEVAP); }catch(e){} return _ba.apply(this,arguments); }; }
 })();
 } catch (e) { if (typeof reportError === "function") reportError(e); else setTimeout(function () { throw e; }); } /* /id: at-kapali-v152 */
+/* id: cek-yenile-v153 */
+try {
+/* v153: Aşağı çekerek yenile (iPhone/Android). Sayfa en üstteyken parmakla aşağı çekilince
+   mevcut "Güncelle" akışı (doRefresh) çalışır. Açık pencere/kaydırılmış iç alan/yatay kaydırmada devre dışı. */
+(function(){
+  if(!("ontouchstart" in window)) return;
+  const ESIK=72, TAVAN=110;
+  const ind=document.createElement("div"); ind.id="cekYen"; ind.setAttribute("aria-hidden","true");
+  ind.innerHTML='<svg viewBox="0 0 24 24"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7"/></svg>';
+  document.body.appendChild(ind);
+  let y0=0,x0=0,dy=0,aktif=false,karar=0,mesgul=false;
+  const engel=t=>{ for(let el=t; el&&el!==document.body&&el.nodeType===1; el=el.parentElement){
+      if(el.matches&&el.matches("input,textarea,select,[contenteditable],.topbar")) return el.matches(".topbar")?false:true;
+      const cs=getComputedStyle(el);
+      if(cs.position==="fixed") return true;                                   // açık pencere / alt sayfa / alt menü
+      if(el.scrollTop>0 && /(auto|scroll)/.test(cs.overflowY)) return true;      // iç kaydırma alanı yukarıda değil
+    } return false; };
+  const ciz=d=>{ const p=Math.min(1,d/ESIK); ind.style.transform=`translate(-50%,${Math.min(d,TAVAN)-48}px) rotate(${p*270}deg)`;
+    ind.style.opacity=String(Math.min(1,p*1.3)); ind.classList.toggle("hazir",d>=ESIK); };
+  const sifirla=()=>{ ind.classList.add("don"); ind.style.transform="translate(-50%,-48px)"; ind.style.opacity="0"; ind.classList.remove("hazir","doner");
+    setTimeout(()=>ind.classList.remove("don"),260); };
+  document.addEventListener("touchstart",e=>{
+    aktif=false; karar=0; dy=0;
+    if(mesgul||e.touches.length!==1||(window.scrollY||document.documentElement.scrollTop)>0) return;
+    if(engel(e.target)) return;
+    y0=e.touches[0].clientY; x0=e.touches[0].clientX; aktif=true;
+  },{passive:true});
+  document.addEventListener("touchmove",e=>{
+    if(!aktif) return;
+    const t=e.touches[0], ddy=t.clientY-y0, ddx=t.clientX-x0;
+    if(!karar){ if(Math.abs(ddy)<8&&Math.abs(ddx)<8) return;
+      karar=(ddy>0&&Math.abs(ddy)>Math.abs(ddx)*1.3)?1:-1; if(karar<0){ aktif=false; return; } }
+    if((window.scrollY||0)>0){ aktif=false; sifirla(); return; }
+    dy=Math.max(0,ddy)*0.55;                                                   // direnç
+    if(e.cancelable) e.preventDefault();
+    ciz(dy);
+  },{passive:false});
+  const birak=async()=>{
+    if(!aktif) return; aktif=false;
+    if(dy<ESIK){ sifirla(); return; }
+    mesgul=true; ind.classList.add("doner"); ind.style.transform="translate(-50%,24px)"; ind.style.opacity="1";
+    try{ if(navigator.vibrate) navigator.vibrate(10); }catch(e){}
+    const t0=Date.now();
+    try{ if(typeof doRefresh==="function") await doRefresh(); else { const b=document.getElementById("refreshBtn"); if(b) b.click(); } }catch(e){}
+    const kalan=700-(Date.now()-t0); if(kalan>0) await new Promise(r=>setTimeout(r,kalan));
+    mesgul=false; sifirla();
+  };
+  document.addEventListener("touchend",birak,{passive:true});
+  document.addEventListener("touchcancel",()=>{ if(aktif){ aktif=false; sifirla(); } },{passive:true});
+})();
+} catch (e) { if (typeof reportError === "function") reportError(e); else setTimeout(function () { throw e; }); } /* /id: cek-yenile-v153 */

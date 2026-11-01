@@ -77,3 +77,13 @@ main.page{padding-bottom:max(calc(120px + env(safe-area-inset-bottom,0px)),calc(
   nav.tabs button{cursor:pointer}
   nav.tabs button:not(.pw-btn):hover{color:var(--ink)}
 }
+/* id: cek-yenile-v153 */
+#cekYen{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 56px);z-index:140;width:40px;height:40px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;background:rgba(14,22,40,.92);border:.5px solid rgba(255,255,255,.14);
+  box-shadow:0 6px 18px rgba(0,0,0,.45);transform:translate(-50%,-48px);opacity:0;pointer-events:none;will-change:transform}
+#cekYen svg{width:20px;height:20px;fill:none;stroke:#7FC4FF;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+#cekYen.hazir svg{stroke:#7CF0A8}
+#cekYen.don{transition:transform .25s ease,opacity .25s ease}
+#cekYen.doner svg{animation:cekDon .8s linear infinite}
+@keyframes cekDon{to{transform:rotate(360deg)}}
+/* /id: cek-yenile-v153 */
