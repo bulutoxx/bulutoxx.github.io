@@ -1,6 +1,6 @@
 {
  "surum": "2026-10-28.1",
- "guncelleme": "2026-11-01 16:01",
+ "guncelleme": "2026-11-01 16:57",
  "aciklama": "Basket piyasa karnesi: kilitli model tahmini ile maç öncesi son piyasa oranı (marjı Shin ile ayrılmış) aynı maçlarda. Harman = Benter iki aşama (lig grubu, zaman sıralı ağırlık). Çapalı = model fark/toplamının handikap ve alt/üst çizgisine çekilmesi. GA: gün blokları bootstrap %95. Üretime yalnız OXXai kapısı + gölge sonrası girer.",
  "kurallar": {
   "kapi": "n ≥ 150, gün ≥ 20, ΔLL GA üst < 0, ΔBrier < 0, isabet düşmez",
@@ -304,6 +304,13 @@
   }
  },
  "agirlik": {
+  "pro": {
+   "a": 0.2517,
+   "b": 0.7512,
+   "w_m": 0.8349,
+   "w_t": 0.9471,
+   "n_ogrenme": 85
+  },
   "kolej": {
    "a": 0.3,
    "b": 0.7,
@@ -317,13 +324,6 @@
    "w_m": 0.2548,
    "w_t": 1.0,
    "n_ogrenme": 32
-  },
-  "pro": {
-   "a": 0.2517,
-   "b": 0.7512,
-   "w_m": 0.8349,
-   "w_t": 0.9471,
-   "n_ogrenme": 85
   }
  },
  "uretimde": {},
@@ -445,7 +445,7 @@
    "sonuclu_oranli": 0,
    "iddaa_ms": 28,
    "iddaa_hnd": 28,
-   "iddaa_au": 28,
+   "iddaa_au": 27,
    "espn": 76
   },
   "ncaaw": {
@@ -462,11 +462,13 @@
   "İtalya Serie B": 16,
   "ABD Kolej Basketbol Ligi": 8,
   "Almanya BBL": 3,
+  "FIBA Liga Sudamericana, E Grub": 1,
   "Meksika LNBP, Playofflar": 2,
   "Portekiz Basketbol Ligi": 2,
   "Arjantin LNB": 3,
   "İtalya Serie A": 3,
   "G. Kore Güney Kore Kadın Basket Ligi": 1,
+  "Türkiye Kadınlar Basketbol 1. Ligi": 1,
   "Türkiye Basketbol Süper Ligi": 1,
   "G. Kore Güney Kore Basketbol Ligi": 1,
   "Yunanistan A1": 1,
