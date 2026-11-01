@@ -5,7 +5,7 @@ name: OXXai hava laboratuvari (YH-32)
 # veri birkaç gecede tamamlanır (önbellek doluyken çalışma birkaç dakika). Issue/mail/bildirim yok.
 on:
   schedule:
-    - cron: "23 4 * * *"
+    - cron: "23 4 * * 1"    # haftalık gölge izleme (YH-32 reddedildi)
   workflow_dispatch:
 permissions:
   contents: write
