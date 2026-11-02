@@ -108,7 +108,7 @@ drift alarmı ve kapanış kilidi (yolda). Aşağıdaki maddeler bunların **üz
 - **Efor:** S · **Risk:** düşük · **Veri:** derin arşiv (mevcut).
 - **Nasıl sınanır (kapı):** SK, 1 Temmuz sınırlı yürüyen pencere; eğim yalnız önceki katlarda; 2020-03 → 2021-06 dönemi ayrıca raporlanır (karar tüm sınamada).
 - **Kaynak:** Winkelmann, Deutscher & Ötting (2021) Applied Economics 53(26) "Bookmakers' mispricing of the disappeared home advantage in the German Bundesliga after the COVID-19 break"
-- **Durum:** bekliyor
+- **Durum:** reddedildi (2026-11-02; kapı geçmedi, üretim değişmedi) — `lab/lig_ev_lab.py` → `data/lig_ev_lab.json`. Önceden kayıtlı tasarım uygulandı (lig ev puanı artığı, yarı ömür 60 maç, k0 30; YH-37 sıralı logit kayması; η ızgara −2 … 2 yalnız önceki katlarda). **n = 66.065** oranlı 1X2 maçı (arşiv 2021-02 → ; seyircisiz dönem arşivde yok, betimsel rapor boş); sınama 2023-07-01 → (n = 39.901, 12.276 lig×gün blok): ΔLL **+0,00005 [GA −0,00001, +0,00011]**, p 0,95, yarılar +0,00007 / +0,00003, ΔBrier +0,00004; isabet %50,42 → %50,46. Öğrenilen η negatif ve küçülüyor (−0,26 → −0,04): lig ev artığı kalıcı değil, ortalamaya dönüyor; piyasa ev avantajını güncel fiyatlıyor.
 
 ### YH-39 · futbol · Beraberlik fiyatlaması: lig × denklik artığı — 1X2 beraberlik
 - **Açıklama:** Piyasa beraberliği denk maçlarda sistematik eksik / fazla fiyatlıyor mu? Her lig için |p_ev − p_dep| üç kovasında (denk / orta / favorili) beraberlik artığı r = y_x − p_x üstel ağırlıkla (yarı ömür 80 maç, k0 = 40) tutulur; aday p_x logitine kova artığı × η ekler, kalan olasılık ev/dep arasında oranla paylaşılır.
