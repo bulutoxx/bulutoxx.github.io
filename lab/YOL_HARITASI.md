@@ -62,6 +62,30 @@ drift alarmı ve kapanış kilidi (yolda). Aşağıdaki maddeler bunların **üz
 - **Kaynak:** [open-meteo.com](https://open-meteo.com/) (CC BY 4.0)
 - **Durum:** reddedildi (2026-11-01) — SK geçilmedi; üretim değişmedi. `lab/hava_lab.py` → `data/hava_lab.json`, türetilmiş `data/stadyum_koord.json` (Wikidata CC0; 442 / 479 ev sahibi, 437'si stat koordinatı), iş akışı `hava-lab.yml` (Actions; geliştirme ortamından erişim yok; ham hava yalnız actions/cache; artık haftalık gölge izleme). Tasarım (önceden kayıtlı): season.json 2,5 A/Ü, yerel 12–22 penceresi; logit q = logit p_power + a·log1p(yağış) + b·max(0, rüzgâr−20)/10; 2026-01'den aylık genişleyen katlar. Sınama: **n = 4.977** havalı maç, kapsam **%83,8** (≥ %80 ✓): ΔLL **−0,0004 [lig×gün GA −0,0025, +0,0017]**, yarılar −0,0012 / **+0,0004**, ΔBrier −0,0002 [−0,0012, +0,0008], p_tek 0,36 > α_t 0,0027 (alfa işlendi, fb_model-2026). Betimsel: yağışlı (≥ 5 mm) n 363 ΔLL +0,0005 (üst gerçek %60,1 / piyasa %53,7 — yağışta gol düşmüyor), rüzgârlı (≥ 30 km/sa) n 108 ΔLL +0,0074. Yorum: piyasa havayı zaten fiyatlıyor; başlama saati bilinmediği için pencere kaba — saat bilgisi eklenirse yeniden açılabilir.
 
+### YH-33 · futbol · Pazarlar arası tutarlılık: 1X2 + 2,5 A/Ü'den ortak Poisson (λ_ev, λ_dep) — piyasa üstü
+- **Açıklama:** Her maçta iki pazarın marjı ayrılmış olasılıklarına aynı anda en iyi uyan bağımsız Poisson bulunur (3 kısıt, 2 serbestlik); aday, taban ile bu Poisson'un log-doğrusal harmanı (1X2: ağırlık w, 2,5: v; yalnız eğitim katında). Soru: 2,5 fiyatı 1X2'ye, 1X2 fiyatı 2,5'e bilgi ekliyor mu?
+- **Beklenen kazanç:** Pazarlar ayrı fiyatlandığında küçük tutarsızlıklar; tipik ΔLL 0 … −0,0005.
+- **Efor:** S · **Risk:** düşük · **Veri:** derin arşiv (beş oranı olan maçlar).
+- **Nasıl sınanır (kapı):** SK — 1 Temmuz sınırlı yürüyen pencere, lig×gün blok bootstrap B = 2000; 1X2 ve 2,5 ayrı.
+- **Kaynak:** Dixon & Coles (1997) JRSS-C 46(2) [doi:10.1111/1467-9876.00065](https://doi.org/10.1111/1467-9876.00065) (piyasa-çıkarımlı gol beklentisi iskeleti)
+- **Durum:** reddedildi (2026-11-02; kapı geçmedi, üretim değişmedi) — `lab/tutarlilik_lab.py` → `data/tutarlilik_lab.json`. **n = 38.733 maç** (22 lig, 2021-07 → 2026-05), sınama 2022-07-01 → (4 kat, n = 30.912, 8.643 lig×gün bloğu). 1X2: her katta **w = 0** seçildi (ΔLL 0, aday = taban) — bağımsız Poisson beraberliği eksik ölçüyor (Poisson X ort. %24,1 / piyasa %25,3). 2,5 A/Ü: v 0,94 → 0,10 (kararsız), ΔLL **+0,00003 [GA −0,00004, +0,00010]**, yarılar +0,00003 / +0,00004, ΔBrier +0,00002; α_t 0,00177 harcandı. Sonuç: iki pazar birbirine piyasa üstü bilgi taşımıyor.
+
+### YH-34 · futbol · Dixon–Coles düşük skor düzeltmeli ortak piyasa çıkarımı (YH-33 devamı) — 1X2 beraberlik
+- **Açıklama:** YH-33'te harmanı öldüren neden bağımsız Poisson'un beraberlik eksiği; aynı ortak uyum Dixon–Coles ρ (eğitim katında tek ρ, lig grubu başına) ile yapılır, aday yine log-doğrusal harman. Yalnız beraberlik olasılığına bilgi eklenip eklenmediğine bakılır.
+- **Beklenen kazanç:** Küçük; tipik ΔLL 0 … −0,0003. YH-33'te 2,5 tarafı sıfır çıktığı için düşük öncelik.
+- **Efor:** S · **Risk:** düşük · **Veri:** derin arşiv (mevcut).
+- **Nasıl sınanır (kapı):** SK, YH-33 ile aynı katlar ve bloklar.
+- **Kaynak:** Dixon & Coles (1997) JRSS-C 46(2)
+- **Durum:** bekliyor
+
+### YH-35 · futbol · Sezon başı gol ortamı (ilk 5 hafta) — 2,5 A/Ü piyasa üstü
+- **Açıklama:** Sezonun ilk haftalarında piyasa geçen sezonun gol ortamına yaslanıyor olabilir; aday, ligin bu sezonki (yalnız önceki günler) gol ortalaması ile geçen sezon ortalaması farkına 2,5 logitinde tek eğim ekler, eğim hafta sayısıyla sönümlenir.
+- **Beklenen kazanç:** Tipik ΔLL 0 … −0,0005 (yalnız sezon başı maçlarında).
+- **Efor:** S · **Risk:** düşük · **Veri:** derin arşiv (mevcut).
+- **Nasıl sınanır (kapı):** SK, zaman sıralı; sezon başı alt kümesi ayrıca raporlanır, karar tüm sınama üzerinden.
+- **Kaynak:** Forrest, Goddard & Simmons (2005) IJF 21(3) "Odds-setters as forecasters" [doi:10.1016/j.ijforecast.2005.03.003](https://doi.org/10.1016/j.ijforecast.2005.03.003)
+- **Durum:** bekliyor
+
 ### YH-23 · futbol · Shin yöntemiyle marj ayıklama (ve odds-ratio) — sunulan piyasa olasılığı
 - **Açıklama:** Uygulamanın sunduğu piyasa olasılığı (`js/core.js implied()`, `fitMarket`, Python aynaları `ui_market_lam` / `pazar.py` / `collector.py`) marjı power yöntemiyle ayırıyor; motorun öğrenme hedefi (`market_xg`) ise araştırmacı botun seçtiği yöntemi (`data/research.json → devig`) kullanıyor. Shin (içeriden bilgi payı z), odds-ratio (Cheung 2015), oransal ve toplamsal yöntemler aynı arşivde (football-data derin arşivi + season.json; kilitli iddaa arşivi) 1X2 ve 2,5 A/Ü ayrı ayrı power'a karşı ölçülür; geçen yöntem tek fonksiyon olarak Python ve JS'de birebir aynı uygulanır.
 - **Beklenen kazanç:** Štrumbelj (2014) Shin olasılıklarının oransal yöntemden ve çoğu durumda diğerlerinden daha iyi kalibre olduğunu bildiriyor; yüksek marjlı (iddaa ~%18) oranlarda yöntem farkı büyür. Tipik ΔLL −0,0005 … −0,003.
