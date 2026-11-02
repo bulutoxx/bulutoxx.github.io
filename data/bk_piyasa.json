@@ -1,6 +1,6 @@
 {
  "surum": "2026-10-28.1",
- "guncelleme": "2026-11-03 01:58",
+ "guncelleme": "2026-11-03 02:08",
  "aciklama": "Basket piyasa karnesi: kilitli model tahmini ile maç öncesi son piyasa oranı (marjı Shin ile ayrılmış) aynı maçlarda. Harman = Benter iki aşama (lig grubu, zaman sıralı ağırlık). Çapalı = model fark/toplamının handikap ve alt/üst çizgisine çekilmesi. GA: gün blokları bootstrap %95. Üretime yalnız OXXai kapısı + gölge sonrası girer.",
  "kurallar": {
   "kapi": "n ≥ 150, gün ≥ 20, ΔLL GA üst < 0, ΔBrier < 0, isabet düşmez",
@@ -21,7 +21,7 @@
   "gun": 11,
   "model": {
    "n": 138,
-   "ll": 0.6573,
+   "ll": 0.6574,
    "brier": 0.2337,
    "isabet": 0.5797
   },
@@ -174,7 +174,7 @@
    ],
    "model": {
     "n": 16,
-    "ll": 0.5518,
+    "ll": 0.5519,
     "brier": 0.1848,
     "isabet": 0.75
    },
@@ -187,24 +187,24 @@
    "piyasa_power": {
     "n": 16,
     "ll": 0.6152,
-    "brier": 0.2198,
+    "brier": 0.2199,
     "isabet": 0.625
    },
    "harman": {
     "n": 16,
-    "ll": 0.5451,
+    "ll": 0.5452,
     "brier": 0.1956,
     "isabet": 0.625
    },
    "capali": {
     "n": 16,
-    "ll": 0.5302,
+    "ll": 0.5303,
     "brier": 0.188,
     "isabet": 0.625
    },
    "uretim": {
     "n": 16,
-    "ll": 0.471,
+    "ll": 0.4711,
     "brier": 0.1573,
     "isabet": 0.75
    },
@@ -216,7 +216,7 @@
     "isabet": -0.125
    },
    "fark_piyasa_model": {
-    "ll": 0.0337,
+    "ll": 0.0336,
     "ll_ga": null,
     "brier": 0.0283,
     "brier_ga": null,
@@ -225,7 +225,7 @@
    "fark_capali_model": {
     "ll": -0.0216,
     "ll_ga": null,
-    "brier": 0.0033,
+    "brier": 0.0032,
     "brier_ga": null,
     "isabet": -0.125
    },
@@ -260,7 +260,7 @@
    },
    "agirlik": {
     "a": 0.313,
-    "b": 0.6722,
+    "b": 0.6723,
     "w_m": 0.6114,
     "w_t": 0.9342,
     "n_ogrenme": 16
@@ -411,9 +411,16 @@
   }
  },
  "agirlik": {
+  "avrupa": {
+   "a": 0.3206,
+   "b": 0.6477,
+   "w_m": 0.2548,
+   "w_t": 1.0,
+   "n_ogrenme": 32
+  },
   "kolej": {
    "a": 0.313,
-   "b": 0.6722,
+   "b": 0.6723,
    "w_m": 0.6114,
    "w_t": 0.9342,
    "n_ogrenme": 16
@@ -424,13 +431,6 @@
    "w_m": 0.8716,
    "w_t": 0.8591,
    "n_ogrenme": 90
-  },
-  "avrupa": {
-   "a": 0.3206,
-   "b": 0.6477,
-   "w_m": 0.2548,
-   "w_t": 1.0,
-   "n_ogrenme": 32
   }
  },
  "uretimde": {},
@@ -675,7 +675,7 @@
   {
    "gun": "2026-11-02",
    "n": 17,
-   "ll_model": 0.6013,
+   "ll_model": 0.6014,
    "ll_piyasa": 0.5875,
    "ll_harman": 0.5637
   },
