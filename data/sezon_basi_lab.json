@@ -1,0 +1,105 @@
+{
+ "tarih": "2026-11-02",
+ "madde": "YH-35",
+ "kaynak": "derin arşiv + season.json 2026 (türetilmiş)",
+ "tasarim": {
+  "m0": 30.0,
+  "hafta": 5,
+  "sinama_bas": "2023-07-01",
+  "izgara_eta": [
+   -0.6,
+   0.6,
+   0.02
+  ]
+ },
+ "n_mac": 40939,
+ "n_sezon_basi": 5089,
+ "katlar": [
+  {
+   "kat": "2023-07-01",
+   "n_sinama": 7797,
+   "n_sinama_erken": 1021,
+   "n_egitim": 964,
+   "eta": -0.14
+  },
+  {
+   "kat": "2024-07-01",
+   "n_sinama": 7681,
+   "n_sinama_erken": 1015,
+   "n_egitim": 1919,
+   "eta": 0.6
+  },
+  {
+   "kat": "2025-07-01",
+   "n_sinama": 7634,
+   "n_sinama_erken": 1008,
+   "n_egitim": 2893,
+   "eta": 0.6
+  },
+  {
+   "kat": "2026-07-01",
+   "n_sinama": 2206,
+   "n_sinama_erken": 1001,
+   "n_egitim": 3834,
+   "eta": 0.56
+  }
+ ],
+ "sonuc": {
+  "ou25": {
+   "dll": {
+    "fark": 4e-05,
+    "ga95": [
+     -5.3e-05,
+     0.000131
+    ],
+    "p_tek": 0.7835,
+    "n": 25318,
+    "blok": 7134,
+    "yari1": 6e-05,
+    "yari2": 2e-05
+   },
+   "dbrier": {
+    "fark": 1.9e-05,
+    "ga95": [
+     -2.7e-05,
+     6.4e-05
+    ],
+    "p_tek": 0.7865,
+    "n": 25318,
+    "blok": 7134
+   },
+   "alt_kume": {
+    "sezon_basi": {
+     "n": 4045,
+     "dll": 0.00025,
+     "dbrier": 0.000116
+    },
+    "betimsel": {
+     "s_pozitif": {
+      "n": 944,
+      "ust_gercek": 0.5699,
+      "ust_piyasa": 0.5375
+     },
+     "s_negatif": {
+      "n": 821,
+      "ust_gercek": 0.4921,
+      "ust_piyasa": 0.5238
+     }
+    }
+   },
+   "yarilar_siniri": "2025-02-10",
+   "alfa_t": 0.00039,
+   "kapi_gecti": false
+  }
+ },
+ "karar": "reddedildi",
+ "not": "Taban power marj ayırma; aday yalnız sezon başı gol ortamı farkı eğimi ekler. Gol ortamı yalnız önceki günlerden.",
+ "alfa_islendi": {
+  "tarih": "2026-11-02",
+  "alan": "fb_model-2026",
+  "test": 1,
+  "gecti": {
+   "ou25": false
+  }
+ }
+}
