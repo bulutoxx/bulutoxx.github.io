@@ -1,0 +1,188 @@
+{
+ "tarih": "2026-11-02",
+ "madde": "YH-34",
+ "kaynak": "derin arşiv (football-data, türetilmiş)",
+ "n_mac": 38733,
+ "n_lig": 22,
+ "n_sinama": 30912,
+ "rho_izgara": [
+  -0.2,
+  -0.15,
+  -0.1,
+  -0.05,
+  0.0,
+  0.05
+ ],
+ "uyum": {
+  "-0.2": {
+   "poisson_X_ort": 0.2826,
+   "ort_abs_1x2": 0.01951,
+   "ort_abs_ust": 0.00988
+  },
+  "-0.15": {
+   "poisson_X_ort": 0.2723,
+   "ort_abs_1x2": 0.01268,
+   "ort_abs_ust": 0.00634
+  },
+  "-0.1": {
+   "poisson_X_ort": 0.2619,
+   "ort_abs_1x2": 0.00614,
+   "ort_abs_ust": 0.0031
+  },
+  "-0.05": {
+   "poisson_X_ort": 0.2515,
+   "ort_abs_1x2": 0.00331,
+   "ort_abs_ust": 0.00189
+  },
+  "0.0": {
+   "poisson_X_ort": 0.241,
+   "ort_abs_1x2": 0.00834,
+   "ort_abs_ust": 0.00395
+  },
+  "0.05": {
+   "poisson_X_ort": 0.2305,
+   "ort_abs_1x2": 0.01521,
+   "ort_abs_ust": 0.00708
+  },
+  "piyasa_X_ort": 0.2533
+ },
+ "beraberlik": {
+  "gercek_X": 0.261,
+  "taban_X": 0.2522,
+  "aday_X": 0.2585
+ },
+ "katlar": [
+  {
+   "kat": "2022-07-01",
+   "n_egitim": 7821,
+   "n_sinama": 7800,
+   "rho_ortak": -0.1,
+   "rho_lig_dagilim": {
+    "-0.2": 5,
+    "-0.15": 1,
+    "-0.1": 7,
+    "-0.05": 5,
+    "0.0": 2,
+    "0.05": 2
+   },
+   "w_1x2": 0.9,
+   "v_ou25": 0.5
+  },
+  {
+   "kat": "2023-07-01",
+   "n_egitim": 15621,
+   "n_sinama": 7797,
+   "rho_ortak": -0.1,
+   "rho_lig_dagilim": {
+    "-0.2": 2,
+    "-0.15": 5,
+    "-0.1": 6,
+    "-0.05": 4,
+    "0.0": 5,
+    "0.05": 0
+   },
+   "w_1x2": 0.76,
+   "v_ou25": 0.0
+  },
+  {
+   "kat": "2024-07-01",
+   "n_egitim": 23418,
+   "n_sinama": 7681,
+   "rho_ortak": -0.1,
+   "rho_lig_dagilim": {
+    "-0.2": 2,
+    "-0.15": 8,
+    "-0.1": 6,
+    "-0.05": 5,
+    "0.0": 1,
+    "0.05": 0
+   },
+   "w_1x2": 0.88,
+   "v_ou25": 0.0
+  },
+  {
+   "kat": "2025-07-01",
+   "n_egitim": 31099,
+   "n_sinama": 7634,
+   "rho_ortak": -0.1,
+   "rho_lig_dagilim": {
+    "-0.2": 2,
+    "-0.15": 7,
+    "-0.1": 6,
+    "-0.05": 4,
+    "0.0": 3,
+    "0.05": 0
+   },
+   "w_1x2": 0.88,
+   "v_ou25": 0.24
+  }
+ ],
+ "sonuc": {
+  "1x2": {
+   "dll": {
+    "fark": 7.4e-05,
+    "ga95": [
+     -0.000303,
+     0.000452
+    ],
+    "p_tek": 0.647,
+    "n": 30912,
+    "blok": 8643,
+    "yari1": 0.000382,
+    "yari2": -0.000233
+   },
+   "dbrier": {
+    "fark": 0.000107,
+    "ga95": [
+     -0.000102,
+     0.000311
+    ],
+    "p_tek": 0.845,
+    "n": 30912,
+    "blok": 8643
+   },
+   "yarilar_siniri": "2024-05-18",
+   "alfa_t": 0.00059,
+   "kapi_gecti": false,
+   "rol": "karar"
+  },
+  "ou25": {
+   "dll": {
+    "fark": 4e-06,
+    "ga95": [
+     -3.2e-05,
+     4.2e-05
+    ],
+    "p_tek": 0.604,
+    "n": 30912,
+    "blok": 8643,
+    "yari1": 3.4e-05,
+    "yari2": -2.5e-05
+   },
+   "dbrier": {
+    "fark": 3e-06,
+    "ga95": [
+     -1.6e-05,
+     2.1e-05
+    ],
+    "p_tek": 0.6035,
+    "n": 30912,
+    "blok": 8643
+   },
+   "yarilar_siniri": "2024-05-18",
+   "alfa_t": 0.0,
+   "kapi_gecti": false,
+   "rol": "bilgi"
+  }
+ },
+ "karar": "reddedildi",
+ "not": "Taban power marj ayırma; aday iki pazara ortak uyan Dixon–Coles (lig ρ, yalnız geçmiş katlardan) ile log-doğrusal harman. Karar 1X2; 2,5 bilgi.",
+ "alfa_islendi": {
+  "tarih": "2026-11-02",
+  "alan": "fb_model-2026",
+  "test": 1,
+  "gecti": {
+   "1x2": false
+  }
+ }
+}
