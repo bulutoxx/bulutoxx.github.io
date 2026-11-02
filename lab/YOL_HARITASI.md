@@ -76,7 +76,7 @@ drift alarmı ve kapanış kilidi (yolda). Aşağıdaki maddeler bunların **üz
 - **Efor:** S · **Risk:** düşük · **Veri:** derin arşiv (mevcut).
 - **Nasıl sınanır (kapı):** SK, YH-33 ile aynı katlar ve bloklar.
 - **Kaynak:** Dixon & Coles (1997) JRSS-C 46(2)
-- **Durum:** bekliyor
+- **Durum:** reddedildi (2026-11-02; kapı geçmedi, üretim değişmedi) — `lab/dc_tutarlilik_lab.py` → `data/dc_tutarlilik_lab.json`. **n = 38.733 maç** (22 lig), sınama 2022-07-01 → (4 kat, n = 30.912, 8.643 lig×gün bloğu); ρ ızgarası {−0,20 … +0,05}, lig başına ρ yalnız eğitim katından (ortak ρ her katta −0,10). DC beraberlik eksiğini kapattı (uyum X ort. ρ = −0,05'te %25,2 / piyasa %25,3; ort. |fark| 0,0083 → 0,0033) ve harman ağırlığı bu kez w 0,76–0,90 seçildi, ama 1X2 ΔLL **+0,00007 [GA −0,00030, +0,00045]**, yarılar +0,00038 / −0,00023, ΔBrier +0,00011, p 0,65; α_t 0,00059 harcandı. Sınama beraberliği: gerçek %26,1 / taban %25,2 / aday %25,9 — ortalama yaklaştı, maç başına bilgi yok. 2,5 (bilgi): ΔLL +0,000004 [−0,00003, +0,00004]. Sonuç: 2,5 fiyatı DC iskeletiyle de 1X2'ye piyasa üstü bilgi taşımıyor; pazarlar arası tutarlılık hattı kapandı.
 
 ### YH-35 · futbol · Sezon başı gol ortamı (ilk 5 hafta) — 2,5 A/Ü piyasa üstü
 - **Açıklama:** Sezonun ilk haftalarında piyasa geçen sezonun gol ortamına yaslanıyor olabilir; aday, ligin bu sezonki (yalnız önceki günler) gol ortalaması ile geçen sezon ortalaması farkına 2,5 logitinde tek eğim ekler, eğim hafta sayısıyla sönümlenir.
