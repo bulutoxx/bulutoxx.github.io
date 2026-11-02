@@ -1,6 +1,6 @@
 {
  "surum": "2026-10-28.1",
- "guncelleme": "2026-11-02 08:16",
+ "guncelleme": "2026-11-02 09:15",
  "aciklama": "Basket piyasa karnesi: kilitli model tahmini ile maç öncesi son piyasa oranı (marjı Shin ile ayrılmış) aynı maçlarda. Harman = Benter iki aşama (lig grubu, zaman sıralı ağırlık). Çapalı = model fark/toplamının handikap ve alt/üst çizgisine çekilmesi. GA: gün blokları bootstrap %95. Üretime yalnız OXXai kapısı + gölge sonrası girer.",
  "kurallar": {
   "kapi": "n ≥ 150, gün ≥ 20, ΔLL GA üst < 0, ΔBrier < 0, isabet düşmez",
@@ -411,12 +411,12 @@
   }
  },
  "agirlik": {
-  "kolej": {
-   "a": 0.3018,
-   "b": 0.6914,
-   "w_m": 0.632,
-   "w_t": 0.7651,
-   "n_ogrenme": 2
+  "avrupa": {
+   "a": 0.3206,
+   "b": 0.6477,
+   "w_m": 0.2548,
+   "w_t": 1.0,
+   "n_ogrenme": 32
   },
   "pro": {
    "a": 0.2406,
@@ -425,12 +425,12 @@
    "w_t": 0.8998,
    "n_ogrenme": 89
   },
-  "avrupa": {
-   "a": 0.3206,
-   "b": 0.6477,
-   "w_m": 0.2548,
-   "w_t": 1.0,
-   "n_ogrenme": 32
+  "kolej": {
+   "a": 0.3018,
+   "b": 0.6914,
+   "w_m": 0.632,
+   "w_t": 0.7651,
+   "n_ogrenme": 2
   }
  },
  "uretimde": {},
@@ -532,11 +532,11 @@
   },
   "el": {
    "kilitli": 30,
-   "oranli": 17,
+   "oranli": 22,
    "sonuclu_oranli": 17,
-   "iddaa_ms": 17,
-   "iddaa_hnd": 17,
-   "iddaa_au": 17,
+   "iddaa_ms": 22,
+   "iddaa_hnd": 22,
+   "iddaa_au": 19,
    "espn": 0
   },
   "ec": {
@@ -559,20 +559,20 @@
   },
   "nbl": {
    "kilitli": 20,
-   "oranli": 11,
+   "oranli": 13,
    "sonuclu_oranli": 10,
-   "iddaa_ms": 11,
-   "iddaa_hnd": 9,
-   "iddaa_au": 11,
+   "iddaa_ms": 13,
+   "iddaa_hnd": 11,
+   "iddaa_au": 13,
    "espn": 0
   },
   "ncaa": {
    "kilitli": 523,
    "oranli": 121,
    "sonuclu_oranli": 1,
-   "iddaa_ms": 34,
-   "iddaa_hnd": 34,
-   "iddaa_au": 34,
+   "iddaa_ms": 35,
+   "iddaa_hnd": 35,
+   "iddaa_au": 35,
    "espn": 121
   },
   "ncaaw": {
@@ -591,12 +591,18 @@
   "Çin CBA": 2,
   "Meksika LNBP, Playofflar": 2,
   "İtalya Serie A": 1,
-  "G. Kore Güney Kore Basketbol Ligi": 1,
-  "İsveç Basketbol Ligi": 1,
+  "G. Kore Güney Kore Basketbol Ligi": 2,
+  "Türkiye Basketbol Süper Ligi": 1,
+  "İsveç Basketbol Ligi": 2,
   "G. Kore Güney Kore Kadın Basket Ligi": 1,
   "ABA Liga, Group B": 1,
   "Europe Kupası": 2,
-  "Arjantin LNB": 1
+  "Uruguay Basketbol Ligi": 3,
+  "Arjantin LNB": 3,
+  "Japonya B2.Ligi": 1,
+  "Fransa Pro B": 1,
+  "Avrupa Kuzey Basket Ligi, Gr.B": 1,
+  "Filipinler PBA, Governors Kupas, Playoffs": 2
  },
  "gunluk": [
   {
