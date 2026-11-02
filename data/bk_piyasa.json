@@ -1,6 +1,6 @@
 {
  "surum": "2026-10-28.1",
- "guncelleme": "2026-11-02 17:29",
+ "guncelleme": "2026-11-02 18:05",
  "aciklama": "Basket piyasa karnesi: kilitli model tahmini ile maç öncesi son piyasa oranı (marjı Shin ile ayrılmış) aynı maçlarda. Harman = Benter iki aşama (lig grubu, zaman sıralı ağırlık). Çapalı = model fark/toplamının handikap ve alt/üst çizgisine çekilmesi. GA: gün blokları bootstrap %95. Üretime yalnız OXXai kapısı + gölge sonrası girer.",
  "kurallar": {
   "kapi": "n ≥ 150, gün ≥ 20, ΔLL GA üst < 0, ΔBrier < 0, isabet düşmez",
@@ -418,19 +418,19 @@
    "w_t": 0.8591,
    "n_ogrenme": 90
   },
-  "avrupa": {
-   "a": 0.3206,
-   "b": 0.6477,
-   "w_m": 0.2548,
-   "w_t": 1.0,
-   "n_ogrenme": 32
-  },
   "kolej": {
    "a": 0.3016,
    "b": 0.6747,
    "w_m": 0.6172,
    "w_t": 0.6466,
    "n_ogrenme": 5
+  },
+  "avrupa": {
+   "a": 0.3206,
+   "b": 0.6477,
+   "w_m": 0.2548,
+   "w_t": 1.0,
+   "n_ogrenme": 32
   }
  },
  "uretimde": {},
@@ -577,12 +577,12 @@
   },
   "ncaaw": {
    "kilitli": 527,
-   "oranli": 5,
+   "oranli": 6,
    "sonuclu_oranli": 1,
    "iddaa_ms": 0,
    "iddaa_hnd": 0,
    "iddaa_au": 0,
-   "espn": 5
+   "espn": 6
   }
  },
  "sentetik_yarismalar": {
@@ -591,6 +591,7 @@
   "ABD Kolej Basketbol Ligi": 5,
   "Japonya B2.Ligi": 10,
   "Fransa Pro A": 1,
+  "Çin CBA": 3,
   "Avrupa Kuzey Basket Ligi, Gr.B": 1,
   "Meksika LNBP, Playofflar": 2,
   "Arjantin LNB": 4,
