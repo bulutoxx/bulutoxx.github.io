@@ -1,6 +1,6 @@
 {
  "surum": "2026-10-28.1",
- "guncelleme": "2026-11-02 20:15",
+ "guncelleme": "2026-11-02 21:07",
  "aciklama": "Basket piyasa karnesi: kilitli model tahmini ile maç öncesi son piyasa oranı (marjı Shin ile ayrılmış) aynı maçlarda. Harman = Benter iki aşama (lig grubu, zaman sıralı ağırlık). Çapalı = model fark/toplamının handikap ve alt/üst çizgisine çekilmesi. GA: gün blokları bootstrap %95. Üretime yalnız OXXai kapısı + gölge sonrası girer.",
  "kurallar": {
   "kapi": "n ≥ 150, gün ≥ 20, ΔLL GA üst < 0, ΔBrier < 0, isabet düşmez",
@@ -174,38 +174,38 @@
    ],
    "model": {
     "n": 6,
-    "ll": 0.677,
+    "ll": 0.6772,
     "brier": 0.242,
     "isabet": 0.6667
    },
    "piyasa": {
     "n": 6,
-    "ll": 0.7986,
-    "brier": 0.2974,
+    "ll": 0.7987,
+    "brier": 0.2975,
     "isabet": 0.5
    },
    "piyasa_power": {
     "n": 6,
     "ll": 0.8053,
-    "brier": 0.3005,
+    "brier": 0.3006,
     "isabet": 0.5
    },
    "harman": {
     "n": 6,
-    "ll": 0.7426,
-    "brier": 0.2737,
+    "ll": 0.7428,
+    "brier": 0.2738,
     "isabet": 0.5
    },
    "capali": {
     "n": 6,
-    "ll": 0.7253,
-    "brier": 0.2656,
+    "ll": 0.7254,
+    "brier": 0.2657,
     "isabet": 0.5
    },
    "uretim": {
     "n": 6,
-    "ll": 0.6753,
-    "brier": 0.2411,
+    "ll": 0.6755,
+    "brier": 0.2412,
     "isabet": 0.6667
    },
    "fark_harman_model": {
@@ -230,20 +230,20 @@
     "isabet": -0.1667
    },
    "fark_uretim_model": {
-    "ll": -0.0017,
+    "ll": -0.0016,
     "ll_ga": null,
-    "brier": -0.0009,
+    "brier": -0.0008,
     "brier_ga": null,
     "isabet": 0.0
    },
    "skor": {
     "fark_mse": {
      "model": 158.6167,
-     "piyasa": 133.4078,
-     "capali": 132.9895,
+     "piyasa": 133.4037,
+     "capali": 132.9872,
      "n": 6,
      "capali_eksi_model": [
-      -25.6271,
+      -25.6295,
       null
      ]
     },
@@ -259,8 +259,8 @@
     }
    },
    "agirlik": {
-    "a": 0.3016,
-    "b": 0.6782,
+    "a": 0.3015,
+    "b": 0.6783,
     "w_m": 0.624,
     "w_t": 0.7534,
     "n_ogrenme": 6
@@ -411,13 +411,6 @@
   }
  },
  "agirlik": {
-  "avrupa": {
-   "a": 0.3206,
-   "b": 0.6477,
-   "w_m": 0.2548,
-   "w_t": 1.0,
-   "n_ogrenme": 32
-  },
   "pro": {
    "a": 0.2422,
    "b": 0.7638,
@@ -425,9 +418,16 @@
    "w_t": 0.8591,
    "n_ogrenme": 90
   },
+  "avrupa": {
+   "a": 0.3206,
+   "b": 0.6477,
+   "w_m": 0.2548,
+   "w_t": 1.0,
+   "n_ogrenme": 32
+  },
   "kolej": {
-   "a": 0.3016,
-   "b": 0.6782,
+   "a": 0.3015,
+   "b": 0.6783,
    "w_m": 0.624,
    "w_t": 0.7534,
    "n_ogrenme": 6
@@ -525,9 +525,9 @@
    "kilitli": 138,
    "oranli": 90,
    "sonuclu_oranli": 75,
-   "iddaa_ms": 67,
-   "iddaa_hnd": 47,
-   "iddaa_au": 67,
+   "iddaa_ms": 66,
+   "iddaa_hnd": 46,
+   "iddaa_au": 66,
    "espn": 90
   },
   "el": {
@@ -541,10 +541,10 @@
   },
   "ec": {
    "kilitli": 40,
-   "oranli": 18,
+   "oranli": 21,
    "sonuclu_oranli": 15,
-   "iddaa_ms": 18,
-   "iddaa_hnd": 17,
+   "iddaa_ms": 21,
+   "iddaa_hnd": 20,
    "iddaa_au": 18,
    "espn": 0
   },
@@ -577,12 +577,12 @@
   },
   "ncaaw": {
    "kilitli": 527,
-   "oranli": 10,
+   "oranli": 11,
    "sonuclu_oranli": 1,
    "iddaa_ms": 0,
    "iddaa_hnd": 0,
    "iddaa_au": 0,
-   "espn": 10
+   "espn": 11
   }
  },
  "sentetik_yarismalar": {
@@ -597,13 +597,13 @@
   "Meksika LNBP, Playofflar": 2,
   "Arjantin LNB": 4,
   "G. Kore Güney Kore Basketbol Ligi": 1,
-  "İsveç Basketbol Ligi": 2,
   "Euroleague": 1,
-  "ABA Liga, Group B": 1,
   "Filipinler PBA, Governors Kupas, Playoffs": 2,
   "Europe Kupası": 2,
+  "İsveç Basketbol Ligi": 1,
   "Eurocup, Kadınlar": 1,
-  "Fransa Pro B": 1
+  "Fransa Pro B": 1,
+  "Slovenya 1. A SKL": 1
  },
  "gunluk": [
   {
@@ -665,15 +665,15 @@
   {
    "gun": "2026-11-01",
    "n": 12,
-   "ll_model": 0.707,
-   "ll_piyasa": 0.6863,
-   "ll_harman": 0.6707
+   "ll_model": 0.7071,
+   "ll_piyasa": 0.6864,
+   "ll_harman": 0.6709
   },
   {
    "gun": "2026-11-02",
    "n": 8,
    "ll_model": 0.7438,
-   "ll_piyasa": 0.6839,
+   "ll_piyasa": 0.6838,
    "ll_harman": 0.6807
   }
  ]
