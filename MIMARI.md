@@ -191,7 +191,8 @@ global kapsam ve sarmalayıcı zincirleri — `quickPred=function…`, `msRender
 
 **Önbellek.** sw.js: index.html ve data/ her zaman önce ağdan; `js/`, `css/` adresleri `?v=<içerik özeti>` taşıdığı için önce
 önbellekten (aynı adres = aynı içerik), yeni sürümde index.html yeni `?v=` ister → eski JS önbellekten gelmez; aynı dosyanın eski
-sürümleri önbellekten silinir. Tekrar açılışta ağdan yalnız index.html iner (gzip ~38 KB; eskiden her açılışta 1,5 MB / gzip 475 KB).
+sürümleri önbellekten silinir. Arşiv gün dosyaları (`data/archive/<gün>.json`) için `js/baslangic.js` blok `arsiv-v154` aynı adresi 60 sn içinde tek
+istekle birleştirir (v154, YH-40; çağıran kod değişmez, her çağırana ayrı Response). Tekrar açılışta ağdan yalnız index.html iner (gzip ~38 KB; eskiden her açılışta 1,5 MB / gzip 475 KB).
 
 **Kapı.** `lab/yayin_kapisi.py denetle` (update.yml duman testinden önce): index.html ≤ 1500 KB, her paket ≤ 600 KB, ilk yük
 (index.html + paketler) ≤ 2000 KB (1700 üstü uyarı), satır içi script > 30 KB uyarı, her paket `node --check`. Yayın listesi

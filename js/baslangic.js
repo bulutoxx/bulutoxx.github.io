@@ -343,3 +343,39 @@
       setTimeout(()=>{ try{ if(typeof W.kxRefresh==="function") W.kxRefresh(); }catch(e){} },0); }catch(e){} }
 })();
 } catch (e) { if (typeof reportError === "function") reportError(e); else setTimeout(function () { throw e; }); } /* /id: ozellik-v152 */
+/* id: arsiv-v154 */ try {
+// =====================================================================
+// OXXai v154 · YH-40: kilitli arşiv günleri (veri arşivindeki gün dosyaları) tek istekle
+// Açılışta 5 ayrı katman (sonuçlar, karne, ekran, arayüz, pazar rozeti) aynı arşiv gününü ayrı ayrı istiyordu
+// (ölçüm 2026-11-03: açılışta 33 arşiv isteği / 11 gün, ~2,4 MB tekrar indirme). Çağıran kod değişmez:
+//  · aynı adres 60 sn içinde ağdan bir kez alınır, aynı anda gelenler birleşir;
+//  · her çağırana metinden kurulmuş KENDİ Response kopyası verilir (JSON nesnesi paylaşılmaz, değişiklik sızmaz);
+//  · ok olmayan yanıt / ağ hatası saklanmaz (sonraki çağrı yeniden dener). 60 sn sonra yine ağdan (no-cache korunur).
+// Ölçüm: window.arsivV154.say → {ag, paylasilan}
+// =====================================================================
+(function(){
+  "use strict";
+  const W=window; if(!W.fetch||W.arsivV154) return;
+  const nf=W.fetch.bind(W), TTL=60e3;
+  const RX=/(^|\/)data\/archive\/\d{4}-\d{2}-\d{2}\.json(\?|$)/;
+  const M=new Map(), say={ag:0,paylasilan:0};
+  function adres(i){ try{ return typeof i==="string"?i:(i&&typeof i.url==="string"?i.url:""); }catch(e){ return ""; } }
+  function kur(d){ return new Response(d.b,{status:d.s,statusText:d.st,headers:d.h}); }
+  W.fetch=function(i,o){
+    const u=adres(i), yon=String((o&&o.method)||(i&&typeof i!=="string"&&i.method)||"GET").toUpperCase();
+    if(!u||yon!=="GET"||!RX.test(u.split("#")[0])) return nf(i,o);
+    let k; try{ k=new URL(u,location.href).href; }catch(e){ return nf(i,o); }
+    const now=Date.now(), e=M.get(k);
+    if(e&&now-e.t<TTL){ say.paylasilan++; return e.p.then(x=>x.d?kur(x.d):nf(i,o)); }
+    for(const [kk,v] of M) if(now-v.t>=TTL) M.delete(kk);
+    say.ag++;
+    const p=nf(i,o).then(r=>{
+      if(!r.ok){ M.delete(k); return {r}; }
+      return r.text().then(b=>({d:{s:r.status,st:r.statusText,h:Array.from(r.headers.entries()),b}}));
+    },err=>{ M.delete(k); throw err; });
+    M.set(k,{t:now,p});
+    return p.then(x=>x.d?kur(x.d):x.r);
+  };
+  W.arsivV154={say,temizle:()=>M.clear()};
+})();
+} catch (e) { if (typeof reportError === "function") reportError(e); else setTimeout(function () { throw e; }); } /* /id: arsiv-v154 */
