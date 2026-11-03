@@ -1,6 +1,6 @@
 {
  "madde": "YH-17",
- "tarih": "2026-10-30",
+ "tarih": "2026-11-03",
  "yontem": "asimptotik güven dizisi (Robbins normal karışımı, blok ortalaması, σ̂ eklentili), α=0.05 iki yanlı, ρ t*=14 bloka ayarlı, ısınma 5 blok",
  "sifir_benzetim": {
   "bagimsiz": {
@@ -89,31 +89,41 @@
   "kararlar": {
    "t/t*=0.5": {
     "katsayi": 3.084,
-    "n": 78,
-    "uyum_ll": 0.9615,
-    "uyum_tam": 1.0,
-    "gecen_kaybi": 0,
+    "n": 74,
+    "uyum_ll": 0.9054,
+    "uyum_tam": 0.9459,
+    "gecen_kaybi": 4,
     "erken_ret_kotu": 4
    },
    "t/t*=1.0": {
     "katsayi": 3.035,
-    "n": 78,
-    "uyum_ll": 0.9615,
-    "uyum_tam": 1.0,
-    "gecen_kaybi": 0,
+    "n": 74,
+    "uyum_ll": 0.9054,
+    "uyum_tam": 0.9459,
+    "gecen_kaybi": 4,
     "erken_ret_kotu": 4
    },
    "t/t*=2.0": {
     "katsayi": 3.061,
-    "n": 78,
-    "uyum_ll": 0.9615,
-    "uyum_tam": 1.0,
-    "gecen_kaybi": 0,
+    "n": 74,
+    "uyum_ll": 0.9054,
+    "uyum_tam": 0.9459,
+    "gecen_kaybi": 4,
     "erken_ret_kotu": 4
    }
   },
-  "n_gecti": 3,
+  "n_gecti": 7,
   "gecenler": [
+   {
+    "dosya": "acik_lab.json",
+    "yol": "/aileler/K2/sinama/dilimler[0]",
+    "dll": -0.02177,
+    "ga": [
+     -0.04379,
+     -0.00269
+    ],
+    "siralik_ll_gecti": false
+   },
    {
     "dosya": "bk_canli_lab.json",
     "yol": "/kapi_yeni",
@@ -143,11 +153,41 @@
      -0.01423
     ],
     "siralik_ll_gecti": true
+   },
+   {
+    "dosya": "marj_lab.json",
+    "yol": "/arsiv/iddaa/1x2/yontem/shin",
+    "dll": -0.00269,
+    "ga": [
+     -0.00461,
+     -0.0008
+    ],
+    "siralik_ll_gecti": false
+   },
+   {
+    "dosya": "marj_lab.json",
+    "yol": "/arsiv/iddaa/1x2/yontem/odds_ratio",
+    "dll": -0.00203,
+    "ga": [
+     -0.0036,
+     -0.00046
+    ],
+    "siralik_ll_gecti": false
+   },
+   {
+    "dosya": "marj_lab.json",
+    "yol": "/arsiv/iddaa/1x2/yontem/additive",
+    "dll": -0.0016,
+    "ga": [
+     -0.00291,
+     -0.00036
+    ],
+    "siralik_ll_gecti": false
    }
   ]
  },
  "koruyucu_tekrar": {
-  "n": 10,
+  "n": 13,
   "uyum": 1.0,
   "degisiklikler": [
    {
@@ -158,13 +198,13 @@
     "koruyucu": "kalıcı (isabet korunuyor)",
     "olcut": "ham",
     "n_once": 481,
-    "gun": 6,
-    "n_sonra": 1424,
+    "gun": 10,
+    "n_sonra": 3042,
     "siralik": "devam",
     "siralik_gun": null,
     "koruyucu_400_gun": 1,
-    "son_ort": -0.0113,
-    "son_ust": 0.0239,
+    "son_ort": -0.0136,
+    "son_ust": 0.0113,
     "uyum": true
    },
    {
@@ -176,13 +216,13 @@
     "koruyucu": "kalıcı (isabet korunuyor)",
     "olcut": "ham",
     "n_once": 481,
-    "gun": 6,
-    "n_sonra": 1424,
+    "gun": 10,
+    "n_sonra": 3042,
     "siralik": "devam",
     "siralik_gun": null,
     "koruyucu_400_gun": 1,
-    "son_ort": -0.0113,
-    "son_ust": 0.0239,
+    "son_ort": -0.0136,
+    "son_ust": 0.0113,
     "uyum": true
    },
    {
@@ -195,13 +235,13 @@
     "koruyucu": "kalıcı (isabet korunuyor)",
     "olcut": "ham",
     "n_once": 481,
-    "gun": 6,
-    "n_sonra": 1424,
+    "gun": 10,
+    "n_sonra": 3042,
     "siralik": "devam",
     "siralik_gun": null,
     "koruyucu_400_gun": 1,
-    "son_ort": -0.0113,
-    "son_ust": 0.0239,
+    "son_ort": -0.0136,
+    "son_ust": 0.0113,
     "uyum": true
    },
    {
@@ -212,13 +252,13 @@
     "koruyucu": "kalıcı (isabet korunuyor)",
     "olcut": "ham",
     "n_once": 1087,
-    "gun": 5,
-    "n_sonra": 818,
-    "siralik": "devam",
-    "siralik_gun": null,
+    "gun": 9,
+    "n_sonra": 2436,
+    "siralik": "esdeger (erken kalıcı)",
+    "siralik_gun": 9,
     "koruyucu_400_gun": 3,
-    "son_ort": -0.0092,
-    "son_ust": 0.0269,
+    "son_ort": -0.0113,
+    "son_ust": 0.0092,
     "uyum": true
    },
    {
@@ -229,13 +269,13 @@
     "koruyucu": "kalıcı (isabet korunuyor)",
     "olcut": "ham",
     "n_once": 1087,
-    "gun": 5,
-    "n_sonra": 818,
-    "siralik": "devam",
-    "siralik_gun": null,
+    "gun": 9,
+    "n_sonra": 2436,
+    "siralik": "esdeger (erken kalıcı)",
+    "siralik_gun": 9,
     "koruyucu_400_gun": 3,
-    "son_ort": -0.0092,
-    "son_ust": 0.0269,
+    "son_ort": -0.0113,
+    "son_ust": 0.0092,
     "uyum": true
    },
    {
@@ -246,13 +286,13 @@
     "koruyucu": "kalıcı (isabet korunuyor)",
     "olcut": "ham",
     "n_once": 1207,
-    "gun": 4,
-    "n_sonra": 698,
+    "gun": 8,
+    "n_sonra": 2316,
     "siralik": "devam",
     "siralik_gun": null,
     "koruyucu_400_gun": 2,
-    "son_ort": -0.0066,
-    "son_ust": null,
+    "son_ort": -0.0096,
+    "son_ust": 0.0121,
     "uyum": true
    },
    {
@@ -263,13 +303,13 @@
     "koruyucu": "kalıcı (isabet korunuyor)",
     "olcut": "sunulan",
     "n_once": 421,
-    "gun": 3,
-    "n_sonra": 461,
+    "gun": 7,
+    "n_sonra": 2079,
     "siralik": "devam",
     "siralik_gun": null,
     "koruyucu_400_gun": 3,
-    "son_ort": 0.0039,
-    "son_ust": null,
+    "son_ort": -0.0,
+    "son_ust": 0.0318,
     "uyum": true
    },
    {
@@ -280,13 +320,13 @@
     "koruyucu": "kalıcı (isabet korunuyor)",
     "olcut": "sunulan",
     "n_once": 421,
-    "gun": 3,
-    "n_sonra": 461,
+    "gun": 7,
+    "n_sonra": 2079,
     "siralik": "devam",
     "siralik_gun": null,
     "koruyucu_400_gun": 3,
-    "son_ort": 0.0039,
-    "son_ust": null,
+    "son_ort": -0.0,
+    "son_ust": 0.0318,
     "uyum": true
    },
    {
@@ -298,13 +338,13 @@
     "koruyucu": "kalıcı (isabet korunuyor)",
     "olcut": "sunulan",
     "n_once": 421,
-    "gun": 3,
-    "n_sonra": 461,
+    "gun": 7,
+    "n_sonra": 2079,
     "siralik": "devam",
     "siralik_gun": null,
     "koruyucu_400_gun": 3,
-    "son_ort": 0.0039,
-    "son_ust": null,
+    "son_ort": -0.0,
+    "son_ust": 0.0318,
     "uyum": true
    },
    {
@@ -312,15 +352,66 @@
     "fark": [
      "gscale"
     ],
+    "koruyucu": "kalıcı (isabet korunuyor)",
+    "olcut": "sunulan",
+    "n_once": 634,
+    "gun": 6,
+    "n_sonra": 1866,
+    "siralik": "devam",
+    "siralik_gun": null,
+    "koruyucu_400_gun": 3,
+    "son_ort": -0.0028,
+    "son_ust": 0.0305,
+    "uyum": true
+   },
+   {
+    "tarih": "2026-11-01",
+    "fark": [
+     "gscale"
+    ],
+    "koruyucu": "kalıcı (isabet korunuyor)",
+    "olcut": "sunulan",
+    "n_once": 1740,
+    "gun": 3,
+    "n_sonra": 760,
+    "siralik": "devam",
+    "siralik_gun": null,
+    "koruyucu_400_gun": 1,
+    "son_ort": -0.0105,
+    "son_ust": null,
+    "uyum": true
+   },
+   {
+    "tarih": "2026-11-02",
+    "fark": [
+     "gscale"
+    ],
     "koruyucu": "izleniyor",
     "olcut": "ham",
-    "n_once": 1657,
+    "n_once": 3329,
     "gun": 2,
-    "n_sonra": 248,
+    "n_sonra": 194,
     "siralik": "devam",
     "siralik_gun": null,
     "koruyucu_400_gun": null,
-    "son_ort": -0.0051,
+    "son_ort": -0.0134,
+    "son_ust": null,
+    "uyum": true
+   },
+   {
+    "tarih": "2026-11-03",
+    "fark": [
+     "gscale"
+    ],
+    "koruyucu": "izleniyor",
+    "olcut": "ham",
+    "n_once": 3506,
+    "gun": 1,
+    "n_sonra": 17,
+    "siralik": "devam",
+    "siralik_gun": null,
+    "koruyucu_400_gun": null,
+    "son_ort": -0.013,
     "son_ust": null,
     "uyum": true
    }
@@ -333,5 +424,5 @@
   "gecti": true
  },
  "uretime_etki": "yok (gölge; eski kapı karar verir)",
- "sure_sn": 0.7
+ "sure_sn": 1.2
 }
