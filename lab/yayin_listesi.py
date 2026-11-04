@@ -87,6 +87,38 @@ def damgala(kok, dosyalar=("index.html", "sw.js")):
     return degisen
 
 
+PZ_DOSYA = "data/fx_pz.json"
+
+
+def pz_ayir(hedef, sec):
+    """YH-43 (v156): yayın kopyasında fixtures.json'un pazar motoru olasılıkları (pz) data/fx_pz.json'a ayrılır; uygulama onu
+    açılışta değil boşta / maç penceresinde indirir. Depodaki data/fixtures.json DEĞİŞMEZ (Python okuyucuları pz'yi orada okur).
+    Yalnız yayınlanan paketlerden biri fx_pz.json'u istiyorsa ayrılır (geri alınan eski uygulama pz'yi fixtures'ta bekler)."""
+    fx = os.path.join(hedef, "data", "fixtures.json")
+    if "data/fixtures.json" not in sec or not os.path.isfile(fx):
+        return 0
+    if not any(PZ_DOSYA in open(os.path.join(hedef, y), encoding="utf-8", errors="replace").read()
+               for y in sec if y.endswith(".js") or y == "index.html"):
+        return 0
+    try:
+        F = json.load(open(fx, encoding="utf-8"))
+    except Exception:
+        return 0
+    if not isinstance(F, list):
+        return 0
+    M = {}
+    for f in F:
+        if isinstance(f, dict) and isinstance(f.get("pz"), dict):
+            M[f"{f.get('lg')}|{f.get('d')}|{f.get('h')}|{f.get('a')}"] = f.pop("pz")
+    if not M:
+        return 0
+    json.dump(F, open(fx, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
+    json.dump({"v": 1, "m": M}, open(os.path.join(hedef, PZ_DOSYA), "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
+    print(f"[yayın listesi] pz ayrıldı: {len(M)} maç → {PZ_DOSYA} ({round(os.path.getsize(os.path.join(hedef, PZ_DOSYA)) / 1024)} KB), "
+          f"fixtures.json {round(os.path.getsize(fx) / 1024)} KB")
+    return len(M)
+
+
 def tara(kok):
     """Kaynak dosyalardaki yol dizelerini (düz, klasör öneki, şablon) çıkarır → glob listesi."""
     desen = set()
@@ -206,6 +238,8 @@ def main():
         shutil.copy2(os.path.join(kok, y), h)
     damgala(hedef)                       # yayın kopyasında ?v= = paketin gerçek içerik özeti (önbellek kırma)
     print(f"[yayın listesi] {len(sec)} dosya, {round(boyut(kok, sec) / 1024)} KB → {hedef}")
+    pz_ayir(hedef, sec)
+    eksik = [y for y in eksik if y != PZ_DOSYA]
     if eksik:
         print(f"[yayın listesi] kaynakta geçen ama depoda olmayan {len(eksik)} yol (dinamik olabilir): {', '.join(eksik[:12])}")
     return 0
