@@ -1,6 +1,6 @@
 {
  "surum": "2026-10-28.1",
- "guncelleme": "2026-11-04 23:07",
+ "guncelleme": "2026-11-05 00:02",
  "aciklama": "Basket piyasa karnesi: kilitli model tahmini ile maç öncesi son piyasa oranı (marjı Shin ile ayrılmış) aynı maçlarda. Harman = Benter iki aşama (lig grubu, zaman sıralı ağırlık). Çapalı = model fark/toplamının handikap ve alt/üst çizgisine çekilmesi. GA: gün blokları bootstrap %95. Üretime yalnız OXXai kapısı + gölge sonrası girer.",
  "kurallar": {
   "kapi": "n ≥ 150, gün ≥ 20, ΔLL GA üst < 0, ΔBrier < 0, isabet düşmez",
@@ -67,7 +67,7 @@
    ],
    "model": {
     "n": 41,
-    "ll": 0.5922,
+    "ll": 0.5921,
     "brier": 0.2022,
     "isabet": 0.7073
    },
@@ -85,7 +85,7 @@
    },
    "harman": {
     "n": 41,
-    "ll": 0.5977,
+    "ll": 0.5976,
     "brier": 0.2057,
     "isabet": 0.6341
    },
@@ -97,14 +97,14 @@
    },
    "uretim": {
     "n": 41,
-    "ll": 0.5922,
+    "ll": 0.5921,
     "brier": 0.2022,
     "isabet": 0.7073
    },
    "fark_harman_model": {
     "ll": 0.0055,
     "ll_ga": [
-     -0.0802,
+     -0.0801,
      0.0489
     ],
     "brier": 0.0035,
@@ -117,7 +117,7 @@
    "fark_piyasa_model": {
     "ll": 0.0187,
     "ll_ga": [
-     -0.1103,
+     -0.1102,
      0.0825
     ],
     "brier": 0.0094,
@@ -156,27 +156,27 @@
    "skor": {
     "fark_mse": {
      "model": 115.3222,
-     "piyasa": 125.9886,
-     "capali": 118.8274,
+     "piyasa": 125.9877,
+     "capali": 118.8282,
      "n": 41,
      "capali_eksi_model": [
-      3.5052,
+      3.506,
       [
        -6.151,
-       10.483
+       10.4806
       ]
      ]
     },
     "toplam_mae": {
      "model": 13.8073,
-     "piyasa": 13.0104,
+     "piyasa": 13.0105,
      "capali": 13.0763,
      "n": 41,
      "capali_eksi_model": [
       -0.731,
       [
-       -1.9309,
-       0.0417
+       -1.931,
+       0.0418
       ]
      ]
     }
@@ -190,7 +190,7 @@
    },
    "kapi": {
     "durum": "veri_az",
-    "neden": "maç az (41 < 150); gün az (6 < 20); ΔLL GA üst sınırı ≥ 0 ([-0.0802, 0.0489]); ΔBrier ≥ 0 (0.0035); isabet düştü (-0.0732)"
+    "neden": "maç az (41 < 150); gün az (6 < 20); ΔLL GA üst sınırı ≥ 0 ([-0.0801, 0.0489]); ΔBrier ≥ 0 (0.0035); isabet düştü (-0.0732)"
    },
    "uretimde": false
   },
@@ -441,6 +441,13 @@
   }
  },
  "agirlik": {
+  "pro": {
+   "a": 0.2979,
+   "b": 0.7594,
+   "w_m": 0.7545,
+   "w_t": 0.9238,
+   "n_ogrenme": 106
+  },
   "kolej": {
    "a": 0.3165,
    "b": 0.7413,
@@ -454,13 +461,6 @@
    "w_m": 0.355,
    "w_t": 1.0,
    "n_ogrenme": 41
-  },
-  "pro": {
-   "a": 0.2979,
-   "b": 0.7594,
-   "w_m": 0.7545,
-   "w_t": 0.9238,
-   "n_ogrenme": 106
   }
  },
  "uretimde": {},
@@ -705,7 +705,7 @@
   {
    "gun": "2026-11-04",
    "n": 28,
-   "ll_model": 0.3434,
+   "ll_model": 0.3433,
    "ll_piyasa": 0.2503,
    "ll_harman": 0.2735
   }
