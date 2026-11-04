@@ -745,6 +745,20 @@ def main():
         if isinstance(o, dict): return {k: _cn(v) for k, v in o.items()}
         if isinstance(o, (list, tuple)): return [_cn(v) for v in o]
         return o
+    # 📉 YH-42: takım "son 5 maç" formu yalnız maç penceresinde gösterilir → ayrı dosya (data/bk_form.json), açılışta indirilmez.
+    # Hızlı modda (yeni sonuç yok) eski takım tablosu formsuz gelir; o zaman önceki bk_form.json aynen korunur.
+    fyol = os.path.join(DATA, "bk_form.json")
+    try: fprev = (json.load(open(fyol, encoding="utf-8")) or {}).get("ligler") or {}
+    except Exception: fprev = {}
+    bkf = {}
+    for lg_, L_ in out_lg.items():
+        tf = {}
+        for t_, T_ in (L_.get("teams") or {}).items():
+            fm = T_.pop("form", None) if isinstance(T_, dict) else None
+            if fm is None: fm = (fprev.get(lg_) or {}).get(t_)
+            if fm: tf[t_] = fm
+        bkf[lg_] = tf
+    json.dump(_cn({"updated": now, "ligler": bkf}), open(fyol, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"), allow_nan=False)
     json.dump(_cn(res), open(op, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"), allow_nan=False)
     if not offline: gece_isi()
     print("Bitti:", json.dumps(tot, ensure_ascii=False), "fikstür", len(fx_out), flush=True)

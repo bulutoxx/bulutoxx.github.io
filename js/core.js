@@ -2291,10 +2291,17 @@ const BK_ORDER=["nba","el","ec","wnba","gl","nbl","ncaa","ncaaw"];
 function bkLoad(fresh){
   if(BK.loading && !fresh) return BK.loading;
   BK.loading=fetch("data/basket.json"+(fresh?"?t="+Date.now():""),{cache:fresh?"no-store":"no-cache"})
-    .then(r=>r.ok?r.json():null).then(d=>{ if(d) BK.data=d; return BK.data; }).catch(()=>BK.data);
+    .then(r=>r.ok?r.json():null).then(d=>{ if(d){ if(fresh&&BK.data&&d.updated!==BK.data.updated){ BK.form=undefined; BK.formP=null; } BK.data=d; } return BK.data; }).catch(()=>BK.data);
   // YH-05: canlı kazanma olasılığı bayrağı ve parametreleri (k, w, γ); yoksa / kapalıysa eski formül
   fetch("data/bk_canli.json"+(fresh?"?t="+Date.now():""),{cache:fresh?"no-store":"no-cache"}).then(r=>r.ok?r.json():null).then(j=>{ if(j) BK.cz=j; }).catch(()=>{});
   return BK.loading;
+}
+// YH-42: takım "son 5 maç" formu ayrı dosyada; yalnız maç penceresi açılınca bir kez indirilir. BK.form: undefined = henüz yok, null = alınamadı.
+function bkFormKey(t){ const D=BK.data; if(!D||!D.leagues||!t) return null; for(const lg in D.leagues){ const T=D.leagues[lg].teams||{}; for(const k in T) if(T[k]===t) return [lg,k]; } return null; }
+function bkFormLoad(){
+  if(BK.formP) return BK.formP;
+  BK.formP=fetch("data/bk_form.json",{cache:"no-cache"}).then(r=>r.ok?r.json():null).then(j=>{ BK.form=j||null; return BK.form; }).catch(()=>{ BK.form=null; BK.formP=null; return null; });
+  return BK.formP;
 }
 function bkPhi(x){ const t=1/(1+0.3275911*Math.abs(x)/Math.SQRT2);
   const y=1-((((1.061405429*t-1.453152027)*t+1.421413741)*t-0.284496736)*t+0.254829592)*t*Math.exp(-x*x/2); return x>=0?(1+y)/2:(1-y)/2; }
@@ -2450,7 +2457,10 @@ function bkOpen(f){
   const box=document.createElement("div"); box.id="bkd"; box.className="bkd"; box.setAttribute("role","dialog"); box.setAttribute("aria-label","Maç tahmini");
   const L=p&&p.L, H=p&&p.H, A=p&&p.A, halves=L&&L.halves;
   const pc=x=>Math.round(x*100);
-  const form=t=>t&&t.form&&t.form.length?`<div class="bk-form">${t.form.map(x=>`<span class="${x.r}" title="${esc(x.o)} ${esc(x.d)}">${x.r} ${esc(x.s)}</span>`).join("")}</div>`:`<p class="note">Bu sezon maç yok</p>`;
+  // YH-42: takım formu data/bk_form.json'da (açılışta indirilmez); basket.json'da form varsa (eski dosya) doğrudan o kullanılır.
+  const fmOf=t=>{ if(!t) return null; if(t.form) return t.form; const k=bkFormKey(t), F=BK.form; return k&&F&&F.ligler&&F.ligler[k[0]]?F.ligler[k[0]][k[1]]||null:null; };
+  const formBekle=t=>!!(t&&!t.form&&BK.form===undefined&&bkFormKey(t));
+  const form=t=>{ const fm=fmOf(t); return fm&&fm.length?`<div class="bk-form">${fm.map(x=>`<span class="${x.r}" title="${esc(x.o)} ${esc(x.d)}">${x.r} ${esc(x.s)}</span>`).join("")}</div>`:formBekle(t)?`<div class="bk-form-yer" data-bkf="${t===H?"h":"a"}"><p class="note">Form yükleniyor…</p></div>`:(t&&!t.form&&BK.form===null&&bkFormKey(t))?`<p class="note">Form bilgisi şu an alınamadı</p>`:`<p class="note">Bu sezon maç yok</p>`; };
   let body="";
   if(!p){ const lv2=f._lv; body=`<div class="panel"><div class="bk-vs"><div>${bkIm(f.hl,f.h)}<b>${esc(f.h)}</b></div><div class="mid">${lv2?`<b style="font-size:22px;color:var(--ink)">${lv2.hs}-${lv2.as}</b><br><small>🔴 ${esc(idlClockTxt(lv2))}</small>`:"vs"}</div><div>${bkIm(f.al,f.a)}<b>${esc(f.a)}</b></div></div>${lv2&&lv2.hq&&lv2.hq.length?`<p class="note" style="text-align:center;margin:8px 0 0">${lv2.hq.map((q,i)=>`${i+1}Ç ${q}-${(lv2.aq||[])[i]??""}`).join(" · ")}</p>`:""}</div><div class="panel empty"><b>Bu maç için yeterli veri yok</b>Takımlardan biri bu ligde yeni. Birkaç maç sonra tahmin otomatik açılır.</div>`; }
   else {
@@ -2502,6 +2512,7 @@ function bkOpen(f){
   box.innerHTML=`<div class="wrap"><div class="bkd-top"><button type="button" id="bkBack" aria-label="Geri"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><b>${BK_FLAG[f.lg]||"🏀"} ${esc(f._comp||bkLg(f.lg))}${f.round?` · ${esc(f.round)}`:""}</b></div>${body}
     <p class="disc">Hobi amaçlı istatistiksel tahmindir, tavsiye değildir. Oranlar yalnız piyasa beklentisi bilgisidir. 18+ · Yasa dışı şans oyunları suçtur · Destek: 115</p></div>`;
   document.body.appendChild(box); document.body.style.overflow="hidden";
+  if(box.querySelector(".bk-form-yer")) bkFormLoad().then(()=>{ box.querySelectorAll(".bk-form-yer").forEach(el=>{ el.outerHTML=form(el.dataset.bkf==="h"?H:A); }); });
   const close=()=>{ box.remove(); document.body.style.overflow=""; };
   $("bkBack").onclick=()=>{ Sound.tap(); close(); };
   const sb=$("bkShare"); if(sb) sb.onclick=async()=>{
