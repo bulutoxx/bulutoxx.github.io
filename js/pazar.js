@@ -162,7 +162,23 @@
   // ---------- veri ----------
   let KAR=null;
   fetch("data/pazar_karne.json",{cache:"no-cache"}).then(r=>r.ok?r.json():null).then(d=>{ KAR=d; try{ if(MS.m&&MS.tab==="oran") msRender(); }catch(e){} }).catch(()=>{});
-  function pzFull(f){ if(!f||!f.pz||typeof f.pz!=="object") return null; const P={};
+  // v156 (YH-43): yayın kopyasında fixtures.json pz'siz; pz data/fx_pz.json'da ({m:{"lg|d|h|a":pz}}). Açılışta istenmez:
+  // boşta ya da ilk maç penceresi / KUPO açılışında bir kez indirilir. Eski (pz'li) fikstür gelirse doğrudan o kullanılır.
+  let PZC=null, PZQ=null, PZF=null;
+  const pzKey=f=>f.lg+"|"+f.d+"|"+f.h+"|"+f.a;
+  const pzAyri=()=>{ try{ return Array.isArray(FIXTURES)&&FIXTURES.length>0&&!FIXTURES.some(x=>x&&x.pz); }catch(e){ return false; } };
+  function pzAt(f){ if(f&&!f.pz&&PZC){ const z=PZC[pzKey(f)]; if(z) f.pz=z; } return f; }
+  function pzYenile(){ try{ if(MS.m&&!MS.live) msRender(); }catch(e){} try{ ksched(); }catch(e){} }
+  function pzLoad(){ if(PZQ&&PZF===FIXTURES) return PZQ; if(!pzAyri()) return Promise.resolve(false); PZF=FIXTURES;
+    PZQ=fetch("data/fx_pz.json",{cache:"no-cache"}).then(r=>r.ok?r.json():null).then(d=>{ if(!d||!d.m) { PZQ=null; return false; } PZC=d.m;
+      let n=0; for(const f of FIXTURES) if(!f.pz&&PZC[pzKey(f)]){ f.pz=PZC[pzKey(f)]; n++; } window.pzAyriSay=n; if(n) pzYenile(); return true; }).catch(()=>{ PZQ=null; return false; });
+    return PZQ; }
+  window.pzLoad=pzLoad;
+  { const bos=()=>{ if(pzAyri()) pzLoad(); else if(!(Array.isArray(FIXTURES)&&FIXTURES.length)) setTimeout(bos,1500); };
+    const bas=()=>setTimeout(()=>{ if(window.requestIdleCallback) requestIdleCallback(bos,{timeout:4000}); else bos(); },1200);
+    if(document.readyState==="complete") bas(); else window.addEventListener("load",bas,{once:true});
+    try{ const _lf=loadFixtures; loadFixtures=async function(){ const r=await _lf.apply(this,arguments); if(pzAyri()){ if(PZC) for(const f of FIXTURES) pzAt(f); PZQ=null; setTimeout(bos,800); } return r; }; }catch(e){} }
+  function pzFull(f){ pzAt(f); if(!f||!f.pz||typeof f.pz!=="object") return null; const P={};
     for(const [k,v] of Object.entries(f.pz)) if(v!=null&&isFinite(+v)) P[k]=+v;
     if(P.U25==null&&P.U!=null) P.U25=P.U; if(P.A25==null&&P.A!=null) P.A25=P.A;
     for(const [a,b] of Object.entries(TUM)) if(P[a]==null&&P[b]!=null) P[a]=Math.round((1-P[b])*1000)/1000;
@@ -257,7 +273,7 @@
   function curCtx(){ try{ if(!MS.m||MS.live) return null; return ctxOf(MS.m,MS.f); }catch(e){ return null; } }
   // Seçenekler sekmesi: pz varsa eski kutular yerine gruplu panel (canlı maçta eski canlı pazarlar aynen)
   let LASTR=null;
-  try{ const _mo=msOran; msOran=function(m,f,r,lv){ if(lv||!f||!f.pz) return _mo.apply(this,arguments); const C=ctxOf(m,f); if(!C) return _mo.apply(this,arguments);
+  try{ const _mo=msOran; msOran=function(m,f,r,lv){ pzAt(f); if(!lv&&f&&!f.pz&&!PZC&&pzAyri()) pzLoad(); if(lv||!f||!f.pz) return _mo.apply(this,arguments); const C=ctxOf(m,f); if(!C) return _mo.apply(this,arguments);
       const mm=C.mm; let pb=""; try{ pb=playBar(mm); }catch(e){}
       const sc=(r&&r.topFT||[]).slice(0,9).map(x=>`<span class="msc"><b>${esc(x.s)}</b><small>%${(x.p*100).toFixed(1)}</small></span>`).join("");
       return pb+panelHtml(C,r)+(sc?`<div class="mg"><h4>En olası skorlar</h4><div class="msc-w">${sc}</div></div>`:""); }; }catch(e){}
@@ -270,7 +286,7 @@
       <button type="button" class="pz-more" data-pzall="1">Tüm tahminler: İY, 2Y, İY/MS, MS + KG ›</button></div>`; }
   try{ const _mr=msRender; msRender=function(){ const r=_mr.apply(this,arguments); try{ const el=$("msheet"), m=MS.m; if(!el||!m) return r;
       const C=curCtx(); const tb=el.querySelector('.ms-tabs button[data-t="oran"]'); if(tb&&tb.textContent!=="Seçenekler") tb.textContent="Seçenekler";
-      if(!C) return r;
+      if(!C){ try{ if(!MS.live&&MS.f&&!MS.f.pz&&!PZC&&pzAyri()) pzLoad(); }catch(e){} return r; }
       const al=el.querySelector("[data-allm]"); if(al) al.textContent="Tüm tahminler (İY, 2Y, İY/MS, MS + Alt/Üst…)";
       if(MS.tab==="tahmin"&&LASTR&&LASTR.m===m&&!el.querySelector(".pz-tah")){ const h=tahCard(C,LASTR.r); if(h){ const rb=el.querySelector(".ms-body .recbig"); if(rb) rb.insertAdjacentHTML("afterend",h); else { const b=el.querySelector(".ms-body"); if(b) b.insertAdjacentHTML("afterbegin",h); } } }
     }catch(e){ console.warn("pazar-v104",e); } return r; }; }catch(e){}
@@ -281,9 +297,9 @@
       el.setAttribute("aria-expanded",op); const gb=el.nextElementSibling; if(gb) gb.hidden=!op; if(op) S.add(g); else S.delete(g); saveOpen(); try{ buzz(5); Sound.tap(); }catch(_){} return; }
     const C=curCtx(); if(!C){ toast("Bu maç için pazar olasılığı yok"); return; } toggle(C,el.dataset.pzk); },true);
   // ---------- KUPO: seçim değiştir listesine yeni pazarlar (gruplu) + adil oran notu + "sonuç eksik" ----------
-  function augO(O){ if(!O||O._pz||!O.mm||O.ex&&(O.ex.live||O.ex.sp)) return O; O._pz=1;
+  function augO(O){ if(!O||O._pz||!O.mm||O.ex&&(O.ex.live||O.ex.sp)) return O;
     let f=null; try{ const m=O.mm; f=m.src==="fx"?FIXTURES.find(x=>x.lg===m.lg&&x.h===m.h&&x.a===m.a):(FIXTURES.find(x=>x.lg===m.lg&&x.h===m.h&&x.a===m.a)||(O.ex&&O.ex.iid?FIXTURES.find(x=>x.iid===O.ex.iid):null)||fxOdds(m)); }catch(e){}
-    const P=pzFull(f); if(!P) return O; O._P=P; O._f=f;
+    const P=pzFull(f); if(!P){ if(f&&!f.pz&&!PZC&&pzAyri()) pzLoad(); else O._pz=1; return O; } O._pz=1; O._P=P; O._f=f;
     const have=new Set((O.opts||[]).map(o=>o.k));
     for(const [,,L] of CAT) for(const e of L){ if(P[e]==null) continue; const a=toApp(e); if(have.has(a)) continue; O.opts.push({k:a,n:AD[e],o:oddOf(f,e),p:P[e],_e:e}); have.add(a); }
     return O; }
@@ -360,7 +376,7 @@
   const CHIP="＋ KUPO'ya ekle: ";
   const BQ=new Map();
   function fxFor(m){ try{ if(m.sp) return FIXTURES.find(x=>x.iid===m.id)||null; return (m.src==="fx"?FIXTURES.find(x=>x.lg===m.lg&&x.h===m.h&&x.a===m.a):FIXTURES.find(x=>x.lg===m.lg&&x.h===m.h&&x.a===m.a)||fxOdds(m))||null; }catch(e){ return null; } }
-  function botBlock(m,codes){ const f=fxFor(m), C=ctxOf(m,f); if(!C) return null;
+  function botBlock(m,codes){ const f=fxFor(m), C=ctxOf(m,f); if(!C){ if(f&&!f.pz&&!PZC&&pzAyri()) pzLoad(); return null; }
     let L=codes.slice(); if(L[0]==="*IYMS") L=CAT.find(c=>c[0]==="İYMS")[2].filter(e=>C.P[e]!=null).sort((a,b)=>C.P[b]-C.P[a]).slice(0,3);
     L=L.filter(e=>C.P[e]!=null).slice(0,4); if(!L.length) return null;
     const lines=L.map(e=>{ const o=optOf(C,e), cn=calNote(e,o.p); return `<span class="pz-bl">🧮 <b>${esc(o.n)}</b> · ${esc(desc(e,m))}: <b>%${pp(o.p)}</b>${o.o?` (oran ${f2(o.o)})`:` (adil oran ${f2(fair(o.p))})`}${cn?`<small>${esc(cn)}</small>`:""}</span>`; });
