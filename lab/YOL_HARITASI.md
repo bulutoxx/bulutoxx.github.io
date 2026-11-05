@@ -13,6 +13,7 @@ Hazırlanma: 2026-10-28 · Kapsam: futbol, basket, at, canlı, altyapı, arayüz
 > **v152 (2026-10-31): At yarışı bölümü kapalı.** Açık sonuç/program aynası 27.10.2026'dan beri güncellenmiyor; kullanıcı kararıyla
 > uygulamada gizlendi, `at-canli.yml` / `at-lab.yml` devre dışı. `· at ·` maddeleri **beklemede**: otonom döngü bunları almaz.
 > Kaynak güncellenince (`data/saglik/at-kaynak.json` → `at_kaynak_dondu`) önce bölüm geri açılır, sonra maddeler eski durumuna döner.
+> **2026-11-05:** nöbetçi `at_kaynak_dondu = 2026-11-04` yazdı; ayna yeniden güncelleniyor (bkz. YH-44). Bölüm hâlâ kapalı — iki iş akışının etkinleştirilmesi bekleniyor.
 
 ## Mevcut sistem (tekrar önerilmeyenler)
 
@@ -29,6 +30,12 @@ drift alarmı ve kapanış kilidi (yolda). Aşağıdaki maddeler bunların **üz
 - Beklenen kazançlar literatürdeki **tipik** büyüklüklerdir; OXXai verisinde ölçülmeden doğru kabul edilmez.
 
 ---
+
+### YH-44 · at · At bölümünün geri açılması (kaynak aynası yeniden güncelleniyor)
+- **Açıklama:** Kuyrukta `bekliyor` madde yoktu. Kaynak nöbetçisi (`lab/at/nobetci.py`) 2026-11-04 06:29 TSİ'de ayna HEAD değişimini yakaladı (`at_kaynak_dondu = 2026-11-04`). 2026-11-05 denetimi (yalnız `git ls-remote` + dosya adları, blob indirilmedi, ham veri yazılmadı): son commit 2026-11-05 04:18 TSİ; program dosyaları 10-24…10-27, **11-01, 11-03, 11-04, 11-05**; sonuç dosyaları 11-01, 11-03, 11-04 mevcut. Boşluk: 10-28…10-31 ve 11-02 (program + sonuç yok).
+- **Aday:** (1) `at-canli.yml` ve `at-lab.yml` iş akışları etkinleştirilir (şu an `disabled_manually`); (2) at-lab bir kez elle tetiklenip model yeni günlerle güncellenir ve bugünün kilitli tahmini üretilir; (3) `data/at/tahmin/<bugün>.json` kilitli ve `data/saglik/at-kaynak.json` `durum` normal olduktan sonra `data/ozellik.json` `"at": true`; (4) YH-28 / YH-08 / YH-15 eski durumlarına döner.
+- **Kapı:** bugünün programı aynada ve kilitli tahmin sabah kilidinden önce üretilmiş · `at-canli` 2 ardışık turda başarılı · qa.mjs hızlı 390 px'te at sayfası hata 0 / taşma 0 / yasak kelime 0 · eksik günler (10-28…10-31, 11-02) karnede "veri yok" görünür, uydurma sonuç yok.
+- **Durum:** bekliyor — **kullanıcı eylemi gerekli** (2026-11-05): otonom döngünün iş akışı etkinleştirme yetkisi yok (devre dışı akış tetiklenemez). Adım (1) yapılınca döngü (2)–(4)'ü üstlenir. Üretim değişmedi.
 
 ### YH-29 · futbol · Sezon sonu maç önemi ("ölü" takım motivasyonu) — piyasa üstü
 - **Açıklama:** Matematiksel olarak hiçbir hedefi kalmamış takım (şampiyonluğa yetişemez ve kesin kurtulmuş / kesin düşmüş) piyasa olasılığına göre daha kötü mü oynuyor? Puan tablosu her maçtan önce yalnız önceki günlerin sonuçlarıyla kurulur; aday piyasa olasılığına tek eğim ekler (1X2: β·d, beraberlik γ; 2,5: η·ölü sayısı).
