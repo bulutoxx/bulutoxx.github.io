@@ -977,13 +977,48 @@ const Live=(()=>{
 
 // Canlı listeden tek dokunuşla tahmin
 const _bwC=new Map();   // v118: anahtar kelimeleri bir kez böl
+function _btTara(q, words, list){   // YH-46: özgün doğrusal tarama (yedek yol ve eşitlik sınaması için)
+  let best=null, bs=0;
+  for(const t of list){ for(const k of t.keys){ let s=0;
+    if(k===q) s=10; else if(k.includes(q)||q.includes(k)) s=6; else if(words.length){ let kw=_bwC.get(k); if(!kw){ kw=k.split(" "); _bwC.set(k,kw); } s=words.filter(w=>kw.includes(w)).length*2; }
+    if(s>bs){ bs=s; best=t; } } }
+  return {best, bs};
+}
+// YH-46: aynı puanlama dizinle — tam eşleşme / alt dize / kelime sayımı yalnız aday anahtarlarda hesaplanır.
+// Eşitlikte ilk sıradaki anahtar kazanır (özgün `s>bs` kuralı); boş anahtar ya da ayırıcı varsa özgün taramaya düşer.
+let _btDz=null;
+function _btDizin(list){
+  if(_btDz && _btDz.list===list) return _btDz;
+  const K=[], T=[], tam=new Map(), kel=new Map(); let ok=true;
+  for(const t of list) for(const k of t.keys){ const i=K.length; K.push(k); T.push(t);
+    if(!k || k.indexOf("\u0001")>=0){ ok=false; }
+    if(!tam.has(k)) tam.set(k,[]); tam.get(k).push(i);
+    for(const w of new Set(k.split(" "))){ if(!kel.has(w)) kel.set(w,[]); kel.get(w).push(i); } }
+  const bas=[]; let L=0, maxL=0; for(const k of K){ bas.push(L); L+=k.length+1; if(k.length>maxL) maxL=k.length; }
+  _btDz={list, K, T, tam, kel, bas, maxL, buyuk:"\u0001"+K.join("\u0001")+"\u0001", ok};
+  return _btDz;
+}
+function _btHizli(q, words, list){
+  const D=_btDizin(list); if(!D.ok || !q) return _btTara(q, words, list);
+  const S=new Map();   // anahtar sırası → puan
+  // k.includes(q): büyük dizgede q'nun her geçişi bir anahtara düşer (q ayırıcı içermez)
+  if(q.indexOf("\u0001")>=0) return _btTara(q, words, list);
+  for(let p=D.buyuk.indexOf(q); p>=0; p=D.buyuk.indexOf(q,p+1)){
+    let lo=0, hi=D.bas.length-1; const x=p-1; while(lo<hi){ const m=(lo+hi+1)>>1; if(D.bas[m]<=x) lo=m; else hi=m-1; }
+    S.set(lo, 6); }
+  // q.includes(k): q'nun her alt dizesi tam anahtar eşlemesinde aranır
+  for(let a=0;a<q.length;a++) for(let b=a+1, e=Math.min(q.length,a+D.maxL);b<=e;b++){ const ix=D.tam.get(q.slice(a,b)); if(ix) for(const i of ix) S.set(i,6); }
+  const tamIx=D.tam.get(q); if(tamIx) for(const i of tamIx) S.set(i,10);
+  if(words.length){ const C=new Map();
+    for(const w of words){ const ix=D.kel.get(w); if(ix) for(const i of ix) C.set(i,(C.get(i)||0)+1); }
+    for(const [i,c] of C) if(!S.has(i)) S.set(i,c*2); }
+  let bi=-1, bs=0; for(const [i,s] of S) if(s>bs || (s===bs && s>0 && i<bi)){ bs=s; bi=i; }
+  return {best: bi>=0 ? D.T[bi] : null, bs};
+}
 function bestTeamName(n){
   const t=findTeam(n); if(t) return t.name;
   const q=norm(n), words=q.split(" ").filter(w=>w.length>2);
-  let best=null, bs=0;
-  for(const t of allTeams()){ for(const k of t.keys){ let s=0;
-    if(k===q) s=10; else if(k.includes(q)||q.includes(k)) s=6; else if(words.length){ let kw=_bwC.get(k); if(!kw){ kw=k.split(" "); _bwC.set(k,kw); } s=words.filter(w=>kw.includes(w)).length*2; }
-    if(s>bs){ bs=s; best=t; } } }
+  const {best, bs}=_btHizli(q, words, allTeams());
   return bs>=2 ? best.name : n;
 }
 function predictFromLive(ev){
