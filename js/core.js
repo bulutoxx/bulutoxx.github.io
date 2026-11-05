@@ -81,10 +81,12 @@ function dist(lh, la, s, rho){
   const CP=(typeof MODEL!=="undefined"&&MODEL&&MODEL.params)||{}; const GS=CP.gscale||1; lh*=GS; la*=GS;
   const g1=grid(lh*s, la*s, rho, MX), g2=grid(lh*(1-s), la*(1-s), rho*0.6, MX);
   const ft=Array.from({length:2*MX+1},()=>new Array(2*MX+1).fill(0));
-  const htft={}; const R=(h,a)=>h>a?"1":h===a?"X":"2";
-  for(let a1=0;a1<=MX;a1++) for(let b1=0;b1<=MX;b1++){ const p1=g1[a1][b1]; if(p1<1e-9) continue;
-    for(let a2=0;a2<=MX;a2++) for(let b2=0;b2<=MX;b2++){ const p=p1*g2[a2][b2]; if(p<1e-11) continue;
-      ft[a1+a2][b1+b2]+=p; const k=R(a1,b1)+"/"+R(a1+a2,b1+b2); htft[k]=(htft[k]||0)+p; } }
+  // YH-45: İY/MS anahtarı sayısal dizinle toplanır (eski: her hücrede metin birleştirme); toplama sırası ve anahtar sırası aynı → sonuç bit düzeyinde aynı
+  const HT=new Float64Array(9), HTo=[]; const R=(h,a)=>h>a?0:h===a?1:2, RS=["1","X","2"];
+  for(let a1=0;a1<=MX;a1++){ const ga=g1[a1]; for(let b1=0;b1<=MX;b1++){ const p1=ga[b1]; if(p1<1e-9) continue; const r1=R(a1,b1)*3;
+    for(let a2=0;a2<=MX;a2++){ const gb=g2[a2], fr=ft[a1+a2]; for(let b2=0;b2<=MX;b2++){ const p=p1*gb[b2]; if(p<1e-11) continue;
+      fr[b1+b2]+=p; const k=r1+R(a1+a2,b1+b2); if(HT[k]===0&&HTo.indexOf(k)<0) HTo.push(k); HT[k]+=p; } } } }
+  const htft={}; for(const k of HTo) htft[RS[(k/3)|0]+"/"+RS[k%3]]=HT[k];
   const top=(g,n)=>{ const a=[]; g.forEach((r,i)=>r.forEach((v,j)=>a.push({s:i+"-"+j,p:v}))); return a.sort((x,y)=>y.p-x.p).slice(0,n); };
   let H=0,D=0,A=0,o15=0,o25=0,o35=0,btts=0,h1o05=0,h1o15=0,h1btts=0,more1=0,more2=0;
   ft.forEach((r,i)=>r.forEach((v,j)=>{ if(i>j)H+=v; else if(i===j)D+=v; else A+=v; const t=i+j; if(t>1)o15+=v; if(t>2)o25+=v; if(t>3)o35+=v; if(i&&j)btts+=v; }));
