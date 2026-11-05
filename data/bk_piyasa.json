@@ -1,6 +1,6 @@
 {
  "surum": "2026-10-28.1",
- "guncelleme": "2026-11-05 14:18",
+ "guncelleme": "2026-11-05 15:12",
  "aciklama": "Basket piyasa karnesi: kilitli model tahmini ile maç öncesi son piyasa oranı (marjı Shin ile ayrılmış) aynı maçlarda. Harman = Benter iki aşama (lig grubu, zaman sıralı ağırlık). Çapalı = model fark/toplamının handikap ve alt/üst çizgisine çekilmesi. GA: gün blokları bootstrap %95. Üretime yalnız OXXai kapısı + gölge sonrası girer.",
  "kurallar": {
   "kapi": "n ≥ 150, gün ≥ 20, ΔLL GA üst < 0, ΔBrier < 0, isabet düşmez",
@@ -471,6 +471,13 @@
   }
  },
  "agirlik": {
+  "pro": {
+   "a": 0.2922,
+   "b": 0.7665,
+   "w_m": 0.7403,
+   "w_t": 0.9367,
+   "n_ogrenme": 121
+  },
   "kolej": {
    "a": 0.3344,
    "b": 0.754,
@@ -484,13 +491,6 @@
    "w_m": 0.2104,
    "w_t": 1.0,
    "n_ogrenme": 46
-  },
-  "pro": {
-   "a": 0.2922,
-   "b": 0.7665,
-   "w_m": 0.7403,
-   "w_t": 0.9367,
-   "n_ogrenme": 121
   }
  },
  "uretimde": {},
@@ -646,6 +646,9 @@
   }
  },
  "sentetik_yarismalar": {
+  "Yunanistan A1": 3,
+  "İtalya Serie A2": 7,
+  "Fransa Pro B": 10,
   "Fransa Pro A": 7,
   "Japonya B.Ligi": 5,
   "ABA Liga, Group A": 3,
@@ -659,21 +662,18 @@
   "İsveç Basketbol Ligi": 3,
   "ABD Kolej Basketbol Ligi": 2,
   "Filipinler PBA, Governors Kupas, Playoffs": 2,
-  "VTB Birleşik Ligi": 1,
+  "VTB Birleşik Ligi": 2,
   "Japonya B2.Ligi": 10,
+  "İngiltere SLB": 3,
   "G. Kore Güney Kore Basketbol Ligi": 1,
   "BNXT Ligi": 1,
-  "Fransa Pro B": 9,
-  "İzlanda Urvalsdeild": 2,
+  "İzlanda Urvalsdeild": 3,
   "Almanya BBL": 6,
-  "Yunanistan A1": 3,
-  "İtalya Serie A2": 7,
   "Euroleague": 1,
   "Uruguay Basketbol Ligi": 2,
   "Danimarka Basketligaen": 1,
   "G. Kore Güney Kore Kadın Basket Ligi": 1,
-  "Ukrayna FBU Süperligi": 1,
-  "İngiltere SLB": 3
+  "Ukrayna FBU Süperligi": 1
  },
  "gunluk": [
   {
