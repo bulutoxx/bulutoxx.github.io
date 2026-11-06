@@ -1,6 +1,6 @@
 {
  "surum": "2026-10-28.1",
- "guncelleme": "2026-11-06 12:08",
+ "guncelleme": "2026-11-06 13:16",
  "aciklama": "Basket piyasa karnesi: kilitli model tahmini ile maç öncesi son piyasa oranı (marjı Shin ile ayrılmış) aynı maçlarda. Harman = Benter iki aşama (lig grubu, zaman sıralı ağırlık). Çapalı = model fark/toplamının handikap ve alt/üst çizgisine çekilmesi. GA: gün blokları bootstrap %95. Üretime yalnız OXXai kapısı + gölge sonrası girer.",
  "kurallar": {
   "kapi": "n ≥ 150, gün ≥ 20, ΔLL GA üst < 0, ΔBrier < 0, isabet düşmez",
@@ -471,6 +471,13 @@
   }
  },
  "agirlik": {
+  "pro": {
+   "a": 0.295,
+   "b": 0.7701,
+   "w_m": 0.7407,
+   "w_t": 0.9338,
+   "n_ogrenme": 123
+  },
   "avrupa": {
    "a": 0.3019,
    "b": 0.6304,
@@ -484,13 +491,6 @@
    "w_m": 0.9212,
    "w_t": 0.8556,
    "n_ogrenme": 224
-  },
-  "pro": {
-   "a": 0.295,
-   "b": 0.7701,
-   "w_m": 0.7407,
-   "w_t": 0.9338,
-   "n_ogrenme": 123
   }
  },
  "uretimde": {},
@@ -648,8 +648,6 @@
  "sentetik_yarismalar": {
   "Avusturya Bundesliga": 2,
   "İspanya LEB Oro": 5,
-  "Japonya B.Ligi": 4,
-  "G. Kore Güney Kore Basketbol Ligi": 1,
   "Portekiz Basketbol Ligi": 1,
   "BNXT Ligi": 3,
   "Almanya Pro A": 3,
@@ -660,7 +658,6 @@
   "İsveç Basketbol Ligi Kadınlar": 3,
   "Fransa Kadınlar Basketbol Ligi": 3,
   "Fransa Pro B": 9,
-  "Filipinler PBA, Governors Kupas, Playoffs": 2,
   "İsveç Basketbol Ligi": 3,
   "İspanya Liga ACB": 7,
   "Japonya B2.Ligi": 11,
@@ -668,6 +665,8 @@
   "İtalya Serie B": 3,
   "İngiltere SLB": 3,
   "Slovakya Extraliga": 2,
+  "Çekya NBL": 3,
+  "Filipinler PBA, Governors Kupas, Playoffs": 1,
   "ABD Kolej Basketbol Ligi": 3,
   "İspanya Kadınlar Basketbol Ligi": 6,
   "Danimarka Basketligaen": 3,
@@ -675,7 +674,6 @@
   "Uruguay Basketbol Ligi": 2,
   "Arjantin LNB": 1,
   "İsviçre LNA": 2,
-  "G. Kore Güney Kore Kadın Basket Ligi": 1,
   "Euroleague": 1,
   "Yunanistan A1": 3,
   "İtalya Serie A2": 7,
@@ -683,7 +681,6 @@
   "ABA Liga, Group A": 3,
   "ABA Liga, Group B": 2,
   "VTB Birleşik Ligi": 2,
-  "Çekya NBL": 2,
   "Slovenya 1. A SKL": 2
  },
  "gunluk": [
