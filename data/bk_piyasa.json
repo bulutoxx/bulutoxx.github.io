@@ -1,6 +1,6 @@
 {
  "surum": "2026-10-28.1",
- "guncelleme": "2026-11-06 22:04",
+ "guncelleme": "2026-11-06 23:00",
  "aciklama": "Basket piyasa karnesi: kilitli model tahmini ile maç öncesi son piyasa oranı (marjı Shin ile ayrılmış) aynı maçlarda. Harman = Benter iki aşama (lig grubu, zaman sıralı ağırlık). Çapalı = model fark/toplamının handikap ve alt/üst çizgisine çekilmesi. GA: gün blokları bootstrap %95. Üretime yalnız OXXai kapısı + gölge sonrası girer.",
  "kurallar": {
   "kapi": "n ≥ 150, gün ≥ 20, ΔLL GA üst < 0, ΔBrier < 0, isabet düşmez",
@@ -478,19 +478,19 @@
    "w_t": 0.9498,
    "n_ogrenme": 124
   },
-  "avrupa": {
-   "a": 0.3021,
-   "b": 0.6313,
-   "w_m": 0.1516,
-   "w_t": 1.0,
-   "n_ogrenme": 51
-  },
   "kolej": {
    "a": 0.2494,
    "b": 0.7697,
    "w_m": 0.9212,
    "w_t": 0.8556,
    "n_ogrenme": 224
+  },
+  "avrupa": {
+   "a": 0.3021,
+   "b": 0.6313,
+   "w_m": 0.1516,
+   "w_t": 1.0,
+   "n_ogrenme": 51
   }
  },
  "uretimde": {},
@@ -628,12 +628,12 @@
   },
   "ncaa": {
    "kilitli": 750,
-   "oranli": 253,
+   "oranli": 257,
    "sonuclu_oranli": 193,
    "iddaa_ms": 61,
    "iddaa_hnd": 61,
    "iddaa_au": 61,
-   "espn": 253
+   "espn": 257
   },
   "ncaaw": {
    "kilitli": 737,
@@ -650,10 +650,9 @@
   "Japonya B.Ligi": 3,
   "İtalya Serie B": 8,
   "İspanya LEB Oro": 7,
-  "BNXT Ligi": 7,
+  "BNXT Ligi": 6,
   "ABD Kolej Basketbol Ligi": 3,
   "G. Kore Güney Kore Basketbol Ligi": 3,
-  "İngiltere SLB": 3,
   "Danimarka Basketligaen": 3,
   "Almanya Pro A": 7,
   "Almanya BBL": 6,
@@ -665,7 +664,6 @@
   "İtalya Serie A": 5,
   "Portekiz Basketbol Ligi": 3,
   "İtalya A1 Kadınlar": 4,
-  "İzlanda Urvalsdeild": 2,
   "İsveç Basketbol Ligi Kadınlar": 3,
   "Fransa Kadınlar Basketbol Ligi": 3,
   "İspanya Liga ACB": 7,
@@ -676,13 +674,14 @@
   "Macaristan NB I": 1,
   "Uruguay Basketbol Ligi": 2,
   "Arjantin LNB": 1,
+  "İzlanda Urvalsdeild": 1,
   "İsviçre LNA": 2,
-  "Euroleague": 1,
   "Yunanistan A1": 3,
-  "Fransa Pro B": 2,
+  "Fransa Pro B": 1,
   "ABA Liga, Group A": 3,
   "ABA Liga, Group B": 2,
   "VTB Birleşik Ligi": 2,
+  "İngiltere SLB": 1,
   "Slovenya 1. A SKL": 2,
   "G. Kore Güney Kore Kadın Basket Ligi": 2
  },
