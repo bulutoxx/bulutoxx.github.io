@@ -4914,9 +4914,16 @@ const _msRenderG=msRender;
 msRender=function(){ _msRenderG(); const el=$("msheet"), m=MS.m; if(!el||!m||m.sp) return; const g=goldOf(m); if(!g) return;
   const rb=el.querySelector(".recbig"); if(rb&&!rb.querySelector(".gold-seal")){ rb.classList.add("rec-goldbig"); rb.querySelector("small")?.insertAdjacentHTML("afterend",`<div>${GOLD_SEAL}</div>`); }
   el.querySelectorAll(`.mo[data-mk="${g.R.k}"]`).forEach(b=>b.classList.add("gold-odd")); };
+// YH-48: karne hesapları için arşiv günü. Yayın kopyasında data/arsiv_ozet.json (yalnız karne alanları, tek dosya) varsa oradan;
+// yoksa ya da gün özette değilse tam data/archive/<gün>.json (eski davranış). Özet tek kez indirilir.
+let _AOZ=null;
+function arsivKarne(d){ if(!_AOZ) _AOZ=fetch("data/arsiv_ozet.json",{cache:"no-cache"}).then(r=>r.ok?r.json():null).catch(()=>null);
+  return _AOZ.then(O=>{ if(O&&O.v===1&&O.g&&Object.prototype.hasOwnProperty.call(O.g,d)) return O.g[d];
+    return fetch(`data/archive/${d}.json`,{cache:"no-cache"}).then(r=>r.ok?r.json():null).catch(()=>null); }); }
+window.arsivKarne=arsivKarne;
 // Altın karnesi: kilitli arşivde aynı kurala uyan önerilerin gerçek sonucu; isabet %72'nin altına düşerse eşik %82'ye çıkar
 async function goldKarne(){ try{ const days=(DAILY&&DAILY.gunler||[]).filter(g=>g.n>0).map(g=>g.d).slice(-30); let n=0,h=0;
-    for(const d of days){ let A=null; try{ const r=await fetch(`data/archive/${d}.json`,{cache:"no-cache"}); if(r.ok) A=await r.json(); }catch(e){} if(!A) continue;
+    for(const d of days){ let A=null; try{ A=await arsivKarne(d); }catch(e){} if(!A) continue;
       for(const v of Object.values(A)){ if(v.ok==null||v.rp==null||!v.ro) continue; if(v.rp>=.78&&v.ro>=GOLD.omin&&v.ro<=GOLD.omax){ n++; if(v.ok) h++; } } }
     GOLD.karne={n,h}; const thr=n>=20&&h/n<.72?.82:.78; if(thr!==GOLD.thr){ GOLD.thr=thr; GOLD.set=null; }
   }catch(e){} }
@@ -5045,7 +5052,7 @@ function renderTP(){ const v=$("v-tahmin"); if(!v) return; let box=$("tpBox");
     cpToggle(x.m,x.R.k,+x.R.o,x.R.cp); try{ paintCoupon(); }catch(e){} renderTP(); });
   const all=$("tpAll"); if(all) all.onclick=()=>{ buzz([10,30,10]); let n=0; for(const x of (G.length?G:TP.rows)){ if(!CP.items.some(c=>c.k===cpKey(x.m)&&c.mk===x.R.k)){ cpToggle(x.m,x.R.k,+x.R.o,x.R.cp); n++; } } try{ paintCoupon(); }catch(e){} toast(n?`🥇 ${n} tahmin KUPO'ya eklendi`:"Bu tahminler zaten KUPO'nda"); renderTP(); }; }
 async function tpKarne(){ try{ const days=(DAILY&&DAILY.gunler||[]).filter(g=>g.n>0).map(g=>g.d).slice(-30); let n=0,h=0;
-  for(const d of days){ let A=null; try{ const r=await fetch(`data/archive/${d}.json`,{cache:"no-cache"}); if(r.ok) A=await r.json(); }catch(e){} if(!A) continue;
+  for(const d of days){ let A=null; try{ A=await arsivKarne(d); }catch(e){} if(!A) continue;
     for(const v of Object.values(A)){ if(v.ok==null||v.rp==null||!v.ro) continue; if(v.rp>=.70&&v.ro>=GOLD.omin&&v.ro<=GOLD.omax){ n++; if(v.ok) h++; } } }
   TP.karne={n,h}; }catch(e){} }
 const _tahminResetTP=tahminReset;

@@ -164,20 +164,28 @@
   fetch("data/pazar_karne.json",{cache:"no-cache"}).then(r=>r.ok?r.json():null).then(d=>{ KAR=d; try{ if(MS.m&&MS.tab==="oran") msRender(); }catch(e){} }).catch(()=>{});
   // v156 (YH-43): yayın kopyasında fixtures.json pz'siz; pz data/fx_pz.json'da ({m:{"lg|d|h|a":pz}}). Açılışta istenmez:
   // boşta ya da ilk maç penceresi / KUPO açılışında bir kez indirilir. Eski (pz'li) fikstür gelirse doğrudan o kullanılır.
-  let PZC=null, PZQ=null, PZF=null;
+  // YH-48: boşta önce yalnız bugün + yarın (data/fx_pz_yakin.json, PZY); diğer günler maç penceresi / KUPO açılınca tam dosyadan (PZC).
+  let PZC=null, PZQ=null, PZF=null, PZY=null, PZYQ=null, PZYF=null;
   const pzKey=f=>f.lg+"|"+f.d+"|"+f.h+"|"+f.a;
-  const pzAyri=()=>{ try{ return Array.isArray(FIXTURES)&&FIXTURES.length>0&&!FIXTURES.some(x=>x&&x.pz); }catch(e){ return false; } };
-  function pzAt(f){ if(f&&!f.pz&&PZC){ const z=PZC[pzKey(f)]; if(z) f.pz=z; } return f; }
+  // YH-48: ayrık olduğu bir kez görülen fikstür dizisi, yakın parça eklendikten sonra da ayrık sayılır (uzak günler tam dosyayı bekler).
+  let PZAF=null;
+  const pzAyri=()=>{ try{ if(PZAF&&PZAF===FIXTURES) return true; const r=Array.isArray(FIXTURES)&&FIXTURES.length>0&&!FIXTURES.some(x=>x&&x.pz); if(r) PZAF=FIXTURES; return r; }catch(e){ return false; } };
+  function pzAt(f){ if(f&&!f.pz&&(PZC||PZY)){ const k=pzKey(f), z=(PZC&&PZC[k])||(PZY&&PZY[k]); if(z) f.pz=z; } return f; }
   function pzYenile(){ try{ if(MS.m&&!MS.live) msRender(); }catch(e){} try{ ksched(); }catch(e){} }
   function pzLoad(){ if(PZQ&&PZF===FIXTURES) return PZQ; if(!pzAyri()) return Promise.resolve(false); PZF=FIXTURES;
     PZQ=fetch("data/fx_pz.json",{cache:"no-cache"}).then(r=>r.ok?r.json():null).then(d=>{ if(!d||!d.m) { PZQ=null; return false; } PZC=d.m;
       let n=0; for(const f of FIXTURES) if(!f.pz&&PZC[pzKey(f)]){ f.pz=PZC[pzKey(f)]; n++; } window.pzAyriSay=n; if(n) pzYenile(); return true; }).catch(()=>{ PZQ=null; return false; });
     return PZQ; }
   window.pzLoad=pzLoad;
-  { const bos=()=>{ if(pzAyri()) pzLoad(); else if(!(Array.isArray(FIXTURES)&&FIXTURES.length)) setTimeout(bos,1500); };
+  function pzYakinLoad(){ if(PZC) return pzLoad(); if(PZYQ&&PZYF===FIXTURES) return PZYQ; if(!pzAyri()) return Promise.resolve(false); PZYF=FIXTURES;
+    PZYQ=fetch("data/fx_pz_yakin.json",{cache:"no-cache"}).then(r=>r.ok?r.json():null).then(d=>{ if(!d||!d.m){ PZYQ=null; return pzLoad(); } PZY=d.m;
+      let n=0; for(const f of FIXTURES) if(!f.pz&&PZY[pzKey(f)]){ f.pz=PZY[pzKey(f)]; n++; } window.pzAyriSay=n; if(n) pzYenile(); return true; }).catch(()=>{ PZYQ=null; return pzLoad(); });
+    return PZYQ; }
+  window.pzYakinLoad=pzYakinLoad;
+  { const bos=()=>{ if(pzAyri()) pzYakinLoad(); else if(!(Array.isArray(FIXTURES)&&FIXTURES.length)) setTimeout(bos,1500); };
     const bas=()=>setTimeout(()=>{ if(window.requestIdleCallback) requestIdleCallback(bos,{timeout:4000}); else bos(); },1200);
     if(document.readyState==="complete") bas(); else window.addEventListener("load",bas,{once:true});
-    try{ const _lf=loadFixtures; loadFixtures=async function(){ const r=await _lf.apply(this,arguments); if(pzAyri()){ if(PZC) for(const f of FIXTURES) pzAt(f); PZQ=null; setTimeout(bos,800); } return r; }; }catch(e){} }
+    try{ const _lf=loadFixtures; loadFixtures=async function(){ const r=await _lf.apply(this,arguments); if(pzAyri()){ if(PZC||PZY) for(const f of FIXTURES) pzAt(f); PZQ=null; PZYQ=null; setTimeout(bos,800); } return r; }; }catch(e){} }
   function pzFull(f){ pzAt(f); if(!f||!f.pz||typeof f.pz!=="object") return null; const P={};
     for(const [k,v] of Object.entries(f.pz)) if(v!=null&&isFinite(+v)) P[k]=+v;
     if(P.U25==null&&P.U!=null) P.U25=P.U; if(P.A25==null&&P.A!=null) P.A25=P.A;

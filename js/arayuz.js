@@ -431,7 +431,7 @@
     if(typeof goldKarne==="function"){
       const odd=(v,k)=>{ if(k==="1"||k==="X"||k==="2"){ const i="1X2".indexOf(k); return Array.isArray(v.ms)?+v.ms[i]:null; } if(k==="U"||k==="A") return Array.isArray(v.ou)?+v.ou[k==="U"?0:1]:null; return null; };
       goldKarne=async function(){ try{ const days=(DAILY&&DAILY.gunler||[]).filter(g=>g.n>0).map(g=>g.d).slice(-30); let n=0,h=0;
-          for(const d of days){ let A=null; try{ const r=await fetch(`data/archive/${d}.json`,{cache:"no-cache"}); if(r.ok) A=await r.json(); }catch(e){} if(!A) continue;
+          for(const d of days){ let A=null; try{ A=await arsivKarne(d); }catch(e){} if(!A) continue;
             for(const v of Object.values(A)){ if(!v||!v.sk||v.sp==null||v.sok==null) continue; const o=odd(v,String(v.sk));
               if(+v.sp>=.78&&o&&o>=GOLD.omin&&o<=GOLD.omax){ n++; if(v.sok) h++; } } }
           GOLD.karne={n,h,src:"sunulan"}; const thr=n>=20&&h/n<.72?.82:.78; if(thr!==GOLD.thr){ GOLD.thr=thr; GOLD.set=null; }
