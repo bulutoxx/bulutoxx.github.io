@@ -1,6 +1,6 @@
 {
  "surum": "2026-10-28.1",
- "guncelleme": "2026-11-06 16:18",
+ "guncelleme": "2026-11-06 17:28",
  "aciklama": "Basket piyasa karnesi: kilitli model tahmini ile maç öncesi son piyasa oranı (marjı Shin ile ayrılmış) aynı maçlarda. Harman = Benter iki aşama (lig grubu, zaman sıralı ağırlık). Çapalı = model fark/toplamının handikap ve alt/üst çizgisine çekilmesi. GA: gün blokları bootstrap %95. Üretime yalnız OXXai kapısı + gölge sonrası girer.",
  "kurallar": {
   "kapi": "n ≥ 150, gün ≥ 20, ΔLL GA üst < 0, ΔBrier < 0, isabet düşmez",
@@ -471,6 +471,13 @@
   }
  },
  "agirlik": {
+  "avrupa": {
+   "a": 0.3019,
+   "b": 0.6304,
+   "w_m": 0.1438,
+   "w_t": 1.0,
+   "n_ogrenme": 50
+  },
   "kolej": {
    "a": 0.2494,
    "b": 0.7697,
@@ -484,13 +491,6 @@
    "w_m": 0.74,
    "w_t": 0.9498,
    "n_ogrenme": 124
-  },
-  "avrupa": {
-   "a": 0.3019,
-   "b": 0.6304,
-   "w_m": 0.1438,
-   "w_t": 1.0,
-   "n_ogrenme": 50
   }
  },
  "uretimde": {},
@@ -631,8 +631,8 @@
    "oranli": 252,
    "sonuclu_oranli": 193,
    "iddaa_ms": 62,
-   "iddaa_hnd": 62,
-   "iddaa_au": 62,
+   "iddaa_hnd": 60,
+   "iddaa_au": 61,
    "espn": 252
   },
   "ncaaw": {
@@ -646,6 +646,8 @@
   }
  },
  "sentetik_yarismalar": {
+  "Almanya BBL": 6,
+  "Türkiye Erkekler Basketbol 1. Ligi": 6,
   "Avusturya Bundesliga": 2,
   "İspanya LEB Oro": 6,
   "İtalya Serie A": 5,
@@ -653,21 +655,21 @@
   "BNXT Ligi": 3,
   "Almanya Pro A": 4,
   "İtalya A1 Kadınlar": 2,
-  "Polonya PLK": 5,
+  "Polonya PLK": 6,
+  "Fransa Pro B": 9,
   "İzlanda Urvalsdeild": 2,
   "İsveç Basketbol Ligi Kadınlar": 3,
   "Fransa Kadınlar Basketbol Ligi": 3,
-  "Fransa Pro B": 9,
   "İsveç Basketbol Ligi": 3,
   "İspanya Liga ACB": 7,
-  "Japonya B2.Ligi": 11,
-  "Almanya BBL": 5,
   "İtalya Serie B": 3,
-  "İngiltere SLB": 3,
   "Slovakya Extraliga": 2,
+  "Japonya B2.Ligi": 11,
   "Çekya NBL": 3,
   "ABD Kolej Basketbol Ligi": 3,
+  "Fransa Pro A": 7,
   "İspanya Kadınlar Basketbol Ligi": 6,
+  "Türkiye Kadınlar Süper Lig": 1,
   "Danimarka Basketligaen": 3,
   "Macaristan NB I": 1,
   "Uruguay Basketbol Ligi": 2,
@@ -676,9 +678,9 @@
   "Euroleague": 1,
   "Yunanistan A1": 3,
   "İtalya Serie A2": 7,
-  "Fransa Pro A": 7,
   "ABA Liga, Group A": 3,
   "ABA Liga, Group B": 2,
+  "İngiltere SLB": 3,
   "VTB Birleşik Ligi": 2,
   "Slovenya 1. A SKL": 2
  },
