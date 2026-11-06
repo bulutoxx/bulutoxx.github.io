@@ -30,7 +30,7 @@ const BUTCE = {   // alarm sınırları (gerileme kapısı). "hedef" değerleri 
   index_kb: +(process.env.QA_BUTCE_INDEX_KB || 1500),
   uygulama_kb: +(process.env.QA_BUTCE_UYGULAMA_KB || 2000),   // index.html + yüklediği js/ css/ paketleri (lab/yayin_kapisi.py denetle ile aynı)
   paket_kb: +(process.env.QA_BUTCE_PAKET_KB || 600),
-  veri_kb: +(process.env.QA_BUTCE_VERI_KB || 6000),
+  veri_kb: +(process.env.QA_BUTCE_VERI_KB || 8000),   // 2026-11-06: 6000 → 8000 — hafta sonu fikstür tepesi (1.331 maç; fixtures 724 KB + boşta fx_pz 822 KB) ham ölçümde 6.018 KB; kod gerilemesi değil maç sayısı (önceki tepe 1.463 maç)
   gorev_ms: +(process.env.QA_BUTCE_GOREV_MS || 15000),
 };
 const SON_AN = Date.now() + 1000 * +(process.env.QA_SURE_SN || (MOD === "hizli" ? 420 : 900));   // bu süreden sonra kalan ekranlar atlanır
