@@ -6,7 +6,7 @@
       if(P&&P.kabul&&isFinite(P.a)&&isFinite(P.b)&&pp>0&&pp<1){ const x=Math.log(pp/(1-pp)); const q=1/(1+Math.exp(-(P.a+P.b*x))); let bn=null,bh=null; try{ const B=DAILY.canli.bins||[]; const k=B.find(x=>q>=x[0]&&q<x[1]&&x[2]&&x[3]!=null); if(k){ bn=k[2]; bh=k[3]; } }catch(_){} return {p:q, n:bn, h:bh, platt:true}; } }catch(e){}
     return _lc(pp); };
   tpKarne=async function(){ try{ const days=(DAILY&&DAILY.gunler||[]).filter(g=>g.n>0).map(g=>g.d).slice(-30); let n=0,h=0,g=0;
-    for(const d of days){ let A=null; try{ const r=await fetch(`data/archive/${d}.json`,{cache:"no-cache"}); if(r.ok) A=await r.json(); }catch(e){} if(!A) continue; let had=0;
+    for(const d of days){ let A=null; try{ A=await arsivKarne(d); }catch(e){} if(!A) continue; let had=0;
       for(const v of Object.values(A)){ if(v.ok==null||v.rp==null||!v.ro) continue; if(v.rp>=.70&&v.ro>=GOLD.omin&&v.ro<=GOLD.omax){ n++; had=1; if(v.ok) h++; } } g+=had; }
     TP.karne={n,h,g}; }catch(e){} };
   (function kw(i){ if(DAILY&&DAILY.gunler){ if(!TP.karne||!TP.karne.n) tpKarne().then(()=>{ try{ const v=$("v-tahmin"); if(v&&!v.hidden) renderTP(); }catch(e){} }); return; } if(i<40) setTimeout(()=>kw(i+1),1500); })(0);

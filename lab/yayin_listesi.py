@@ -25,7 +25,7 @@ Seçenek: --kok DİZİN (varsayılan depo kökü). Yalnız standart kütüphane;
 Güvenlik payı: listeden eksik kalan bir dosya uygulamayı kırar. lab/qa.mjs aynı kaynaktan 404 alan her isteği
 hata sayar (yayın kapısı reddeder); tarihli dosyalar (ör. data/at/canli/2026-10-28.json) depoda da yoksa 404 normaldir.
 """
-import argparse, fnmatch, json, os, re, shutil, sys
+import argparse, datetime, fnmatch, json, os, re, shutil, sys
 
 KOK0 = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 KAYNAK = ["index.html", "sw.js", "manifest.webmanifest", "brain-worker.js"]   # + index.html/sw.js'in andığı js/*.js, css/*.css (paketler())
@@ -88,6 +88,7 @@ def damgala(kok, dosyalar=("index.html", "sw.js")):
 
 
 PZ_DOSYA = "data/fx_pz.json"
+PZ_YAKIN = "data/fx_pz_yakin.json"
 
 
 def pz_ayir(hedef, sec):
@@ -116,7 +117,55 @@ def pz_ayir(hedef, sec):
     json.dump({"v": 1, "m": M}, open(os.path.join(hedef, PZ_DOSYA), "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
     print(f"[yayın listesi] pz ayrıldı: {len(M)} maç → {PZ_DOSYA} ({round(os.path.getsize(os.path.join(hedef, PZ_DOSYA)) / 1024)} KB), "
           f"fixtures.json {round(os.path.getsize(fx) / 1024)} KB")
+    # YH-48: boşta indirilen yakın parça — yalnız bugün + yarın (İstanbul günü, yayın anı). Diğer günler maç penceresi /
+    # KUPO açılınca tam dosyadan gelir. Uygulama bu dosyayı istemiyorsa yazılmaz.
+    if any(PZ_YAKIN in open(os.path.join(hedef, y), encoding="utf-8", errors="replace").read()
+           for y in sec if y.endswith(".js") or y == "index.html"):
+        bugun = (datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=3)).date()
+        gunler = {bugun.isoformat(), (bugun + datetime.timedelta(days=1)).isoformat()}
+        Y = {k: v for k, v in M.items() if k.split("|")[1] in gunler}
+        json.dump({"v": 1, "gunler": sorted(gunler), "m": Y}, open(os.path.join(hedef, PZ_YAKIN), "w", encoding="utf-8"),
+                  ensure_ascii=False, separators=(",", ":"))
+        print(f"[yayın listesi] yakın pz: {len(Y)} maç → {PZ_YAKIN} ({round(os.path.getsize(os.path.join(hedef, PZ_YAKIN)) / 1024)} KB)")
     return len(M)
+
+
+ARSIV_OZET = "data/arsiv_ozet.json"
+ARSIV_OZET_GUN = 45
+
+
+def arsiv_ozet(hedef, sec):
+    """YH-48: açılıştaki karne hesapları (Altın / hazır tahmin karnesi) son 30 günün tam arşiv dosyalarını ayrı ayrı indiriyordu
+    (≈ 1,5 MB). Yayın kopyasına yalnız bu hesapların okuduğu alanları taşıyan tek özet yazılır; depo arşivi DEĞİŞMEZ.
+    Kayıt: (ok, rp, ro dolu) ya da (sk, sp, sok dolu) olanlar, değerler olduğu gibi; ms / ou yalnız ikinci gruptakilerde (oran için).
+    Özette olmayan gün → istemci tam dosyaya düşer; dosyası olmayan gün → null (eskiden de 404 → atlanıyordu)."""
+    if not any(ARSIV_OZET in open(os.path.join(hedef, y), encoding="utf-8", errors="replace").read()
+               for y in sec if y.endswith(".js") or y == "index.html"):
+        return 0
+    gunler = sorted(y for y in sec if re.fullmatch(r"data/archive/\d{4}-\d{2}-\d{2}\.json", y))[-ARSIV_OZET_GUN:]
+    G = {}
+    for y in gunler:
+        d = y[len("data/archive/"):-5]
+        try:
+            A = json.load(open(os.path.join(hedef, y), encoding="utf-8"))
+        except Exception:
+            continue                                          # okunamayan gün özete girmez → istemci tam dosyayı dener
+        if not isinstance(A, dict):
+            continue
+        R = {}
+        for k, v in A.items():
+            if not isinstance(v, dict):
+                continue
+            a = v.get("ok") is not None and v.get("rp") is not None and bool(v.get("ro"))
+            b = bool(v.get("sk")) and v.get("sp") is not None and v.get("sok") is not None
+            if not (a or b):
+                continue
+            alan = ("ok", "rp", "ro", "sk", "sp", "sok") + (("ms", "ou") if b else ())
+            R[k] = {x: v[x] for x in alan if x in v}
+        G[d] = R
+    json.dump({"v": 1, "g": G}, open(os.path.join(hedef, ARSIV_OZET), "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
+    print(f"[yayın listesi] arşiv özeti: {len(G)} gün → {ARSIV_OZET} ({round(os.path.getsize(os.path.join(hedef, ARSIV_OZET)) / 1024)} KB)")
+    return len(G)
 
 
 def tara(kok):
@@ -239,7 +288,8 @@ def main():
     damgala(hedef)                       # yayın kopyasında ?v= = paketin gerçek içerik özeti (önbellek kırma)
     print(f"[yayın listesi] {len(sec)} dosya, {round(boyut(kok, sec) / 1024)} KB → {hedef}")
     pz_ayir(hedef, sec)
-    eksik = [y for y in eksik if y != PZ_DOSYA]
+    arsiv_ozet(hedef, sec)
+    eksik = [y for y in eksik if y not in (PZ_DOSYA, PZ_YAKIN, ARSIV_OZET)]
     if eksik:
         print(f"[yayın listesi] kaynakta geçen ama depoda olmayan {len(eksik)} yol (dinamik olabilir): {', '.join(eksik[:12])}")
     return 0
