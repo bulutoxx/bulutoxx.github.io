@@ -1,6 +1,6 @@
 {
  "surum": "2026-10-28.1",
- "guncelleme": "2026-11-06 05:35",
+ "guncelleme": "2026-11-06 05:38",
  "aciklama": "Basket piyasa karnesi: kilitli model tahmini ile maç öncesi son piyasa oranı (marjı Shin ile ayrılmış) aynı maçlarda. Harman = Benter iki aşama (lig grubu, zaman sıralı ağırlık). Çapalı = model fark/toplamının handikap ve alt/üst çizgisine çekilmesi. GA: gün blokları bootstrap %95. Üretime yalnız OXXai kapısı + gölge sonrası girer.",
  "kurallar": {
   "kapi": "n ≥ 150, gün ≥ 20, ΔLL GA üst < 0, ΔBrier < 0, isabet düşmez",
@@ -51,7 +51,7 @@
   },
   "uretim": {
    "n": 377,
-   "ll": 0.4829,
+   "ll": 0.483,
    "brier": 0.1623,
    "isabet": 0.748
   }
@@ -204,7 +204,7 @@
    ],
    "model": {
     "n": 206,
-    "ll": 0.4986,
+    "ll": 0.4987,
     "brier": 0.1643,
     "isabet": 0.8155
    },
@@ -234,7 +234,7 @@
    },
    "uretim": {
     "n": 206,
-    "ll": 0.3652,
+    "ll": 0.3653,
     "brier": 0.1159,
     "isabet": 0.8204
    },
@@ -246,7 +246,7 @@
     ],
     "brier": -0.0477,
     "brier_ga": [
-     -0.0676,
+     -0.0677,
      0.0
     ],
     "isabet": 0.0097
@@ -259,7 +259,7 @@
     ],
     "brier": -0.0481,
     "brier_ga": [
-     -0.0677,
+     -0.0678,
      0.0055
     ],
     "isabet": -0.0097
@@ -320,7 +320,7 @@
    },
    "agirlik": {
     "a": 0.2712,
-    "b": 0.7557,
+    "b": 0.7558,
     "w_m": 0.9105,
     "w_t": 0.8256,
     "n_ogrenme": 206
@@ -473,7 +473,7 @@
  "agirlik": {
   "kolej": {
    "a": 0.2712,
-   "b": 0.7557,
+   "b": 0.7558,
    "w_m": 0.9105,
    "w_t": 0.8256,
    "n_ogrenme": 206
@@ -764,13 +764,6 @@
    "ll_harman": 0.3711
   },
   {
-   "gun": "2026-11-04",
-   "n": 33,
-   "ll_model": 0.425,
-   "ll_piyasa": 0.3656,
-   "ll_harman": 0.3773
-  },
-  {
    "gun": "2026-11-05",
    "n": 34,
    "ll_model": 0.4796,
@@ -783,6 +776,27 @@
    "ll_model": 0.5244,
    "ll_piyasa": 0.4438,
    "ll_harman": 0.4663
+  },
+  {
+   "gun": "2026-11-02",
+   "n": 18,
+   "ll_model": 0.6049,
+   "ll_piyasa": 0.563,
+   "ll_harman": 0.5481
+  },
+  {
+   "gun": "2026-11-04",
+   "n": 33,
+   "ll_model": 0.425,
+   "ll_piyasa": 0.3657,
+   "ll_harman": 0.3774
+  },
+  {
+   "gun": "2026-11-06",
+   "n": 32,
+   "ll_model": 0.5244,
+   "ll_piyasa": 0.4437,
+   "ll_harman": 0.4662
   }
  ]
 }
