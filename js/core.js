@@ -510,8 +510,24 @@ function allTeams(){
   for(const t of Object.values(S.teams)) if(t.name && !map.has(slug(t.name))) map.set(slug(t.name),{name:t.name, lg:t.league||null, keys:[norm(t.name)]});
   return [...map.values()];
 }
-function findTeam(name){ const n=norm(name); if(!n) return null; const all=allTeams();
+function _ftTara(n, all){   // YH-49: özgün doğrusal tarama (yedek yol ve eşitlik sınaması için)
   return all.find(t=>t.keys.includes(n)) || all.find(t=>t.cur && t.keys.some(k=>k.startsWith(n+" "))) || null; }
+// YH-49: dizin — tam anahtar → ilk takım; güncel takımlarda her boşluktan önceki önek → ilk takım (k.startsWith(n+" ") ile aynı).
+// buildSeason sırasında (takım anahtarları / cur değişirken) dizin kullanılmaz; bittiğinde kuşak artar ve dizin yeniden kurulur.
+var _ftGen=0, _ftInB=0, _ftDz=null;
+function _ftDizin(all){
+  if(_ftDz && _ftDz.all===all && _ftDz.gen===_ftGen && _ftDz.n===all.length) return _ftDz;
+  const tam=new Map(), on=new Map(); let ok=true;
+  for(const t of all){ const ks=t && t.keys; if(!Array.isArray(ks)){ ok=false; break; }
+    for(const k of ks){ if(typeof k!=="string"){ ok=false; break; } if(!tam.has(k)) tam.set(k,t);
+      if(t.cur) for(let i=k.indexOf(" "); i>=0; i=k.indexOf(" ",i+1)){ const p=k.slice(0,i); if(!on.has(p)) on.set(p,t); } }
+    if(!ok) break; }
+  _ftDz={all, gen:_ftGen, n:all.length, tam, on, ok}; return _ftDz;
+}
+buildSeason=(function(_o){ return function(){ _ftInB++; try{ return _o.apply(this,arguments); } finally{ _ftInB--; _ftGen++; } }; })(buildSeason);
+function findTeam(name){ const n=norm(name); if(!n) return null; const all=allTeams();
+  if(!_ftInB){ const D=_ftDizin(all); if(D.ok) return D.tam.get(n) || D.on.get(n) || null; }
+  return _ftTara(n, all); }
 function searchTeams(q){
   const n=norm(q); const list=allTeams(); if(!n) return list.filter(t=>S.teams[slug(t.name)]).slice(0,8);
   const scored=[]; for(const t of list){ let s=0;
