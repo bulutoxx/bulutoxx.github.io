@@ -87,7 +87,13 @@ function dist(lh, la, s, rho){
     for(let a2=0;a2<=MX;a2++){ const gb=g2[a2], fr=ft[a1+a2]; for(let b2=0;b2<=MX;b2++){ const p=p1*gb[b2]; if(p<1e-11) continue;
       fr[b1+b2]+=p; const k=r1+R(a1+a2,b1+b2); if(HT[k]===0&&HTo.indexOf(k)<0) HTo.push(k); HT[k]+=p; } } } }
   const htft={}; for(const k of HTo) htft[RS[(k/3)|0]+"/"+RS[k%3]]=HT[k];
-  const top=(g,n)=>{ const a=[]; g.forEach((r,i)=>r.forEach((v,j)=>a.push({s:i+"-"+j,p:v}))); return a.sort((x,y)=>y.p-x.p).slice(0,n); };
+  // YH-47: en olası n skor kısmi seçimle (eski: tüm hücreler nesne + tam sıralama); kararlı sıralama ile aynı sıra (eşitlikte satır-sütun sırası)
+  const top=(g,n)=>{ const P=[],I=[],J=[]; let bad=false;
+    for(let i=0;i<g.length;i++){ const r=g[i]; for(let j=0;j<r.length;j++){ const v=r[j]; if(!(v>-Infinity&&v<Infinity)){bad=true;break;}
+      let k=P.length; if(k===n&&!(v>P[n-1])) continue; while(k>0&&v>P[k-1]) k--; if(k>=n) continue;
+      P.splice(k,0,v); I.splice(k,0,i); J.splice(k,0,j); if(P.length>n){P.pop();I.pop();J.pop();} } if(bad) break; }
+    if(bad){ const a=[]; g.forEach((r,i)=>r.forEach((v,j)=>a.push({s:i+"-"+j,p:v}))); return a.sort((x,y)=>y.p-x.p).slice(0,n); }
+    const o=[]; for(let k=0;k<P.length;k++) o.push({s:I[k]+"-"+J[k],p:P[k]}); return o; };
   let H=0,D=0,A=0,o15=0,o25=0,o35=0,btts=0,h1o05=0,h1o15=0,h1btts=0,more1=0,more2=0;
   ft.forEach((r,i)=>r.forEach((v,j)=>{ if(i>j)H+=v; else if(i===j)D+=v; else A+=v; const t=i+j; if(t>1)o15+=v; if(t>2)o25+=v; if(t>3)o35+=v; if(i&&j)btts+=v; }));
   const H0=H, D0=D, A0=A;
