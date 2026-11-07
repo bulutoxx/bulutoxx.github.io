@@ -121,7 +121,7 @@
     const K=build(); document.querySelectorAll("#btList .lg-on").forEach(e=>e.classList.remove("lg-on"));
     if(!K){ b.classList.add("off"); pan.hidden=true; b.setAttribute("aria-expanded","false");
       b.innerHTML=`<span class="lg-ic">🥇</span><span class="lg-t"><b>${esc(dayLbl())} altın KUPO</b><small>Taranıyor · bu gün için yeterince güvenli kombinasyon yok</small></span>`; lastSig=""; return; }
-    const sig=K.sel.map(x=>fkey(x.m)+x.R.k).join("|"); if(sig!==lastSig){ b.classList.remove("new"); void b.offsetWidth; if(lastSig) b.classList.add("new"); lastSig=sig; }
+    const sig=K.sel.map(x=>fkey(x.m)+x.R.k).join("|"); if(sig!==lastSig){ b.classList.remove("new"); if(lastSig) requestAnimationFrame(()=>requestAnimationFrame(()=>b.classList.add("new"))); lastSig=sig; } /* YH-50: zorunlu yerleşim (offsetWidth) yok; canlandırma iki kare sonra yeniden başlar */
     b.classList.remove("off"); b.setAttribute("aria-expanded",String(open));
     b.innerHTML=`<span class="lg-ic">🥇</span><span class="lg-t"><b>${esc(dayLbl())} altın KUPO · ${K.sel.length} maç</b><small>Birlikte tutma olasılığı · toplam oran ${of2(K.o)} · ${open?"kapat":"dokun, gör"}</small></span><span class="lg-p">%${pc9(K.p)}</span>`;
     const ks=new Set(K.sel.map(x=>fkey(x.m)));
