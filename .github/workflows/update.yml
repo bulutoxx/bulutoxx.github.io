@@ -177,11 +177,16 @@ jobs:
           fi
       - name: 📦 Yayın klasörü (yalnız uygulamanın istediği dosyalar)
         run: python3 lab/yayin_listesi.py kur "$RUNNER_TEMP/_site"
+      # Paket adı deneme numarasını taşır: kurtarıcı `rerun --failed` ile turu yeniden başlatınca önceki denemenin
+      # "github-pages" paketi de görünür kalır ve deploy-pages "Multiple artifacts" hatasıyla durur (2026-11-07 run 42369668492).
       - uses: actions/upload-pages-artifact@v3
         with:
           path: ${{ runner.temp }}/_site
+          name: github-pages-${{ github.run_attempt }}
       - id: deployment
         uses: actions/deploy-pages@v4
+        with:
+          artifact_name: github-pages-${{ github.run_attempt }}
       - name: 🔎 Yayın sonrası duman testi (canlı adres; yalnız yeni uygulama yayınlandıysa)
         id: canli
         if: steps.karar.outputs.karar == 'test' && steps.kapi.outcome == 'success'
@@ -209,12 +214,12 @@ jobs:
         if: steps.geri2.outcome == 'success'
         with:
           path: ${{ runner.temp }}/_site_geri
-          name: github-pages-geri
+          name: github-pages-geri-${{ github.run_attempt }}
       - id: deployment2
         if: steps.geri2.outcome == 'success'
         uses: actions/deploy-pages@v4
         with:
-          artifact_name: github-pages-geri
+          artifact_name: github-pages-geri-${{ github.run_attempt }}
       - name: Kapı kayıtlarını kaydet (sağlık + qa_kapi / qa_yayin; yalnız veri dosyaları)
         if: always()
         run: |
