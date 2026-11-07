@@ -1796,7 +1796,11 @@ function ukToDate(d,t){
 }
 const IST_F=new Map(), IST_D=new Intl.DateTimeFormat("sv-SE",{timeZone:"Europe/Istanbul"});
 const ist=(dt,o)=>{ const k=JSON.stringify(o||{}); let f=IST_F.get(k); if(!f){ f=new Intl.DateTimeFormat("tr-TR",Object.assign({timeZone:"Europe/Istanbul"},o)); IST_F.set(k,f); } return f.format(dt); };
-const istDay=dt=>IST_D.format(dt);
+// YH-51: Türkiye 2016-09-07'den beri sabit UTC+3 → gün aritmetikle (Intl yalnız aralık dışında / Date olmayan girdide)
+const IST_T0=1473195600000, IST_T1=4102444800000, IST_P=n=>n<10?"0"+n:""+n;
+const istDay=dt=>{ const t=dt instanceof Date?dt.getTime():NaN;
+  if(t>=IST_T0&&t<IST_T1){ const d=new Date(t+108e5); return d.getUTCFullYear()+"-"+IST_P(d.getUTCMonth()+1)+"-"+IST_P(d.getUTCDate()); }
+  return IST_D.format(dt); };
 
 // Sıradaki maçlar için ESPN'den bugün + yarın
 const Pick={ extra:{}, loaded:false,
