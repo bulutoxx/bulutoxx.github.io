@@ -1,6 +1,6 @@
 {
  "surum": "2026-10-28.1",
- "guncelleme": "2026-11-07 12:01",
+ "guncelleme": "2026-11-07 12:59",
  "aciklama": "Basket piyasa karnesi: kilitli model tahmini ile maç öncesi son piyasa oranı (marjı Shin ile ayrılmış) aynı maçlarda. Harman = Benter iki aşama (lig grubu, zaman sıralı ağırlık). Çapalı = model fark/toplamının handikap ve alt/üst çizgisine çekilmesi. GA: gün blokları bootstrap %95. Üretime yalnız OXXai kapısı + gölge sonrası girer.",
  "kurallar": {
   "kapi": "n ≥ 150, gün ≥ 20, ΔLL GA üst < 0, ΔBrier < 0, isabet düşmez",
@@ -471,13 +471,6 @@
   }
  },
  "agirlik": {
-  "avrupa": {
-   "a": 0.3055,
-   "b": 0.6418,
-   "w_m": 0.2297,
-   "w_t": 1.0,
-   "n_ogrenme": 53
-  },
   "kolej": {
    "a": 0.2229,
    "b": 0.8257,
@@ -491,6 +484,13 @@
    "w_m": 0.7566,
    "w_t": 0.9453,
    "n_ogrenme": 134
+  },
+  "avrupa": {
+   "a": 0.3055,
+   "b": 0.6418,
+   "w_m": 0.2297,
+   "w_t": 1.0,
+   "n_ogrenme": 53
   }
  },
  "uretimde": {},
@@ -637,18 +637,18 @@
   },
   "ncaaw": {
    "kilitli": 793,
-   "oranli": 33,
+   "oranli": 34,
    "sonuclu_oranli": 33,
-   "iddaa_ms": 0,
+   "iddaa_ms": 1,
    "iddaa_hnd": 0,
-   "iddaa_au": 0,
+   "iddaa_au": 1,
    "espn": 33
   }
  },
  "sentetik_yarismalar": {
   "Uruguay Basketbol Ligi": 2,
   "Avusturya Bundesliga": 3,
-  "Japonya B2.Ligi": 4,
+  "Japonya B2.Ligi": 10,
   "BNXT Ligi": 6,
   "Almanya BBL": 6,
   "Fransa Pro A": 6,
@@ -659,11 +659,11 @@
   "Danimarka Basketligaen": 3,
   "Almanya Pro A": 7,
   "Polonya PLK": 7,
-  "Türkiye Erkekler Basketbol 1. Ligi": 4,
+  "Türkiye Erkekler Basketbol 1. Ligi": 3,
   "İtalya Serie A2": 7,
   "İtalya Serie A": 5,
   "Portekiz Basketbol Ligi": 2,
-  "ABD Kolej Basketbol Ligi": 2,
+  "ABD Kolej Basketbol Ligi": 6,
   "İngiltere SLB": 3,
   "İsveç Basketbol Ligi Kadınlar": 3,
   "Fransa Kadınlar Basketbol Ligi": 3,
@@ -679,7 +679,6 @@
   "Fransa Pro B": 1,
   "ABA Liga, Group A": 3,
   "ABA Liga, Group B": 2,
-  "Türkiye Kadınlar Basketbol 1. Ligi": 1,
   "VTB Birleşik Ligi": 3,
   "Slovenya 1. A SKL": 2
  },
