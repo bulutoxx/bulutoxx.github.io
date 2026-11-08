@@ -164,9 +164,10 @@ def raw_marginals(lh, la, s, P):
     M["iyms"] = np.stack([np.stack([(JD * (u & v)).sum((1, 2)) for v in r2], 1) for u in r1], 1)   # (n, İY, MS)
     return M
 
-def apply_cal(M, P, kal=None, kp=None, ko=None):
+def apply_cal(M, P, kal=None, kp=None, ko=None, kq=None, kw=None):
     """Ham marjinallere mevcut MS kalibrasyonu (calT/dk) + kabul edilmiş pazar kalibrasyonları; birleşikler IPF ile.
-    kp/ko: robot konseyi MS / 2,5 Üst olasılığı (arayüz recOf ile aynı öncelik). Dönüş: {kod: dizi}."""
+    kp/ko: robot konseyi MS / 2,5 Üst olasılığı (arayüz recOf ile aynı öncelik).
+    kq/kw (YH-56): iddaa KG oranının oransal payı (yoksa nan) ve harman ağırlığı w → KGV = σ(w·logit kq + (1−w)·logit KGV). Dönüş: {kod: dizi}."""
     kal = kal or {}
     q = _cal3(M["ms0"], P.get("calT", 1.0), P.get("dk", 1.0))
     if kp is not None: q = np.where(np.isnan(kp).any(1, keepdims=True), q, kp)
@@ -178,6 +179,9 @@ def apply_cal(M, P, kal=None, kp=None, ko=None):
         c = kal.get(nm)
         if tp == "ikili":
             v = _sig(c["a"] + c["b"] * _logit(src)) if c else src
+            if nm == "KGV" and kq is not None and kw:
+                z = kw * _logit(np.where(np.isnan(kq), .5, kq)) + (1 - kw) * _logit(v)
+                v = np.where(np.isnan(kq), v, _sig(z))
             out[codes[0]] = v
         else:
             v = _cal3(src, c["T"], c["dk"]) if c else src
@@ -551,7 +555,13 @@ def enrich(fx, season, P, karne_, fits=None, today=None, U=None):
         M = raw_marginals(lam[:, 0], lam[:, 1], s, P)
         kp = np.array([f["kp"] if isinstance(f.get("kp"), list) and len(f["kp"]) == 3 else [np.nan] * 3 for f in L], float)
         ko = np.array([f["ko"] if isinstance(f.get("ko"), (int, float)) else np.nan for f in L], float)
-        PZ = apply_cal(M, P, kal, kp=kp if not np.isnan(kp).all() else None, ko=ko if not np.isnan(ko).all() else None)
+        # YH-56: KG oranı (f.ikg) varsa KGV'ye harmanlanır (bayrak data/kg_piyasa.json pazar_aktif; ayar motorda P["kg_piyasa"])
+        ka = P.get("kg_piyasa") or {}; kw = float(ka.get("w") or 0) if ka.get("pazar") else 0.0
+        kq = np.array([(1 / f["ikg"][0]) / (1 / f["ikg"][0] + 1 / f["ikg"][1]) if isinstance(f.get("ikg"), list) and len(f["ikg"]) == 2
+                       and all(isinstance(x, (int, float)) and x > 1 for x in f["ikg"]) else np.nan for f in L], float)
+        use_kq = kind == "p" and kw > 0 and not np.isnan(kq).all()
+        PZ = apply_cal(M, P, kal, kp=kp if not np.isnan(kp).all() else None, ko=ko if not np.isnan(ko).all() else None,
+                       kq=kq if use_kq else None, kw=kw if use_kq else None)
         for t, f in enumerate(L):
             f["pz"] = {c: round(float(PZ[c][t]), 3) for c in PZ_FX}; f["pzy"] = kind
             res[(f["lg"], f["d"], f["h"], f["a"])] = {c: float(PZ[c][t]) for c in CODES}
