@@ -176,7 +176,8 @@ def calis(kuru=False):
         except Exception as e:
             print("drift geçmiş ölçümü atlandı:", e.__class__.__name__, e, flush=True); G = dict(G, hata=f"{e.__class__.__name__}: {e}"[:200])
     sec = G.get("secilen") or VARSAYILAN; k, h = sec["k"], sec["h"]
-    cs = canli_seri(jl(os.path.join(DATA, "predlog.json"), []) or [])
+    from predlog_tekil import tekillestir   # YH-53: çift kimlikli kopyalar alarmı şişiriyordu (fr 273 → 20 tekil maç)
+    cs = canli_seri(tekillestir(jl(os.path.join(DATA, "predlog.json"), []) or [])[0])
     mu, sig = {}, {}
     mu_c, sig_c = taban(cs)
     for pz in PAZAR:

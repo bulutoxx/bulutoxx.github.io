@@ -1969,6 +1969,16 @@ def main():
             GOLGE_T = guc.tahmin([f for f in fx if f.get("src") != "iddaa"], season, P, today, sys.modules[__name__], GA_, golge=True)
     except Exception as e: print("topluluk atlandı:", e.__class__.__name__, e, flush=True)
     # 📉 Drift bayrağı (lab/drift.py → data/drift.json): alarmdaki ligde model ağırlığı düşer (oranlı: yalnız piyasa; oransız: topluluk → Poisson)
+    # ⚽ YH-55: KG Var olasılığına iddaa KG oranı (scripts/kg_piyasa.py; bayrak data/kg_piyasa.json, 14 gün izleme / otomatik geri alma).
+    # Bayrak kapalıysa alan yazılmaz → uygulama eski dist() KG'sini gösterir.
+    P.pop("kg_piyasa", None)
+    try:
+        import kg_piyasa as KGP
+        oz_ = KGP.izle(sys.modules[__name__])
+        if oz_: print("KG piyasa izleme:", json.dumps(oz_, ensure_ascii=False), flush=True)
+        a_ = KGP.ayar()
+        if a_: P["kg_piyasa"] = a_
+    except Exception as e: print("KG piyasa atlandı:", e.__class__.__name__, e, flush=True)
     P.pop("drift", None)
     DR = drift_ayar()
     if DR:
@@ -1999,6 +2009,11 @@ def main():
         for f in fx: f.pop("pz", None); f.pop("pzy", None)
     json.dump([{k: v for k, v in f.items() if k != "xg"} for f in fx], open(fxp, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
     plog = json.load(open(plp, encoding="utf-8")) if os.path.exists(plp) else []
+    try:   # 🧹 YH-53: çift kimlikli kopyalar (gonder.py birleştirme hatası) tek kayda indirilir; kilitli p değişmez (scripts/predlog_tekil.py)
+        from predlog_tekil import tekillestir
+        plog, tz_ = tekillestir(plog)
+        if tz_["fazla"]: print("predlog tekilleştirme:", json.dumps(tz_, ensure_ascii=False), flush=True)
+    except Exception as e: print("predlog tekilleştirme atlandı:", e.__class__.__name__, e, flush=True)
     have = {e["id"] for e in plog}
     played = {(lg, m["h"], m["a"], m["d"]) for lg, ms in all_ms.items() for m in ms}
     now_utc = datetime.now(timezone.utc)

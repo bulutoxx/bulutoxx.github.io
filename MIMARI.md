@@ -114,6 +114,8 @@ Futbolda tek maçın sonucu doğası gereği belirsizdir; hiçbir model her maç
 | tazeveri.json | Motor (`scripts/tazeveri.py`, update.py içinde) | Taze veri kapısı | Gölge kayıt: maç başına açılış/son oran (o0/o1, u0/u1), temel (sunulan) tahmin b/bo, model yolu pm/pmo, kadro özeti kd, kadro / oran hareketi / karışım ayarlı gölge tahminler g, yayında uygulanan adaylar s, sonuç r (120 gün; yalnız türetilmiş) |
 | tazeveri_ayar.json | Taze veri kapısı (`lab/tazeveri_kapi.py`, sürekli deney karar işi) | Motor | Aday durumları (kadro_1x2/ou, hareket_1x2/ou, karisim_1x2/ou; varsayılan gölge), parametreler, son ölçüm, alfa yatırımı, 14 gün izleme / geri alma. Aktif aday yalnız fixtures.json çıktısında kp/ko'ya uygulanır (tz alanı) |
 | keskin_piyasa.json | Keskin piyasa lab (`lab/keskin_piyasa.py`, keskin-lab.yml, haftalık) | İnsan, yol haritası (YH-02) | Avg / Pinnacle / uzlaşı yürüyen pencere kalibrasyon karşılaştırması (1X2 maç öncesi ve kapanış, 2,5 A/Ü); yalnız toplu metrik, üretimi değiştirmez |
+| kg_piyasa.json | YH-55 bayrağı (elle; izleme `scripts/kg_piyasa.py`, motor her çalışmada) | Motor (`params.kg_piyasa` → uygulama katmanı `kg-piyasa-v165`) | KG Var'a iddaa KG oranı katılımı: `aktif`, `w`, 14 gün izleme, `durum` izleniyor / kalici / geri_alindi (otomatik geri alma) |
+| isabet_teshis_lab.json, bulten_kal_lab.json, kg_piyasa_lab.json | `lab/isabet_teshis.py`, `lab/bulten_kal_lab.py`, `lab/kg_piyasa_lab.py` (elle) | İnsan, yol haritası (YH-53…55) | Kilitli kayıtlardan son 30/60 gün isabet / LL / Brier / ECE teşhisi; zaman sıralı laboratuvar kapıları. **predlog.json kimlik başına tek kayıt sayılır** (`scripts/predlog_tekil.py`; motor ve gonder.py da tekilleştirir) |
 
 ## 🩺 Sağlık sinyali, sürekli döngü ve sürekli deney (2026-10-27)
 

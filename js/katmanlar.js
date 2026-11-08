@@ -548,3 +548,31 @@ try {
   document.addEventListener("touchcancel",()=>{ if(aktif){ aktif=false; sifirla(); } },{passive:true});
 })();
 } catch (e) { if (typeof reportError === "function") reportError(e); else setTimeout(function () { throw e; }); } /* /id: cek-yenile-v153 */
+
+/* id: kg-piyasa-v165 */ try {
+(function(){
+  // YH-55 (2026-11-08): KG Var olasılığına iddaa KG oranı katılır. Kanıt: lab/kg_piyasa_lab.py → data/kg_piyasa_lab.json
+  // (kilitli bülten, 3.295 sınama maçı: log-kayıp 0,6957 → 0,6871). Ayar motordan gelir (model.json params.kg_piyasa = {w});
+  // alan yoksa (bayrak kapalı / geri alındı) hiçbir şey değişmez. Yalnız oranlı ve KG oranı (f.ikg) olan fikstür tahmininde.
+  if(typeof predict!=="function") return;
+  let KG=null;
+  const ayar=()=>{ const P=(typeof MODEL!=="undefined"&&MODEL&&MODEL.params)||null, a=P&&P.kg_piyasa; return a&&a.w>0&&a.w<=1?a:null; };
+  const lg=x=>{ x=Math.min(Math.max(x,1e-6),1-1e-6); return Math.log(x/(1-x)); };
+  const _p=predict;
+  predict=function(inp){
+    const r=_p.apply(this,arguments);
+    try{
+      const a=ayar(), k=KG;
+      if(a&&k&&r&&typeof r.btts==="number"&&!r.kgPiy&&inp&&inp.odds&&inp.odds.o1&&inp.odds.ox&&inp.odds.o2){
+        const q=(1/k[0])/((1/k[0])+(1/k[1])), z=a.w*lg(q)+(1-a.w)*lg(r.btts);
+        r.kgDist=r.btts; r.btts=1/(1+Math.exp(-z)); r.kgPiy=1;
+      }
+    }catch(e){}
+    return r;
+  };
+  const sar=ad=>{ const f=window[ad]; if(typeof f!=="function") return;
+    window[ad]=function(m,fx){ const o=KG, g=fx&&fx.ikg; KG=(Array.isArray(g)&&g.length===2&&g[0]>1&&g[1]>1)?g:null;
+      try{ return f.apply(this,arguments); } finally{ KG=o; } }; };
+  sar("quickPred"); sar("fullPred");
+})();
+} catch (e) { if (typeof reportError === "function") reportError(e); else setTimeout(function () { throw e; }); } /* /id: kg-piyasa-v165 */

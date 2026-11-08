@@ -117,6 +117,11 @@ def dosya_birlestir(yol, b, o, t):
             oo, to = json.loads(o), json.loads(t)
             bo = json.loads(b) if b is not None else YOK
             m = birlestir(bo, oo, to)
+            if yol.endswith("predlog.json") and isinstance(m, list):   # YH-53: çift kimlik → küme birleşimi katlanmasın (kilitli p değişmez)
+                try:
+                    sys.path.insert(0, os.path.join(ROOT, "scripts")); from predlog_tekil import tekillestir
+                    m = tekillestir(m)[0]
+                except Exception: pass
             return bicimle(m, o), "JSON anahtar düzeyi"
         except Exception:
             return o, "JSON okunamadı → yerel"
