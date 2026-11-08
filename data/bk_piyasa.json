@@ -1,6 +1,6 @@
 {
  "surum": "2026-10-28.1",
- "guncelleme": "2026-11-08 13:55",
+ "guncelleme": "2026-11-08 14:51",
  "aciklama": "Basket piyasa karnesi: kilitli model tahmini ile maç öncesi son piyasa oranı (marjı Shin ile ayrılmış) aynı maçlarda. Harman = Benter iki aşama (lig grubu, zaman sıralı ağırlık). Çapalı = model fark/toplamının handikap ve alt/üst çizgisine çekilmesi. GA: gün blokları bootstrap %95. Üretime yalnız OXXai kapısı + gölge sonrası girer.",
  "kurallar": {
   "kapi": "n ≥ 150, gün ≥ 20, ΔLL GA üst < 0, ΔBrier < 0, isabet düşmez",
@@ -471,6 +471,13 @@
   }
  },
  "agirlik": {
+  "avrupa": {
+   "a": 0.3055,
+   "b": 0.6418,
+   "w_m": 0.2297,
+   "w_t": 1.0,
+   "n_ogrenme": 53
+  },
   "pro": {
    "a": 0.3187,
    "b": 0.8148,
@@ -484,13 +491,6 @@
    "w_m": 0.989,
    "w_t": 0.918,
    "n_ogrenme": 337
-  },
-  "avrupa": {
-   "a": 0.3055,
-   "b": 0.6418,
-   "w_m": 0.2297,
-   "w_t": 1.0,
-   "n_ogrenme": 53
   }
  },
  "uretimde": {},
@@ -646,26 +646,25 @@
   }
  },
  "sentetik_yarismalar": {
+  "İtalya Serie B": 11,
+  "BNXT Ligi": 4,
   "İtalya Serie A2": 4,
-  "İtalya Serie A": 4,
-  "İtalya Serie B": 12,
+  "İtalya Serie A": 3,
   "Danimarka Basketligaen": 1,
   "Fransa Pro A": 2,
   "İngiltere SLB": 3,
   "Uruguay Basketbol Ligi": 2,
   "Avusturya Bundesliga": 1,
-  "BNXT Ligi": 4,
-  "İspanya LEB Oro": 2,
+  "İspanya LEB Oro": 1,
   "Arjantin LNB": 4,
-  "Almanya Pro A": 3,
   "Türkiye Basketbol Süper Ligi": 1,
-  "İspanya Liga ACB": 4,
+  "İspanya Liga ACB": 3,
   "Ukrayna FBU Süperligi": 1,
   "Almanya BBL": 3,
   "G. Kore Güney Kore Kadın Basket Ligi": 1,
   "G. Kore Güney Kore Basketbol Ligi": 1,
-  "Polonya PLK": 4,
-  "VTB Birleşik Ligi": 1,
+  "Almanya Pro A": 3,
+  "Polonya PLK": 3,
   "ABA Liga, Group A": 1
  },
  "gunluk": [
