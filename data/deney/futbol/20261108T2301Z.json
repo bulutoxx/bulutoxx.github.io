@@ -1,0 +1,128 @@
+{
+ "is": "futbol",
+ "zaman": "20261108T2301Z",
+ "sure_sn": 7.3,
+ "denenen": [
+  {
+   "aday": {
+    "anahtar": "esik:fb_altin:p_min:0.8",
+    "tur": "esik",
+    "alan": "futbol",
+    "yol": [
+     "fb_altin",
+     "p_min"
+    ],
+    "deger": 0.8,
+    "stratejiler": [
+     "fb_altin"
+    ],
+    "sinyal": {
+     "kaynak": "keşif (sinyal yok)"
+    },
+    "aciklama": "keşif: fb_altin p_min 0.78 → 0.8"
+   },
+   "m": 62,
+   "rap": {
+    "olcut": "kupon isabet oranı farkı",
+    "alfa": 0.0,
+    "alfa_ham": 5e-10,
+    "deneme_no": 62,
+    "test_yapildi": true,
+    "istatistik_gecti": false,
+    "secim": {
+     "gun": [
+      "2026-01-01",
+      "2026-08-14"
+     ],
+     "fark": 0.0988,
+     "taban": {
+      "n": 31,
+      "tutan": 26,
+      "isabet": 0.8387,
+      "beklenen": 23.25,
+      "brier": 0.1357
+     },
+     "aday": {
+      "n": 16,
+      "tutan": 15,
+      "isabet": 0.9375,
+      "beklenen": 12.52,
+      "brier": 0.0701
+     }
+    },
+    "sinama": {
+     "gun": [
+      "2026-08-15",
+      "2026-11-04"
+     ],
+     "fark": -0.1005,
+     "alt_sinir": -0.6671,
+     "bootstrap_B": 2000,
+     "taban": {
+      "n": 19,
+      "tutan": 14,
+      "isabet": 0.7368,
+      "beklenen": 13.97,
+      "brier": 0.184
+     },
+     "aday": {
+      "n": 11,
+      "tutan": 7,
+      "isabet": 0.6364,
+      "beklenen": 8.44,
+      "brier": 0.2706
+     },
+     "bacak_taban": {
+      "n": 28,
+      "tutan": 23,
+      "isabet": 0.8214,
+      "beklenen": 22.54,
+      "brier": 0.1513
+     },
+     "bacak_aday": {
+      "n": 15,
+      "tutan": 11,
+      "isabet": 0.7333,
+      "beklenen": 12.27,
+      "brier": 0.2056
+     }
+    },
+    "koruma": {
+     "altin_taban": {
+      "n": 28,
+      "tutan": 23,
+      "isabet": 0.8214,
+      "beklenen": 22.54,
+      "brier": 0.1513
+     },
+     "altin_aday": {
+      "n": 15,
+      "tutan": 11,
+      "isabet": 0.7333,
+      "beklenen": 12.27,
+      "brier": 0.2056
+     },
+     "guclu_taban": {
+      "n": 186,
+      "tutan": 147,
+      "isabet": 0.7903,
+      "beklenen": 140.37,
+      "brier": 0.1643
+     },
+     "guclu_aday": {
+      "n": 186,
+      "tutan": 147,
+      "isabet": 0.7903,
+      "beklenen": 140.37,
+      "brier": 0.1643
+     }
+    },
+    "karar": "ret",
+    "neden": "sınamada taban kupon sayısı az (19); kupon sayısı %70'in altına indi (11/19); sınama alt sınırı ≤ 0 (α=0.0000); Altın isabeti düştü (0.8214 → 0.7333)"
+   },
+   "sure_sn": 7.1
+  }
+ ],
+ "golge_olcum": [],
+ "bugun": "2026-11-09"
+}
