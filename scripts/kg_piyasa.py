@@ -30,7 +30,9 @@ def ayar():
     try: w = float(A.get("w"))
     except Exception: return None
     if not 0 < w <= 1: return None
-    return {"w": round(w, 3), "devig": "oransal", "v": A.get("v", 1)}
+    o = {"w": round(w, 3), "devig": "oransal", "v": A.get("v", 1)}
+    if A.get("pazar_aktif"): o["pazar"] = True   # YH-56: pazar motoru KGV / MS&KG (scripts/pazar.py enrich)
+    return o
 
 
 def _ll(p, y):
