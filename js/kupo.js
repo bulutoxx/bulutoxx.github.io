@@ -711,6 +711,8 @@
 // • Yenile'ye basılı tut (≈1 sn) ya da Menü → "Uygulamayı onar": tam baştan kurulum (kuponlar ve ayarlar silinmez).
 (function(){
   async function bxRepair(nv, hard){
+    // v164: açılışta art arda iki yenileme olmasın — son 45 sn içinde zaten yenilendiyse (acil onarım hariç) tekrar etme
+    try{ const t=+sessionStorage.getItem("bx-repair")||0; if(!hard&&t&&Date.now()-t<45000) return; }catch(e){}
     try{ sessionStorage.setItem("bx-repair", String(Date.now())); }catch(e){}
     try{ if(window.caches){ const ks=await caches.keys(); await Promise.all(ks.map(k=>caches.delete(k))); } }catch(e){}
     try{ if(navigator.serviceWorker&&navigator.serviceWorker.getRegistrations){ const rs=await navigator.serviceWorker.getRegistrations(); await Promise.all(rs.map(r=>hard?r.unregister():r.update().catch(()=>{}))); } }catch(e){}
@@ -720,8 +722,10 @@
   try{ const q=new URLSearchParams(location.search); if(q.has("v")){ q.delete("v"); const qs=q.toString(); history.replaceState(null,"",location.pathname+(qs?"?"+qs:"")+location.hash);
       const t=+sessionStorage.getItem("bx-repair")||0; if(t&&Date.now()-t<120000){ sessionStorage.removeItem("bx-repair"); setTimeout(()=>{ try{ toast("✅ Güncel sürüm yüklendi · v"+APP_V.split(".").pop()); }catch(e){} },1500); } } }catch(e){}
   try{ if(navigator.serviceWorker){ let done=false; const had=!!navigator.serviceWorker.controller;
-      navigator.serviceWorker.addEventListener("controllerchange",()=>{ if(done||!had) return; done=true;
+      navigator.serviceWorker.addEventListener("controllerchange",async()=>{ if(done||!had) return; done=true;
         const ae=document.activeElement; if(ae&&/^(INPUT|TEXTAREA)$/.test(ae.tagName)) return;   // yazı yazarken yenileme yapma; güncelleme şeridi zaten görünür
+        // v164: sayfa zaten en yeni sürümse (index.html hep ağdan gelir) yeni servis çalışanı için yeniden açmaya gerek yok
+        try{ const lv=typeof oxxLatestV==="function"?await oxxLatestV(true):null; if(!lv||lv===APP_V) return; }catch(e){ return; }
         try{ toast("✨ Yeni sürüm yüklendi, yenileniyor…"); }catch(e){} setTimeout(()=>bxRepair(),900); }); } }catch(e){}
   function bind(){ const rf=document.getElementById("hdrRefresh"); if(!rf||rf.dataset.rp) return; rf.dataset.rp="1"; let t=0, fired=false;
     const start=()=>{ fired=false; t=setTimeout(()=>{ t=0; fired=true; try{ buzz(30); toast("🛠️ Acil onarım: uygulama baştan yükleniyor…"); }catch(e){} bxRepair(null,true); },900); };

@@ -3861,7 +3861,7 @@ if((location.hash||"")==="#sonuclar") setTimeout(()=>$("navRes").click(),200);
     if(window.bxRepair) window.bxRepair(); else location.reload();
   }
   let hiddenAt=0;
-  document.addEventListener("visibilitychange",()=>{ if(document.hidden){ hiddenAt=Date.now(); return; } check(Date.now()-hiddenAt>60e3); });
+  document.addEventListener("visibilitychange",()=>{ if(document.hidden){ hiddenAt=Date.now(); return; } check(hiddenAt>0&&Date.now()-hiddenAt>60e3); });   // v164: açılışta (hiddenAt=0) otomatik yenileme yok
   setTimeout(()=>check(false),5000); setInterval(()=>{ if(!document.hidden) check(false); },3*60e3);
   window.addEventListener("focus",()=>{ if(!document.hidden) check(false); });   // v118: odaklanınca da (önbellekli, en sık 20 sn'de bir)
   // Güncelle düğmesi: yeni sürüm varsa onu da getirir
