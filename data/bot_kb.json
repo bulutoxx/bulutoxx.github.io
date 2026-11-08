@@ -249,7 +249,7 @@
   {
    "k": "kalibrasyon",
    "re": "kalibr",
-   "html": "<b>Kalibrasyon</b>: gösterilen yüzdenin, geçmişte aynı güvendeki tahminlerin gerçek tutma oranına göre düzeltilmesi. Yani %80 dediğim seçimler, kilitli arşivde gerçekten yaklaşık %80 tutmuş seviyededir. Kilitli arşivde şimdiye kadar 4.864 öneri puanlandı; %60'i tuttu."
+   "html": "<b>Kalibrasyon</b>: gösterilen yüzdenin, geçmişte aynı güvendeki tahminlerin gerçek tutma oranına göre düzeltilmesi. Yani %80 dediğim seçimler, kilitli arşivde gerçekten yaklaşık %80 tutmuş seviyededir. Kilitli arşivde şimdiye kadar 5.138 öneri puanlandı; %60'i tuttu."
   },
   {
    "k": "marj",
@@ -299,12 +299,17 @@
   {
    "k": "kilitli",
    "re": "kilitli|kilitlen\\w*",
-   "html": "<b>Kilitli tahmin</b>: maç başlamadan arşive yazılan ve sonradan değiştirilemeyen öneri. Karnedeki tüm isabet rakamları bu kilitli kayıtlardan hesaplanır. Kilitli arşivde şimdiye kadar 4.864 öneri puanlandı; %60'i tuttu."
+   "html": "<b>Kilitli tahmin</b>: maç başlamadan arşive yazılan ve sonradan değiştirilemeyen öneri. Karnedeki tüm isabet rakamları bu kilitli kayıtlardan hesaplanır. Kilitli arşivde şimdiye kadar 5.138 öneri puanlandı; %60'i tuttu."
   },
   {
    "k": "korner",
    "re": "\\bkorner\\w*|\\bkorner\\b",
    "html": "<b>Korner</b> (köşe vuruşu) sayısı üzerine pazarlar vardır ama OXXai korner tahmini üretmez; uydurmamak için bu pazarı önermem. Gol, MS, KG ve İY olasılıklarını sorabilirsin."
+  },
+  {
+   "k": "poisson",
+   "re": "poisson",
+   "html": "<b>Poisson modeli</b>: iki takımın gol beklentisinden her skorun olasılığını hesaplayan klasik yöntem (ör. 1-0, 1-1, 2-1 için ayrı yüzdeler). Robot arenasındaki Poisson robotu bu yöntemi kullanır; uygulamadaki skor olasılıkları da gol beklentisine dayanır."
   }
  ],
  "gor": {
@@ -366,35 +371,29 @@
    "d": "2026-11-08"
   },
   {
-   "h": "Napoli",
-   "a": "Lazio",
+   "h": "Manchester United",
+   "a": "Aston Villa",
+   "lg": "en",
+   "d": "2026-11-08"
+  },
+  {
+   "h": "Inter",
+   "a": "Como",
    "lg": "it",
    "d": "2026-11-08"
   },
   {
-   "h": "Liverpool (WSL)",
-   "a": "Arsenal (WSL)",
-   "lg": "wsl",
-   "d": "2026-11-08"
-  },
-  {
-   "h": "Çorum FK",
-   "a": "Fenerbahçe",
-   "lg": "tr1",
-   "d": "2026-11-08"
-  },
-  {
-   "h": "Crystal Palace",
-   "a": "Liverpool",
-   "lg": "en",
+   "h": "Lens",
+   "a": "Marseille",
+   "lg": "fr",
    "d": "2026-11-08"
   }
  ],
  "karne": {
-  "n": 4864,
-  "hit": 0.6036,
-  "guclu_n": 803,
-  "guclu_hit": 0.7609
+  "n": 5138,
+  "hit": 0.6026,
+  "guclu_n": 842,
+  "guclu_hit": 0.7565
  },
  "sayim": {
   "takim": 49,
@@ -402,12 +401,12 @@
   "esanlam": 7,
   "yazim": 48,
   "para": 3,
-  "sozluk": 15,
-  "toplam": 236
+  "sozluk": 16,
+  "toplam": 237
  },
- "v": "2026-11-08.50",
+ "v": "2026-11-08.51",
  "tarih": "2026-11-08",
- "uretim": "2026-11-08T03:59:49.939Z",
+ "uretim": "2026-11-08T15:44:07.189Z",
  "not": "Bu dosya her gece lab/bot_coach.mjs tarafından yalnız uygulama verisinden üretilir; kullanıcı mesajı içermez.",
- "surum_no": 50
+ "surum_no": 51
 }
