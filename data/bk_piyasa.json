@@ -1,6 +1,6 @@
 {
  "surum": "2026-10-28.1",
- "guncelleme": "2026-11-09 23:04",
+ "guncelleme": "2026-11-10 00:02",
  "aciklama": "Basket piyasa karnesi: kilitli model tahmini ile maç öncesi son piyasa oranı (marjı Shin ile ayrılmış) aynı maçlarda. Harman = Benter iki aşama (lig grubu, zaman sıralı ağırlık). Çapalı = model fark/toplamının handikap ve alt/üst çizgisine çekilmesi. GA: gün blokları bootstrap %95. Üretime yalnız OXXai kapısı + gölge sonrası girer.",
  "kurallar": {
   "kapi": "n ≥ 150, gün ≥ 20, ΔLL GA üst < 0, ΔBrier < 0, isabet düşmez",
@@ -222,7 +222,7 @@
    },
    "harman": {
     "n": 371,
-    "ll": 0.3654,
+    "ll": 0.3655,
     "brier": 0.118,
     "isabet": 0.8167
    },
@@ -294,7 +294,7 @@
     "fark_mse": {
      "model": 360.5059,
      "piyasa": 160.6254,
-     "capali": 180.8958,
+     "capali": 180.8957,
      "n": 371,
      "capali_eksi_model": [
       -179.6101,
@@ -320,7 +320,7 @@
    },
    "agirlik": {
     "a": 0.2078,
-    "b": 0.8553,
+    "b": 0.8554,
     "w_m": 1.0,
     "w_t": 0.9319,
     "n_ogrenme": 371
@@ -471,19 +471,19 @@
   }
  },
  "agirlik": {
-  "kolej": {
-   "a": 0.2078,
-   "b": 0.8553,
-   "w_m": 1.0,
-   "w_t": 0.9319,
-   "n_ogrenme": 371
-  },
   "avrupa": {
    "a": 0.3055,
    "b": 0.6418,
    "w_m": 0.2297,
    "w_t": 1.0,
    "n_ogrenme": 53
+  },
+  "kolej": {
+   "a": 0.2078,
+   "b": 0.8554,
+   "w_m": 1.0,
+   "w_t": 0.9319,
+   "n_ogrenme": 371
   },
   "pro": {
    "a": 0.3301,
@@ -628,12 +628,12 @@
   },
   "ncaa": {
    "kilitli": 898,
-   "oranli": 369,
+   "oranli": 370,
    "sonuclu_oranli": 329,
-   "iddaa_ms": 120,
-   "iddaa_hnd": 118,
+   "iddaa_ms": 121,
+   "iddaa_hnd": 119,
    "iddaa_au": 120,
-   "espn": 366
+   "espn": 368
   },
   "ncaaw": {
    "kilitli": 899,
@@ -647,8 +647,8 @@
  },
  "sentetik_yarismalar": {
   "ABD Kolej Basketbol Ligi": 33,
-  "İtalya Serie A2": 7,
-  "İtalya Serie B": 6,
+  "İtalya Serie A2": 8,
+  "İtalya Serie B": 7,
   "VTB Birleşik Ligi": 2,
   "European North Basketball Leag": 1,
   "Uruguay Basketbol Ligi": 3,
@@ -730,7 +730,7 @@
   {
    "gun": "2026-11-02",
    "n": 18,
-   "ll_model": 0.6047,
+   "ll_model": 0.6048,
    "ll_piyasa": 0.5623,
    "ll_harman": 0.5478
   },
