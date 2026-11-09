@@ -1,55 +1,6 @@
 {
  "olaylar": [
   {
-   "tarih": "2026-10-25",
-   "tur": "onay",
-   "baslik": "Değişiklik kalıcı oldu",
-   "detay": "2026-10-25 tarihli değişiklikten sonra isabet korundu",
-   "anahtar": "2026-10-25-kalici"
-  },
-  {
-   "tarih": "2026-10-25",
-   "tur": "yenilik",
-   "baslik": "🥇 Altın kuralı güncellendi: oran 1,15–2,00",
-   "detay": "5 yıllık yürüyen sınamada Altın'ın asıl kısıtı alt oran sınırıydı. Alt sınır 1,20'den 1,15'e indi: geçmiş veride Altın isabeti %80,0 → %82,1, ayda Altın sayısı 17,8 → 23,3. Olasılık eşiği (%78+) ve günde en fazla 3 kuralı aynı. Bedel: Altın seçimlerin oranları biraz daha düşük. Altın karnesi yeni kurala göre sayılır.",
-   "anahtar": "2026-10-25-altin82"
-  },
-  {
-   "tarih": "2026-10-25",
-   "tur": "gelisme",
-   "baslik": "🛠️ Oynanan maçta maç öncesi tahmin hatası düzeltildi",
-   "detay": "Kullanıcı yakaladı: Gimnastic 4-1 öndeyken (devre arası) 'Maç tahmini yap' ekranı maç öncesi modelle 'MS 2 · 1-2' veriyordu. Artık iki takım canlıda/bültende aranıyor; maç oynanıyorsa maç öncesi tahmin gösterilmiyor, skoru ve dakikayı hesaba katan canlı tahmin (örnekte MS 1 %89, tahmini son skor 4-1) ve canlı maç ekranı açılıyor. OXXai'ye canlı bir maç sorulunca da aynı canlı tahmin veriliyor. Takımlar seçili ligde değilse bültendeki oranlı tahmin öneriliyor. Ayrıca canlı tahminde 'geçmişte bu güvendeki seçimlerin %0'ı tuttu' yanlış satırı düzeltildi (artık kalibrasyon kovasının gerçek isabeti).",
-   "anahtar": "2026-10-25-canlifix85"
-  },
-  {
-   "tarih": "2026-10-25",
-   "tur": "gelisme",
-   "baslik": "Motor sürümü güncellendi",
-   "detay": "2026-10-25.ml70 → 2026-10-25.ml80",
-   "anahtar": "2026-10-25-motor sürümü-2026-10-25.ml80"
-  },
-  {
-   "tarih": "2026-10-25",
-   "tur": "gelisme",
-   "baslik": "Olasılık kalibrasyonunun öğrenildiği yol güncellendi",
-   "detay": "model → sunulan",
-   "anahtar": "2026-10-25-cal_yol-sunulan"
-  },
-  {
-   "tarih": "2026-10-25",
-   "tur": "ogrenme",
-   "baslik": "Motor ayarlarını yeni maçlarla yeniden öğrendi",
-   "detay": "dk 1.03→1.14",
-   "anahtar": "2026-10-25-ayar"
-  },
-  {
-   "tarih": "2026-10-26",
-   "tur": "olcum",
-   "baslik": "Robot arenası haftalık savaşı",
-   "detay": "Konsey iki sezonda da piyasayı geçemedi; mevcut sistem (piyasa + kalibrasyon) korunur.",
-   "anahtar": "2026-10-26-arena"
-  },
-  {
    "tarih": "2026-10-26",
    "tur": "olcum",
    "baslik": "Laboratuvar: açık kaynak modellerle yarış",
@@ -1049,7 +1000,56 @@
    "baslik": "Sürekli deney: bugünkü denemeler",
    "detay": "1 karar: 1 ret, 0 gölgeye alındı, 0 uygulandı; gölgede bekleyen 0.",
    "anahtar": "2026-11-09-surekli-ozet"
+  },
+  {
+   "tarih": "2026-11-09",
+   "tur": "geri",
+   "baslik": "Koruyucu bir değişikliği geri aldı",
+   "detay": "2026-11-08 tarihli değişiklikten sonra isabet kötüleşti (Brier 0.2296 → 0.2436)",
+   "anahtar": "2026-11-08-geri"
+  },
+  {
+   "tarih": "2026-11-09",
+   "tur": "gelisme",
+   "baslik": "Olasılık kalibrasyonunun öğrenildiği yol güncellendi",
+   "detay": "sunulan → kilitli",
+   "anahtar": "2026-11-09-cal_yol-kilitli"
+  },
+  {
+   "tarih": "2026-11-09",
+   "tur": "ogrenme",
+   "baslik": "Motor ayarlarını yeni maçlarla yeniden öğrendi",
+   "detay": "calT 1.05→0.91, gscale 1.01→0.98, dk 1.14→1.04",
+   "anahtar": "2026-11-09-ayar"
+  },
+  {
+   "tarih": "2026-11-09",
+   "tur": "olcum",
+   "baslik": "Robot arenası haftalık savaşı",
+   "detay": "Konsey iki sezonda da piyasayı geçemedi; mevcut sistem (piyasa + kalibrasyon) korunur.",
+   "anahtar": "2026-11-09-arena"
+  },
+  {
+   "tarih": "2026-11-09",
+   "tur": "olcum",
+   "baslik": "Laboratuvar: açık kaynak modellerle yarış",
+   "detay": "Hiçbir aday iki sezonun ikisinde de mevcut sistemi (piyasa olasılığı) geçemedi; mevcut sistem korunur.",
+   "anahtar": "2026-11-09-lab"
+  },
+  {
+   "tarih": "2026-11-09",
+   "tur": "karne",
+   "baslik": "2026-11-08 karnesi",
+   "detay": "647 kilitli öneri, %59 tuttu; güçlü önerilerin %68'i (103 öneri)",
+   "anahtar": "2026-11-08-karne"
+  },
+  {
+   "tarih": "2026-11-09",
+   "tur": "karne",
+   "baslik": "Canlı karne",
+   "detay": "12212 kilitli canlı seçim, %63 tuttu",
+   "anahtar": "2026-11-09-canli"
   }
  ],
- "guncel": "2026-11-08"
+ "guncel": "2026-11-09"
 }
