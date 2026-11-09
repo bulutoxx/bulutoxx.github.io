@@ -13,19 +13,19 @@
   try{ const _b=bestTeamName; bestTeamName=function(n){ const r=_b.apply(this,arguments); try{ if(r&&r!==n&&VAR(n)!==VAR(r)) return n; }catch(e){} return r; }; }catch(e){}
   try{ if(typeof BT!=="undefined"&&BT.cache) BT.cache.clear(); }catch(e){}
   // ekranda ayrıca belirt: "Arsenal FC U21" → Arsenal FC [U21], "Cruzeiro EC (K)" → Cruzeiro EC [Kadın]
-  const RX=/\s*(\(K\)|\bU ?(?:1[5-9]|2[0-3])\b)/g, SKIP=/^(SCRIPT|STYLE|TEXTAREA|INPUT|OPTION|TITLE)$/;
+  const RX=/\s*(\(K\)|\bU ?(?:1[5-9]|2[0-3])\b)/g, SKIP=/^(SCRIPT|STYLE|TEXTAREA|INPUT|OPTION|TITLE)$/, TX=/\(K\)|U ?(1[5-9]|2[0-3])|Women|Kadın/; // YH-58: önce ucuz metin sınaması, sonra closest()
   function tagNode(tn){ const v=tn.nodeValue; RX.lastIndex=0; if(!RX.test(v)) return; RX.lastIndex=0;
     const fr=document.createDocumentFragment(); let i=0, m;
     while((m=RX.exec(v))){ fr.appendChild(document.createTextNode(v.slice(i,m.index)+" ")); const b=document.createElement("span");
       const k=/\(K\)/.test(m[1]); b.className="tvar"+(k?" k":""); b.textContent=k?"Kadın":m[1].replace(/\s/g,"").toUpperCase(); fr.appendChild(b); i=m.index+m[0].length; }
     fr.appendChild(document.createTextNode(v.slice(i))); tn.parentNode.replaceChild(fr,tn); }
-  function tagAll(root){ try{ const w=document.createTreeWalker(root||document.body,NodeFilter.SHOW_TEXT,{acceptNode:n=>{ const p=n.parentNode; if(!p||SKIP.test(p.nodeName)||p.closest(".tvar,[contenteditable],#botQ,.bt-in")) return 2; return /\(K\)|U ?(1[5-9]|2[0-3])|Women|Kadın/.test(n.nodeValue)?1:2; }});
+  function tagAll(root){ try{ const w=document.createTreeWalker(root||document.body,NodeFilter.SHOW_TEXT,{acceptNode:n=>{ if(!TX.test(n.nodeValue)) return 2; const p=n.parentNode; return (!p||SKIP.test(p.nodeName)||p.closest(".tvar,[contenteditable],#botQ,.bt-in"))?2:1; }});
       const L=[]; while(w.nextNode()) L.push(w.currentNode); L.forEach(tagNode); }catch(e){} }
   // v118: gözlemci artık yalnız eklenen/değişen düğümleri işler (eskiden her değişimde <main>'in tüm metin düğümleri taranıyordu)
   const inScope=n=>{ const e=n.nodeType===1?n:n.parentNode; return !!(e&&e.closest&&e.closest("main,#botLog,#sheet")); };
   const PEND=new Set(); let tq=0;
   const flush=()=>{ tq=0; const L=[...PEND]; PEND.clear(); for(const n of L){ if(!n.isConnected||!inScope(n)) continue;
-      if(n.nodeType===3){ const p=n.parentNode; if(p&&!SKIP.test(p.nodeName)&&!p.closest(".tvar,[contenteditable],#botQ,.bt-in")&&/\(K\)|U ?(1[5-9]|2[0-3])|Women|Kadın/.test(n.nodeValue)) tagNode(n); }
+      if(n.nodeType===3){ const p=n.parentNode; if(TX.test(n.nodeValue)&&p&&!SKIP.test(p.nodeName)&&!p.closest(".tvar,[contenteditable],#botQ,.bt-in")) tagNode(n); }
       else if(n.nodeType===1&&!SKIP.test(n.nodeName)) tagAll(n); } };
   const tsched=recs=>{ for(const r of recs){ if(r.type==="characterData") PEND.add(r.target); else r.addedNodes.forEach(n=>{ if(n.nodeType===1||n.nodeType===3) PEND.add(n); }); }
     if(PEND.size&&!tq){ tq=1; requestAnimationFrame(flush); } };
