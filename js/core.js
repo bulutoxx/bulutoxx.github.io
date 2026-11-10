@@ -432,9 +432,15 @@ function MP(k, d){ return MODEL && MODEL.params && MODEL.params[k]!=null ? MODEL
 function isCup(lg){ return !!(SEASON[lg] && SEASON[lg].cup) || lg==="eu"; }
 function buildSeason(){
   const coreC=new Map(), core=s=>{ let v=coreC.get(s); if(v===undefined){ v=norm(s).split(" ").filter(w=>!["fc","sc","sv","ac","as","afc","cf","rc","ssc","1"].includes(w)).join(" "); coreC.set(s,v); } return v; };   // v118: önbellekli
+  // YH-60: dizinli arama — TEAMS sırasında anahtarı / çekirdeği taşıyan İLK takım (eski TEAMS.find ile birebir)
+  const TI=new Map(), KI=new Map(), CI=new Map();
+  const ixKey=(t,k)=>{ const i=TI.get(t), a=KI.get(k), c=core(k), b=CI.get(c); if(a===undefined||i<a) KI.set(k,i); if(b===undefined||i<b) CI.set(c,i); };
+  TEAMS.forEach((t,i)=>TI.set(t,i)); TEAMS.forEach(t=>t.keys.forEach(k=>ixKey(t,k)));
+  const addKey=(t,k)=>{ t.keys.push(k); ixKey(t,k); };
   const findOrAdd=(name, lg)=>{ const nn=norm(name), cn=core(name);
-    let t=TEAMS.find(x=>x.keys.includes(nn)) || TEAMS.find(x=>x.keys.some(k=>core(k)===cn));
-    if(!t){ t={name, lg, keys:[norm(name)]}; TEAMS.push(t); }
+    let i=KI.get(nn); if(i===undefined) i=CI.get(cn);
+    let t=i===undefined ? undefined : TEAMS[i];
+    if(!t){ t={name, lg, keys:[]}; TI.set(t,TEAMS.length); TEAMS.push(t); addKey(t,norm(name)); }
     return t;
   };
   const lastFive=(ms,name)=>ms.filter(m=>m.h===name||m.a===name).slice(-5).reverse()
@@ -453,7 +459,7 @@ function buildSeason(){
     const cur=ms.filter(m=>!m.season || m.season===lastSeason);
     for(const name of (d._o||new Set(cur.flatMap(m=>[m.h,m.a])))){
       curTeams.add(name);
-      const t=findOrAdd(name, lg); t.lg=lg; t.name=name; t.cur=true; if(!t.keys.includes(norm(name))) t.keys.push(norm(name));
+      const t=findOrAdd(name, lg); t.lg=lg; t.name=name; t.cur=true; if(!t.keys.includes(norm(name))) addKey(t,norm(name));
       FORM.set(slug(name), {lg, list:lastFive(ms,name), asOf:d.asOf});
     }
     const fit=d._fit||fitLeague(ms);   // v118: d._fit = robotun data/ratings.json'a yazdığı aynı hesap
