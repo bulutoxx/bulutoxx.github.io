@@ -1,6 +1,6 @@
 {
  "surum": "2026-10-28.1",
- "guncelleme": "2026-11-10 05:17",
+ "guncelleme": "2026-11-10 05:34",
  "aciklama": "Basket piyasa karnesi: kilitli model tahmini ile maç öncesi son piyasa oranı (marjı Shin ile ayrılmış) aynı maçlarda. Harman = Benter iki aşama (lig grubu, zaman sıralı ağırlık). Çapalı = model fark/toplamının handikap ve alt/üst çizgisine çekilmesi. GA: gün blokları bootstrap %95. Üretime yalnız OXXai kapısı + gölge sonrası girer.",
  "kurallar": {
   "kapi": "n ≥ 150, gün ≥ 20, ΔLL GA üst < 0, ΔBrier < 0, isabet düşmez",
@@ -17,43 +17,43 @@
   "golge": "başlamamış her piyasalı maçta pg = {pm harmansız, ph harmanlı, pc çapalı, pk piyasa} bk_predlog'a yazılır"
  },
  "toplam": {
-  "n": 592,
+  "n": 599,
   "gun": 18,
   "model": {
-   "n": 592,
-   "ll": 0.5302,
-   "brier": 0.1786,
-   "isabet": 0.7517
+   "n": 599,
+   "ll": 0.5291,
+   "brier": 0.1783,
+   "isabet": 0.7496
   },
   "piyasa": {
-   "n": 592,
-   "ll": 0.44,
-   "brier": 0.1468,
-   "isabet": 0.7601
+   "n": 599,
+   "ll": 0.4426,
+   "brier": 0.1481,
+   "isabet": 0.7579
   },
   "piyasa_power": {
-   "n": 592,
-   "ll": 0.4485,
-   "brier": 0.1492,
-   "isabet": 0.7601
+   "n": 599,
+   "ll": 0.4519,
+   "brier": 0.1507,
+   "isabet": 0.7579
   },
   "harman": {
-   "n": 592,
-   "ll": 0.4429,
-   "brier": 0.1474,
-   "isabet": 0.7652
+   "n": 599,
+   "ll": 0.4449,
+   "brier": 0.1484,
+   "isabet": 0.7629
   },
   "capali": {
-   "n": 592,
-   "ll": 0.4405,
-   "brier": 0.1463,
-   "isabet": 0.7669
+   "n": 599,
+   "ll": 0.4411,
+   "brier": 0.1467,
+   "isabet": 0.7646
   },
   "uretim": {
-   "n": 592,
-   "ll": 0.4555,
-   "brier": 0.1504,
-   "isabet": 0.7821
+   "n": 599,
+   "ll": 0.4551,
+   "brier": 0.1505,
+   "isabet": 0.7796
   }
  },
  "gruplar": {
@@ -196,134 +196,134 @@
   },
   "kolej": {
    "ad": "NCAA erkek · kadın",
-   "n": 389,
+   "n": 394,
    "gun": 10,
    "ligler": [
     "ncaa",
     "ncaaw"
    ],
    "model": {
-    "n": 389,
-    "ll": 0.4749,
-    "brier": 0.1553,
-    "isabet": 0.8123
+    "n": 394,
+    "ll": 0.4729,
+    "brier": 0.1547,
+    "isabet": 0.8122
    },
    "piyasa": {
-    "n": 389,
-    "ll": 0.3558,
-    "brier": 0.115,
-    "isabet": 0.8123
+    "n": 394,
+    "ll": 0.3569,
+    "brier": 0.1156,
+    "isabet": 0.8122
    },
    "piyasa_power": {
-    "n": 389,
-    "ll": 0.3644,
-    "brier": 0.1172,
-    "isabet": 0.8123
+    "n": 394,
+    "ll": 0.366,
+    "brier": 0.1179,
+    "isabet": 0.8122
    },
    "harman": {
-    "n": 389,
-    "ll": 0.3614,
-    "brier": 0.1165,
-    "isabet": 0.8201
+    "n": 394,
+    "ll": 0.362,
+    "brier": 0.1169,
+    "isabet": 0.8198
    },
    "capali": {
-    "n": 389,
-    "ll": 0.3567,
-    "brier": 0.1143,
-    "isabet": 0.8226
+    "n": 394,
+    "ll": 0.3559,
+    "brier": 0.1142,
+    "isabet": 0.8223
    },
    "uretim": {
-    "n": 389,
-    "ll": 0.3762,
-    "brier": 0.1195,
-    "isabet": 0.8278
+    "n": 394,
+    "ll": 0.3745,
+    "brier": 0.119,
+    "isabet": 0.8274
    },
    "fark_harman_model": {
-    "ll": -0.1135,
+    "ll": -0.1109,
     "ll_ga": [
-     -0.1701,
-     -0.0454
+     -0.1677,
+     -0.0424
     ],
-    "brier": -0.0388,
+    "brier": -0.0378,
     "brier_ga": [
-     -0.0612,
-     -0.0128
+     -0.0603,
+     -0.0115
     ],
-    "isabet": 0.0077
+    "isabet": 0.0076
    },
    "fark_piyasa_model": {
-    "ll": -0.1191,
+    "ll": -0.1159,
     "ll_ga": [
-     -0.171,
-     -0.0505
+     -0.1686,
+     -0.046
     ],
-    "brier": -0.0403,
+    "brier": -0.0391,
     "brier_ga": [
-     -0.0614,
-     -0.0133
+     -0.0602,
+     -0.0114
     ],
     "isabet": 0.0
    },
    "fark_capali_model": {
-    "ll": -0.1183,
+    "ll": -0.117,
     "ll_ga": [
-     -0.1666,
-     -0.0521
+     -0.1673,
+     -0.0485
     ],
-    "brier": -0.0409,
+    "brier": -0.0405,
     "brier_ga": [
-     -0.0609,
-     -0.014
+     -0.061,
+     -0.0125
     ],
-    "isabet": 0.0103
+    "isabet": 0.0102
    },
    "fark_uretim_model": {
-    "ll": -0.0987,
+    "ll": -0.0983,
     "ll_ga": [
-     -0.1484,
+     -0.1481,
      -0.0444
     ],
-    "brier": -0.0358,
+    "brier": -0.0357,
     "brier_ga": [
      -0.056,
-     -0.0138
+     -0.0137
     ],
-    "isabet": 0.0154
+    "isabet": 0.0152
    },
    "skor": {
     "fark_mse": {
-     "model": 346.7499,
-     "piyasa": 157.1134,
-     "capali": 176.4461,
-     "n": 389,
+     "model": 347.9224,
+     "piyasa": 160.0189,
+     "capali": 179.1131,
+     "n": 394,
      "capali_eksi_model": [
-      -170.3038,
+      -168.8093,
       [
-       -255.9938,
-       -68.4911
+       -255.1487,
+       -67.0625
       ]
      ]
     },
     "toplam_mae": {
-     "model": 14.5481,
-     "piyasa": 13.8439,
-     "capali": 13.8614,
-     "n": 389,
+     "model": 14.4503,
+     "piyasa": 13.7351,
+     "capali": 13.7481,
+     "n": 394,
      "capali_eksi_model": [
-      -0.6867,
+      -0.7022,
       [
-       -1.2294,
-       -0.0662
+       -1.2312,
+       -0.1465
       ]
      ]
     }
    },
    "agirlik": {
-    "a": 0.2345,
-    "b": 0.8532,
-    "w_m": 0.9927,
-    "w_t": 0.8612,
-    "n_ogrenme": 389
+    "a": 0.2423,
+    "b": 0.8463,
+    "w_m": 0.9859,
+    "w_t": 0.8541,
+    "n_ogrenme": 394
    },
    "kapi": {
     "durum": "veri_az",
@@ -333,164 +333,164 @@
   },
   "pro": {
    "ad": "NBA · WNBA · G League · NBL",
-   "n": 150,
-   "gun": 17,
+   "n": 152,
+   "gun": 18,
    "ligler": [
     "nba",
     "nbl",
     "wnba"
    ],
    "model": {
-    "n": 150,
-    "ll": 0.6365,
-    "brier": 0.2235,
-    "isabet": 0.6267
+    "n": 152,
+    "ll": 0.638,
+    "brier": 0.2242,
+    "isabet": 0.6184
    },
    "piyasa": {
-    "n": 150,
-    "ll": 0.5763,
-    "brier": 0.1977,
-    "isabet": 0.6733
+    "n": 152,
+    "ll": 0.5848,
+    "brier": 0.2015,
+    "isabet": 0.6645
    },
    "piyasa_power": {
-    "n": 150,
-    "ll": 0.5781,
-    "brier": 0.1989,
-    "isabet": 0.6733
+    "n": 152,
+    "ll": 0.5886,
+    "brier": 0.2032,
+    "isabet": 0.6645
    },
    "harman": {
-    "n": 150,
-    "ll": 0.5802,
-    "brier": 0.1984,
-    "isabet": 0.68
+    "n": 152,
+    "ll": 0.5875,
+    "brier": 0.2018,
+    "isabet": 0.6711
    },
    "capali": {
-    "n": 150,
-    "ll": 0.5851,
-    "brier": 0.2004,
-    "isabet": 0.68
+    "n": 152,
+    "ll": 0.5904,
+    "brier": 0.2029,
+    "isabet": 0.6711
    },
    "uretim": {
-    "n": 150,
-    "ll": 0.5975,
-    "brier": 0.2053,
-    "isabet": 0.7067
+    "n": 152,
+    "ll": 0.6013,
+    "brier": 0.2072,
+    "isabet": 0.6974
    },
    "fark_harman_model": {
-    "ll": -0.0563,
+    "ll": -0.0505,
     "ll_ga": [
-     -0.0974,
-     -0.0161
+     -0.0959,
+     -0.0044
     ],
-    "brier": -0.025,
+    "brier": -0.0224,
     "brier_ga": [
-     -0.0447,
-     -0.005
+     -0.0428,
+     -0.0011
     ],
-    "isabet": 0.0533
+    "isabet": 0.0526
    },
    "fark_piyasa_model": {
-    "ll": -0.0602,
+    "ll": -0.0532,
     "ll_ga": [
-     -0.1144,
-     -0.0031
+     -0.1098,
+     0.0033
     ],
-    "brier": -0.0258,
+    "brier": -0.0227,
     "brier_ga": [
-     -0.0507,
-     -0.0003
+     -0.0489,
+     0.0057
     ],
-    "isabet": 0.0467
+    "isabet": 0.0461
    },
    "fark_capali_model": {
-    "ll": -0.0514,
+    "ll": -0.0476,
     "ll_ga": [
-     -0.0958,
-     -0.0069
+     -0.0902,
+     -0.0001
     ],
-    "brier": -0.0231,
+    "brier": -0.0213,
     "brier_ga": [
-     -0.045,
-     -0.0014
+     -0.0422,
+     0.0006
     ],
-    "isabet": 0.0533
+    "isabet": 0.0526
    },
    "fark_uretim_model": {
-    "ll": -0.039,
+    "ll": -0.0367,
     "ll_ga": [
-     -0.0647,
-     -0.0131
+     -0.0633,
+     -0.0088
     ],
-    "brier": -0.0182,
+    "brier": -0.017,
     "brier_ga": [
-     -0.0307,
-     -0.0057
+     -0.0302,
+     -0.0043
     ],
-    "isabet": 0.08
+    "isabet": 0.0789
    },
    "skor": {
     "fark_mse": {
-     "model": 201.7873,
-     "piyasa": 179.2159,
-     "capali": 179.7544,
-     "n": 150,
+     "model": 201.0334,
+     "piyasa": 180.7476,
+     "capali": 180.779,
+     "n": 152,
      "capali_eksi_model": [
-      -22.0329,
+      -20.2544,
       [
-       -36.8852,
-       -4.9154
+       -35.1894,
+       -3.4092
       ]
      ]
     },
     "toplam_mae": {
-     "model": 15.6673,
-     "piyasa": 14.3354,
-     "capali": 14.455,
-     "n": 150,
+     "model": 15.5914,
+     "piyasa": 14.3061,
+     "capali": 14.4224,
+     "n": 152,
      "capali_eksi_model": [
-      -1.2123,
+      -1.169,
       [
-       -1.9231,
-       -0.4356
+       -1.8623,
+       -0.4316
       ]
      ]
     }
    },
    "agirlik": {
-    "a": 0.3301,
-    "b": 0.8215,
-    "w_m": 0.7867,
-    "w_t": 0.9419,
-    "n_ogrenme": 150
+    "a": 0.3307,
+    "b": 0.8025,
+    "w_m": 0.7602,
+    "w_t": 0.923,
+    "n_ogrenme": 152
    },
    "kapi": {
     "durum": "veri_az",
-    "neden": "gün az (17 < 20)"
+    "neden": "gün az (18 < 20)"
    },
    "uretimde": false
   }
  },
  "agirlik": {
-  "pro": {
-   "a": 0.3301,
-   "b": 0.8215,
-   "w_m": 0.7867,
-   "w_t": 0.9419,
-   "n_ogrenme": 150
-  },
-  "kolej": {
-   "a": 0.2345,
-   "b": 0.8532,
-   "w_m": 0.9927,
-   "w_t": 0.8612,
-   "n_ogrenme": 389
-  },
   "avrupa": {
    "a": 0.3055,
    "b": 0.6418,
    "w_m": 0.2297,
    "w_t": 1.0,
    "n_ogrenme": 53
+  },
+  "kolej": {
+   "a": 0.2423,
+   "b": 0.8463,
+   "w_m": 0.9859,
+   "w_t": 0.8541,
+   "n_ogrenme": 394
+  },
+  "pro": {
+   "a": 0.3307,
+   "b": 0.8025,
+   "w_m": 0.7602,
+   "w_t": 0.923,
+   "n_ogrenme": 152
   }
  },
  "uretimde": {},
@@ -500,23 +500,23 @@
  },
  "canli_golge": {
   "tum": {
-   "n": 540,
+   "n": 547,
    "gun": 14,
    "pm": {
-    "ll": 0.5128,
-    "isabet": 0.7704
+    "ll": 0.5118,
+    "isabet": 0.7678
    },
    "ph": {
-    "ll": 0.4225,
-    "isabet": 0.7815
+    "ll": 0.4242,
+    "isabet": 0.7788
    },
    "pc": {
-    "ll": 0.418,
-    "isabet": 0.7833
+    "ll": 0.4195,
+    "isabet": 0.7806
    },
    "pk": {
-    "ll": 0.4217,
-    "isabet": 0.7796
+    "ll": 0.4239,
+    "isabet": 0.777
    }
   },
   "avrupa": {
@@ -540,43 +540,43 @@
    }
   },
   "kolej": {
-   "n": 389,
+   "n": 394,
    "gun": 10,
    "pm": {
-    "ll": 0.4704,
-    "isabet": 0.8123
+    "ll": 0.4684,
+    "isabet": 0.8122
    },
    "ph": {
-    "ll": 0.3585,
-    "isabet": 0.8201
+    "ll": 0.3581,
+    "isabet": 0.8198
    },
    "pc": {
     "ll": 0.3501,
-    "isabet": 0.8201
+    "isabet": 0.8198
    },
    "pk": {
-    "ll": 0.3558,
-    "isabet": 0.8149
+    "ll": 0.3557,
+    "isabet": 0.8147
    }
   },
   "pro": {
-   "n": 108,
-   "gun": 13,
+   "n": 110,
+   "gun": 14,
    "pm": {
-    "ll": 0.6219,
-    "isabet": 0.6574
+    "ll": 0.6242,
+    "isabet": 0.6455
    },
    "ph": {
-    "ll": 0.5712,
-    "isabet": 0.6944
+    "ll": 0.5814,
+    "isabet": 0.6818
    },
    "pc": {
-    "ll": 0.5786,
-    "isabet": 0.7037
+    "ll": 0.5861,
+    "isabet": 0.6909
    },
    "pk": {
-    "ll": 0.5713,
-    "isabet": 0.6852
+    "ll": 0.5831,
+    "isabet": 0.6727
    }
   }
  },
@@ -584,7 +584,7 @@
   "nba": {
    "kilitli": 194,
    "oranli": 142,
-   "sonuclu_oranli": 129,
+   "sonuclu_oranli": 131,
    "iddaa_ms": 105,
    "iddaa_hnd": 85,
    "iddaa_au": 105,
@@ -629,7 +629,7 @@
   "ncaa": {
    "kilitli": 964,
    "oranli": 401,
-   "sonuclu_oranli": 346,
+   "sonuclu_oranli": 350,
    "iddaa_ms": 120,
    "iddaa_hnd": 118,
    "iddaa_au": 120,
@@ -638,7 +638,7 @@
   "ncaaw": {
    "kilitli": 945,
    "oranli": 46,
-   "sonuclu_oranli": 43,
+   "sonuclu_oranli": 44,
    "iddaa_ms": 3,
    "iddaa_hnd": 0,
    "iddaa_au": 3,
@@ -667,7 +667,7 @@
   {
    "gun": "2026-10-24",
    "n": 12,
-   "ll_model": 0.7246,
+   "ll_model": 0.7247,
    "ll_piyasa": 0.6956,
    "ll_harman": 0.6987
   },
@@ -675,8 +675,8 @@
    "gun": "2026-10-25",
    "n": 10,
    "ll_model": 0.6803,
-   "ll_piyasa": 0.4954,
-   "ll_harman": 0.5333
+   "ll_piyasa": 0.4953,
+   "ll_harman": 0.5332
   },
   {
    "gun": "2026-10-26",
@@ -696,13 +696,13 @@
    "gun": "2026-10-28",
    "n": 18,
    "ll_model": 0.552,
-   "ll_piyasa": 0.5851,
-   "ll_harman": 0.5644
+   "ll_piyasa": 0.585,
+   "ll_harman": 0.5643
   },
   {
    "gun": "2026-10-29",
    "n": 16,
-   "ll_model": 0.7411,
+   "ll_model": 0.7412,
    "ll_piyasa": 0.5348,
    "ll_harman": 0.5744
   },
@@ -716,7 +716,7 @@
   {
    "gun": "2026-10-31",
    "n": 13,
-   "ll_model": 0.6572,
+   "ll_model": 0.6571,
    "ll_piyasa": 0.6376,
    "ll_harman": 0.6312
   },
@@ -724,7 +724,7 @@
    "gun": "2026-11-01",
    "n": 12,
    "ll_model": 0.7082,
-   "ll_piyasa": 0.6824,
+   "ll_piyasa": 0.6823,
    "ll_harman": 0.669
   },
   {
@@ -739,7 +739,7 @@
    "n": 140,
    "ll_model": 0.5491,
    "ll_piyasa": 0.3752,
-   "ll_harman": 0.3726
+   "ll_harman": 0.3727
   },
   {
    "gun": "2026-11-04",
@@ -772,23 +772,23 @@
   {
    "gun": "2026-11-08",
    "n": 68,
-   "ll_model": 0.5468,
+   "ll_model": 0.5467,
    "ll_piyasa": 0.4925,
    "ll_harman": 0.4957
   },
   {
    "gun": "2026-11-09",
-   "n": 19,
-   "ll_model": 0.6259,
-   "ll_piyasa": 0.4233,
-   "ll_harman": 0.4371
+   "n": 20,
+   "ll_model": 0.6568,
+   "ll_piyasa": 0.478,
+   "ll_harman": 0.4911
   },
   {
    "gun": "2026-11-10",
-   "n": 18,
-   "ll_model": 0.2515,
-   "ll_piyasa": 0.2922,
-   "ll_harman": 0.2739
+   "n": 24,
+   "ll_model": 0.2641,
+   "ll_piyasa": 0.3496,
+   "ll_harman": 0.321
   }
  ]
 }
