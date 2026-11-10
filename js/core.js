@@ -61,17 +61,46 @@ function quickProbs(lh, la){
   return {h,d,a,o};
 }
 // Piyasa oranından gol beklentisi: olasılık tablosu bir kez kurulur, sonuçlar önbelleğe alınır (eskiden her maçta ~45 ms)
-const FM={tab:null, rho:null, memo:new Map()};
+// YH-61: tablo Poisson satırları önhesaplanarak kurulur (quickProbs ile bit düzeyinde aynı aritmetik); arama ev olasılığına göre
+// sıralı dizinde iki yöne budamalı yürür — en küçük hata, eşitlikte en küçük tablo sırası (eski doğrusal taramayla aynı sonuç)
+const FM={tab:null, rho:null, memo:new Map(), ord:null, key:null};
+function fmBuild(rho){
+  const LH=[], LA=[]; for(let lh=0.25; lh<=3.8; lh+=0.05) LH.push(lh); for(let la=0.2; la<=3.4; la+=0.05) LA.push(la);
+  const pr=l=>{ const a=new Float64Array(11); for(let k=0;k<=10;k++) a[k]=pois(k,l); return a; };
+  const PB=LA.map(pr), g=new Float64Array(121), t=new Float64Array(LH.length*LA.length*6); let n=0;
+  for(const lh of LH){ const pa=pr(lh); for(let q=0;q<LA.length;q++){ fmCell(pa, PB[q], lh, LA[q], rho, g, t, n); n+=6; } }
+  const m=t.length/6, ord=new Int32Array(m), key=new Float64Array(m); for(let k=0;k<m;k++) ord[k]=k;
+  ord.sort((x,y)=>t[x*6+2]-t[y*6+2]||x-y); for(let k=0;k<m;k++) key[k]=t[ord[k]*6+2];
+  FM.tab=t; FM.ord=ord; FM.key=key;
+}
+function fmCell(pa, pb, lh, la, rho, g, t, n){ // quickProbs(lh, la) ile aynı işlem sırası (sık çağrılan küçük işlev: erken derlenir)
+  let s=0;
+  for(let i=0;i<=10;i++) for(let j=0;j<=10;j++){ let tau=1;
+    if(i===0&&j===0) tau=1-lh*la*rho; else if(i===0&&j===1) tau=1+lh*rho; else if(i===1&&j===0) tau=1+la*rho; else if(i===1&&j===1) tau=1-rho;
+    const v=Math.max(0,pa[i]*pb[j]*tau); g[i*11+j]=v; s+=v; }
+  let h=0,d=0,a=0,o=0;
+  for(let i=0;i<=10;i++) for(let j=0;j<=10;j++){ const v=g[i*11+j]/s; if(i>j) h+=v; else if(i===j) d+=v; else a+=v; if(i+j>2) o+=v; }
+  t[n]=lh; t[n+1]=la; t[n+2]=h; t[n+3]=d; t[n+4]=a; t[n+5]=o;
+}
 function fitMarket(p1x2, pOver){
   const rho=S.params.rho;
-  if(!FM.tab||FM.rho!==rho){ FM.rho=rho; FM.memo.clear(); const t=[];
-    for(let lh=0.25; lh<=3.8; lh+=0.05) for(let la=0.2; la<=3.4; la+=0.05){ const q=quickProbs(lh, la); t.push(lh,la,q.h,q.d,q.a,q.o); }
-    FM.tab=new Float64Array(t); }
+  if(!FM.tab||FM.rho!==rho){ FM.rho=rho; FM.memo.clear(); fmBuild(rho); }
   const key=p1x2.map(x=>x.toFixed(4)).join(",")+"|"+(pOver==null?"-":pOver.toFixed(4));
   const c=FM.memo.get(key); if(c) return c;
-  const T=FM.tab; let best=null, bestE=1e9;
-  for(let i=0;i<T.length;i+=6){ let e=(T[i+2]-p1x2[0])**2+(T[i+3]-p1x2[1])**2+(T[i+4]-p1x2[2])**2; if(pOver!=null) e+=(T[i+5]-pOver)**2;
-    if(e<bestE){ bestE=e; best=[T[i],T[i+1]]; } }
+  const T=FM.tab, p0=p1x2[0], p1=p1x2[1], p2=p1x2[2]; let best=null, bestE=1e9, bi=-1;
+  const err=i=>{ let e=(T[i+2]-p0)**2+(T[i+3]-p1)**2+(T[i+4]-p2)**2; if(pOver!=null) e+=(T[i+5]-pOver)**2; return e; };
+  if(!(isFinite(p0)&&isFinite(p1)&&isFinite(p2)&&(pOver==null||isFinite(pOver)))){
+    for(let i=0;i<T.length;i+=6){ const e=err(i); if(e<bestE){ bestE=e; best=[T[i],T[i+1]]; } }
+  } else {
+    const O=FM.ord, K=FM.key, m=K.length; let lo=0, hi=m; while(lo<hi){ const md=(lo+hi)>>1; if(K[md]<p0) lo=md+1; else hi=md; }
+    const see=k=>{ const r=O[k], e=err(r*6); if(e<bestE||(e===bestE&&r<bi)){ bestE=e; bi=r; } };
+    let u=lo, d=lo-1, uo=true, dO=true;
+    while(uo||dO){
+      if(uo){ if(u<m&&(K[u]-p0)**2<=bestE){ see(u); u++; } else uo=false; }
+      if(dO){ if(d>=0&&(K[d]-p0)**2<=bestE){ see(d); d--; } else dO=false; }
+    }
+    if(bi>=0) best=[T[bi*6],T[bi*6+1]];
+  }
   if(FM.memo.size>5000) FM.memo.clear(); FM.memo.set(key,best); return best;
 }
 
