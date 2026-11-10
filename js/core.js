@@ -32,11 +32,12 @@ async function initStore(){ loadLocal(); }
 // ---------- Model ----------
 function pois(k, l){ let p=Math.exp(-l); for(let i=1;i<=k;i++) p*=l/i; return p; }
 function grid(l1, l2, rho, max){
-  const g=[]; let s=0;
+  const g=[]; let s=0; const pa=[], pb=[]; // YH-59: Poisson olasılıkları satır / sütun başına bir kez (sonuç birebir aynı)
+  for(let k=0;k<=max;k++){ pa[k]=pois(k,l1); pb[k]=pois(k,l2); }
   for(let i=0;i<=max;i++){ g[i]=[]; for(let j=0;j<=max;j++){
     let tau=1;
     if(i===0&&j===0) tau=1-l1*l2*rho; else if(i===0&&j===1) tau=1+l1*rho; else if(i===1&&j===0) tau=1+l2*rho; else if(i===1&&j===1) tau=1-rho;
-    const v=Math.max(0,pois(i,l1)*pois(j,l2)*tau); g[i][j]=v; s+=v; } }
+    const v=Math.max(0,pa[i]*pb[j]*tau); g[i][j]=v; s+=v; } }
   for(const r of g) for(let j=0;j<r.length;j++) r[j]/=s;
   return g;
 }
