@@ -1,6 +1,6 @@
 {
  "surum": "2026-10-28.1",
- "guncelleme": "2026-11-11 02:47",
+ "guncelleme": "2026-11-11 04:17",
  "aciklama": "Basket piyasa karnesi: kilitli model tahmini ile maç öncesi son piyasa oranı (marjı Shin ile ayrılmış) aynı maçlarda. Harman = Benter iki aşama (lig grubu, zaman sıralı ağırlık). Çapalı = model fark/toplamının handikap ve alt/üst çizgisine çekilmesi. GA: gün blokları bootstrap %95. Üretime yalnız OXXai kapısı + gölge sonrası girer.",
  "kurallar": {
   "kapi": "n ≥ 150, gün ≥ 20, ΔLL GA üst < 0, ΔBrier < 0, isabet düşmez",
@@ -222,7 +222,7 @@
    },
    "harman": {
     "n": 410,
-    "ll": 0.3588,
+    "ll": 0.3589,
     "brier": 0.116,
     "isabet": 0.822
    },
@@ -242,7 +242,7 @@
     "ll": -0.1075,
     "ll_ga": [
      -0.1619,
-     -0.0414
+     -0.0415
     ],
     "brier": -0.0363,
     "brier_ga": [
@@ -252,7 +252,7 @@
     "isabet": 0.0073
    },
    "fark_piyasa_model": {
-    "ll": -0.112,
+    "ll": -0.1121,
     "ll_ga": [
      -0.1659,
      -0.0419
@@ -273,7 +273,7 @@
     "brier": -0.0391,
     "brier_ga": [
      -0.0609,
-     -0.0117
+     -0.0118
     ],
     "isabet": 0.0098
    },
@@ -293,14 +293,14 @@
    "skor": {
     "fark_mse": {
      "model": 342.8867,
-     "piyasa": 160.6084,
-     "capali": 178.926,
+     "piyasa": 160.6086,
+     "capali": 178.9262,
      "n": 410,
      "capali_eksi_model": [
-      -163.9608,
+      -163.9606,
       [
-       -248.9669,
-       -62.7358
+       -248.9666,
+       -62.7351
       ]
      ]
     },
@@ -320,8 +320,8 @@
    },
    "agirlik": {
     "a": 0.2466,
-    "b": 0.8446,
-    "w_m": 0.9812,
+    "b": 0.8447,
+    "w_m": 0.9811,
     "w_t": 0.8343,
     "n_ogrenme": 410
    },
@@ -471,13 +471,6 @@
   }
  },
  "agirlik": {
-  "kolej": {
-   "a": 0.2466,
-   "b": 0.8446,
-   "w_m": 0.9812,
-   "w_t": 0.8343,
-   "n_ogrenme": 410
-  },
   "avrupa": {
    "a": 0.3158,
    "b": 0.6583,
@@ -491,6 +484,13 @@
    "w_m": 0.8301,
    "w_t": 0.9125,
    "n_ogrenme": 158
+  },
+  "kolej": {
+   "a": 0.2466,
+   "b": 0.8447,
+   "w_m": 0.9811,
+   "w_t": 0.8343,
+   "n_ogrenme": 410
   }
  },
  "uretimde": {},
@@ -582,16 +582,16 @@
  },
  "kapsam": {
   "nba": {
-   "kilitli": 194,
-   "oranli": 148,
+   "kilitli": 206,
+   "oranli": 149,
    "sonuclu_oranli": 137,
    "iddaa_ms": 109,
    "iddaa_hnd": 89,
    "iddaa_au": 109,
-   "espn": 148
+   "espn": 149
   },
   "el": {
-   "kilitli": 50,
+   "kilitli": 56,
    "oranli": 33,
    "sonuclu_oranli": 25,
    "iddaa_ms": 33,
@@ -618,7 +618,7 @@
    "espn": 4
   },
   "nbl": {
-   "kilitli": 29,
+   "kilitli": 30,
    "oranli": 20,
    "sonuclu_oranli": 17,
    "iddaa_ms": 20,
@@ -627,7 +627,7 @@
    "espn": 0
   },
   "ncaa": {
-   "kilitli": 964,
+   "kilitli": 1035,
    "oranli": 446,
    "sonuclu_oranli": 363,
    "iddaa_ms": 134,
@@ -636,7 +636,7 @@
    "espn": 446
   },
   "ncaaw": {
-   "kilitli": 945,
+   "kilitli": 1013,
    "oranli": 48,
    "sonuclu_oranli": 47,
    "iddaa_ms": 3,
@@ -652,7 +652,6 @@
   "İzlanda Urvalsdeild": 2,
   "Avrupa Şamp Kadın, Eleme Grp J": 1,
   "Doğu Asya Süper Ligi": 1,
-  "ABD Kolej Basketbol Ligi": 3,
   "Japonya B.Ligi": 5,
   "Danimarka Basketligaen": 1,
   "G. Kore Güney Kore Basketbol Ligi": 1,
@@ -660,7 +659,7 @@
   "İtalya Serie A2": 8,
   "İtalya Serie B": 10,
   "European North Basketball Leag": 1,
-  "Arjantin LNB": 4,
+  "Arjantin LNB": 2,
   "Çekya NBL": 1,
   "Macaristan NB I": 4,
   "Uruguay Basketbol Ligi": 1,
@@ -734,7 +733,7 @@
   {
    "gun": "2026-11-02",
    "n": 18,
-   "ll_model": 0.605,
+   "ll_model": 0.6051,
    "ll_piyasa": 0.5623,
    "ll_harman": 0.548
   },
@@ -743,7 +742,7 @@
    "n": 140,
    "ll_model": 0.5492,
    "ll_piyasa": 0.3752,
-   "ll_harman": 0.3727
+   "ll_harman": 0.3728
   },
   {
    "gun": "2026-11-04",
@@ -769,9 +768,9 @@
   {
    "gun": "2026-11-07",
    "n": 85,
-   "ll_model": 0.4093,
+   "ll_model": 0.4094,
    "ll_piyasa": 0.3045,
-   "ll_harman": 0.3161
+   "ll_harman": 0.3162
   },
   {
    "gun": "2026-11-08",
@@ -797,7 +796,7 @@
   {
    "gun": "2026-11-11",
    "n": 1,
-   "ll_model": 0.0724,
+   "ll_model": 0.0726,
    "ll_piyasa": 0.0007,
    "ll_harman": 0.0011
   }

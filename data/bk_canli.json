@@ -2,7 +2,7 @@
  "aciklama": "YH-05 basket canlı kazanma olasılığı bayrağı (scripts/bk_canli.py; uygulama bkLivePred okur). kullan=true → Brown hareketi modeli (k, w, γ); false → eski formül. Kapı gece (basket.py): ≥300 sonuçlu anlık görüntü ve ≥40 maç, maç-blok bootstrap ΔLL GA üst < 0; 14 gün izleme, kötüleşirse geri alma. onbilgi: geçmiş çeyrek sonu skorlarından (lab/bk_canli_lab.py).",
  "kullan": false,
  "prm": {
-  "k": 1.05,
+  "k": 1.0,
   "w": 1.3,
   "g": -0.1
  },
@@ -42,80 +42,80 @@
  },
  "karar": "kapı geçmedi → eski formül",
  "veri": {
-  "anlik": 8044,
-  "mac": 957,
-  "gun": 13,
+  "anlik": 8756,
+  "mac": 1049,
+  "gun": 14,
   "esik": {
    "anlik": 300,
    "mac": 40
   }
  },
- "gece_tarih": "2026-11-10",
+ "gece_tarih": "2026-11-11",
  "sinama": {
-  "tarih": "2026-11-10",
+  "tarih": "2026-11-11",
   "tum": {
-   "n": 8044,
-   "mac": 957,
-   "d_ll": -0.00053,
+   "n": 8756,
+   "mac": 1049,
+   "d_ll": -0.00066,
    "d_ll_ga": [
     -0.00498,
-    0.00412
+    0.00348
    ],
-   "d_brier": -0.00043,
+   "d_brier": -0.00037,
    "d_brier_ga": [
-    -0.00178,
-    0.00096
+    -0.00168,
+    0.00097
    ],
-   "d_isabet": 0.00112,
+   "d_isabet": 0.00126,
    "d_isabet_ga": [
-    -0.00246,
-    0.00475
+    -0.00181,
+    0.00454
    ]
   },
   "yari1": {
-   "n": 4323,
-   "mac": 478,
-   "d_ll": 0.00126,
+   "n": 4707,
+   "mac": 524,
+   "d_ll": 0.00061,
    "d_ll_ga": [
-    -0.00398,
-    0.00666
+    -0.00516,
+    0.00655
    ],
-   "d_brier": -0.00032,
+   "d_brier": -0.00019,
    "d_brier_ga": [
-    -0.00223,
-    0.00154
+    -0.00184,
+    0.00177
    ],
-   "d_isabet": -0.00093,
+   "d_isabet": -0.00106,
    "d_isabet_ga": [
-    -0.00572,
-    0.00409
+    -0.00548,
+    0.00376
    ]
   },
   "yari2": {
-   "n": 3721,
-   "mac": 479,
-   "d_ll": -0.00262,
+   "n": 4049,
+   "mac": 525,
+   "d_ll": -0.00214,
    "d_ll_ga": [
-    -0.00989,
-    0.00414
+    -0.0088,
+    0.00376
    ],
    "d_brier": -0.00057,
    "d_brier_ga": [
-    -0.00259,
-    0.00164
+    -0.00216,
+    0.0012
    ],
-   "d_isabet": 0.00349,
+   "d_isabet": 0.00395,
    "d_isabet_ga": [
-    -0.00186,
-    0.00843
+    -0.00062,
+    0.00854
    ]
   },
   "gecti": false,
-  "ll_eski": 0.2375,
-  "ll_yeni": 0.237,
-  "isabet_eski": 0.8884,
-  "isabet_yeni": 0.8895,
-  "brier_eski": 0.076,
-  "brier_yeni": 0.0756
+  "ll_eski": 0.2312,
+  "ll_yeni": 0.2306,
+  "isabet_eski": 0.8918,
+  "isabet_yeni": 0.8931,
+  "brier_eski": 0.0737,
+  "brier_yeni": 0.0733
  }
 }
