@@ -16,11 +16,7 @@ PW="${QA_PW:-${RUNNER_TEMP:-/tmp}/oxx-pw}"
 PW_SURUM="${QA_PW_SURUM:-1.48.2}"
 
 if [ "${1:-}" = "kur" ]; then
-  mkdir -p "$PW"
-  cd "$PW"
-  [ -f package.json ] || npm init -y >/dev/null
-  npm i --no-audit --no-fund "playwright@$PW_SURUM" >/dev/null
-  npx playwright install --with-deps chromium >/dev/null
+  QA_PW_SURUM="$PW_SURUM" bash "$KOK/lab/pw_kur.sh" "$PW" || exit 2   # YH-64: önce tarayıcı, apt en iyi çaba
   echo "[duman] Playwright $PW_SURUM hazır: $PW"
   exit 0
 fi
