@@ -1104,6 +1104,11 @@ CAL_YEAR = {"col", "chi", "per", "ecu", "uru", "par", "ven", "bol", "ar2", "br2"
 def season_for(lg, d):
     return int(d[:4]) if lg in CAL_YEAR else season_of(d)
 
+# 🏷️ YH-63: ESPN eleme turlarında henüz belli olmayan taraf "TBD Home" / "TBD Away" gibi yer tutucuyla gelir; bu maçlar
+# bültene ve kilitli günlüğe girmez (gerçek eşleşme belli olunca ESPN gerçek adla yeniden verir).
+_YER_TUTUCU = re.compile(r"^\s*(tbd|tba|to be (determined|announced|confirmed))\b", re.I)
+def yer_tutucu(ad): return bool(_YER_TUTUCU.match(str(ad or "")))
+
 def espn_month(slug, ym):
     j = json.loads(fetch(f"https://site.api.espn.com/apis/site/v2/sports/soccer/{slug}/scoreboard?dates={ym}&limit=900"))
     res, fx = [], []
@@ -1111,6 +1116,7 @@ def espn_month(slug, ym):
         try:
             c = e["competitions"][0]; cs = {t["homeAway"]: t for t in c["competitors"]}
             h, a = cs["home"]["team"]["displayName"], cs["away"]["team"]["displayName"]
+            if yer_tutucu(h) or yer_tutucu(a): continue
             st = e.get("status", {}).get("type", {}); dt = datetime.fromisoformat(e["date"].replace("Z", "+00:00"))
             try:
                 from zoneinfo import ZoneInfo
@@ -1942,9 +1948,10 @@ def main():
         fx = [f for f in json.load(open(fxp, encoding="utf-8")) if f["d"] >= today.isoformat() and f["lg"] not in EXTRA]
     if extra_fx:
         fx += [f for f in extra_fx if f["d"] <= (today + timedelta(days=10)).isoformat()]
-    # 6) tekilleştir
+    # 6) tekilleştir (YH-63: yer tutucu takımlı maçlar — önceki fixtures.json'dan gelenler dahil — atlanır)
     seen_fx = set(); fx_u = []
     for f in fx:
+        if yer_tutucu(f.get("h")) or yer_tutucu(f.get("a")): continue
         k = (f["lg"], f["d"], f["h"], f["a"])
         if k not in seen_fx: seen_fx.add(k); fx_u.append(f)
     fx = fx_u
