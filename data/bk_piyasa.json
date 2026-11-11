@@ -1,6 +1,6 @@
 {
  "surum": "2026-10-28.1",
- "guncelleme": "2026-11-11 16:23",
+ "guncelleme": "2026-11-11 18:07",
  "aciklama": "Basket piyasa karnesi: kilitli model tahmini ile maç öncesi son piyasa oranı (marjı Shin ile ayrılmış) aynı maçlarda. Harman = Benter iki aşama (lig grubu, zaman sıralı ağırlık). Çapalı = model fark/toplamının handikap ve alt/üst çizgisine çekilmesi. GA: gün blokları bootstrap %95. Üretime yalnız OXXai kapısı + gölge sonrası girer.",
  "kurallar": {
   "kapi": "n ≥ 150, gün ≥ 20, ΔLL GA üst < 0, ΔBrier < 0, isabet düşmez",
@@ -471,6 +471,13 @@
   }
  },
  "agirlik": {
+  "pro": {
+   "a": 0.3361,
+   "b": 0.8209,
+   "w_m": 0.8344,
+   "w_t": 0.9517,
+   "n_ogrenme": 165
+  },
   "kolej": {
    "a": 0.2778,
    "b": 0.8468,
@@ -484,13 +491,6 @@
    "w_m": 0.1835,
    "w_t": 1.0,
    "n_ogrenme": 60
-  },
-  "pro": {
-   "a": 0.3361,
-   "b": 0.8209,
-   "w_m": 0.8344,
-   "w_t": 0.9517,
-   "n_ogrenme": 165
   }
  },
  "uretimde": {},
@@ -631,28 +631,26 @@
    "oranli": 467,
    "sonuclu_oranli": 419,
    "iddaa_ms": 158,
-   "iddaa_hnd": 155,
-   "iddaa_au": 156,
-   "espn": 467
+   "iddaa_hnd": 156,
+   "iddaa_au": 158,
+   "espn": 466
   },
   "ncaaw": {
    "kilitli": 1013,
-   "oranli": 48,
+   "oranli": 55,
    "sonuclu_oranli": 48,
    "iddaa_ms": 3,
    "iddaa_hnd": 0,
    "iddaa_au": 3,
-   "espn": 45
+   "espn": 52
   }
  },
  "sentetik_yarismalar": {
-  "İtalya Serie B": 14,
+  "İtalya Serie B": 15,
   "Arjantin LNB": 3,
-  "VTB Birleşik Ligi": 1,
   "Japonya B.Ligi": 3,
   "Uruguay Basketbol Ligi": 2,
   "ABD Kolej Basketbol Ligi": 2,
-  "Avrupa Şamp Kadın, Eleme Grp J": 1,
   "İzlanda Urvalsdeild": 2,
   "Slovenya 1. A SKL": 1,
   "European North Basketball Leag": 1,
@@ -664,7 +662,8 @@
   "İtalya Serie A2": 8,
   "Çekya NBL": 1,
   "Macaristan NB I": 4,
-  "Euroleague": 1
+  "Euroleague": 1,
+  "EuroBasket, Women, Qualificati": 3
  },
  "gunluk": [
   {
