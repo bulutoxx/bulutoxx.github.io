@@ -1,18 +1,21 @@
 {
- "zaman": "2026-11-09T20:36Z",
+ "zaman": "2026-11-11T22:55Z",
  "deneme": false,
  "isler": [
   {
    "is": "Futbol motoru",
-   "son_basari_saat": 0.51,
+   "son_basari_saat": 2.73,
    "calisan": 0,
-   "durum": "sağlıklı"
+   "durum": "hata → yeniden denendi"
   },
   {
    "is": "Canlı kayıt",
-   "son_basari_saat": 0.62,
+   "son_basari_saat": 1.89,
    "calisan": 1,
-   "durum": "sağlıklı"
+   "durum": "sağlık sorunu",
+   "saglik": [
+    "bayat dosya: data/health.json (2.28 sa > 1.5 sa)"
+   ]
   },
   {
    "is": "At yarışı canlı",
@@ -24,25 +27,48 @@
   },
   {
    "is": "Otonom ekip",
-   "son_basari_saat": 4.47,
+   "son_basari_saat": 4.54,
    "calisan": 0,
    "durum": "sağlıklı"
   },
   {
    "is": "Otomatik laboratuvar",
-   "son_basari_saat": 17.08,
+   "son_basari_saat": 19.26,
    "calisan": 0,
    "durum": "sağlıklı"
   },
   {
    "is": "Sürekli deney",
-   "son_basari_saat": 0.24,
-   "calisan": 0,
-   "durum": "sağlıklı"
+   "son_basari_saat": 5.44,
+   "calisan": 1,
+   "durum": "takıldı → kurtarıldı"
   }
  ],
- "eylem": [],
+ "eylem": [
+  {
+   "is": "Futbol motoru",
+   "eylem": "hata veren çalışma yeniden denendi",
+   "run": 43105673675
+  },
+  {
+   "is": "Sürekli deney",
+   "eylem": "takılı çalışma iptal edilip yeniden başlatıldı",
+   "run": 43095678545
+  }
+ ],
  "gecmis": [
+  {
+   "zaman": "2026-11-11T22:55Z",
+   "is": "Futbol motoru",
+   "eylem": "hata veren çalışma yeniden denendi",
+   "run": 43105673675
+  },
+  {
+   "zaman": "2026-11-11T22:55Z",
+   "is": "Sürekli deney",
+   "eylem": "takılı çalışma iptal edilip yeniden başlatıldı",
+   "run": 43095678545
+  },
   {
    "zaman": "2026-11-09T18:33Z",
    "is": "Canlı kayıt",
