@@ -10,7 +10,7 @@ Her çalıştırmada:
 Çıktı: data/basket.json (uygulama), data/bk_games.json (geçmiş), data/bk_predlog.json (kilitli tahminler).
 Ücretsiz kaynaklar, anahtar gerekmez. Claude'a bağlı değildir.
 """
-import gzip, json, math, os, sys, time, urllib.request
+import gzip, json, math, os, re, sys, time, urllib.request
 from datetime import date, datetime, timedelta, timezone
 import numpy as np
 
@@ -49,6 +49,10 @@ def fetch(url, tries=3):
     raise last
 
 # ---------------------------------------------------------------- indirme
+# 🏷️ YH-63: henüz belli olmayan eleme tarafı ("TBD") yer tutucusu — bu maçlar fikstüre ve kilitli günlüğe girmez
+_YER_TUTUCU = re.compile(r"^\s*(tbd|tba|to be (determined|announced|confirmed))\b", re.I)
+def yer_tutucu(ad): return bool(_YER_TUTUCU.match(str(ad or "")))
+
 def parse_espn_event(e, lg):
     c = e["competitions"][0]
     st = e.get("status", {}).get("type", {})
@@ -62,6 +66,7 @@ def parse_espn_event(e, lg):
         return {"n": tm.get("displayName") or tm.get("name"), "ab": tm.get("abbreviation", ""), "logo": tm.get("logo", ""),
                 "s": int(float(t.get("score") or 0)), "q": [int(x) for x in q]}
     h, a = side(cs["home"]), side(cs["away"])
+    if yer_tutucu(h["n"]) or yer_tutucu(a["n"]): return None
     g = {"id": "e" + str(e["id"]), "lg": lg, "dt": e["date"], "h": h["n"], "a": a["n"], "neutral": bool(c.get("neutralSite")),
          "state": st.get("state", "pre"), "hl": h["logo"], "al": a["logo"], "hab": h["ab"], "aab": a["ab"]}
     if "conferenceCompetition" in c: g["conf"] = bool(c.get("conferenceCompetition"))   # kolej: konferans içi maç (ileride ayrı ev avantajı için)
@@ -605,6 +610,7 @@ def main():
             fixtures += [f for f in old.get("fixtures", []) if f["lg"] == lg and f["dt"][:10] >= today.isoformat()]
         print(lg, log.get(lg), len(store.get(lg, {}).get("g", [])), flush=True)
     json.dump(store, open(gp, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
+    fixtures = [f for f in fixtures if not (yer_tutucu(f.get("h")) or yer_tutucu(f.get("a")))]   # YH-63 (önceki çıktıdan gelenler dahil)
 
     # Akıllı nöbet: yeni maç sonucu yoksa yeniden eğitme, yalnızca fikstür ve canlı bilgiyi tazele
     import hashlib
