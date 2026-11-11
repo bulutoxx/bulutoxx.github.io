@@ -105,7 +105,20 @@ function fitMarket(p1x2, pOver){
 }
 
 // Bir maçın tüm dağılımı: ilk yarı ve ikinci yarı ayrı Poisson (Dixon-Coles), maç sonu ikisinin birleşimi
+// YH-62: aynı girdiyle (λ, s, ρ, ilgili MODEL.params, __BX_OU) dist yeniden hesaplanmaz; önbellekteki sonuç her çağrıda
+// derin kopyalanarak verilir (çağıran nesneyi değiştirse de önbellek bozulmaz). Hesap _distHesap'ta birebir aynı.
+const DM=new Map();
+function _distKopya(r){ const o=Object.assign({}, r), cp=a=>a.map(x=>({s:x.s,p:x.p}));
+  o.topFT=cp(r.topFT); o.topH1=cp(r.topH1); o.topH2=cp(r.topH2); o.htft=r.htft.map(x=>[x[0],x[1]]); return o; }
 function dist(lh, la, s, rho){
+  const CP=(typeof MODEL!=="undefined"&&MODEL&&MODEL.params)||{};
+  const ou=(typeof window==="undefined"||window.__BX_OU!==false);
+  const key=lh+"|"+la+"|"+s+"|"+rho+"|"+CP.gscale+"|"+CP.calT+"|"+CP.dk+"|"+CP.scoreMode+"|"+CP.golluT+"|"+ou;
+  let r=DM.get(key);
+  if(!r){ r=_distHesap(lh, la, s, rho); if(DM.size>3000) DM.clear(); DM.set(key, r); }
+  return _distKopya(r);
+}
+function _distHesap(lh, la, s, rho){
   const MX=7;
   // Öğrenilen kalibrasyon (motor her eğitimde seçer, son %30 maçta doğrular): gol ölçeği, keskinleştirme, beraberlik
   const CP=(typeof MODEL!=="undefined"&&MODEL&&MODEL.params)||{}; const GS=CP.gscale||1; lh*=GS; la*=GS;
