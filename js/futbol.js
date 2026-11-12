@@ -55,7 +55,7 @@
     const old=$("gate"); if(old) old.remove();
     const el=document.createElement("div"); el.className="gate g2"; el.id="gate";
     el.innerHTML=`<div class="gbox" role="dialog" aria-modal="true" aria-labelledby="gT">
-      <img class="glogo" src="icons/oxxai-logo.webp" alt="OXXai">
+      <img class="glogo" src="icons/oxxai-logo.webp" alt="OXXai" loading="lazy" decoding="async">
       <h2 id="gT">OXXai'ye hoş geldin 👋</h2>
       <ul class="g2-l">
         <li><span>⚽</span><div>Hobi amaçlı maç tahmini ve takip aracı. <b>Şans oyunu değildir</b>, para almaz.</div></li>
@@ -77,7 +77,7 @@
   doInstall=function(){ if(!termsAccepted()){ window._pendInst=true; showTerms(true); return; }
     const old=$("instGate"); if(old) old.remove();
     const el=document.createElement("div"); el.className="gate g2"; el.id="instGate";
-    el.innerHTML=`<div class="gbox" role="dialog" aria-modal="true" aria-labelledby="iT"><img class="glogo" src="icons/oxxai-logo.webp" alt="OXXai">
+    el.innerHTML=`<div class="gbox" role="dialog" aria-modal="true" aria-labelledby="iT"><img class="glogo" src="icons/oxxai-logo.webp" alt="OXXai" loading="lazy" decoding="async">
       <h2 id="iT">Ana ekrana ekle</h2>
       <ul class="g2-l"><li><span>📲</span><div>OXXai telefonunda uygulama gibi açılır.</div></li><li><span>🔒</span><div>Listelerin yalnız bu cihazda kalır; simgeyi silersen listeler de silinebilir.</div></li></ul>
       <button class="g2-go" id="iGo" type="button">Ana ekrana ekle</button><button class="g2-no" id="iNo" type="button">Şimdi değil</button></div>`;

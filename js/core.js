@@ -1389,7 +1389,7 @@ async function shareApp(){
 (function mountInstall(){
   const strip=$("todayStrip");
   const card=document.createElement("div"); card.id="installCard"; card.className="icard";
-  card.innerHTML=`<img src="icons/oxxai2-192.png" alt="">
+  card.innerHTML=`<img src="icons/oxxai2-192.png" alt="" loading="lazy" decoding="async">
     <div class="tx"><b>OXXai uygulamasını yükle</b><small data-count hidden></small><small class="sub">Ana ekrandan tek dokunuşla aç, gol bildirimlerini al</small></div>
     <button class="ibtn" type="button" id="installBtn">Yükle</button>`;
   strip.parentNode.insertBefore(card, strip);
@@ -1658,7 +1658,7 @@ function showTerms(gate){
   const old=$("gate"); if(old) old.remove();
   const el=document.createElement("div"); el.className="gate"; el.id="gate";
   el.innerHTML=`<div class="gbox" role="dialog" aria-modal="true" aria-labelledby="gT">
-    <img class="glogo" src="icons/oxxai-logo.webp" alt="OXXai">
+    <img class="glogo" src="icons/oxxai-logo.webp" alt="OXXai" loading="lazy" decoding="async">
     <h2 id="gT">${gate?"OXXai'ye hoş geldin":"Kullanım koşulları ve KVKK"}</h2>
     ${gate?`<p class="note" style="text-align:center;margin-top:-4px">Devam etmeden önce lütfen oku.</p>`:""}
     <div class="gsum">
@@ -5003,7 +5003,7 @@ const _doInstallL=doInstall;
 doInstall=function(){ if(!termsAccepted()){ window._pendInst=true; showTerms(true); return; }
   const old=$("instGate"); if(old) old.remove();
   const el=document.createElement("div"); el.className="gate"; el.id="instGate";
-  el.innerHTML=`<div class="gbox" role="dialog" aria-modal="true" aria-labelledby="iT"><img class="glogo" src="icons/oxxai-logo.webp" alt="OXXai">
+  el.innerHTML=`<div class="gbox" role="dialog" aria-modal="true" aria-labelledby="iT"><img class="glogo" src="icons/oxxai-logo.webp" alt="OXXai" loading="lazy" decoding="async">
     <h2 id="iT">OXXai'yi ana ekrana ekle</h2>
     <p>OXXai ana ekranına bir uygulama simgesi olarak eklenir. Çalışması için gereken dosyalar cihazında saklanır ve listelerin yalnızca bu cihazda kalır. Simgeyi kaldırmak veya tarayıcı verilerini silmek listelerini de silebilir. <b>OXXai hobi amaçlı bir maç tahmini ve takip aracıdır; şans oyunu değildir.</b></p>
     <label class="gchk"><input type="checkbox" id="iOk"><span>Anladım. OXXai'yi yalnızca maç tahmini ve takip amacıyla kullanacağım.</span></label>
