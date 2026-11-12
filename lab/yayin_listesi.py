@@ -132,12 +132,33 @@ def pz_ayir(hedef, sec):
 
 ARSIV_OZET = "data/arsiv_ozet.json"
 ARSIV_OZET_GUN = 45
+ARSIV_OZET_TABAN = 0.70   # YH-66: okuyucuların (goldKarne / tpKarne) en düşük olasılık eşiği; altındaki kayıt hiçbir karneye girmez
+
+
+def _olas(x):
+    try:
+        return float(x)
+    except (TypeError, ValueError):
+        return None
+
+
+def arsiv_kayit_sec(v, taban=ARSIV_OZET_TABAN):
+    """YH-66: bir arşiv kaydının özete hangi alanlarla gireceği (None → girmez). taban=None → YH-48 davranışı (eşiksiz)."""
+    a = v.get("ok") is not None and v.get("rp") is not None and bool(v.get("ro"))
+    b = bool(v.get("sk")) and v.get("sp") is not None and v.get("sok") is not None
+    if taban is not None:
+        a = a and (_olas(v.get("rp")) or 0) >= taban
+        b = b and (_olas(v.get("sp")) or 0) >= taban
+    if not (a or b):
+        return None
+    alan = ("ok", "rp", "ro", "sk", "sp", "sok") + (("ms", "ou") if b else ())
+    return {x: v[x] for x in alan if x in v}
 
 
 def arsiv_ozet(hedef, sec):
     """YH-48: açılıştaki karne hesapları (Altın / hazır tahmin karnesi) son 30 günün tam arşiv dosyalarını ayrı ayrı indiriyordu
     (≈ 1,5 MB). Yayın kopyasına yalnız bu hesapların okuduğu alanları taşıyan tek özet yazılır; depo arşivi DEĞİŞMEZ.
-    Kayıt: (ok, rp, ro dolu) ya da (sk, sp, sok dolu) olanlar, değerler olduğu gibi; ms / ou yalnız ikinci gruptakilerde (oran için).
+    Kayıt: (ok, rp, ro dolu, rp ≥ 0,70) ya da (sk, sp, sok dolu, sp ≥ 0,70) olanlar (YH-66), değerler olduğu gibi; ms / ou yalnız ikinci gruptakilerde (oran için).
     Özette olmayan gün → istemci tam dosyaya düşer; dosyası olmayan gün → null (eskiden de 404 → atlanıyordu)."""
     if not any(ARSIV_OZET in open(os.path.join(hedef, y), encoding="utf-8", errors="replace").read()
                for y in sec if y.endswith(".js") or y == "index.html"):
@@ -156,12 +177,9 @@ def arsiv_ozet(hedef, sec):
         for k, v in A.items():
             if not isinstance(v, dict):
                 continue
-            a = v.get("ok") is not None and v.get("rp") is not None and bool(v.get("ro"))
-            b = bool(v.get("sk")) and v.get("sp") is not None and v.get("sok") is not None
-            if not (a or b):
-                continue
-            alan = ("ok", "rp", "ro", "sk", "sp", "sok") + (("ms", "ou") if b else ())
-            R[k] = {x: v[x] for x in alan if x in v}
+            s = arsiv_kayit_sec(v)
+            if s is not None:
+                R[k] = s
         G[d] = R
     json.dump({"v": 1, "g": G}, open(os.path.join(hedef, ARSIV_OZET), "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
     print(f"[yayın listesi] arşiv özeti: {len(G)} gün → {ARSIV_OZET} ({round(os.path.getsize(os.path.join(hedef, ARSIV_OZET)) / 1024)} KB)")
