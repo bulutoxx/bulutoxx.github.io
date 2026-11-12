@@ -1,6 +1,6 @@
 {
  "surum": "2026-10-28.1",
- "guncelleme": "2026-11-12 21:02",
+ "guncelleme": "2026-11-12 21:27",
  "aciklama": "Basket piyasa karnesi: kilitli model tahmini ile maç öncesi son piyasa oranı (marjı Shin ile ayrılmış) aynı maçlarda. Harman = Benter iki aşama (lig grubu, zaman sıralı ağırlık). Çapalı = model fark/toplamının handikap ve alt/üst çizgisine çekilmesi. GA: gün blokları bootstrap %95. Üretime yalnız OXXai kapısı + gölge sonrası girer.",
  "kurallar": {
   "kapi": "n ≥ 150, gün ≥ 20, ΔLL GA üst < 0, ΔBrier < 0, isabet düşmez",
@@ -471,6 +471,13 @@
   }
  },
  "agirlik": {
+  "kolej": {
+   "a": 0.257,
+   "b": 0.858,
+   "w_m": 1.0,
+   "w_t": 0.9663,
+   "n_ogrenme": 524
+  },
   "pro": {
    "a": 0.3175,
    "b": 0.8377,
@@ -484,13 +491,6 @@
    "w_m": 0.3555,
    "w_t": 1.0,
    "n_ogrenme": 67
-  },
-  "kolej": {
-   "a": 0.257,
-   "b": 0.858,
-   "w_m": 1.0,
-   "w_t": 0.9663,
-   "n_ogrenme": 524
   }
  },
  "uretimde": {},
@@ -646,18 +646,21 @@
   }
  },
  "sentetik_yarismalar": {
+  "İtalya Serie A2": 7,
   "İzlanda Urvalsdeild": 3,
+  "İspanya LEB Oro": 4,
+  "Çekya NBL": 2,
+  "Macaristan NB I": 3,
   "İsveç Basketbol Ligi": 2,
   "Euroleague": 1,
   "Japonya B.Ligi": 3,
   "VTB Birleşik Ligi": 2,
   "Fransa Pro B": 9,
-  "İspanya Liga ACB": 6,
+  "İspanya Liga ACB": 5,
   "Yunanistan A1": 5,
   "Japonya B2.Ligi": 6,
   "G. Kore Güney Kore Kadın Basket Ligi": 1,
   "Türkiye Erkekler Basketbol 1. Ligi": 3,
-  "Macaristan NB I": 2,
   "Portekiz Basketbol Ligi": 2,
   "Almanya BBL": 7,
   "Meksika LNBP, Playofflar": 1,
@@ -676,10 +679,7 @@
   "G. Kore Güney Kore Basketbol Ligi": 1,
   "Slovakya Extraliga": 3,
   "Danimarka Basketligaen": 1,
-  "Çekya NBL": 1,
-  "Ukrayna FBU Süperligi": 1,
-  "İtalya Serie A2": 1,
-  "İspanya LEB Oro": 1
+  "Ukrayna FBU Süperligi": 1
  },
  "gunluk": [
   {
