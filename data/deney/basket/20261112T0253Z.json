@@ -1,0 +1,80 @@
+{
+ "is": "basket",
+ "zaman": "20261112T0253Z",
+ "sure_sn": 0.3,
+ "denenen": [
+  {
+   "aday": {
+    "anahtar": "bk_piyasa:pro",
+    "tur": "bk_piyasa",
+    "alan": "basket",
+    "yol": [
+     "bk_piyasa",
+     "pro"
+    ],
+    "deger": true,
+    "stratejiler": [
+     "bk_en_olasi"
+    ],
+    "sinyal": {
+     "n": 166,
+     "z": -2.61,
+     "fark_ll": -0.0523,
+     "ga": [
+      -0.0903,
+      -0.0117
+     ],
+     "kaynak": "data/bk_piyasa.json (kilitli basket tahmini × maç öncesi piyasa)"
+    },
+    "aciklama": "basket NBA · WNBA · G League · NBL: model + piyasa harmanı log-kaybını -0.0523 düşürüyor → piyasa çapası üretime"
+   },
+   "m": 7,
+   "rap": {
+    "olcut": "log-kaybı iyileşmesi (model → model+piyasa harmanı)",
+    "alfa": 0.0158,
+    "alfa_ham": 0.01583333333333333,
+    "deneme_no": 7,
+    "test_yapildi": true,
+    "istatistik_gecti": true,
+    "secim": {
+     "gun": [
+      "2026-10-24",
+      "2026-11-05"
+     ],
+     "fark": 0.0534,
+     "taban": {
+      "n": 121,
+      "ll": 0.6611
+     },
+     "aday": {
+      "n": 121,
+      "ll": 0.6077
+     }
+    },
+    "sinama": {
+     "gun": [
+      "2026-11-06",
+      "2026-11-12"
+     ],
+     "fark": 0.0493,
+     "alt_sinir": 0.0121,
+     "bootstrap_B": 2000,
+     "taban": {
+      "n": 45,
+      "ll": 0.5531
+     },
+     "aday": {
+      "n": 45,
+      "ll": 0.5038
+     }
+    },
+    "koruma": {},
+    "karar": "veri_yetersiz",
+    "neden": "sınamada maç az (45 < 50)"
+   },
+   "sure_sn": 0.2
+  }
+ ],
+ "golge_olcum": [],
+ "bugun": "2026-11-12"
+}
