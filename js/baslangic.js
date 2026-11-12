@@ -299,7 +299,16 @@
   const of=W.fetch;
   let bitir; OZ.hazir=new Promise(r=>{ bitir=r; });
   let tamam=false;
-  function karar(on,kaynak){ if(tamam) return; tamam=true; OZ.at=!!on; OZ.kaynak=kaynak;
+  // YH-65: dört at paketi (at.js, at-kupo.js, at2.js, at5.js) yalnız telefonda son bilinen bayrak açıksa yüklenir. index.html'de
+  // paketin eski yerinde OXX_OZ.yaz("js/…") çağrılır; document.write ayrıştırıcı sırasını birebir korur (katman sarmalama sırası değişmez).
+  // Bayrak açık gelip paketler bu açılışta yüklenmediyse bölüm bu oturum kapalı kalır (yarım at arayüzü yok); sonraki açılışta açılır.
+  const PK="oxx-ozellik-at";
+  OZ.atPaket=(function(){ try{ return W.localStorage.getItem(PK)==="1"; }catch(e){ return false; } })();
+  OZ.yaz=function(src){ if(!OZ.atPaket) return; try{ document.write('<script src="'+String(src).replace(/[^A-Za-z0-9_\-\/.?=]/g,"")+'"><\/script>'); }catch(e){} };
+  function karar(on,kaynak){ if(tamam) return; tamam=true;
+    if(kaynak==="dosya"){ try{ W.localStorage.setItem(PK,on?"1":"0"); }catch(e){} }
+    if(on&&!OZ.atPaket){ on=false; kaynak="dosya-paket-sonraki-acilista"; }
+    OZ.at=!!on; OZ.kaynak=kaynak;
     try{ if(OZ.at) R.classList.remove(KAP); else R.classList.add(KAP); }catch(e){}
     if(OZ.at) geriYukle();
     bitir(OZ.at);

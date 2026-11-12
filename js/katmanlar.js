@@ -487,6 +487,12 @@ window.BX_ARALIK={satir, get veri(){ return AR; }};
     goView=function(v){ if(v==="at"&&OZ.at===false) return _gv.call(this,"bulten","bulten"); return _gv.apply(this,arguments); }; }
   OZ.hazir.then(on=>{ if(on) return; if(atHash()) yonlen();
     try{ const v=document.getElementById("v-at"); if(v&&!v.hidden) yonlen(); }catch(e){} });
+  // YH-65: at paketleri yüklenmediyse (bölüm kapalı) at katmanının yaptığı iki görünür işi burada yap:
+  // #at… adresine sonradan geçiş (hashchange) Bülten'e döner; spor seçicide "🏀 Basket" kısa adı (at açıkken olduğu gibi).
+  if(!OZ.atPaket){
+    W.addEventListener("hashchange",()=>{ if(kapali()&&atHash()) yonlen(); });
+    try{ document.querySelectorAll(".sport-sw button[data-s=\"bk\"]").forEach(b=>{ if(!b.dataset.sh){ b.dataset.sh=1; b.innerHTML="🏀 Basket"; } }); }catch(e){}
+  }
   // ---------- OXXai ----------
   const NZ=t=>String(t||"").toLocaleLowerCase("tr").replace(/ç/g,"c").replace(/ğ/g,"g").replace(/ı/g,"i").replace(/ö/g,"o").replace(/ş/g,"s").replace(/ü/g,"u").replace(/[^a-z0-9 .]/g," ").replace(/\s+/g," ").trim();
   const AKEY=/\b(at yarisi|at yarislari|atyarisi|kosu|kosular|kosusu|ganyan|hipodrom|jokey|plase|veliefendi|atlar|padok|altin atlar)\b|\bat (bolum|yaris|kupo)\w*/;
