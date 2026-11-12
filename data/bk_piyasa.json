@@ -1,6 +1,6 @@
 {
  "surum": "2026-10-28.1",
- "guncelleme": "2026-11-12 23:04",
+ "guncelleme": "2026-11-12 23:55",
  "aciklama": "Basket piyasa karnesi: kilitli model tahmini ile maç öncesi son piyasa oranı (marjı Shin ile ayrılmış) aynı maçlarda. Harman = Benter iki aşama (lig grubu, zaman sıralı ağırlık). Çapalı = model fark/toplamının handikap ve alt/üst çizgisine çekilmesi. GA: gün blokları bootstrap %95. Üretime yalnız OXXai kapısı + gölge sonrası girer.",
  "kurallar": {
   "kapi": "n ≥ 150, gün ≥ 20, ΔLL GA üst < 0, ΔBrier < 0, isabet düşmez",
@@ -21,7 +21,7 @@
   "gun": 20,
   "model": {
    "n": 768,
-   "ll": 0.5171,
+   "ll": 0.5172,
    "brier": 0.1739,
    "isabet": 0.75
   },
@@ -268,7 +268,7 @@
     "ll": -0.101,
     "ll_ga": [
      -0.1463,
-     -0.0526
+     -0.0527
     ],
     "brier": -0.0344,
     "brier_ga": [
@@ -293,13 +293,13 @@
    "skor": {
     "fark_mse": {
      "model": 330.2178,
-     "piyasa": 161.5116,
-     "capali": 175.9252,
+     "piyasa": 161.5118,
+     "capali": 175.9254,
      "n": 524,
      "capali_eksi_model": [
-      -154.2926,
+      -154.2924,
       [
-       -227.9086,
+       -227.9084,
        -75.8857
       ]
      ]
@@ -320,7 +320,7 @@
    },
    "agirlik": {
     "a": 0.257,
-    "b": 0.858,
+    "b": 0.8581,
     "w_m": 1.0,
     "w_t": 0.9663,
     "n_ogrenme": 524
@@ -487,7 +487,7 @@
   },
   "kolej": {
    "a": 0.257,
-   "b": 0.858,
+   "b": 0.8581,
    "w_m": 1.0,
    "w_t": 0.9663,
    "n_ogrenme": 524
@@ -628,11 +628,11 @@
   },
   "ncaa": {
    "kilitli": 1067,
-   "oranli": 496,
+   "oranli": 499,
    "sonuclu_oranli": 467,
-   "iddaa_ms": 174,
-   "iddaa_hnd": 171,
-   "iddaa_au": 167,
+   "iddaa_ms": 177,
+   "iddaa_hnd": 174,
+   "iddaa_au": 166,
    "espn": 491
   },
   "ncaaw": {
@@ -646,7 +646,7 @@
   }
  },
  "sentetik_yarismalar": {
-  "BNXT Ligi": 1,
+  "BNXT Ligi": 2,
   "İtalya Serie A2": 7,
   "Japonya B2.Ligi": 6,
   "Uruguay Basketbol Ligi": 5,
@@ -676,6 +676,7 @@
   "Polonya PLK": 5,
   "İzlanda Urvalsdeild": 1,
   "G. Kore Güney Kore Basketbol Ligi": 1,
+  "İtalya Serie B": 1,
   "Slovakya Extraliga": 3,
   "Danimarka Basketligaen": 1,
   "Ukrayna FBU Süperligi": 1
@@ -749,7 +750,7 @@
    "n": 18,
    "ll_model": 0.606,
    "ll_piyasa": 0.5624,
-   "ll_harman": 0.5484
+   "ll_harman": 0.5485
   },
   {
    "gun": "2026-11-03",
@@ -768,8 +769,8 @@
   {
    "gun": "2026-11-05",
    "n": 34,
-   "ll_model": 0.4817,
-   "ll_piyasa": 0.468,
+   "ll_model": 0.4818,
+   "ll_piyasa": 0.4681,
    "ll_harman": 0.4567
   },
   {
@@ -817,7 +818,7 @@
   {
    "gun": "2026-11-12",
    "n": 59,
-   "ll_model": 0.515,
+   "ll_model": 0.5151,
    "ll_piyasa": 0.4252,
    "ll_harman": 0.4338
   }
