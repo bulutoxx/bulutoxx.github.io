@@ -1,19 +1,19 @@
 {
- "zaman": "2026-11-12T19:56Z",
+ "zaman": "2026-11-12T20:52Z",
  "deneme": false,
  "isler": [
   {
    "is": "Futbol motoru",
-   "son_basari_saat": 0.78,
+   "son_basari_saat": 0.79,
    "calisan": 0,
-   "durum": "sağlık sorunu (bir kez tetiklendi, bekleniyor)",
+   "durum": "sağlık sorunu → yeniden tetiklendi",
    "saglik": [
-    "bayat dosya: data/predlog.json (12.38 sa > 12.0 sa)"
+    "bayat dosya: data/predlog.json (13.32 sa > 12.0 sa)"
    ]
   },
   {
    "is": "Canlı kayıt",
-   "son_basari_saat": 0.29,
+   "son_basari_saat": 0.34,
    "calisan": 0,
    "durum": "sağlıklı"
   },
@@ -27,25 +27,41 @@
   },
   {
    "is": "Otonom ekip",
-   "son_basari_saat": 3.8,
+   "son_basari_saat": 4.74,
    "calisan": 0,
    "durum": "sağlıklı"
   },
   {
    "is": "Otomatik laboratuvar",
-   "son_basari_saat": 16.29,
+   "son_basari_saat": 17.22,
    "calisan": 0,
    "durum": "sağlıklı"
   },
   {
    "is": "Sürekli deney",
-   "son_basari_saat": 2.54,
+   "son_basari_saat": 0.55,
    "calisan": 0,
    "durum": "sağlıklı"
   }
  ],
- "eylem": [],
+ "eylem": [
+  {
+   "is": "Futbol motoru",
+   "eylem": "sağlık kaydında sorun → bir kez yeniden tetiklendi",
+   "neden": [
+    "bayat dosya: data/predlog.json (13.32 sa > 12.0 sa)"
+   ]
+  }
+ ],
  "gecmis": [
+  {
+   "zaman": "2026-11-12T20:52Z",
+   "is": "Futbol motoru",
+   "eylem": "sağlık kaydında sorun → bir kez yeniden tetiklendi",
+   "neden": [
+    "bayat dosya: data/predlog.json (13.32 sa > 12.0 sa)"
+   ]
+  },
   {
    "zaman": "2026-11-12T09:40Z",
    "is": "Sürekli deney",
@@ -241,5 +257,10 @@
    "eylem": "2.2 saattir başarı yok → yeniden başlatıldı"
   }
  ],
- "saglik_tetik": {}
+ "saglik_tetik": {
+  "update.yml": {
+   "imza": "bayat dosya: data/predlog.json (13.32 sa > 12.0 sa)",
+   "zaman": "2026-11-12T20:52Z"
+  }
+ }
 }
