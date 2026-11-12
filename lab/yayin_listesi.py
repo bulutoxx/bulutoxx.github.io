@@ -186,6 +186,65 @@ def arsiv_ozet(hedef, sec):
     return len(G)
 
 
+PAZAR_KARNE = "data/pazar_karne.json"
+# YH-68: istemcinin pazar karnesinden okuduğu alanlar (js/pazar.js KAR / calNote, js/guvenilirlik.js ST.pk). Yeni bir alan okunursa
+# pazar_karne_kirp() bunu kaynak taramasıyla görür ve kırpmadan tam dosyayı yayınlar (sessiz bozulma yok).
+PK_UST = {"pazarlar", "gruplar", "n_mac"}
+PK_PAZAR = {"kalibrasyon", "oneriye_uygun"}
+PK_ST = {"canli"}
+PK_CANLI = {"guvenilirlik"}
+
+
+def _pk_erisim(hedef, sec):
+    """İstemci kaynağındaki pazar karnesi erişimlerini çıkarır; beklenmeyen okuyucu / alan varsa None."""
+    okuyan = [y for y in sec if (y.endswith(".js") or y == "index.html")
+              and PAZAR_KARNE in open(os.path.join(hedef, y), encoding="utf-8", errors="replace").read()]
+    if sorted(okuyan) != ["js/guvenilirlik.js", "js/pazar.js"]:
+        return None
+    pz = open(os.path.join(hedef, "js/pazar.js"), encoding="utf-8").read()
+    gv = open(os.path.join(hedef, "js/guvenilirlik.js"), encoding="utf-8").read()
+    ust = set(re.findall(r"\bKAR(?:&&KAR)?\.(\w+)", pz))
+    i, j = pz.find("function calNote"), pz.find("window.pzCal")
+    if i < 0 or j < i:
+        return None
+    paz = set(re.findall(r"\bK\.(\w+)", pz[i:j]))
+    st = set(re.findall(r"\bST\.pk(?:&&ST\.pk)?\.(\w+)", gv))
+    cn = set(re.findall(r"\bST\.pk\.canli(?:&&ST\.pk\.canli)?\.(\w+)", gv))
+    if not (ust <= PK_UST and paz <= PK_PAZAR and st <= PK_ST and cn <= PK_CANLI):
+        return None
+    return ust, paz, st, cn
+
+
+def pazar_karne_kirp(hedef, sec):
+    """YH-68: data/pazar_karne.json (≈ 116 KB) açılışta iniyor ama istemci yalnız pazar kalibrasyon kovalarını, grup isabetini,
+    maç sayısını ve canlı güvenilirlik özetini okuyor. Yayın kopyasında yalnız bu alanlar kalır; depo dosyası DEĞİŞMEZ."""
+    if PAZAR_KARNE not in sec:
+        return 0
+    y = os.path.join(hedef, PAZAR_KARNE)
+    if _pk_erisim(hedef, sec) is None:
+        print(f"[yayın listesi] pazar karnesi kırpılmadı: istemcide beklenmeyen okuyucu / alan")
+        return 0
+    try:
+        D = json.load(open(y, encoding="utf-8"))
+    except Exception:
+        return 0
+    if not isinstance(D, dict):
+        return 0
+    K = {k: D[k] for k in ("v", "guncelleme") if k in D}
+    for k in PK_UST:
+        if k in D:
+            K[k] = D[k]
+    if isinstance(D.get("pazarlar"), dict):
+        K["pazarlar"] = {e: ({a: v[a] for a in PK_PAZAR if a in v} if isinstance(v, dict) else v) for e, v in D["pazarlar"].items()}
+    if isinstance(D.get("canli"), dict):
+        K["canli"] = {a: D["canli"][a] for a in PK_CANLI if a in D["canli"]}
+    K["yayin_kirpik"] = 1
+    once = os.path.getsize(y)
+    json.dump(K, open(y, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
+    print(f"[yayın listesi] pazar karnesi kırpıldı: {round(once / 1024)} → {round(os.path.getsize(y) / 1024)} KB")
+    return 1
+
+
 def tara(kok):
     """Kaynak dosyalardaki yol dizelerini (düz, klasör öneki, şablon) çıkarır → glob listesi."""
     desen = set()
@@ -307,6 +366,7 @@ def main():
     print(f"[yayın listesi] {len(sec)} dosya, {round(boyut(kok, sec) / 1024)} KB → {hedef}")
     pz_ayir(hedef, sec)
     arsiv_ozet(hedef, sec)
+    pazar_karne_kirp(hedef, sec)
     eksik = [y for y in eksik if y not in (PZ_DOSYA, PZ_YAKIN, ARSIV_OZET)]
     if eksik:
         print(f"[yayın listesi] kaynakta geçen ama depoda olmayan {len(eksik)} yol (dinamik olabilir): {', '.join(eksik[:12])}")
