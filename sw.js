@@ -1,5 +1,5 @@
 // OXXai çevrimdışı önbellek: uygulama dosyaları önbellekten, sayfa ve veriler önce ağdan
-const C = "oxxai-v170";
+const C = "oxxai-v171";
 const SHELL = ["./", "index.html", "manifest.webmanifest", "icons/oxxai2-192.png", "icons/oxxai2-512.png", "icons/oxxai-mark.webp", "icons/oxxai-word.webp", "icons/oxxai-mark-crown-s.webp", "icons/oxxai-logo.webp", "icons/oxxai-splash.webp", "icons/oxxai-at.webp",
   // uygulama paketleri (index.html sırasıyla; ?v= içerik özeti, lab/yayin_listesi.py kur/damga günceller)
   "js/baslangic.js?v=1731edaaea", "js/core.js?v=1fe64b2ae3", "js/bot.js?v=a83e9e8f1b", "js/ekran.js?v=b801371bce", "js/futbol.js?v=fcca8e61d2", "css/govde.css?v=e23efdc0e2", "css/govde-2.css?v=346287e181", "js/kupo.js?v=79297d95c4", "js/ust-ikon.js?v=b8690a38f5", "js/pazar.js?v=7bd06c4b9f", "js/canli-gt.js?v=fe23fd1f6a", "js/arayuz.js?v=1a2e346230", "js/ses.js?v=17b691924d", "js/paylas.js?v=c9e0debe8f", "js/guvenilirlik.js?v=d0b55a7c7e", "js/canli-isaret.js?v=f07ded97da", "css/katmanlar.css?v=f779088524", "js/katmanlar.js?v=eb2fc9bbd7"];
