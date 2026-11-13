@@ -1,6 +1,6 @@
 {
  "surum": "2026-10-28.1",
- "guncelleme": "2026-11-14 01:55",
+ "guncelleme": "2026-11-14 02:51",
  "aciklama": "Basket piyasa karnesi: kilitli model tahmini ile maç öncesi son piyasa oranı (marjı Shin ile ayrılmış) aynı maçlarda. Harman = Benter iki aşama (lig grubu, zaman sıralı ağırlık). Çapalı = model fark/toplamının handikap ve alt/üst çizgisine çekilmesi. GA: gün blokları bootstrap %95. Üretime yalnız OXXai kapısı + gölge sonrası girer.",
  "kurallar": {
   "kapi": "n ≥ 150, gün ≥ 20, ΔLL GA üst < 0, ΔBrier < 0, isabet düşmez",
@@ -471,6 +471,13 @@
   }
  },
  "agirlik": {
+  "pro": {
+   "a": 0.3119,
+   "b": 0.8389,
+   "w_m": 0.8657,
+   "w_t": 0.92,
+   "n_ogrenme": 183
+  },
   "kolej": {
    "a": 0.2254,
    "b": 0.8615,
@@ -484,13 +491,6 @@
    "w_m": 0.3402,
    "w_t": 1.0,
    "n_ogrenme": 74
-  },
-  "pro": {
-   "a": 0.3119,
-   "b": 0.8389,
-   "w_m": 0.8657,
-   "w_t": 0.92,
-   "n_ogrenme": 183
   }
  },
  "uretimde": {},
@@ -628,12 +628,12 @@
   },
   "ncaa": {
    "kilitli": 1124,
-   "oranli": 566,
+   "oranli": 572,
    "sonuclu_oranli": 492,
    "iddaa_ms": 196,
    "iddaa_hnd": 189,
-   "iddaa_au": 193,
-   "espn": 566
+   "iddaa_au": 192,
+   "espn": 572
   },
   "ncaaw": {
    "kilitli": 1102,
@@ -646,7 +646,7 @@
   }
  },
  "sentetik_yarismalar": {
-  "Arjantin LNB": 5,
+  "Arjantin LNB": 4,
   "Polonya PLK": 4,
   "Macaristan NB I": 4,
   "Almanya BBL": 6,
@@ -671,7 +671,7 @@
   "Portekiz Basketbol Ligi": 3,
   "Slovenya 1. A SKL": 2,
   "ABA Liga, Group A": 1,
-  "ABD Kolej Basketbol Ligi": 39,
+  "ABD Kolej Basketbol Ligi": 31,
   "G. Kore Güney Kore Kadın Basket Ligi": 2,
   "Danimarka Basketligaen": 1,
   "EuroBasket, Women, Qualificati": 1
