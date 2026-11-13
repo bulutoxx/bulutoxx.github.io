@@ -25,7 +25,7 @@ import argparse, hashlib, json, os, shutil, subprocess, sys, time, urllib.reques
 from datetime import datetime, timezone
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-UYGULAMA = ["index.html", "sw.js", "manifest.webmanifest", "brain-worker.js", "icons", "js", "css", "lab/kucult.cjs"]   # YH-69: küçültücü yayınlanan baytları belirler
+UYGULAMA = ["index.html", "sw.js", "manifest.webmanifest", "brain-worker.js", "icons", "js", "css", "lab/kucult.cjs", "lab/kucult_css.cjs"]   # YH-69/70: küçültücüler yayınlanan baytları belirler
 SINIR_KB = {"index": 1500, "paket": 600, "ilk_yuk": 2000, "ilk_yuk_uyari": 1700, "satir_ici_script_uyari": 30}
 RED_SAAT = 6.0          # reddedilen aynı uygulama sürümü bu süre içinde yeniden test edilmez (doğrudan son iyi sürüm yayınlanır)
 YAYIN = os.path.join(ROOT, "yayin.json")
