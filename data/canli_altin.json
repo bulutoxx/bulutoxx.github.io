@@ -1,12 +1,12 @@
 {
  "v": 1,
- "tekli": 0.85,
+ "tekli": 0.8,
  "kombine": 0.75,
  "aday": 0.8,
  "dkmax": 75.0,
- "baslangic": "2026-11-02T04:07Z",
- "bitis": "2026-11-04T04:07Z",
- "durum": "geri_alindi",
+ "baslangic": "2026-11-13T07:34Z",
+ "bitis": "2026-11-15T07:34Z",
+ "durum": "deneme",
  "onceki": {
   "tekli": 0.85,
   "kombine": 0.75
@@ -31,62 +31,63 @@
    "2026-11-09",
    "2026-11-10",
    "2026-11-11",
-   "2026-11-12"
+   "2026-11-12",
+   "2026-11-13"
   ],
-  "secim_kayit": 12035,
+  "secim_kayit": 12267,
   "tekli": [
    {
     "esik": 0.8,
-    "n": 204,
-    "gunde": 10.74,
-    "gercek": 0.8088,
-    "wilson_alt": 0.7494,
-    "ort_p": 0.8671,
-    "kal_fark": -0.0582
+    "n": 210,
+    "gunde": 10.5,
+    "gercek": 0.8095,
+    "wilson_alt": 0.751,
+    "ort_p": 0.8666,
+    "kal_fark": -0.0571
    },
    {
     "esik": 0.85,
-    "n": 89,
-    "gunde": 4.68,
-    "gercek": 0.8876,
-    "wilson_alt": 0.8054,
-    "ort_p": 0.9386,
-    "kal_fark": -0.051
+    "n": 93,
+    "gunde": 4.65,
+    "gercek": 0.871,
+    "wilson_alt": 0.7879,
+    "ort_p": 0.9364,
+    "kal_fark": -0.0654
    },
    {
     "esik": 0.9,
-    "n": 58,
-    "gunde": 3.05,
-    "gercek": 0.9138,
-    "wilson_alt": 0.8136,
-    "ort_p": 0.9784,
-    "kal_fark": -0.0646
+    "n": 59,
+    "gunde": 2.95,
+    "gercek": 0.9153,
+    "wilson_alt": 0.8165,
+    "ort_p": 0.9786,
+    "kal_fark": -0.0633
    },
    {
     "esik": 0.95,
-    "n": 49,
-    "gunde": 2.58,
-    "gercek": 0.9796,
-    "wilson_alt": 0.8931,
+    "n": 50,
+    "gunde": 2.5,
+    "gercek": 0.98,
+    "wilson_alt": 0.895,
     "ort_p": 0.99,
-    "kal_fark": -0.0104
+    "kal_fark": -0.01
    }
   ],
   "kombine": [
    {
     "esik": 0.75,
     "n": 11,
-    "gunde": 0.58,
+    "gunde": 0.55,
     "gercek": 0.8182,
     "wilson_alt": 0.523,
-    "ort_p": 0.8518,
-    "kal_fark": -0.0336,
+    "ort_p": 0.8517,
+    "kal_fark": -0.0335,
     "ort_ayak": 2.18
    },
    {
     "esik": 0.8,
     "n": 8,
-    "gunde": 0.42,
+    "gunde": 0.4,
     "gercek": 0.75,
     "wilson_alt": 0.4093,
     "ort_p": 0.8725,
@@ -96,7 +97,7 @@
    {
     "esik": 0.85,
     "n": 4,
-    "gunde": 0.21,
+    "gunde": 0.2,
     "gercek": 0.75,
     "wilson_alt": 0.3006,
     "ort_p": 0.9606,
@@ -106,7 +107,7 @@
    {
     "esik": 0.9,
     "n": 4,
-    "gunde": 0.21,
+    "gunde": 0.2,
     "gercek": 0.75,
     "wilson_alt": 0.3006,
     "ort_p": 0.9606,
@@ -115,33 +116,16 @@
    }
   ],
   "secilen": {
-   "tekli": 0.85,
+   "tekli": 0.8,
    "kombine": null
   },
   "kural": "Wilson %95 alt sınırı ≥ eşik − 0.05 ve günde ≥ 3 seçim olan en düşük eşik; yoksa mevcut değer",
   "yontem": "zaman sıralı: her gün CG yalnız o gün başlamadan sonucu kesin maçlarla öğrenilir; kayıtlı canlı seçimler bu olasılıkla yeniden puanlanır; dakika < dkmax, oran ≥ 1,05"
  },
- "olcum_zaman": "2026-11-12T11:21Z",
+ "olcum_zaman": "2026-11-13T07:34Z",
  "kapi": {
   "kural": "deneme bitişinden ≥ 3 sa sonra: deneme dönemindeki altın seçimleri (tekli ilk görünüş, kombine benzersiz) — toplam n < 10 → yetersiz; n ≥ 10 olan türde Wilson %95 alt sınırı < eşik − 0.05 → başarısız; ikisinde de geri alınır",
-  "karar": "basarisiz",
-  "zaman": "2026-11-04T07:28Z",
-  "deneme": {
-   "tekli": {
-    "esik": 0.8,
-    "n": 19,
-    "tuttu": 15,
-    "gercek": 0.7895,
-    "wilson_alt": 0.5667
-   },
-   "kombine": {
-    "esik": 0.75,
-    "n": 1,
-    "tuttu": 1,
-    "gercek": 1.0,
-    "wilson_alt": 0.2065
-   }
-  }
+  "karar": null
  },
  "isaret": {
   "esik": 0.85,
@@ -177,7 +161,7 @@
     "wilson_alt": 0.7639,
     "ort_p": 0.9525
    },
-   "zaman": "2026-11-13T06:12Z"
+   "zaman": "2026-11-13T07:29Z"
   },
   "gecmis": [
    {
@@ -211,10 +195,5 @@
     "ort_p": 0.9525
    }
   ]
- },
- "denenen": {
-  "tekli": 0.8,
-  "kombine": 0.75
- },
- "not": "seçim kuralını sağlayan yeni eşik yok; mevcut değerler korunur"
+ }
 }
