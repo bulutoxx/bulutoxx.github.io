@@ -1,6 +1,6 @@
 {
  "surum": "2026-10-28.1",
- "guncelleme": "2026-11-14 00:58",
+ "guncelleme": "2026-11-14 01:55",
  "aciklama": "Basket piyasa karnesi: kilitli model tahmini ile maç öncesi son piyasa oranı (marjı Shin ile ayrılmış) aynı maçlarda. Harman = Benter iki aşama (lig grubu, zaman sıralı ağırlık). Çapalı = model fark/toplamının handikap ve alt/üst çizgisine çekilmesi. GA: gün blokları bootstrap %95. Üretime yalnız OXXai kapısı + gölge sonrası girer.",
  "kurallar": {
   "kapi": "n ≥ 150, gün ≥ 20, ΔLL GA üst < 0, ΔBrier < 0, isabet düşmez",
@@ -471,6 +471,13 @@
   }
  },
  "agirlik": {
+  "kolej": {
+   "a": 0.2254,
+   "b": 0.8615,
+   "w_m": 1.0,
+   "w_t": 0.9598,
+   "n_ogrenme": 559
+  },
   "avrupa": {
    "a": 0.3385,
    "b": 0.6872,
@@ -484,13 +491,6 @@
    "w_m": 0.8657,
    "w_t": 0.92,
    "n_ogrenme": 183
-  },
-  "kolej": {
-   "a": 0.2254,
-   "b": 0.8615,
-   "w_m": 1.0,
-   "w_t": 0.9598,
-   "n_ogrenme": 559
   }
  },
  "uretimde": {},
@@ -628,12 +628,12 @@
   },
   "ncaa": {
    "kilitli": 1124,
-   "oranli": 549,
+   "oranli": 566,
    "sonuclu_oranli": 492,
-   "iddaa_ms": 197,
-   "iddaa_hnd": 188,
+   "iddaa_ms": 196,
+   "iddaa_hnd": 189,
    "iddaa_au": 193,
-   "espn": 549
+   "espn": 566
   },
   "ncaaw": {
    "kilitli": 1102,
@@ -647,9 +647,11 @@
  },
  "sentetik_yarismalar": {
   "Arjantin LNB": 5,
+  "Polonya PLK": 4,
   "Macaristan NB I": 4,
-  "FIBA Liga Sudamericana, F Grub": 1,
   "Almanya BBL": 6,
+  "Japonya B.Ligi": 4,
+  "İtalya Serie A": 8,
   "Slovakya Extraliga": 4,
   "Fransa Pro A": 6,
   "VTB Birleşik Ligi": 3,
@@ -657,22 +659,19 @@
   "İtalya Serie A2": 7,
   "Meksika LNBP, Playofflar": 1,
   "İtalya Serie B": 4,
-  "Uruguay Basketbol Ligi": 4,
+  "Uruguay Basketbol Ligi": 3,
   "BNXT Ligi": 4,
   "Japonya B2.Ligi": 7,
   "İngiltere SLB": 4,
-  "Polonya PLK": 4,
   "İspanya LEB Oro": 6,
   "Çekya NBL": 2,
   "İspanya Liga ACB": 6,
   "Yunanistan A1": 5,
-  "Türkiye Erkekler Basketbol 1. Ligi": 3,
+  "Türkiye Erkekler Basketbol 1. Ligi": 2,
   "Portekiz Basketbol Ligi": 3,
-  "ABD Kolej Basketbol Ligi": 56,
   "Slovenya 1. A SKL": 2,
-  "İtalya Serie A": 8,
   "ABA Liga, Group A": 1,
-  "Japonya B.Ligi": 4,
+  "ABD Kolej Basketbol Ligi": 39,
   "G. Kore Güney Kore Kadın Basket Ligi": 2,
   "Danimarka Basketligaen": 1,
   "EuroBasket, Women, Qualificati": 1
