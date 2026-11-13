@@ -272,6 +272,31 @@ def kucult(hedef, sec, kok=KOK0):
     return o
 
 
+def kucult_css(hedef, sec, kok=KOK0):
+    """YH-70: yayın kopyasındaki css/*.css paketleri ve index.html <style> blokları için boşluk / yorum küçültmesi (lab/kucult_css.cjs;
+    css-tree ayrıştır → üret, dönüştürme yok + ağaç eşitliği denetimi). Yalnız OXX_KUCULT (css-tree kurulu klasör) ve node varsa
+    çalışır; yoksa ya da herhangi bir hata olursa kopya özgün kalır. Depo dosyaları değişmez."""
+    import subprocess
+    d = os.environ.get("OXX_KUCULT")
+    if not d or not shutil.which("node"):
+        return None
+    hedefler = [y for y in sec if re.fullmatch(r"css/[A-Za-z0-9_\-]+\.css", y)] + ["index.html"]
+    try:
+        r = subprocess.run(["node", os.path.join(kok, "lab", "kucult_css.cjs"), hedef] + hedefler, capture_output=True, text=True,
+                           timeout=120, env=dict(os.environ, OXX_KUCULT=d))
+        o = json.loads((r.stdout.strip().splitlines() or ["{}"])[-1])
+    except Exception as e:
+        print(f"[yayın listesi] CSS küçültme atlandı ({str(e)[:80]})")
+        return None
+    if o.get("durum") != "tamam":
+        print(f"[yayın listesi] CSS küçültme atlandı ({o.get('neden', '?')})")
+        return o
+    damgala(hedef)                       # css içeriği değişti → ?v= özetleri yeniden
+    kal = ", ".join(f"{x['y']} ({x['neden'][:40]})" for x in o.get("ozgun_kalan", [])) or "yok"
+    print(f"[yayın listesi] CSS küçültme: {len(o['kucultulen'])} parça, {round(o['once'] / 1024)} → {round(o['sonra'] / 1024)} KB; özgün kalan: {kal}")
+    return o
+
+
 def tara(kok):
     """Kaynak dosyalardaki yol dizelerini (düz, klasör öneki, şablon) çıkarır → glob listesi."""
     desen = set()
@@ -395,6 +420,7 @@ def main():
     arsiv_ozet(hedef, sec)
     pazar_karne_kirp(hedef, sec)
     kucult(hedef, sec, kok)
+    kucult_css(hedef, sec, kok)
     eksik = [y for y in eksik if y not in (PZ_DOSYA, PZ_YAKIN, ARSIV_OZET)]
     if eksik:
         print(f"[yayın listesi] kaynakta geçen ama depoda olmayan {len(eksik)} yol (dinamik olabilir): {', '.join(eksik[:12])}")

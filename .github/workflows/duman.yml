@@ -5,9 +5,9 @@ name: OXXai duman testi (dal / PR)
 on:
   push:
     branches-ignore: [main]
-    paths: ["index.html", "sw.js", "manifest.webmanifest", "brain-worker.js", "icons/**", "js/**", "css/**", "lab/qa.mjs", "lab/duman.sh", "lab/yayin_kapisi.py", "lab/kucult.cjs", "lab/yayin_listesi.py", ".github/workflows/duman.yml"]
+    paths: ["index.html", "sw.js", "manifest.webmanifest", "brain-worker.js", "icons/**", "js/**", "css/**", "lab/qa.mjs", "lab/duman.sh", "lab/yayin_kapisi.py", "lab/kucult.cjs", "lab/kucult_css.cjs", "lab/yayin_listesi.py", ".github/workflows/duman.yml"]
   pull_request:
-    paths: ["index.html", "sw.js", "manifest.webmanifest", "brain-worker.js", "icons/**", "js/**", "css/**", "lab/qa.mjs", "lab/duman.sh", "lab/yayin_kapisi.py", "lab/kucult.cjs", "lab/yayin_listesi.py", ".github/workflows/duman.yml"]
+    paths: ["index.html", "sw.js", "manifest.webmanifest", "brain-worker.js", "icons/**", "js/**", "css/**", "lab/qa.mjs", "lab/duman.sh", "lab/yayin_kapisi.py", "lab/kucult.cjs", "lab/kucult_css.cjs", "lab/yayin_listesi.py", ".github/workflows/duman.yml"]
   workflow_dispatch:
 permissions:
   contents: read
@@ -32,7 +32,7 @@ jobs:
         continue-on-error: true
         run: |
           D="$RUNNER_TEMP/kucult"; mkdir -p "$D"
-          if timeout 150 npm i --prefix "$D" --no-save --no-audit --no-fund --loglevel=error terser@5.36.0 acorn@8.14.0; then
+          if timeout 150 npm i --prefix "$D" --no-save --no-audit --no-fund --loglevel=error terser@5.36.0 acorn@8.14.0 css-tree@2.3.1; then
             echo "OXX_KUCULT=$D" >> "$GITHUB_ENV"
           else echo "::warning title=Küçültücü::terser/acorn kurulamadı; paketler küçültülmeden yayınlanır"; fi
       - name: 💨 Duman testi (yayınlanacak daraltılmış kopya, hızlı mod; 404 = alarm)

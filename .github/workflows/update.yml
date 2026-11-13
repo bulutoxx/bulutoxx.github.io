@@ -137,7 +137,7 @@ jobs:
         continue-on-error: true
         run: |
           D="$RUNNER_TEMP/kucult"; mkdir -p "$D"
-          if timeout 150 npm i --prefix "$D" --no-save --no-audit --no-fund --loglevel=error terser@5.36.0 acorn@8.14.0; then
+          if timeout 150 npm i --prefix "$D" --no-save --no-audit --no-fund --loglevel=error terser@5.36.0 acorn@8.14.0 css-tree@2.3.1; then
             echo "OXX_KUCULT=$D" >> "$GITHUB_ENV"
           else echo "::warning title=Küçültücü::terser/acorn kurulamadı; paketler küçültülmeden yayınlanır"; fi
       - name: 🚦 Kapı kararı (uygulama yayındakiyle aynı mı?)
