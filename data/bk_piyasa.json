@@ -1,6 +1,6 @@
 {
  "surum": "2026-10-28.1",
- "guncelleme": "2026-11-13 21:01",
+ "guncelleme": "2026-11-13 21:29",
  "aciklama": "Basket piyasa karnesi: kilitli model tahmini ile maç öncesi son piyasa oranı (marjı Shin ile ayrılmış) aynı maçlarda. Harman = Benter iki aşama (lig grubu, zaman sıralı ağırlık). Çapalı = model fark/toplamının handikap ve alt/üst çizgisine çekilmesi. GA: gün blokları bootstrap %95. Üretime yalnız OXXai kapısı + gölge sonrası girer.",
  "kurallar": {
   "kapi": "n ≥ 150, gün ≥ 20, ΔLL GA üst < 0, ΔBrier < 0, isabet düşmez",
@@ -471,6 +471,13 @@
   }
  },
  "agirlik": {
+  "avrupa": {
+   "a": 0.3347,
+   "b": 0.6848,
+   "w_m": 0.3407,
+   "w_t": 1.0,
+   "n_ogrenme": 72
+  },
   "pro": {
    "a": 0.3119,
    "b": 0.8389,
@@ -484,13 +491,6 @@
    "w_m": 1.0,
    "w_t": 0.9526,
    "n_ogrenme": 558
-  },
-  "avrupa": {
-   "a": 0.3347,
-   "b": 0.6848,
-   "w_m": 0.3407,
-   "w_t": 1.0,
-   "n_ogrenme": 72
   }
  },
  "uretimde": {},
@@ -632,7 +632,7 @@
    "sonuclu_oranli": 491,
    "iddaa_ms": 197,
    "iddaa_hnd": 189,
-   "iddaa_au": 194,
+   "iddaa_au": 193,
    "espn": 546
   },
   "ncaaw": {
@@ -647,8 +647,11 @@
  },
  "sentetik_yarismalar": {
   "Arjantin LNB": 5,
+  "Macaristan NB I": 4,
+  "FIBA Liga Sudamericana, F Grub": 1,
   "Slovakya Extraliga": 4,
   "G. Kore Güney Kore Basketbol Ligi": 3,
+  "Fransa Pro B": 9,
   "İtalya Serie A2": 7,
   "Meksika LNBP, Playofflar": 1,
   "Almanya Pro A": 4,
@@ -660,22 +663,18 @@
   "Polonya PLK": 5,
   "İspanya LEB Oro": 6,
   "Çekya NBL": 2,
-  "Macaristan NB I": 3,
   "Almanya BBL": 7,
   "Fransa Pro A": 7,
   "Portekiz Basketbol Ligi": 3,
   "VTB Birleşik Ligi": 3,
-  "Fransa Pro B": 9,
   "İspanya Liga ACB": 6,
   "Yunanistan A1": 5,
   "Türkiye Erkekler Basketbol 1. Ligi": 3,
   "ABD Kolej Basketbol Ligi": 72,
   "Slovenya 1. A SKL": 2,
-  "İsveç Basketbol Ligi": 1,
   "İtalya Serie A": 8,
   "ABA Liga, Group A": 2,
   "EuroBasket, Women, Qualificati": 1,
-  "FIBA Liga Sudamericana, F Grub": 1,
   "Japonya B.Ligi": 4,
   "G. Kore Güney Kore Kadın Basket Ligi": 2,
   "Danimarka Basketligaen": 1
