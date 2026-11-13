@@ -133,6 +133,13 @@ jobs:
           ref: main
       - id: pages
         uses: actions/configure-pages@v5
+      - name: 🗜️ Yayın küçültücüsü (YH-69; terser + acorn yalnız yayın kopyası için — kurulamazsa paketler özgün yayınlanır)
+        continue-on-error: true
+        run: |
+          D="$RUNNER_TEMP/kucult"; mkdir -p "$D"
+          if timeout 150 npm i --prefix "$D" --no-save --no-audit --no-fund --loglevel=error terser@5.36.0 acorn@8.14.0; then
+            echo "OXX_KUCULT=$D" >> "$GITHUB_ENV"
+          else echo "::warning title=Küçültücü::terser/acorn kurulamadı; paketler küçültülmeden yayınlanır"; fi
       - name: 🚦 Kapı kararı (uygulama yayındakiyle aynı mı?)
         id: karar
         run: |
