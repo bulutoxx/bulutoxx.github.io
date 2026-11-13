@@ -166,20 +166,24 @@
   // boşta ya da ilk maç penceresi / KUPO açılışında bir kez indirilir. Eski (pz'li) fikstür gelirse doğrudan o kullanılır.
   // YH-48: boşta önce yalnız bugün + yarın (data/fx_pz_yakin.json, PZY); diğer günler maç penceresi / KUPO açılınca tam dosyadan (PZC).
   let PZC=null, PZQ=null, PZF=null, PZY=null, PZYQ=null, PZYF=null;
+  // YH-71 (fx_pz:po): yayın kopyasında iddaa ek pazar oranları (po) da pz ile aynı ayrık dosyalarda ({m, o}); pz bağlanınca po da bağlanır.
+  // po yalnız oddOf'ta okunur ve oddOf yalnız pzFull bir P döndürdükten sonra çağrılır → oran gösterimi değişmez.
+  let PZCO=null, PZYO=null;
   const pzKey=f=>f.lg+"|"+f.d+"|"+f.h+"|"+f.a;
   // YH-48: ayrık olduğu bir kez görülen fikstür dizisi, yakın parça eklendikten sonra da ayrık sayılır (uzak günler tam dosyayı bekler).
   let PZAF=null;
   const pzAyri=()=>{ try{ if(PZAF&&PZAF===FIXTURES) return true; const r=Array.isArray(FIXTURES)&&FIXTURES.length>0&&!FIXTURES.some(x=>x&&x.pz); if(r) PZAF=FIXTURES; return r; }catch(e){ return false; } };
-  function pzAt(f){ if(f&&!f.pz&&(PZC||PZY)){ const k=pzKey(f), z=(PZC&&PZC[k])||(PZY&&PZY[k]); if(z) f.pz=z; } return f; }
+  function poAt(f,k){ if(f&&!f.po&&(PZCO||PZYO)){ const o=(PZCO&&PZCO[k])||(PZYO&&PZYO[k]); if(o) f.po=o; } }
+  function pzAt(f){ if(f&&(PZC||PZY)){ const k=pzKey(f); if(!f.pz){ const z=(PZC&&PZC[k])||(PZY&&PZY[k]); if(z) f.pz=z; } poAt(f,k); } return f; }
   function pzYenile(){ try{ if(MS.m&&!MS.live) msRender(); }catch(e){} try{ ksched(); }catch(e){} }
   function pzLoad(){ if(PZQ&&PZF===FIXTURES) return PZQ; if(!pzAyri()) return Promise.resolve(false); PZF=FIXTURES;
-    PZQ=fetch("data/fx_pz.json",{cache:"no-cache"}).then(r=>r.ok?r.json():null).then(d=>{ if(!d||!d.m) { PZQ=null; return false; } PZC=d.m;
-      let n=0; for(const f of FIXTURES) if(!f.pz&&PZC[pzKey(f)]){ f.pz=PZC[pzKey(f)]; n++; } window.pzAyriSay=n; if(n) pzYenile(); return true; }).catch(()=>{ PZQ=null; return false; });
+    PZQ=fetch("data/fx_pz.json",{cache:"no-cache"}).then(r=>r.ok?r.json():null).then(d=>{ if(!d||!d.m) { PZQ=null; return false; } PZC=d.m; PZCO=d.o||null;
+      let n=0; for(const f of FIXTURES){ if(!f.pz&&PZC[pzKey(f)]){ f.pz=PZC[pzKey(f)]; n++; } if(PZCO) poAt(f,pzKey(f)); } window.pzAyriSay=n; if(n) pzYenile(); return true; }).catch(()=>{ PZQ=null; return false; });
     return PZQ; }
   window.pzLoad=pzLoad;
   function pzYakinLoad(){ if(PZC) return pzLoad(); if(PZYQ&&PZYF===FIXTURES) return PZYQ; if(!pzAyri()) return Promise.resolve(false); PZYF=FIXTURES;
-    PZYQ=fetch("data/fx_pz_yakin.json",{cache:"no-cache"}).then(r=>r.ok?r.json():null).then(d=>{ if(!d||!d.m){ PZYQ=null; return pzLoad(); } PZY=d.m;
-      let n=0; for(const f of FIXTURES) if(!f.pz&&PZY[pzKey(f)]){ f.pz=PZY[pzKey(f)]; n++; } window.pzAyriSay=n; if(n) pzYenile(); return true; }).catch(()=>{ PZYQ=null; return pzLoad(); });
+    PZYQ=fetch("data/fx_pz_yakin.json",{cache:"no-cache"}).then(r=>r.ok?r.json():null).then(d=>{ if(!d||!d.m){ PZYQ=null; return pzLoad(); } PZY=d.m; PZYO=d.o||null;
+      let n=0; for(const f of FIXTURES){ if(!f.pz&&PZY[pzKey(f)]){ f.pz=PZY[pzKey(f)]; n++; } if(PZYO) poAt(f,pzKey(f)); } window.pzAyriSay=n; if(n) pzYenile(); return true; }).catch(()=>{ PZYQ=null; return pzLoad(); });
     return PZYQ; }
   window.pzYakinLoad=pzYakinLoad;
   { const bos=()=>{ if(pzAyri()) pzYakinLoad(); else if(!(Array.isArray(FIXTURES)&&FIXTURES.length)) setTimeout(bos,1500); };

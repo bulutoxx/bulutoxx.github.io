@@ -89,6 +89,7 @@ def damgala(kok, dosyalar=("index.html", "sw.js")):
 
 PZ_DOSYA = "data/fx_pz.json"
 PZ_YAKIN = "data/fx_pz_yakin.json"
+PO_ISARET = "fx_pz:po"   # YH-71: istemci po'yu ayrık dosyadan bağlayabiliyor
 
 
 def pz_ayir(hedef, sec):
@@ -107,16 +108,26 @@ def pz_ayir(hedef, sec):
         return 0
     if not isinstance(F, list):
         return 0
-    M = {}
+    # YH-71: iddaa ek pazar oranları (po) istemcide yalnız pazar motoru olasılığı (pz) bağlandıktan sonra okunur (pazar.js oddOf);
+    # uygulama bunu destekliyorsa (paketlerde PO_ISARET) pz'si ayrılan maçların po'su da aynı ayrık dosyalara ("o") taşınır.
+    po_ayir = any(PO_ISARET in open(os.path.join(hedef, y), encoding="utf-8", errors="replace").read()
+                  for y in sec if y.endswith(".js") or y == "index.html")
+    M, O = {}, {}
     for f in F:
         if isinstance(f, dict) and isinstance(f.get("pz"), dict):
-            M[f"{f.get('lg')}|{f.get('d')}|{f.get('h')}|{f.get('a')}"] = f.pop("pz")
+            k = f"{f.get('lg')}|{f.get('d')}|{f.get('h')}|{f.get('a')}"
+            M[k] = f.pop("pz")
+            if po_ayir and isinstance(f.get("po"), dict):
+                O[k] = f.pop("po")
     if not M:
         return 0
     json.dump(F, open(fx, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
-    json.dump({"v": 1, "m": M}, open(os.path.join(hedef, PZ_DOSYA), "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
+    tam = {"v": 1, "m": M}
+    if O:
+        tam["o"] = O
+    json.dump(tam, open(os.path.join(hedef, PZ_DOSYA), "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
     print(f"[yayın listesi] pz ayrıldı: {len(M)} maç → {PZ_DOSYA} ({round(os.path.getsize(os.path.join(hedef, PZ_DOSYA)) / 1024)} KB), "
-          f"fixtures.json {round(os.path.getsize(fx) / 1024)} KB")
+          f"fixtures.json {round(os.path.getsize(fx) / 1024)} KB" + (f"; po {len(O)} maç ayrıldı" if O else ""))
     # YH-48: boşta indirilen yakın parça — yalnız bugün + yarın (İstanbul günü, yayın anı). Diğer günler maç penceresi /
     # KUPO açılınca tam dosyadan gelir. Uygulama bu dosyayı istemiyorsa yazılmaz.
     if any(PZ_YAKIN in open(os.path.join(hedef, y), encoding="utf-8", errors="replace").read()
@@ -124,7 +135,10 @@ def pz_ayir(hedef, sec):
         bugun = (datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=3)).date()
         gunler = {bugun.isoformat(), (bugun + datetime.timedelta(days=1)).isoformat()}
         Y = {k: v for k, v in M.items() if k.split("|")[1] in gunler}
-        json.dump({"v": 1, "gunler": sorted(gunler), "m": Y}, open(os.path.join(hedef, PZ_YAKIN), "w", encoding="utf-8"),
+        yakin = {"v": 1, "gunler": sorted(gunler), "m": Y}
+        if O:
+            yakin["o"] = {k: v for k, v in O.items() if k in Y}
+        json.dump(yakin, open(os.path.join(hedef, PZ_YAKIN), "w", encoding="utf-8"),
                   ensure_ascii=False, separators=(",", ":"))
         print(f"[yayın listesi] yakın pz: {len(Y)} maç → {PZ_YAKIN} ({round(os.path.getsize(os.path.join(hedef, PZ_YAKIN)) / 1024)} KB)")
     return len(M)
