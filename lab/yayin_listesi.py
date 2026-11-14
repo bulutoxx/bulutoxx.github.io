@@ -259,6 +259,42 @@ def pazar_karne_kirp(hedef, sec):
     return 1
 
 
+BK_LOGO_ISARET = "bk:logo"   # YH-72: istemci basket maç logosunu takım logosundan geri bağlayabiliyor
+
+
+def bk_logo_ayikla(hedef, sec):
+    """YH-72: yayın kopyasındaki data/basket.json'da maçın hl / al logosu, ligdeki takımın logosuyla birebir aynıysa çıkarılır
+    (istemci bkLogoAt ile aynı değeri geri bağlar). Yalnız yayınlanan paketlerde BK_LOGO_ISARET varsa; depo dosyası değişmez."""
+    y = os.path.join(hedef, "data", "basket.json")
+    if "data/basket.json" not in sec or not os.path.isfile(y):
+        return 0
+    if not any(BK_LOGO_ISARET in open(os.path.join(hedef, p), encoding="utf-8", errors="replace").read()
+               for p in sec if p.endswith(".js") or p == "index.html"):
+        return 0
+    try:
+        D = json.load(open(y, encoding="utf-8"))
+        L, F = D["leagues"], D["fixtures"]
+        assert isinstance(L, dict) and isinstance(F, list)
+    except Exception:
+        return 0
+    n = 0
+    for f in F:
+        if not isinstance(f, dict):
+            continue
+        T = (L.get(f.get("lg")) or {}).get("teams") or {}
+        for ad, k in (("h", "hl"), ("a", "al")):
+            t = T.get(f.get(ad)) if isinstance(f.get(ad), str) else None
+            if k in f and isinstance(t, dict) and t.get("logo") and f[k] == t["logo"]:
+                del f[k]
+                n += 1
+    if not n:
+        return 0
+    once = os.path.getsize(y)
+    json.dump(D, open(y, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
+    print(f"[yayın listesi] basket maç logoları ayıklandı: {n} → {round(once / 1024)} → {round(os.path.getsize(y) / 1024)} KB")
+    return n
+
+
 def kucult(hedef, sec, kok=KOK0):
     """YH-69: yayın kopyasındaki js/*.js paketlerini boşluk / yorum küçültmesinden geçirir (lab/kucult.cjs; terser
     compress/mangle kapalı + acorn ağaç eşitliği denetimi). Yalnız OXX_KUCULT ortam değişkeni (terser + acorn kurulu klasör)
@@ -433,6 +469,7 @@ def main():
     pz_ayir(hedef, sec)
     arsiv_ozet(hedef, sec)
     pazar_karne_kirp(hedef, sec)
+    bk_logo_ayikla(hedef, sec)
     kucult(hedef, sec, kok)
     kucult_css(hedef, sec, kok)
     eksik = [y for y in eksik if y not in (PZ_DOSYA, PZ_YAKIN, ARSIV_OZET)]
