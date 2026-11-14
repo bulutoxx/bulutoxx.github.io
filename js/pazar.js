@@ -170,6 +170,12 @@
   // po yalnız oddOf'ta okunur ve oddOf yalnız pzFull bir P döndürdükten sonra çağrılır → oran gösterimi değişmez.
   let PZCO=null, PZYO=null;
   const pzKey=f=>f.lg+"|"+f.d+"|"+f.h+"|"+f.a;
+  // YH-73 (fx_pz:sutun): yayın kopyası fx_pz dosyalarını sütunlu yazabilir ({v:2,k:[kod…],m:{maç:[değer…]},ko,o}); burada v1 biçimine
+  // (aynı kod sırası, eksik kod yok) geri açılır. v1 gelirse dokunulmaz.
+  function pzAc(d){ if(!d||d.v!==2||!Array.isArray(d.k)) return d;
+    const ac=(K,M)=>{ if(!M) return M; const r={}; for(const mk in M){ const a=M[mk], o={}; if(Array.isArray(a)) for(let i=0;i<a.length;i++) if(a[i]!==null) o[K[i]]=a[i]; r[mk]=o; } return r; };
+    const y=Object.assign({},d,{v:1,m:ac(d.k,d.m)}); if(d.o) y.o=Array.isArray(d.ko)?ac(d.ko,d.o):null; delete y.k; delete y.ko; return y; }
+  window.pzAc=pzAc;
   // YH-48: ayrık olduğu bir kez görülen fikstür dizisi, yakın parça eklendikten sonra da ayrık sayılır (uzak günler tam dosyayı bekler).
   let PZAF=null;
   const pzAyri=()=>{ try{ if(PZAF&&PZAF===FIXTURES) return true; const r=Array.isArray(FIXTURES)&&FIXTURES.length>0&&!FIXTURES.some(x=>x&&x.pz); if(r) PZAF=FIXTURES; return r; }catch(e){ return false; } };
@@ -177,12 +183,12 @@
   function pzAt(f){ if(f&&(PZC||PZY)){ const k=pzKey(f); if(!f.pz){ const z=(PZC&&PZC[k])||(PZY&&PZY[k]); if(z) f.pz=z; } poAt(f,k); } return f; }
   function pzYenile(){ try{ if(MS.m&&!MS.live) msRender(); }catch(e){} try{ ksched(); }catch(e){} }
   function pzLoad(){ if(PZQ&&PZF===FIXTURES) return PZQ; if(!pzAyri()) return Promise.resolve(false); PZF=FIXTURES;
-    PZQ=fetch("data/fx_pz.json",{cache:"no-cache"}).then(r=>r.ok?r.json():null).then(d=>{ if(!d||!d.m) { PZQ=null; return false; } PZC=d.m; PZCO=d.o||null;
+    PZQ=fetch("data/fx_pz.json",{cache:"no-cache"}).then(r=>r.ok?r.json():null).then(pzAc).then(d=>{ if(!d||!d.m) { PZQ=null; return false; } PZC=d.m; PZCO=d.o||null;
       let n=0; for(const f of FIXTURES){ if(!f.pz&&PZC[pzKey(f)]){ f.pz=PZC[pzKey(f)]; n++; } if(PZCO) poAt(f,pzKey(f)); } window.pzAyriSay=n; if(n) pzYenile(); return true; }).catch(()=>{ PZQ=null; return false; });
     return PZQ; }
   window.pzLoad=pzLoad;
   function pzYakinLoad(){ if(PZC) return pzLoad(); if(PZYQ&&PZYF===FIXTURES) return PZYQ; if(!pzAyri()) return Promise.resolve(false); PZYF=FIXTURES;
-    PZYQ=fetch("data/fx_pz_yakin.json",{cache:"no-cache"}).then(r=>r.ok?r.json():null).then(d=>{ if(!d||!d.m){ PZYQ=null; return pzLoad(); } PZY=d.m; PZYO=d.o||null;
+    PZYQ=fetch("data/fx_pz_yakin.json",{cache:"no-cache"}).then(r=>r.ok?r.json():null).then(pzAc).then(d=>{ if(!d||!d.m){ PZYQ=null; return pzLoad(); } PZY=d.m; PZYO=d.o||null;
       let n=0; for(const f of FIXTURES){ if(!f.pz&&PZY[pzKey(f)]){ f.pz=PZY[pzKey(f)]; n++; } if(PZYO) poAt(f,pzKey(f)); } window.pzAyriSay=n; if(n) pzYenile(); return true; }).catch(()=>{ PZYQ=null; return pzLoad(); });
     return PZYQ; }
   window.pzYakinLoad=pzYakinLoad;
