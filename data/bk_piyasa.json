@@ -1,6 +1,6 @@
 {
  "surum": "2026-10-28.1",
- "guncelleme": "2026-11-14 19:53",
+ "guncelleme": "2026-11-14 20:48",
  "aciklama": "Basket piyasa karnesi: kilitli model tahmini ile maç öncesi son piyasa oranı (marjı Shin ile ayrılmış) aynı maçlarda. Harman = Benter iki aşama (lig grubu, zaman sıralı ağırlık). Çapalı = model fark/toplamının handikap ve alt/üst çizgisine çekilmesi. GA: gün blokları bootstrap %95. Üretime yalnız OXXai kapısı + gölge sonrası girer.",
  "kurallar": {
   "kapi": "n ≥ 150, gün ≥ 20, ΔLL GA üst < 0, ΔBrier < 0, isabet düşmez",
@@ -471,6 +471,13 @@
   }
  },
  "agirlik": {
+  "kolej": {
+   "a": 0.2332,
+   "b": 0.8725,
+   "w_m": 0.9913,
+   "w_t": 0.9742,
+   "n_ogrenme": 616
+  },
   "pro": {
    "a": 0.296,
    "b": 0.8333,
@@ -484,13 +491,6 @@
    "w_m": 0.3402,
    "w_t": 1.0,
    "n_ogrenme": 74
-  },
-  "kolej": {
-   "a": 0.2332,
-   "b": 0.8725,
-   "w_m": 0.9913,
-   "w_t": 0.9742,
-   "n_ogrenme": 616
   }
  },
  "uretimde": {},
@@ -632,7 +632,7 @@
    "sonuclu_oranli": 546,
    "iddaa_ms": 226,
    "iddaa_hnd": 221,
-   "iddaa_au": 222,
+   "iddaa_au": 221,
    "espn": 607
   },
   "ncaaw": {
@@ -647,38 +647,31 @@
  },
  "sentetik_yarismalar": {
   "İtalya Serie A": 8,
-  "İspanya Liga ACB": 6,
-  "Fransa Pro A": 5,
-  "İtalya Serie B": 13,
+  "İspanya Liga ACB": 5,
+  "Fransa Pro A": 3,
+  "İtalya Serie B": 12,
   "Japonya B.Ligi": 3,
   "G. Kore Güney Kore Basketbol Ligi": 3,
   "Almanya Pro A": 7,
-  "ABA Liga, Group B": 1,
   "FIBA Liga Sudamericana, F Grub": 1,
   "Avusturya Bundesliga": 4,
-  "İspanya LEB Oro": 6,
   "Arjantin LNB": 4,
   "G. Kore Güney Kore Kadın Basket Ligi": 1,
   "Polonya PLK": 3,
   "Yunanistan A1": 3,
-  "Almanya BBL": 6,
-  "Slovakya Extraliga": 3,
+  "Almanya BBL": 5,
   "İtalya Serie A2": 7,
   "Uruguay Basketbol Ligi": 3,
   "BNXT Ligi": 4,
   "İngiltere SLB": 4,
-  "Çekya NBL": 2,
-  "Macaristan NB I": 3,
   "Slovenya 1. A SKL": 1,
   "Japonya B2.Ligi": 6,
   "Portekiz Basketbol Ligi": 1,
+  "İspanya LEB Oro": 4,
   "VTB Birleşik Ligi": 1,
-  "Türkiye Basketbol Süper Ligi": 1,
   "Avrupa Şamp Kadın, Eleme Grp H": 1,
-  "Danimarka Basketligaen": 1,
-  "İsviçre LNA": 1,
-  "EuroBasket, Women, Qualificati": 1,
-  "ABA Liga, Group A": 1
+  "Çekya NBL": 1,
+  "İsviçre LNA": 1
  },
  "gunluk": [
   {
