@@ -2390,11 +2390,16 @@ const BK_ORDER=["nba","el","ec","wnba","gl","nbl","ncaa","ncaaw"];
 function bkLoad(fresh){
   if(BK.loading && !fresh) return BK.loading;
   BK.loading=fetch("data/basket.json"+(fresh?"?t="+Date.now():""),{cache:fresh?"no-store":"no-cache"})
-    .then(r=>r.ok?r.json():null).then(d=>{ if(d){ if(fresh&&BK.data&&d.updated!==BK.data.updated){ BK.form=undefined; BK.formP=null; } BK.data=d; } return BK.data; }).catch(()=>BK.data);
+    .then(r=>r.ok?r.json():null).then(d=>{ if(d){ bkLogoAt(d); if(fresh&&BK.data&&d.updated!==BK.data.updated){ BK.form=undefined; BK.formP=null; } BK.data=d; } return BK.data; }).catch(()=>BK.data);
   // YH-05: canlı kazanma olasılığı bayrağı ve parametreleri (k, w, γ); yoksa / kapalıysa eski formül
   fetch("data/bk_canli.json"+(fresh?"?t="+Date.now():""),{cache:fresh?"no-store":"no-cache"}).then(r=>r.ok?r.json():null).then(j=>{ if(j) BK.cz=j; }).catch(()=>{});
   return BK.loading;
 }
+// YH-72 (bk:logo): yayın kopyasında maç logosu (hl / al) takımın logosuyla aynıysa basket.json'dan çıkarılır; burada geri bağlanır.
+function bkLogoAt(d){ const L=d&&d.leagues; if(!L||!Array.isArray(d.fixtures)) return;
+  for(const f of d.fixtures){ const T=(L[f.lg]||{}).teams; if(!T) continue;
+    if(f.hl===undefined&&T[f.h]&&T[f.h].logo) f.hl=T[f.h].logo;
+    if(f.al===undefined&&T[f.a]&&T[f.a].logo) f.al=T[f.a].logo; } }
 // YH-42: takım "son 5 maç" formu ayrı dosyada; yalnız maç penceresi açılınca bir kez indirilir. BK.form: undefined = henüz yok, null = alınamadı.
 function bkFormKey(t){ const D=BK.data; if(!D||!D.leagues||!t) return null; for(const lg in D.leagues){ const T=D.leagues[lg].teams||{}; for(const k in T) if(T[k]===t) return [lg,k]; } return null; }
 function bkFormLoad(){
