@@ -90,6 +90,44 @@ def damgala(kok, dosyalar=("index.html", "sw.js")):
 PZ_DOSYA = "data/fx_pz.json"
 PZ_YAKIN = "data/fx_pz_yakin.json"
 PO_ISARET = "fx_pz:po"   # YH-71: istemci po'yu ayrık dosyadan bağlayabiliyor
+SUTUN_ISARET = "fx_pz:sutun"   # YH-73: istemci sütunlu (v2) fx_pz dosyalarını açabiliyor
+
+
+def pz_sutun(M):
+    """YH-73: {maç: {kod: değer}} → (kodlar, {maç: [değer…]}). Kod sırası ilk görülme sırası; her maçın kod sırası bu sıranın
+    alt dizisi değilse ya da değerlerde null varsa None döner (dosya v1 kalır). Eksik kod null, sondaki null'lar kırpılır."""
+    sira, pos = [], {}
+    for v in M.values():
+        if not isinstance(v, dict):
+            return None
+        for k in v:
+            if k not in pos:
+                pos[k] = len(sira); sira.append(k)
+    out = {}
+    for mk, v in M.items():
+        ix = [pos[k] for k in v]
+        if ix != sorted(ix) or any(x is None for x in v.values()):
+            return None
+        a = [None] * len(sira)
+        for k, x in v.items():
+            a[pos[k]] = x
+        while a and a[-1] is None:
+            a.pop()
+        out[mk] = a
+    return sira, out
+
+
+def pz_sutunla(d):
+    """YH-73: v1 {"v":1,"m":…,"o":…} → v2 {"v":2,"k":[…],"m":{maç:[…]},"ko":[…],"o":{maç:[…]}}; olmazsa d aynen."""
+    m = pz_sutun(d.get("m") or {})
+    o = pz_sutun(d["o"]) if d.get("o") else None
+    if m is None or (d.get("o") and o is None):
+        return d
+    y = {k: v for k, v in d.items() if k not in ("v", "m", "o")}
+    y = {"v": 2, **y, "k": m[0], "m": m[1]}
+    if o is not None:
+        y["ko"], y["o"] = o
+    return y
 
 
 def pz_ayir(hedef, sec):
@@ -125,6 +163,10 @@ def pz_ayir(hedef, sec):
     tam = {"v": 1, "m": M}
     if O:
         tam["o"] = O
+    sutun = any(SUTUN_ISARET in open(os.path.join(hedef, y), encoding="utf-8", errors="replace").read()
+                for y in sec if y.endswith(".js") or y == "index.html")
+    if sutun:
+        tam = pz_sutunla(tam)
     json.dump(tam, open(os.path.join(hedef, PZ_DOSYA), "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
     print(f"[yayın listesi] pz ayrıldı: {len(M)} maç → {PZ_DOSYA} ({round(os.path.getsize(os.path.join(hedef, PZ_DOSYA)) / 1024)} KB), "
           f"fixtures.json {round(os.path.getsize(fx) / 1024)} KB" + (f"; po {len(O)} maç ayrıldı" if O else ""))
@@ -138,6 +180,8 @@ def pz_ayir(hedef, sec):
         yakin = {"v": 1, "gunler": sorted(gunler), "m": Y}
         if O:
             yakin["o"] = {k: v for k, v in O.items() if k in Y}
+        if sutun:
+            yakin = pz_sutunla(yakin)
         json.dump(yakin, open(os.path.join(hedef, PZ_YAKIN), "w", encoding="utf-8"),
                   ensure_ascii=False, separators=(",", ":"))
         print(f"[yayın listesi] yakın pz: {len(Y)} maç → {PZ_YAKIN} ({round(os.path.getsize(os.path.join(hedef, PZ_YAKIN)) / 1024)} KB)")
