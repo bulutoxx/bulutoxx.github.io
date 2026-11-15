@@ -1850,9 +1850,17 @@ const Pick={ extra:{}, loaded:false,
     // Amerika ligleri: ESPN günü ABD saatine göre; İstanbul gecesindeki maçlar bir önceki ABD gününde
     const AMER=new Set(["us","br","ar","mx","col","mx2","nwsl","chi","per","ecu","uru","par","ven","bol","ar2","br2","usl","hon","crc","gua","slv","mxw"]);
     const yday=new Date(Date.now()-864e5).toLocaleDateString("sv-SE",{timeZone:"Europe/Istanbul"}).replace(/-/g,"");
-    const jobs=[]; for(const lg of lgs) for(const d of (AMER.has(lg)?[yday,...days]:days)) jobs.push(fetch(`https://site.api.espn.com/apis/site/v2/sports/soccer/${ESPN[lg]}/scoreboard?dates=${d}`,{cache:"no-store"})
-      .then(r=>r.ok?r.json():null).then(j=>({lg,j})).catch(()=>null));
+    // YH-76: (lig, gün) sayfası yalnız gerekince yeniden istenir — canlı maç varsa ya da bir maçın başlamasına ≤ 15 dk kaldıysa her turda;
+    // yoksa (boş gün, bitmiş maçlar, saatler sonraki maçlar) en geç 30 dk'da bir ya da ilk maçtan 15 dk önce. İlk açılışta hepsi istenir.
+    const now0=Date.now(), DUE=this.due||(this.due={});
+    const jobs=[]; for(const lg of lgs) for(const d of (AMER.has(lg)?[yday,...days]:days)){ const key=lg+"|"+d; if(DUE[key]&&now0<DUE[key]) continue;
+      jobs.push(fetch(`https://site.api.espn.com/apis/site/v2/sports/soccer/${ESPN[lg]}/scoreboard?dates=${d}`,{cache:"no-store"})
+      .then(r=>r.ok?r.json():null).then(j=>({lg,j,key})).catch(()=>null)); }
     const res=await Promise.all(jobs);
+    for(const x of res){ if(!x||!x.j) continue;
+      let due=now0+18e5; for(const ev of x.j.events||[]){ const st=(ev.status&&ev.status.type&&ev.status.type.state)||"pre";
+        if(st==="in"){ due=0; break; } if(st==="pre"){ const t=Date.parse(ev.date); due=isFinite(t)?Math.min(due,t-9e5):0; } }
+      DUE[x.key]=due>now0?due:0; }
     for(const x of res){ if(!x||!x.j) continue; for(const ev of x.j.events||[]){
       const c=ev.competitions&&ev.competitions[0]; if(!c) continue;
       const H=c.competitors.find(z=>z.homeAway==="home"), A=c.competitors.find(z=>z.homeAway==="away"); if(!H||!A) continue;
