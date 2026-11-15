@@ -267,6 +267,8 @@
   function mk(){ if(ctx) return ctx; const A=W.AudioContext||W.webkitAudioContext; if(!A) return null;
     try{ ctx=new A({latencyHint:"interactive"}); }catch(e){ try{ ctx=new A(); }catch(_){ return null; } }
     try{ bus=chain(ctx,ctx.destination,volG()); }catch(e){ ctx=null; return null; } return ctx; }
+  // YH-75: programlı tık (açılışta sekme seçimi) ses bağlamını kullanıcı dokunuşundan önce açmasın — açılamıyor, yalnız konsol uyarısı.
+  function ua(){ try{ const u=navigator.userActivation; return !!(u && u.isActive); }catch(e){ return false; } }
   function unlock(){ const c=mk(); if(!c) return;
     try{ const b=c.createBuffer(1,1,c.sampleRate), s=c.createBufferSource(); s.buffer=b; s.connect(c.destination); s.start(0); }catch(e){}
     const ok=()=>{ if(c.state==="running"){ unlocked=true; hold(c,c.currentTime); lazy(c); } };
@@ -274,7 +276,7 @@
   // gerçek kayıtlar: açılışı yavaşlatmamak için ilk dokunuştan sonra, tarayıcı boşta kalınca bir kez
   function lazy(c){ if(SM.p) return; const go=()=>{ if(PREFS.sound&&!SM.p) loadSamples(c); };
     if("requestIdleCallback" in W) W.requestIdleCallback(go,{timeout:4000}); else setTimeout(go,1500); }
-  ["pointerdown","touchend","keydown","click"].forEach(ev=>D.addEventListener(ev,()=>{ if(!unlocked) unlock(); },{capture:true,passive:true}));
+  ["pointerdown","touchend","keydown","click"].forEach(ev=>D.addEventListener(ev,e=>{ if(!unlocked && (e.isTrusted || ua())) unlock(); },{capture:true,passive:true}));
   // boşta askıya al: zamanlayıcı yerine sessiz bir kaynak bitince (son sesten 1,5 sn sonra)
   function hold(c,end){ const id=++sent; try{ const o=c.createOscillator(), g=c.createGain(); g.gain.value=0; o.connect(g); g.connect(c.destination);
       o.onended=()=>{ try{ o.disconnect(); g.disconnect(); }catch(e){} if(id===sent&&c.state==="running") c.suspend().catch(()=>{}); };

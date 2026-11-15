@@ -800,7 +800,7 @@ if(!Array.isArray(PREFS.bkLeagues)){ PREFS.bkLeagues=Object.keys(BK_NAMES); save
 // ---------- Ses (Web Audio ile sentezlenir, dosya gerekmez) ----------
 const Sound=(()=>{
   let ctx=null;
-  const ac=()=>{ if(!ctx){ try{ ctx=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ return null; } } if(ctx.state==="suspended") ctx.resume(); return ctx; };
+  const ac=()=>{ if(!ctx){ if(!userAct()) return null; try{ ctx=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ return null; } } if(ctx.state==="suspended") ctx.resume(); return ctx; };
   const tone=(f,t0,d,type="sine",g=.08,f2)=>{ const c=ac(); if(!c) return; const o=c.createOscillator(), v=c.createGain(); o.type=type;
     o.frequency.setValueAtTime(f,c.currentTime+t0); if(f2) o.frequency.exponentialRampToValueAtTime(f2,c.currentTime+t0+d);
     v.gain.setValueAtTime(0,c.currentTime+t0); v.gain.linearRampToValueAtTime(g,c.currentTime+t0+.01); v.gain.exponentialRampToValueAtTime(.0001,c.currentTime+t0+d);
@@ -822,7 +822,9 @@ const Sound=(()=>{
   };
 })();
 document.addEventListener("pointerdown",()=>Sound.unlock(),{once:true});
-function buzz(p){ if(PREFS.vibrate && navigator.vibrate){ try{ navigator.vibrate(p); }catch(e){} } }
+// YH-75: kullanıcı sayfaya hiç dokunmadan (açılıştaki programlı tık) titreşim istenmez — tarayıcı zaten engelliyor ve konsola hata yazıyordu.
+const userAct=()=>{ try{ const u=navigator.userActivation; return !u || u.hasBeenActive; }catch(e){ return true; } };
+function buzz(p){ if(PREFS.vibrate && navigator.vibrate && userAct()){ try{ navigator.vibrate(p); }catch(e){} } }
 
 // ---------- Sesli anlatım (Türkçe) ----------
 const Voice={
