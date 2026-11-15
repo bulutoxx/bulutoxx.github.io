@@ -1,12 +1,12 @@
 {
  "v": 1,
- "tekli": 0.8,
+ "tekli": 0.85,
  "kombine": 0.75,
  "aday": 0.8,
  "dkmax": 75.0,
  "baslangic": "2026-11-13T07:34Z",
  "bitis": "2026-11-15T07:34Z",
- "durum": "deneme",
+ "durum": "geri_alindi",
  "onceki": {
   "tekli": 0.85,
   "kombine": 0.75
@@ -127,7 +127,24 @@
  "olcum_zaman": "2026-11-15T02:31Z",
  "kapi": {
   "kural": "deneme bitişinden ≥ 3 sa sonra: deneme dönemindeki altın seçimleri (tekli ilk görünüş, kombine benzersiz) — toplam n < 10 → yetersiz; n ≥ 10 olan türde Wilson %95 alt sınırı < eşik − 0.05 → başarısız; ikisinde de geri alınır",
-  "karar": null
+  "karar": "basarisiz",
+  "zaman": "2026-11-15T10:55Z",
+  "deneme": {
+   "tekli": {
+    "esik": 0.8,
+    "n": 27,
+    "tuttu": 21,
+    "gercek": 0.7778,
+    "wilson_alt": 0.5924
+   },
+   "kombine": {
+    "esik": 0.75,
+    "n": 2,
+    "tuttu": 2,
+    "gercek": 1.0,
+    "wilson_alt": 0.3424
+   }
+  }
  },
  "isaret": {
   "esik": 0.85,
@@ -163,7 +180,7 @@
     "wilson_alt": 0.7639,
     "ort_p": 0.9525
    },
-   "zaman": "2026-11-15T10:20Z"
+   "zaman": "2026-11-15T10:55Z"
   },
   "gecmis": [
    {
@@ -197,5 +214,9 @@
     "ort_p": 0.9525
    }
   ]
+ },
+ "denenen": {
+  "tekli": 0.8,
+  "kombine": 0.75
  }
 }
