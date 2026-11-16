@@ -42,6 +42,34 @@ def wilson(h, n, z=1.96):
     return round((c - r) / d, 4)
 
 
+# Gün başına CG uyumu önbelleği (2026-11-16): her gün için uyum yalnız o gün başlamadan biten maçlarla yapılır, geçmiş günlerin
+# girdisi değişmez → aynı girdi (X dizileri + taban parametreler, SHA-1) için önceki uyum birebir yeniden kullanılır. Önbellek
+# yoksa / girdi değiştiyse yeniden uyumlanır (sonuç aynı). Gerekçe: 22 günde tam ölçüm ≈ 340 sn → update.yml 300 sn sınırı aşılıyordu.
+OB_YOL = os.path.join(DATA, "canli_altin_cg.json")
+
+
+def _ob_oku():
+    try:
+        d = json.load(open(OB_YOL, encoding="utf-8")); return d.get("gunler") or {}
+    except Exception: return {}
+
+
+def _ob_yaz(OB, days):
+    OB = {d: v for d, v in OB.items() if d in set(days)}
+    try: json.dump({"aciklama": "lab/canli_altin_lab.py gün başına CG uyumu önbelleği (girdi SHA-1 eşleşirse yeniden kullanılır)", "gunler": OB},
+                   open(OB_YOL, "w", encoding="utf-8"), ensure_ascii=False, indent=0, sort_keys=True)
+    except Exception as ex: print("önbellek yazılamadı:", ex)
+
+
+def _cg_fit(OB, D, X, base, fit):
+    import hashlib, numpy as np
+    h = hashlib.sha1(json.dumps(base, sort_keys=True, default=str).encode())
+    for k in sorted(X): h.update(k.encode()); h.update(np.ascontiguousarray(X[k], dtype=np.float64).tobytes())
+    key = h.hexdigest(); e = OB.get(D)
+    if isinstance(e, dict) and e.get("k") == key and isinstance(e.get("P"), dict): return dict(e["P"])
+    P, _ = fit(X, base); OB[D] = {"k": key, "P": P}; return P
+
+
 def olc():
     import numpy as np
     import canli_guc_lab as L, canli_guc as CG
@@ -49,10 +77,12 @@ def olc():
     except Exception: h1 = .4428
     F = CA.ayar(DATA); dkmax = F["dkmax"]
     fin, snaps = L.load(); days = sorted({r["d"] for r in snaps}); R = []; gunler = []
+    OB = _ob_oku()
     for D in days[1:]:
         t0 = L.day_start(D); tr = {k for k, M in fin.items() if M["ts"] + 2.5 * 3600 < t0}
         if len({r["id"] for r in snaps if r["id"] in tr}) < 30: continue
-        P, _ = L.fit(L.rows_of(snaps, fin, tr, extra=True), dict(CG.DEF, h1=h1))
+        X = L.rows_of(snaps, fin, tr, extra=True); base = dict(CG.DEF, h1=h1)
+        P = _cg_fit(OB, D, X, base, L.fit)
         n0 = len(R)
         for r in snaps:
             if r["d"] != D or r.get("ok") is None or r["t"] >= dkmax or not (r.get("o") and r["o"] >= 1.05): continue
@@ -60,6 +90,7 @@ def olc():
             if p is None: continue
             R.append({"d": D, "id": r["id"], "k": r["rk"], "p": min(.99, p), "o": r["o"], "dk": r["t"], "ts": r.get("ts") or 0, "ok": bool(r["ok"])})
         if len(R) > n0: gunler.append(D)
+    _ob_yaz(OB, days)
     G = max(1, len(gunler)); out = {"gunler": gunler, "secim_kayit": len(R), "tekli": [], "kombine": []}
     for th in TEKLI:
         first = {}
