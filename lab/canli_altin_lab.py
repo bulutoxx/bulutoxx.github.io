@@ -64,7 +64,9 @@ def _ob_yaz(OB, days):
 def _cg_fit(OB, D, X, base, fit):
     import hashlib, numpy as np
     h = hashlib.sha1(json.dumps(base, sort_keys=True, default=str).encode())
-    for k in sorted(X): h.update(k.encode()); h.update(np.ascontiguousarray(X[k], dtype=np.float64).tobytes())
+    ks = sorted(X); M = np.column_stack([np.asarray(X[k], dtype=np.float64) for k in ks]) if ks else np.zeros((0, 0))
+    if len(M): M = np.nan_to_num(M, nan=-9e9); M = M[np.lexsort(M.T[::-1])]      # satır sırası (küme sırası) süreçten sürece değişir
+    h.update(",".join(ks).encode()); h.update(np.ascontiguousarray(M).tobytes())
     key = h.hexdigest(); e = OB.get(D)
     if isinstance(e, dict) and e.get("k") == key and isinstance(e.get("P"), dict): return dict(e["P"])
     P, _ = fit(X, base); OB[D] = {"k": key, "P": P}; return P
