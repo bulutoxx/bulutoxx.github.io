@@ -848,6 +848,35 @@
    "sonuc": "ret"
   },
   {
+   "anahtar": "bk_piyasa:pro",
+   "tur": "bk_piyasa",
+   "alan": "basket",
+   "yol": [
+    "bk_piyasa",
+    "pro"
+   ],
+   "deger": true,
+   "stratejiler": [
+    "bk_en_olasi"
+   ],
+   "sinyal": {
+    "n": 210,
+    "z": -2.82,
+    "fark_ll": -0.0499,
+    "ga": [
+     -0.0845,
+     -0.0151
+    ],
+    "kaynak": "data/bk_piyasa.json (kilitli basket tahmini × maç öncesi piyasa)"
+   },
+   "aciklama": "basket NBA · WNBA · G League · NBL: model + piyasa harmanı log-kaybını -0.0499 düşürüyor → piyasa çapası üretime",
+   "eklenme": "2026-11-16",
+   "durum": "denendi",
+   "oncelik": 2.82,
+   "son_deneme": "2026-11-16",
+   "sonuc": "ret"
+  },
+  {
    "anahtar": "pazar:A15",
    "tur": "pazar",
    "alan": "futbol",
@@ -942,35 +971,6 @@
    "oncelik": 2.65,
    "son_deneme": "2026-11-04",
    "sonuc": "ret"
-  },
-  {
-   "anahtar": "bk_piyasa:pro",
-   "tur": "bk_piyasa",
-   "alan": "basket",
-   "yol": [
-    "bk_piyasa",
-    "pro"
-   ],
-   "deger": true,
-   "stratejiler": [
-    "bk_en_olasi"
-   ],
-   "sinyal": {
-    "n": 166,
-    "z": -2.61,
-    "fark_ll": -0.0523,
-    "ga": [
-     -0.0903,
-     -0.0117
-    ],
-    "kaynak": "data/bk_piyasa.json (kilitli basket tahmini × maç öncesi piyasa)"
-   },
-   "aciklama": "basket NBA · WNBA · G League · NBL: model + piyasa harmanı log-kaybını -0.0523 düşürüyor → piyasa çapası üretime",
-   "eklenme": "2026-11-12",
-   "oncelik": 2.61,
-   "durum": "denendi",
-   "son_deneme": "2026-11-12",
-   "sonuc": "veri_yetersiz"
   },
   {
    "anahtar": "pazar:IYA15",
@@ -1939,6 +1939,6 @@
    "sonuc": "ret"
   }
  ],
- "guncelleme": "2026-11-16T04:17Z",
+ "guncelleme": "2026-11-16T10:17Z",
  "aciklama": "OXXai öğrenme döngüsünün deney adayları: kilitli kupon/tahmin günlüklerinde beklenti ile gerçek arasındaki sistematik farklardan (|z| ≥ 1,5; öncelik |z|) otomatik üretilir; her gece en fazla 3 aday sınanır."
 }
