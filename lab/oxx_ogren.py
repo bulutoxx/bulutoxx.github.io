@@ -56,6 +56,25 @@ RNG = np.random.default_rng(20261026)
 def r4(x): return None if x is None else round(float(x), 4)
 
 
+# YH-77: yalnız sınama örneklemi azlığından ("sınamada maç az", "seçim diliminde … maç (<300)") gelen veri_yetersiz kararında
+# 14 gün yerine KISA_BEKLEME gün beklenir (veri birikince aynı önceden kayıtlı kapı + alfa yatırımıyla yeniden sınanır).
+# ret, gölge süresi dolan veri_yetersiz ve diğer tüm kararlar eskisi gibi BEKLEME (14 gün).
+KISA_BEKLEME = 3
+
+
+def ret_bekleme(k):
+    parca = [x for x in (k.get("neden") or "").split("; ") if x]
+    if k.get("karar") == "veri_yetersiz" and parca and all(("maç az" in x or "(<300)" in x) for x in parca):
+        return KISA_BEKLEME          # tek neden örneklem azlığı (başka bir kapı da kaldıysa 14 gün)
+    return BEKLEME
+
+
+def son_ret_bitis(GL):
+    """anahtar → yeniden denenebileceği ilk gün (son ret / veri_yetersiz kaydına göre)."""
+    return {k["anahtar"]: date.fromisoformat(k["tarih"]) + timedelta(days=ret_bekleme(k))
+            for k in GL.get("kayitlar", []) if k.get("karar") in ("ret", "veri_yetersiz")}
+
+
 def kalan(): return BUDGET - (time.time() - T0)
 
 
@@ -660,18 +679,18 @@ def main():
     A = K.ayar_yukle(J)
     # 1) sinyaller → kuyruk
     var = {a["anahtar"]: a for a in Q.get("adaylar", [])}
-    son_ret = {k["anahtar"]: k["tarih"] for k in GL.get("kayitlar", []) if k.get("karar") in ("ret", "veri_yetersiz")}
+    son_ret = son_ret_bitis(GL)          # YH-77: anahtar → yeniden deneme günü
     yeni = 0
     for c in sinyaller(bugun, A):
         r = son_ret.get(c["anahtar"]); o = var.get(c["anahtar"])
         if c["anahtar"] in golge: continue
-        if (o and o["durum"] == "bekliyor") or (r and (bugun - date.fromisoformat(r)).days < BEKLEME): continue
+        if (o and o["durum"] == "bekliyor") or (r and bugun < r): continue
         if o and o.get("sonuc") == "kabul" and al((J.get("params") or {}), c["yol"]) == c.get("deger"): continue
         c.update({"eklenme": bugun.isoformat(), "durum": "bekliyor", "oncelik": round(abs(c["sinyal"].get("z") or 0), 2)})
         var[c["anahtar"]] = c; yeni += 1
     bek = [a for a in var.values() if a["durum"] == "bekliyor"]
     if len(bek) < N_GECE:
-        k_ = kesif(bugun, A, {k for k, a in var.items() if a["durum"] == "bekliyor"} | {k for k, t in son_ret.items() if (bugun - date.fromisoformat(t)).days < BEKLEME} | golge)
+        k_ = kesif(bugun, A, {k for k, a in var.items() if a["durum"] == "bekliyor"} | {k for k, t in son_ret.items() if bugun < t} | golge)
         if k_:
             k_.update({"eklenme": bugun.isoformat(), "durum": "bekliyor", "oncelik": 0.0}); var[k_["anahtar"]] = k_; yeni += 1
     # 2–3) gecelik sınama: en fazla N aday, öncelik sırasıyla

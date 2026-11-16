@@ -96,12 +96,12 @@ def deney_oxx(alan):
     A = K.ayar_yukle(J)
     GL = K.jl(O.GUNLUK, {}) or {"sayac": {}, "kayitlar": []}
     G = jl(GOLGE, {}) or {}; GA = G.get("adaylar") or {}
-    son_ret = {k["anahtar"]: k["tarih"] for k in GL.get("kayitlar", []) if k.get("karar") in ("ret", "veri_yetersiz")}
+    son_ret = O.son_ret_bitis(GL)          # YH-77: anahtar → yeniden deneme günü (örneklem azlığında 3, diğerlerinde 14 gün)
     izlenen = {i["anahtar"] for i in J.get("izlenen", [])}
 
     def yakin_ret(k):
         r = son_ret.get(k)
-        return bool(r) and (bugun - date.fromisoformat(r)).days < O.BEKLEME
+        return bool(r) and bugun < r
 
     def uygun(c):
         k = c["anahtar"]
