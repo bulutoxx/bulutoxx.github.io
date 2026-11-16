@@ -1,0 +1,29 @@
+name: YH-78 sonda (geçici, yalnız dal)
+on:
+  push:
+    branches: [yh78-sonda]
+permissions: { contents: read }
+jobs:
+  s:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - run: |
+          python3 - <<'P'
+          import json, urllib.request, datetime as D
+          def g(u):
+              try:
+                  r = urllib.request.urlopen(urllib.request.Request(u, headers={"User-Agent": "Mozilla/5.0"}), timeout=20); return r.status, json.loads(r.read())
+              except Exception as e: return str(e)[:80], {}
+          t = D.date(2026, 11, 14)
+          ds = [(t + D.timedelta(days=i)).strftime("%Y%m%d") for i in range(3)]
+          for slug in ["eng.1", "esp.1", "bra.1", "usa.1", "uefa.champions", "tur.1"]:
+              ids = set(); per = []
+              for d in ds:
+                  s, j = g(f"https://site.api.espn.com/apis/site/v2/sports/soccer/{slug}/scoreboard?dates={d}")
+                  e = [x["id"] for x in j.get("events", [])]; per.append(len(e)); ids |= set(e)
+              for q in ["", "&limit=200"]:
+                  s, j = g(f"https://site.api.espn.com/apis/site/v2/sports/soccer/{slug}/scoreboard?dates={ds[0]}-{ds[-1]}{q}")
+                  r = set(x["id"] for x in j.get("events", []))
+                  print(slug, "gun", per, "birlesim", len(ids), "aralik" + q, s, len(r), "esit", r == ids, "eksik", len(ids - r), "fazla", len(r - ids))
+          P
