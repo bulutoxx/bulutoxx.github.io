@@ -6,46 +6,62 @@ permissions: { contents: read }
 jobs:
   s:
     runs-on: ubuntu-latest
-    timeout-minutes: 8
+    timeout-minutes: 12
     steps:
       - uses: actions/checkout@v4
-        with: { ref: main }
+        with: { ref: yh81 }
       - run: pip install numpy==2.1.3 -q
       - run: |
           cd scripts && python3 - <<'P'
-          import csv, io, json, collections, sys
+          import json, math, random, sys
+          from datetime import date
+          import numpy as np
           sys.argv = ["x"]
           import update as U
-          season = json.load(open("../data/season.json", encoding="utf-8"))
-          # (1) football-data "new" dosyalarinin son tarihi ve bos skorlu satir sayisi
-          for lg, (kind, code, _) in U.LEAGUES.items():
-              if kind != "new": continue
-              try: t = U.fetch(f"https://www.football-data.co.uk/new/{code}.csv")
-              except Exception as e: print("FD", lg, "hata", e.__class__.__name__); continue
-              rows = list(csv.DictReader(io.StringIO(t)))
-              ds = [U.parse_date(r.get("Date", "")) for r in rows]
-              son = max(d for d, r in zip(ds, rows) if d and r.get("HG", "") != "")
-              bos = sum(1 for d, r in zip(ds, rows) if d and d > son)
-              ss = collections.Counter(r.get("Season", "") for r in rows[-400:])
-              print("FD", lg, code, "satir", len(rows), "son_sonuc", son, "sonra_satir", bos, "sezon", dict(ss))
-          # (2) ESPN rus.1 aylik sonuclar
-          known = sorted({m[k] for m in season["ru"]["matches"] for k in ("h", "a")})
-          fd = {(m["d"], m["h"], m["a"]): m["ft"] for m in season["ru"]["matches"]}
-          tum = []
-          for ym in ["202607", "202608", "202609", "202610", "202611"]:
-              try: r, f = U.espn_month("rus.1", ym)
-              except Exception as e: print("ESPN", ym, "hata", e.__class__.__name__); continue
-              tum += r; print("ESPN", ym, "sonuc", len(r), "fikstur", len(f))
-          adlar = sorted({e[k] for e in tum for k in ("h", "a")})
-          esl = {n: U.resolve(n, known) for n in adlar}
-          print("ESPN ad", len(adlar), "eslesmeyen", [n for n in adlar if esl[n] not in known])
-          print("ESPN eslesme", {n: v for n, v in esl.items() if n != v})
-          # (3) ortusme: fd'de olan gunlerde skor ayni mi
-          ort = es = 0
-          for e in tum:
-              k = (e["d"], esl[e["h"]], esl[e["a"]])
-              if k in fd: ort += 1; es += fd[k] == e["ft"]
-          fd_son = [k for k in fd if k[0] >= "2026-07-01"]
-          print("ORTUSME fd_temmuz+", len(fd_son), "espn_ayni_mac", ort, "skor_ayni", es)
-          print("ESPN ilk", min(e["d"] for e in tum) if tum else None, "son", max(e["d"] for e in tum) if tum else None, "toplam", len(tum))
+          S = json.load(open("../data/season.json", encoding="utf-8"))
+          P = json.load(open("../data/model.json", encoding="utf-8"))["params"]
+          cur = S["ru"]; today = date(2026, 11, 17); log = {}
+          ms, ek = U.espn_tamamla("ru", list(cur["matches"]), cur, today, log)
+          print("TAMAMLA", json.dumps(log, ensure_ascii=False), ek)
+          add = [m for m in ms if m.get("espn_ek")]
+          print("EK", len(add), "ilk", min(m["d"] for m in add), "son", max(m["d"] for m in add),
+                "takim", len({m[k] for m in add for k in "ha"}), "sezon", sorted({m["season"] for m in add}))
+          ms2, esle, n_ad = U.ad_birlestir(ms, cur.get("ad_esle")); print("AD_BIRLESTIR", n_ad, esle)
+          # zaman sirali sinama: test = ESPN ile gelen maclar; A = 2026-08-02 donmus model (uretimdeki durum),
+          # B = her hafta yalniz o haftadan onceki maclarla yeniden egitim (ESPN tamamlamali)
+          son = ek["fd_son"]; fdms = [m for m in ms if not m.get("espn_ek")]
+          fA = U.fit(fdms, date.fromisoformat(son), P, iters=30)
+          rows = []
+          weeks = sorted({date.fromisoformat(m["d"]).isocalendar()[:2] for m in add})
+          for wk in weeks:
+              test = [m for m in add if date.fromisoformat(m["d"]).isocalendar()[:2] == wk]
+              st = min(m["d"] for m in test)
+              fB = U.fit([m for m in ms if m["d"] < st], date.fromisoformat(st), P, iters=30)
+              for m in test:
+                  r = 0 if m["ft"][0] > m["ft"][1] else 1 if m["ft"][0] == m["ft"][1] else 2
+                  out = []
+                  for f in (fA, fB):
+                      t = f["t"]
+                      if m["h"] not in t or m["a"] not in t: out = None; break
+                      (ah, dh), (aa, da) = t[m["h"]], t[m["a"]]
+                      lh = f["mu"] * f["gamma"] * ah * da; la = f["mu"] * aa * dh
+                      p, pO, _, _ = U.outcome_probs(np.array([lh]), np.array([la]), P["rho"])
+                      out.append((p[0], float(pO[0])))
+                  if out: rows.append((m["d"], r, sum(m["ft"]) > 2, out))
+          def ll(i): return np.array([-math.log(max(x[3][i][0][x[1]], 1e-9)) for x in rows])
+          def br(i): return np.array([sum((x[3][i][0][k] - (k == x[1])) ** 2 for k in range(3)) for x in rows])
+          def llo(i): return np.array([-math.log(max(x[3][i][1] if x[2] else 1 - x[3][i][1], 1e-9)) for x in rows])
+          d = ll(1) - ll(0); do = llo(1) - llo(0); db = br(1) - br(0)
+          gun = sorted({x[0] for x in rows}); gi = {g: [i for i, x in enumerate(rows) if x[0] == g] for g in gun}
+          rnd = random.Random(81); bs = []; bso = []
+          for _ in range(2000):
+              idx = [i for g in (rnd.choice(gun) for _ in gun) for i in gi[g]]
+              bs.append(d[idx].mean()); bso.append(do[idx].mean())
+          bs.sort(); bso.sort()
+          h = len(rows) // 2
+          isA = np.mean([np.argmax(x[3][0][0]) == x[1] for x in rows]); isB = np.mean([np.argmax(x[3][1][0]) == x[1] for x in rows])
+          print("SINAMA n", len(rows), "gun", len(gun), "dLL_1x2 %.4f GA [%.4f, %.4f]" % (d.mean(), bs[50], bs[1949]),
+                "yarilar %.4f / %.4f" % (d[:h].mean(), d[h:].mean()), "dBrier %.4f" % db.mean(),
+                "isabet %.3f -> %.3f" % (isA, isB), "LL_A %.4f LL_B %.4f" % (ll(0).mean(), ll(1).mean()))
+          print("SINAMA 2.5 dLL %.4f GA [%.4f, %.4f]" % (do.mean(), bso[50], bso[1949]))
           P
