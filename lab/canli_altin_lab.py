@@ -75,8 +75,10 @@ def _cg_fit(OB, D, X, base, fit):
 def olc():
     import numpy as np
     import canli_guc_lab as L, canli_guc as CG
-    try: h1 = json.load(open(os.path.join(DATA, "model.json"), encoding="utf-8"))["params"].get("h1", .4428)
-    except Exception: h1 = .4428
+    # 2026-11-17: başlangıç h1 sabit (CG.DEF). h1 CG'de öğrenilen bir parametre (yalnız Nelder–Mead başlangıcı); model.json'daki h1
+    # saatlik motor turunda 4. ondalıkta oynuyordu → önbellek anahtarı her turda değişiyor, her gün yeniden uyumlanıyor ve adım
+    # update.yml 300 sn sınırını aşıyordu (rc 124, 24 saatte 4 kez). Sabit başlangıç ayrıca bugünkü modelin geçmiş günlere sızmasını önler.
+    h1 = CG.DEF["h1"]
     F = CA.ayar(DATA); dkmax = F["dkmax"]
     fin, snaps = L.load(); days = sorted({r["d"] for r in snaps}); R = []; gunler = []
     OB = _ob_oku()
@@ -84,7 +86,8 @@ def olc():
         t0 = L.day_start(D); tr = {k for k, M in fin.items() if M["ts"] + 2.5 * 3600 < t0}
         if len({r["id"] for r in snaps if r["id"] in tr}) < 30: continue
         X = L.rows_of(snaps, fin, tr, extra=True); base = dict(CG.DEF, h1=h1)
-        P = _cg_fit(OB, D, X, base, L.fit)
+        k0 = (OB.get(D) or {}).get("k"); P = _cg_fit(OB, D, X, base, L.fit)
+        if (OB.get(D) or {}).get("k") != k0: _ob_yaz(OB, days)          # yeni uyum hemen yazılır: zaman aşımında da ilerleme korunur
         n0 = len(R)
         for r in snaps:
             if r["d"] != D or r.get("ok") is None or r["t"] >= dkmax or not (r.get("o") and r["o"] >= 1.05): continue
