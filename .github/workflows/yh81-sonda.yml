@@ -1,0 +1,51 @@
+name: YH-81 sonda (geçici, yalnız dal)
+on:
+  push:
+    branches: [yh81-sonda]
+permissions: { contents: read }
+jobs:
+  s:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with: { ref: main }
+      - run: pip install numpy==2.1.3 -q
+      - run: |
+          cd scripts && python3 - <<'P'
+          import csv, io, json, collections, sys
+          sys.argv = ["x"]
+          import update as U
+          season = json.load(open("../data/season.json", encoding="utf-8"))
+          # (1) football-data "new" dosyalarinin son tarihi ve bos skorlu satir sayisi
+          for lg, (kind, code, _) in U.LEAGUES.items():
+              if kind != "new": continue
+              try: t = U.fetch(f"https://www.football-data.co.uk/new/{code}.csv")
+              except Exception as e: print("FD", lg, "hata", e.__class__.__name__); continue
+              rows = list(csv.DictReader(io.StringIO(t)))
+              ds = [U.parse_date(r.get("Date", "")) for r in rows]
+              son = max(d for d, r in zip(ds, rows) if d and r.get("HG", "") != "")
+              bos = sum(1 for d, r in zip(ds, rows) if d and d > son)
+              ss = collections.Counter(r.get("Season", "") for r in rows[-400:])
+              print("FD", lg, code, "satir", len(rows), "son_sonuc", son, "sonra_satir", bos, "sezon", dict(ss))
+          # (2) ESPN rus.1 aylik sonuclar
+          known = sorted({m[k] for m in season["ru"]["matches"] for k in ("h", "a")})
+          fd = {(m["d"], m["h"], m["a"]): m["ft"] for m in season["ru"]["matches"]}
+          tum = []
+          for ym in ["202607", "202608", "202609", "202610", "202611"]:
+              try: r, f = U.espn_month("rus.1", ym)
+              except Exception as e: print("ESPN", ym, "hata", e.__class__.__name__); continue
+              tum += r; print("ESPN", ym, "sonuc", len(r), "fikstur", len(f))
+          adlar = sorted({e[k] for e in tum for k in ("h", "a")})
+          esl = {n: U.resolve(n, known) for n in adlar}
+          print("ESPN ad", len(adlar), "eslesmeyen", [n for n in adlar if esl[n] not in known])
+          print("ESPN eslesme", {n: v for n, v in esl.items() if n != v})
+          # (3) ortusme: fd'de olan gunlerde skor ayni mi
+          ort = es = 0
+          for e in tum:
+              k = (e["d"], esl[e["h"]], esl[e["a"]])
+              if k in fd: ort += 1; es += fd[k] == e["ft"]
+          fd_son = [k for k in fd if k[0] >= "2026-07-01"]
+          print("ORTUSME fd_temmuz+", len(fd_son), "espn_ayni_mac", ort, "skor_ayni", es)
+          print("ESPN ilk", min(e["d"] for e in tum) if tum else None, "son", max(e["d"] for e in tum) if tum else None, "toplam", len(tum))
+          P
