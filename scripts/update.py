@@ -239,6 +239,62 @@ def merge(old, new):
             pairs.setdefault((m["h"], m["a"]), []).append(m)
     return sorted((m for lst in pairs.values() for m in lst), key=lambda m: (m["d"], m["h"]))
 
+def ikiz_gunler(ms, p, q, ortak):
+    """p ve q'nun birlikte göründüğü her günde p'nin her maçının q'lu bir ikizi (aynı skor, aynı rakip, aynı taraf) var mı."""
+    for d in ortak:
+        gm = [m for m in ms if m["d"] == d]
+        for z in gm:
+            for ad, ob in ((p, q), (q, p)):
+                if ad not in (z["h"], z["a"]): continue
+                ikiz = any(w is not z and w.get("ft") == z.get("ft") and
+                           ((z["h"] == ad and w["h"] == ob and w["a"] == z["a"]) or (z["a"] == ad and w["a"] == ob and w["h"] == z["h"]))
+                           for w in gm)
+                if not ikiz: return False
+    return True
+
+def ad_birlestir(ms, esle=None):
+    """YH-80: aynı maçın kaynakta farklı yazılmış takım adıyla ikinci kez gelmesi (Oxford / Oxford Utd, CD Tenerife /
+    Tenerife (ESW)). Kanıt: aynı gün + aynı skor + bir taraf aynı takım, öbür taraf farklı ad → bir takım aynı gün iki
+    maç oynayamaz, iki satır aynı maçtır. Az maçlı ad, çok maçlı ada bağlanır (eşleme kalıcı: esle {takma: asıl}); iki ad
+    aynı gün başka maçlarda ya da birbirine karşı oynadıysa ayrı takımdır, bağlanmaz. Dönüş: (maçlar, esle, değişen)."""
+    esle = dict(esle or {})
+    def asil(n):
+        g = set()
+        while n in esle and n not in g: g.add(n); n = esle[n]
+        return n
+    for _ in range(3):
+        ms = [dict(m, h=asil(m["h"]), a=asil(m["a"])) if (m["h"] in esle or m["a"] in esle) else m for m in ms]
+        say = collections.Counter(n for m in ms for n in (m["h"], m["a"]))
+        gunler = collections.defaultdict(set)
+        for m in ms:
+            gunler[m["h"]].add(m["d"]); gunler[m["a"]].add(m["d"])
+        rakip = collections.defaultdict(set)
+        for m in ms:
+            rakip[m["h"]].add(m["a"]); rakip[m["a"]].add(m["h"])
+        grp = collections.defaultdict(list)
+        for m in ms:
+            ft = m.get("ft")
+            if not ft or len(ft) < 2 or None in ft[:2]: continue
+            grp[(m["d"], ft[0], ft[1])].append(m)
+        yeni = {}
+        for g in grp.values():
+            if len(g) < 2: continue
+            for i in range(len(g)):
+                for j in range(i + 1, len(g)):
+                    x, y = g[i], g[j]
+                    if x["h"] == y["h"] and x["a"] != y["a"]: p, q = x["a"], y["a"]
+                    elif x["a"] == y["a"] and x["h"] != y["h"]: p, q = x["h"], y["h"]
+                    else: continue
+                    if "TBD" in p or "TBD" in q or q in rakip[p]: continue
+                    if not ikiz_gunler(ms, p, q, gunler[p] & gunler[q]): continue   # aynı gün eşsiz maç → ayrı takımlar
+                    kucuk, buyuk = (p, q) if (say[p], p) < (say[q], q) else (q, p)
+                    yeni[kucuk] = buyuk
+        if not yeni: break
+        esle.update(yeni)
+    ms = [dict(m, h=asil(m["h"]), a=asil(m["a"])) if (m["h"] in esle or m["a"] in esle) else m for m in ms]
+    n0 = len(ms); ms = merge([], ms)
+    return ms, {k: asil(k) for k in esle}, n0 - len(ms)
+
 # ------------------------------------------------------------------ model
 def pois_vec(lam, kmax=10):
     k = np.arange(kmax + 1)
@@ -1165,11 +1221,17 @@ def download_extra(season, today, log):
         new = [dict(x, h=tag(x["h"]), a=tag(x["a"]), season=season_for(lg, x["d"])) for x in new]
         fixtures = [dict(x, h=tag(x["h"]), a=tag(x["a"])) if x["lg"] == lg else x for x in fixtures]
         ms = [x for x in merge(cur.get("matches", []), new) if x["d"] >= start.isoformat()]
+        ms, esle, n_ad = ad_birlestir(ms, cur.get("ad_esle"))   # YH-80: kaynak takımı yeniden adlandırınca geçmiş bölünmesin
+        if esle:
+            for k_, v_ in list(alias.items()):
+                if v_ in esle: alias[k_] = esle[v_]   # ham ESPN adı doğrudan asıl ada (zincir esle'de tek adımdır)
+            fixtures = [dict(x, h=esle.get(x["h"], x["h"]), a=esle.get(x["a"], x["a"])) if x["lg"] == lg else x for x in fixtures]
         for x in ms: x["season"] = season_for(lg, x["d"])
         log[lg] = f"{len(new)} yeni, {n_req} istek"
         if len(ms) < 10: continue
         last_season = max(x["season"] for x in ms)
         season[lg] = {"name": name, "espn": slug, "asOf": max(x["d"] for x in ms), "season": last_season, "matches": ms, "done": sorted(done), "src": "espn", "alias": alias}
+        if esle: season[lg]["ad_esle"] = esle
     return fixtures
 
 def fetch_logos(season):
@@ -1781,9 +1843,12 @@ def main():
                 log[lg] = f"hata: {e.__class__.__name__}"
         ms = [m for m in merge(old, new) if m["d"] >= since]
         if not ms: continue
+        ms, esle, n_ad = ad_birlestir(ms, cur.get("ad_esle"))   # YH-80: farklı yazılmış adla gelen aynı maç tek kayıt
+        if n_ad: log[f"{lg}-ad"] = f"{n_ad} çift kayıt birleşti"
         last_season = max(m["season"] for m in ms)
         cur_ms = [m for m in ms if m["season"] == last_season]
         season[lg] = {"name": lname, "asOf": max(m["d"] for m in cur_ms), "season": last_season, "matches": ms}
+        if esle: season[lg]["ad_esle"] = esle
     extra_fx = []
     if not offline:
         try: extra_fx = download_extra(season, today, log)
