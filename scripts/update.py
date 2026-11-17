@@ -1234,6 +1234,54 @@ def download_extra(season, today, log):
         if esle: season[lg]["ad_esle"] = esle
     return fixtures
 
+# 🩹 YH-81: football-data "new" dosyası bir ligde durursa (ör. Rusya: 2026-08-02'den beri yeni satır yok) sonuçlar ESPN aylık
+# sorgusundan tamamlanır. Yalnız durgun liglerde (son sonuç > ESPN_TAMAMLA_GUN gün önce) ve yalnız son football-data sonucundan
+# SONRAKİ günler için; oransız eklenir (piyasa xG'si yok), football-data geri dönünce merge() aynı maçı onun satırıyla değiştirir.
+# Güvenlik: ESPN adlarının hepsi ligin bilinen adlarına bağlanmazsa o ay eklenmez (hayalet takım açılmaz).
+ESPN_TAMAMLA_GUN = 21
+ESPN_AD = {"ru": {"Akron Tolyatti": "Akron Togliatti", "Dinamo Moscow": "Dynamo Moscow", "FC Baltika Kaliningrad": "Baltika",
+                  "Gazovik Orenburg": "Orenburg", "Zenit St Petersburg": "Zenit"}}
+def espn_tamamla(lg, ms, cur, today, log, ay_getir=None):
+    """ms: ligin birleşmiş maçları. Döner: (ms, ek_bilgi | None)."""
+    slug = ESPN.get(lg)
+    ek = dict(cur.get("espn_ek") or {})
+    fd = [m for m in ms if not m.get("espn_ek")]
+    if not slug or not fd: return ms, (ek or None)
+    son = max(m["d"] for m in fd)
+    if (today - date.fromisoformat(son)).days <= ESPN_TAMAMLA_GUN:
+        return ms, (ek or None)           # kaynak akıyor: ek istek yok (eklenmiş ESPN maçları merge ile yerinde kalır)
+    ay_getir = ay_getir or espn_month
+    cur_season = max(m["season"] for m in fd)
+    known = sorted({m[k] for m in ms if m["season"] >= cur_season - 1 for k in ("h", "a")})
+    adm = ESPN_AD.get(lg, {})
+    # sezon kuralı football-data satırlarından: ilk yarıda (Oca–Haz) sezon = yıl ise takvim yılı ligi, değilse Tem–Haz sezonu
+    ilk = [m for m in fd if m["d"][5:7] < "07"]
+    takvim = bool(ilk) and sum(m["season"] == int(m["d"][:4]) for m in ilk) * 2 > len(ilk)
+    sz = (lambda d: int(d[:4])) if takvim else season_of
+    done = set(ek.get("done", [])); new = []; red = []
+    y, mo = int(son[:4]), int(son[5:7])
+    while (y, mo) <= (today.year, today.month):
+        ym = f"{y}{mo:02d}"
+        if ym not in done:
+            try:
+                r, _ = ay_getir(slug, ym)
+                ad = {n: adm.get(n) or resolve(n, known) for e in r for n in (e["h"], e["a"])}
+                yok = sorted(n for n, v in ad.items() if v not in known)
+                if yok: red += yok
+                else:
+                    new += [dict(e, h=ad[e["h"]], a=ad[e["a"]], season=sz(e["d"]), espn_ek=1) for e in r if e["d"] > son]
+                    end = date(y + (mo == 12), mo % 12 + 1, 1) - timedelta(days=1)
+                    if (today - end).days > 5: done.add(ym)
+            except Exception as ex:
+                log[f"{lg}-espn-{ym}"] = f"hata: {ex.__class__.__name__}"
+        mo += 1
+        if mo == 13: y, mo = y + 1, 1
+    if red: log[f"{lg}-espn-ad"] = "eşleşmeyen ad: " + ", ".join(sorted(set(red)))
+    ms = merge(ms, new)
+    n_ek = sum(1 for m in ms if m.get("espn_ek"))
+    log[f"{lg}-espn"] = f"{len(new)} sonuç (toplam ESPN ek {n_ek}, son football-data {son})"
+    return ms, {"done": sorted(done), "fd_son": son, "n": n_ek}
+
 def fetch_logos(season):
     """Her ligin takım logolarını ESPN'den indir ve uygulamadaki takım adlarıyla eşle."""
     lp = os.path.join(DATA, "logos.json")
@@ -1843,12 +1891,17 @@ def main():
                 log[lg] = f"hata: {e.__class__.__name__}"
         ms = [m for m in merge(old, new) if m["d"] >= since]
         if not ms: continue
+        ek = cur.get("espn_ek")
+        if not offline and kind == "new":
+            try: ms, ek = espn_tamamla(lg, ms, cur, today, log)   # YH-81: football-data dosyası durduysa ESPN'den tamamla
+            except Exception as e: log[f"{lg}-espn"] = f"hata: {e.__class__.__name__}"
         ms, esle, n_ad = ad_birlestir(ms, cur.get("ad_esle"))   # YH-80: farklı yazılmış adla gelen aynı maç tek kayıt
         if n_ad: log[f"{lg}-ad"] = f"{n_ad} çift kayıt birleşti"
         last_season = max(m["season"] for m in ms)
         cur_ms = [m for m in ms if m["season"] == last_season]
         season[lg] = {"name": lname, "asOf": max(m["d"] for m in cur_ms), "season": last_season, "matches": ms}
         if esle: season[lg]["ad_esle"] = esle
+        if ek: season[lg]["espn_ek"] = ek
     extra_fx = []
     if not offline:
         try: extra_fx = download_extra(season, today, log)
