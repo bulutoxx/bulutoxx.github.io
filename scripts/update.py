@@ -119,6 +119,29 @@ def fnum(x):
         v = float(x); return v if v > 1.0 else None
     except (TypeError, ValueError): return None
 
+# YH-82: football-data ortalama oran sütununda zaman zaman bozuk satır var (ör. ru 2026-05: tüm deplasman oranları ≈12;
+# Σ1/o 0,52–0,98). Bozuk oran piyasa xG'sini, kalibrasyonu ve derin arşivi kirletir. Sınırlar dq.py denetimiyle aynı.
+ORAN_ALT, ORAN_UST = 0.98, 1.35
+
+def oran_akli(o):
+    """1X2 oranı makul mu: üçü de var ve toplam ters oran (1 + marj) [0,98; 1,35] aralığında."""
+    try: return bool(o) and len(o) == 3 and all(o) and ORAN_ALT <= sum(1 / x for x in o) <= ORAN_UST
+    except (TypeError, ZeroDivisionError): return False
+
+def oran_sec(row, *gruplar):
+    """Sütun grupları sırayla denenir; ilk makul (oran_akli) üçlü döner, yoksa None."""
+    for g in gruplar:
+        o = [fnum(row.get(k)) for k in g]
+        if oran_akli(o): return [round(x, 2) for x in o]
+    return None
+
+def oran_temizle(ms):
+    """Birleştirilmiş maç listesinde makul olmayan 1X2 oranını siler (maç oransız sayılır). Silinen sayısı döner."""
+    n = 0
+    for m in ms:
+        if "odds" in m and not oran_akli(m["odds"]): del m["odds"]; n += 1
+    return n
+
 def resolve(name, known):
     """football-data adını mevcut adlarla eşleştir."""
     if name in MAP: return MAP[name]
@@ -143,9 +166,8 @@ def download_new(lg, known, since):
             sy = int(re.match(r"\d{4}", row.get("Season", "")).group(0))
             m = {"d": d, "h": resolve(row["Home"].strip(), known), "a": resolve(row["Away"].strip(), known),
                  "ft": [int(float(row["HG"])), int(float(row["AG"]))], "ht": None, "season": sy}
-            o = [fnum(row.get(k)) for k in ("AvgCH", "AvgCD", "AvgCA")]
-            if not all(o): o = [fnum(row.get(k)) for k in ("PSCH", "PSCD", "PSCA")]
-            if all(o): m["odds"] = [round(x, 2) for x in o]
+            o = oran_sec(row, ("AvgCH", "AvgCD", "AvgCA"), ("PSCH", "PSCD", "PSCA"))   # YH-82
+            if o: m["odds"] = o
             out.append(m)
         except (ValueError, KeyError, AttributeError):
             continue
@@ -163,9 +185,8 @@ def download(lg, code, start_year, known):
             m = {"d": d, "h": resolve(h, known), "a": resolve(a, known), "ft": [int(row["FTHG"]), int(row["FTAG"])],
                  "ht": [int(row["HTHG"]), int(row["HTAG"])] if row.get("HTHG", "") not in ("", None) else None,
                  "season": start_year}
-            o = [fnum(row.get(k)) for k in ("AvgH", "AvgD", "AvgA")]
-            if not all(o): o = [fnum(row.get(k)) for k in ("B365H", "B365D", "B365A")]
-            if all(o): m["odds"] = [round(x, 2) for x in o]
+            o = oran_sec(row, ("AvgH", "AvgD", "AvgA"), ("B365H", "B365D", "B365A"), ("PSH", "PSD", "PSA"))   # YH-82
+            if o: m["odds"] = o
             ou = [fnum(row.get("Avg>2.5")), fnum(row.get("Avg<2.5"))]
             if all(ou): m["ou"] = [round(x, 2) for x in ou]
             # korner, kart ve şut (varsa): korner/kart tahmin modeli için
@@ -655,7 +676,7 @@ def load_deep(season):
         except Exception: continue
         lg = D.get("lg"); cut = first.get(lg, "9999")
         for r in D.get("m", []):
-            if r[0] < cut and r[5] and r[6] and r[7]:
+            if r[0] < cut and oran_akli(r[5:8]):   # YH-82: bozuk oranlı eski satır atlanır
                 out.append({"d": r[0], "ft": [r[3], r[4]], "odds": [r[5], r[6], r[7]], "ou": [r[8], r[9]] if r[8] and r[9] else None})
     return out
 
@@ -1334,7 +1355,7 @@ NEW_COUNTRY = {"Argentina":"ar","Austria":"at","Brazil":"br","China":"cn","Denma
 def _odds(row, sets):
     for ks in sets:
         o = [fnum(row.get(k)) for k in ks]
-        if all(o): return [round(x, 2) for x in o]
+        if all(o) and (len(ks) != 3 or oran_akli(o)): return [round(x, 2) for x in o]   # YH-82: bozuk 1X2 üçlüsü atlanır
     return None
 def download_fixtures(season, today):
     """football-data.co.uk yaklaşan maçlar ve ortalama bahis oranları."""
@@ -1845,6 +1866,8 @@ def main():
         if not ms: continue
         ms, esle, n_ad = ad_birlestir(ms, cur.get("ad_esle"))   # YH-80: farklı yazılmış adla gelen aynı maç tek kayıt
         if n_ad: log[f"{lg}-ad"] = f"{n_ad} çift kayıt birleşti"
+        n_or = oran_temizle(ms)   # YH-82: bozuk 1X2 oranı → oransız
+        if n_or: log[f"{lg}-oran"] = f"{n_or} bozuk oran silindi"
         last_season = max(m["season"] for m in ms)
         cur_ms = [m for m in ms if m["season"] == last_season]
         season[lg] = {"name": lname, "asOf": max(m["d"] for m in cur_ms), "season": last_season, "matches": ms}
