@@ -43,7 +43,7 @@ const TARIHLI = /\d{4}-\d{2}(-\d{2})?\.json$/;
 
 const out = {
   zaman: new Date().toISOString(), url: URL, mod: MOD, hatalar: [], uyarilar: [], sayfalar: {},
-  dugme: { tiklanan: 0, hata: 0 }, istek404: [], istek404_normal: [], acilis_ms: null, pageerror: 0, tasma: 0, yasak_kelime: [], butce: null, sure_sn: null, alarm: true,
+  dugme: { tiklanan: 0, hata: 0, tiklanamayan: 0 }, istek404: [], istek404_normal: [], acilis_ms: null, pageerror: 0, tasma: 0, yasak_kelime: [], butce: null, sure_sn: null, alarm: true,
   aciklama: "Kalite botu (lab/qa.mjs). alarm=true → hatalar listesine bakın; adım sağlık kaydında hata olarak görünür.",
 };
 const T0 = Date.now();
@@ -153,14 +153,15 @@ try {
   };
   const fotograf = async ad => { if (EKRAN) await p.screenshot({ path: path.join(EKRAN, `${ad}.jpg`), type: "jpeg", quality: 55 }).catch(() => { }); };
   const DENY = /sil|sıfırla|temizle|paylaş|yükle|indir|install|bildirim|reset|kaldır|çıkış|yenile|ses/i;
+  // YH-83: kapalı <details> içindeki düğmeler offsetParent taşır ama görünmez (content-visibility) → tıklama 4 sn zaman aşımına düşüp 25 düğmelik payı boşa harcıyordu; checkVisibility() ile elenir
   const dugmeleriDene = async (ad, geriSel) => {   // yalnız tam mod: görünür düğmeleri tek tek tıkla
     const id0 = await gorunurView();
-    const n = await p.$$eval("main section.view:not([hidden]) button:not([disabled])", x => x.filter(e => e.offsetParent).length).catch(() => 0);
+    const n = await p.$$eval("main section.view:not([hidden]) button:not([disabled])", x => x.filter(e => e.offsetParent && (!e.checkVisibility || e.checkVisibility())).length).catch(() => 0);
     for (let i = 0; i < Math.min(n, 25); i++) {
-      const t = await p.evaluate(i => { document.querySelectorAll("[data-qa]").forEach(x => x.removeAttribute("data-qa")); const el = [...document.querySelectorAll("main section.view:not([hidden]) button:not([disabled])")].filter(e => e.offsetParent)[i]; if (!el) return null; el.setAttribute("data-qa", i); return (el.innerText || el.getAttribute("aria-label") || "").replace(/\s+/g, " ").trim().slice(0, 40); }, i).catch(() => null);
+      const t = await p.evaluate(i => { document.querySelectorAll("[data-qa]").forEach(x => x.removeAttribute("data-qa")); const el = [...document.querySelectorAll("main section.view:not([hidden]) button:not([disabled])")].filter(e => e.offsetParent && (!e.checkVisibility || e.checkVisibility()))[i]; if (!el) return null; el.setAttribute("data-qa", i); return (el.innerText || el.getAttribute("aria-label") || "").replace(/\s+/g, " ").trim().slice(0, 40); }, i).catch(() => null);
       if (t == null || DENY.test(t)) continue;
       const once = errs.length;
-      try { await p.click(`[data-qa="${i}"]`, { timeout: 4000 }); out.dugme.tiklanan++; } catch (e) { continue; }
+      try { await p.click(`[data-qa="${i}"]`, { timeout: 4000 }); out.dugme.tiklanan++; } catch (e) { out.dugme.tiklanamayan++; continue; }
       await bekle(350);
       if (errs.length > once) { out.dugme.hata++; hata(`${ad} › "${maskele(t)}": ${errs[errs.length - 1][1]}`); }
       await p.keyboard.press("Escape").catch(() => { });
