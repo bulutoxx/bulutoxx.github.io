@@ -1,6 +1,6 @@
 {
  "surum": "2026-10-28.1",
- "guncelleme": "2026-11-18 13:21",
+ "guncelleme": "2026-11-18 13:32",
  "aciklama": "Basket piyasa karnesi: kilitli model tahmini ile maç öncesi son piyasa oranı (marjı Shin ile ayrılmış) aynı maçlarda. Harman = Benter iki aşama (lig grubu, zaman sıralı ağırlık). Çapalı = model fark/toplamının handikap ve alt/üst çizgisine çekilmesi. GA: gün blokları bootstrap %95. Üretime yalnız OXXai kapısı + gölge sonrası girer.",
  "kurallar": {
   "kapi": "n ≥ 150, gün ≥ 20, ΔLL GA üst < 0, ΔBrier < 0, isabet düşmez",
@@ -471,6 +471,13 @@
   }
  },
  "agirlik": {
+  "kolej": {
+   "a": 0.1921,
+   "b": 0.8796,
+   "w_m": 1.0,
+   "w_t": 1.0,
+   "n_ogrenme": 814
+  },
   "avrupa": {
    "a": 0.347,
    "b": 0.673,
@@ -484,13 +491,6 @@
    "w_m": 0.845,
    "w_t": 0.9118,
    "n_ogrenme": 224
-  },
-  "kolej": {
-   "a": 0.1921,
-   "b": 0.8796,
-   "w_m": 1.0,
-   "w_t": 1.0,
-   "n_ogrenme": 814
   }
  },
  "uretimde": {},
@@ -601,11 +601,11 @@
   },
   "ec": {
    "kilitli": 64,
-   "oranli": 54,
+   "oranli": 55,
    "sonuclu_oranli": 45,
-   "iddaa_ms": 54,
-   "iddaa_hnd": 52,
-   "iddaa_au": 54,
+   "iddaa_ms": 55,
+   "iddaa_hnd": 53,
+   "iddaa_au": 55,
    "espn": 0
   },
   "wnba": {
@@ -653,7 +653,7 @@
   "Çekya NBL": 3,
   "ABD Kolej Basketbol Ligi": 4,
   "Çin CBA Club Cup, Group D": 1,
-  "Europe Kupası": 9,
+  "Europe Kupası": 10,
   "Çin CBA Club Cup, Group C": 1,
   "G. Kore Güney Kore Basketbol Ligi": 2,
   "Danimarka Basketligaen": 1,
