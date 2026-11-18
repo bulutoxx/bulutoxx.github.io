@@ -136,10 +136,13 @@ def oran_sec(row, *gruplar):
     return None
 
 def oran_temizle(ms):
-    """Birleştirilmiş maç listesinde makul olmayan 1X2 oranını siler (maç oransız sayılır). Silinen sayısı döner."""
+    """Birleştirilmiş maç listesinde makul olmayan 1X2 oranını ve ondan türetilmiş piyasa xG'sini (xg, xg_o, xg_m) siler;
+    maç oransız sayılır (güç uyumu gerçek gole döner). Silinen sayısı döner."""
     n = 0
     for m in ms:
-        if "odds" in m and not oran_akli(m["odds"]): del m["odds"]; n += 1
+        if ("odds" in m and not oran_akli(m["odds"])) or ("xg_o" in m and not oran_akli(m["xg_o"])):
+            for k in ("odds", "xg", "xg_o", "xg_m"): m.pop(k, None)
+            n += 1
     return n
 
 def resolve(name, known):
