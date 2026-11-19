@@ -154,7 +154,14 @@ try {
   const fotograf = async ad => { if (EKRAN) await p.screenshot({ path: path.join(EKRAN, `${ad}.jpg`), type: "jpeg", quality: 55 }).catch(() => { }); };
   const DENY = /sil|sıfırla|temizle|paylaş|yükle|indir|install|bildirim|reset|kaldır|çıkış|yenile|ses/i;
   // YH-83: kapalı <details> içindeki düğmeler offsetParent taşır ama görünmez (content-visibility) → tıklama 4 sn zaman aşımına düşüp 25 düğmelik payı boşa harcıyordu; checkVisibility() ile elenir
-  const dugmeleriDene = async (ad, geriSel) => {   // yalnız tam mod: görünür düğmeleri tek tek tıkla
+  // YH-86: geri dönüş — önce geriSel; görünüm hâlâ başlangıçta değilse donSel (ör. Bülten'de basket → ⚽ Futbol). 5 sn sınır (eski 30 sn: örtülü alt menüde zaman aşımı)
+  const geriDon = async (id0, geriSel, donSel) => {
+    for (const s of [geriSel, donSel]) {
+      if (!s || (await gorunurView()) === id0) continue;
+      try { await p.locator(s + " >> visible=true").first().click({ timeout: 5000 }); await bekle(800); } catch (e) { }
+    }
+  };
+  const dugmeleriDene = async (ad, geriSel, donSel = null) => {   // yalnız tam mod: görünür düğmeleri tek tek tıkla
     const id0 = await gorunurView();
     const n = await p.$$eval("main section.view:not([hidden]) button:not([disabled])", x => x.filter(e => e.offsetParent && (!e.checkVisibility || e.checkVisibility())).length).catch(() => 0);
     for (let i = 0; i < Math.min(n, 25); i++) {
@@ -166,7 +173,7 @@ try {
       if (errs.length > once) { out.dugme.hata++; hata(`${ad} › "${maskele(t)}": ${errs[errs.length - 1][1]}`); }
       await p.keyboard.press("Escape").catch(() => { });
       await temizle();
-      if ((await gorunurView()) !== id0) { try { await tikla(geriSel); await bekle(800); } catch (e) { } }
+      await geriDon(id0, geriSel, donSel);
     }
     return n;
   };
@@ -176,7 +183,7 @@ try {
     if (Date.now() > SON_AN) { out.sayfalar[ad] = { ok: false, atlandi: true }; hata(`${ad}: atlandı (süre bütçesi doldu)`); return true; }
     return false;
   };
-  const kontrol = async (ad, ac, { bekleSel = null, enAz = 60, geriSel = null, dene = true } = {}) => {
+  const kontrol = async (ad, ac, { bekleSel = null, enAz = 60, geriSel = null, donSel = null, dene = true } = {}) => {
     if (atla(ad)) return;
     ekran = ad; const t1 = Date.now(); const e0 = errs.length;
     const S = out.sayfalar[ad] = { ok: false };
@@ -194,7 +201,7 @@ try {
       if (m.tasma > 1) { out.tasma++; hata(`${ad}: yatay taşma ${m.tasma} px`); }
       await yasakTara(ad);
       await fotograf(ad);
-      if (MOD === "tam" && dene && geriSel) S.dugme = await dugmeleriDene(ad, geriSel);
+      if (MOD === "tam" && dene && geriSel) S.dugme = await dugmeleriDene(ad, geriSel, donSel);
       S.ok = m.metin >= enAz;
     } catch (e) {
       hata(`${ad}: ekran açılamadı (${String(e.message || e).split("\n")[0].slice(0, 160)})`);
@@ -239,7 +246,12 @@ try {
 
   // ---------------------------------------------------------------- ekranlar
   const NAV = v => `nav.tabs button[data-v="${v}"]`;
-  await kontrol("bulten", () => tikla(NAV("bulten")), { bekleSel: "#v-bulten", enAz: 200, geriSel: NAV("bulten") });
+  const SPOR = s => `main section.view:not([hidden]) button[data-s="${s}"]`;
+  await kontrol("bulten", () => tikla(NAV("bulten")), { bekleSel: "#v-bulten", enAz: 200, geriSel: NAV("bulten"), donSel: SPOR("fb") });
+  if (MOD === "tam") {   // YH-86: basket görünümü kendi ekranı (Bülten denemesi artık futbolda kalıyor); sonunda futbola dön
+    await kontrol("basket", async () => { await tikla(NAV("bulten")); await tikla(SPOR("bk")); }, { bekleSel: "#v-basket", enAz: 60, geriSel: NAV("bulten"), donSel: SPOR("bk") });
+    try { await temizle(); await tikla(NAV("bulten")); if ((await gorunurView()) !== "v-bulten") await tikla(SPOR("fb")); await bekle(500); } catch (e) { }
+  }
   await kontrol("canli", () => tikla(NAV("canli")), { bekleSel: "#v-canli", enAz: 30, geriSel: NAV("canli") });
   await kontrol("sonuclar", () => tikla("#navRes"), { enAz: 60, geriSel: "#navRes" });
   await kontrol("menu", () => tikla(NAV("more")), { bekleSel: "#v-more", enAz: 60, geriSel: NAV("more") });
