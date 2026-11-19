@@ -71,7 +71,8 @@
     "favori yener yenilir kaybeder durum olacak olsa acaba bana bize lutfen abi kanka hocam reis bro dostum ile vs karsi karsisinda derbi derby clasico ilk yari devre ikinci "+
     "tahmininiz ihtimal ihtimali olasilik olasiligi yuzde garanti dur hadi bakalim bak bakar mi musun misin ver verir ister istiyorum oyna oynanir oynanacak program fikstur bulten "+
     "oynanan oynaniyor devam eden suan simdi ici icinde skorlar skorlari neler gore hangileri hangisi sirada siradaki tane adet olan olanlar gunun gunku ust alt ustu alti "+
-    "bunlar bunlari onlar sence nedir hepsi hepsini tumu toplam civari civarinda kadar olsun olmasin uzerinde altinda").split(" "));
+    "bunlar bunlari onlar sence nedir hepsi hepsini tumu toplam civari civarinda kadar olsun olmasin uzerinde altinda "+
+    "dan den tan ten nin nun").split(" "));   // YH-85: kesme işaretinden sonraki ekler ("bundesliga'dan") takım adı sayılmasın
   function stopSet(){ if(V._stop) return V._stop; const S=new Set(STOPW); try{ for(const k of Object.keys(BOT_LG)) N(k).split(" ").forEach(w=>S.add(w)); for(const c of nluCountries()) S.add(c); }catch(e){} try{ NLU_STOP.forEach(w=>S.add(w)); }catch(e){} V._stop=S; return S; }
   const TOP=new Set(["tr1","tr2","en","es","it","de","fr","pt","nl","ucl","uel","uecl","be"]);
   const GENX=/\(k\)|\bwomen\b|\bkadin\b|\bu ?1\d\b|\bu ?2\d\b|\bii\b|\breserves?\b| b$/;
@@ -95,7 +96,7 @@
     return best; };
   V.isTeamWord=function(s){ const S=stopSet(); for(const w of s.split(" ")) if(w.length>=4&&!S.has(w)){ try{ const t=findTeam(w); if(t) return t.name; }catch(e){} } return null; };
   function entities(s,raw){ const toks=s.split(" ").filter(Boolean); let lg=null,cn=null,market=null;
-    try{ for(const [k,v] of Object.entries(BOT_LG)) if(LEAGUES[v]&&nluPhrase(toks,N(k))){ lg=v; break; } }catch(e){}
+    try{ lg=nluLgExact(toks); if(!lg) for(const [k,v] of Object.entries(BOT_LG)) if(LEAGUES[v]&&nluPhrase(toks,N(k))){ lg=v; break; } }catch(e){}
     if(!lg){ try{ const C=nluCountries(), S=stopSet(); for(const t of toks){ if(t.length<4) continue; for(const c of C) if(t.startsWith(c)&&!["super","premier"].includes(t)){ cn=c; break; } if(cn) break; } }catch(e){} }
     try{ for(const [k,phs] of NLU_MK){ if(phs.some(ph=>nluPhrase(toks,ph))){ market=k; break; } } }catch(e){}
     if(/\bkg\b/.test(s)&&!market) market="kg_var";
