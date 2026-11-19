@@ -1,6 +1,6 @@
 {
  "surum": "2026-10-28.1",
- "guncelleme": "2026-11-19 19:14",
+ "guncelleme": "2026-11-19 20:19",
  "aciklama": "Basket piyasa karnesi: kilitli model tahmini ile maç öncesi son piyasa oranı (marjı Shin ile ayrılmış) aynı maçlarda. Harman = Benter iki aşama (lig grubu, zaman sıralı ağırlık). Çapalı = model fark/toplamının handikap ve alt/üst çizgisine çekilmesi. GA: gün blokları bootstrap %95. Üretime yalnız OXXai kapısı + gölge sonrası girer.",
  "kurallar": {
   "kapi": "n ≥ 150, gün ≥ 20, ΔLL GA üst < 0, ΔBrier < 0, isabet düşmez",
@@ -471,12 +471,12 @@
   }
  },
  "agirlik": {
-  "pro": {
-   "a": 0.2586,
-   "b": 0.7689,
-   "w_m": 0.8776,
-   "w_t": 0.9497,
-   "n_ogrenme": 237
+  "avrupa": {
+   "a": 0.3429,
+   "b": 0.6617,
+   "w_m": 0.3054,
+   "w_t": 1.0,
+   "n_ogrenme": 96
   },
   "kolej": {
    "a": 0.1799,
@@ -485,12 +485,12 @@
    "w_t": 1.0,
    "n_ogrenme": 886
   },
-  "avrupa": {
-   "a": 0.3429,
-   "b": 0.6617,
-   "w_m": 0.3054,
-   "w_t": 1.0,
-   "n_ogrenme": 96
+  "pro": {
+   "a": 0.2586,
+   "b": 0.7689,
+   "w_m": 0.8776,
+   "w_t": 0.9497,
+   "n_ogrenme": 237
   }
  },
  "uretimde": {},
@@ -647,6 +647,8 @@
  },
  "sentetik_yarismalar": {
   "ABD Kolej Basketbol Ligi": 24,
+  "BNXT Ligi": 3,
+  "Europe Kupası": 1,
   "İtalya Serie A": 7,
   "İzlanda Urvalsdeild": 4,
   "Fransa Pro B": 6,
@@ -656,12 +658,15 @@
   "İtalya Serie A2": 7,
   "Arjantin LNB": 4,
   "Uruguay Basketbol Ligi": 1,
+  "Çekya NBL": 1,
   "Japonya B2.Ligi": 9,
-  "BNXT Ligi": 3,
+  "Çin CBA Club Cup, Group A": 1,
+  "Çin CBA Club Cup, Group D": 1,
   "Polonya PLK": 3,
   "ABA Liga, Group A": 3,
   "ABA Liga, Group B": 3,
   "İngiltere SLB": 4,
+  "Ukrayna FBU Süperligi": 1,
   "İspanya Liga ACB": 7,
   "G. Kore Güney Kore Kadın Basket Ligi": 1,
   "Almanya Pro A": 1,
@@ -669,7 +674,6 @@
   "Euroleague": 1,
   "Türkiye Erkekler Basketbol 1. Ligi": 2,
   "İsveç Basketbol Ligi": 1,
-  "Europe Kupası": 1,
   "VTB Birleşik Ligi": 1,
   "Portekiz Basketbol Ligi": 1,
   "Meksika LNBP, Playofflar": 1
