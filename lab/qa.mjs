@@ -161,19 +161,39 @@ try {
       try { await p.locator(s + " >> visible=true").first().click({ timeout: 5000 }); await bekle(800); } catch (e) { }
     }
   };
+  // YH-87: süzgeç / sekme düğmesi (aria-pressed) ekranın durumunu kalıcı değiştiriyordu (ör. Bülten "🥇 Altın" → 33 düğme 10'a iner,
+  // kalan 15 sıra boş seçimle geçiyordu). Her tıklamadan sonra görünümdeki aria-pressed durumu başlangıca döndürülür:
+  // önce başlangıçta basılı olup şimdi basılı olmayan (tek seçimli grup: "Tümü"), sonra kalan farklar (aç/kapa) tıklanır; en çok 3 tıklama.
+  const basiliDurum = () => p.evaluate(() => { const o = {}; document.querySelectorAll("main section.view:not([hidden]) [aria-pressed]").forEach((e, k) => { if (!e.offsetParent) return; const a = e.id ? "#" + e.id : ((e.parentElement && e.parentElement.id ? e.parentElement.id : "") + "|" + (e.dataset.f || e.dataset.t || e.dataset.s || e.dataset.o || (e.innerText || "").trim().slice(0, 20))); if (!(a in o)) o[a] = e.getAttribute("aria-pressed") === "true"; }); return o; }).catch(() => ({}));
+  const basiliGeriYukle = async b0 => {
+    let n = 0;
+    for (let tur = 0; tur < 2 && n < 3; tur++) {
+      const b1 = await basiliDurum();
+      const fark = Object.keys(b0).filter(k => k in b1 && b1[k] !== b0[k]).sort((x, y) => (b0[y] ? 1 : 0) - (b0[x] ? 1 : 0));
+      if (!fark.length) break;
+      const k = fark[0];
+      const ok = await p.evaluate(k => { const L = [...document.querySelectorAll("main section.view:not([hidden]) [aria-pressed]")].filter(e => e.offsetParent); const el = L.find(e => (e.id ? "#" + e.id : ((e.parentElement && e.parentElement.id ? e.parentElement.id : "") + "|" + (e.dataset.f || e.dataset.t || e.dataset.s || e.dataset.o || (e.innerText || "").trim().slice(0, 20)))) === k); if (!el) return false; el.click(); return true; }, k).catch(() => false);
+      if (!ok) break;
+      n++; await bekle(350); await temizle();
+    }
+    return n;
+  };
   const dugmeleriDene = async (ad, geriSel, donSel = null) => {   // yalnız tam mod: görünür düğmeleri tek tek tıkla
     const id0 = await gorunurView();
+    const b0 = await basiliDurum(); const S = out.sayfalar[ad] || {}; S.denenen = 0; S.bos = 0; S.geri_yukle = 0;
     const n = await p.$$eval("main section.view:not([hidden]) button:not([disabled])", x => x.filter(e => e.offsetParent && (!e.checkVisibility || e.checkVisibility())).length).catch(() => 0);
     for (let i = 0; i < Math.min(n, 25); i++) {
       const t = await p.evaluate(i => { document.querySelectorAll("[data-qa]").forEach(x => x.removeAttribute("data-qa")); const el = [...document.querySelectorAll("main section.view:not([hidden]) button:not([disabled])")].filter(e => e.offsetParent && (!e.checkVisibility || e.checkVisibility()))[i]; if (!el) return null; el.setAttribute("data-qa", i); return (el.innerText || el.getAttribute("aria-label") || "").replace(/\s+/g, " ").trim().slice(0, 40); }, i).catch(() => null);
-      if (t == null || DENY.test(t)) continue;
+      if (t == null) { S.bos++; continue; }
+      if (DENY.test(t)) continue;
       const once = errs.length;
-      try { await p.click(`[data-qa="${i}"]`, { timeout: 4000 }); out.dugme.tiklanan++; } catch (e) { out.dugme.tiklanamayan++; continue; }
+      try { await p.click(`[data-qa="${i}"]`, { timeout: 4000 }); out.dugme.tiklanan++; S.denenen++; } catch (e) { out.dugme.tiklanamayan++; continue; }
       await bekle(350);
       if (errs.length > once) { out.dugme.hata++; hata(`${ad} › "${maskele(t)}": ${errs[errs.length - 1][1]}`); }
       await p.keyboard.press("Escape").catch(() => { });
       await temizle();
       await geriDon(id0, geriSel, donSel);
+      if ((await gorunurView()) === id0) S.geri_yukle += await basiliGeriYukle(b0);
     }
     return n;
   };
