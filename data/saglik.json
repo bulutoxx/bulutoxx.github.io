@@ -1,7 +1,9 @@
 {
- "zaman": "2026-11-19T10:09Z",
- "alarm": false,
- "sorunlar": [],
+ "zaman": "2026-11-19T11:06Z",
+ "alarm": true,
+ "sorunlar": [
+  "kalite alarmı (qa.json): yasak kelime: 1 yerde (canli: \"B•hisler\" (…İngiltere EFL Kupası Haftalık B•hisler 1 ☆ 12:48 Premier Lig 11. Haf…))"
+ ],
  "kalici_alarm": [],
  "adimlar": {
   "acik-lab.yml": {
@@ -92,26 +94,37 @@
   },
   "kurtarici.yml": {
    "kurtarici.json": {
-    "run": "44474250341",
-    "guncelleme": "2026-11-19T06:43:41Z",
+    "run": "44503058278",
+    "guncelleme": "2026-11-19T10:10:01Z",
     "basarisiz": [],
     "bilgi_hata": []
    }
   },
   "live-log.yml": {
    "live-log.json": {
-    "run": "44491331985",
-    "guncelleme": "2026-11-19T09:17:46Z",
+    "run": "44500528353",
+    "guncelleme": "2026-11-19T10:18:34Z",
     "basarisiz": [],
     "bilgi_hata": []
    }
   },
   "otonom-ekip.yml": {
    "otonom-ekip.json": {
-    "run": "44455230806",
-    "guncelleme": "2026-11-19T04:03:29Z",
+    "run": "44506158866",
+    "guncelleme": "2026-11-19T10:32:42Z",
     "basarisiz": [],
-    "bilgi_hata": []
+    "bilgi_hata": [
+     {
+      "adim": "kalite",
+      "rc": 1,
+      "hata_tur": "1/1",
+      "hata_24s": 1,
+      "sinif": "gecici",
+      "imza": "otonom-ekip.yml/kalite",
+      "onem": "bilgi",
+      "bitis": "2026-11-19T10:31:55Z"
+     }
+    ]
    }
   },
   "siralik-lab.yml": {
@@ -176,8 +189,8 @@
     "bilgi_hata": []
    },
    "update.json": {
-    "run": "44488091201",
-    "guncelleme": "2026-11-19T08:33:15Z",
+    "run": "44506169840",
+    "guncelleme": "2026-11-19T10:38:29Z",
     "basarisiz": [],
     "bilgi_hata": []
    }
@@ -187,7 +200,7 @@
   {
    "ad": "Fikstür ve oranlar",
    "dosya": "data/fixtures.json",
-   "yas_saat": 1.61,
+   "yas_saat": 0.47,
    "beklenen_saat": 4.0,
    "is_akisi": "update.yml",
    "bayat": false
@@ -195,7 +208,7 @@
   {
    "ad": "Futbol modeli",
    "dosya": "data/model.json",
-   "yas_saat": 1.65,
+   "yas_saat": 0.51,
    "beklenen_saat": 4.0,
    "is_akisi": "update.yml",
    "bayat": false
@@ -203,7 +216,7 @@
   {
    "ad": "Günlük karne (toplayıcı)",
    "dosya": "data/daily.json",
-   "yas_saat": 1.65,
+   "yas_saat": 0.51,
    "beklenen_saat": 4.0,
    "is_akisi": "update.yml",
    "bayat": false
@@ -211,7 +224,7 @@
   {
    "ad": "Kilitli tahmin günlüğü (predlog)",
    "dosya": "data/predlog.json",
-   "yas_saat": 1.61,
+   "yas_saat": 0.47,
    "beklenen_saat": 12.0,
    "is_akisi": "update.yml",
    "bayat": false
@@ -219,7 +232,7 @@
   {
    "ad": "Canlı kayıt nabzı",
    "dosya": "data/health.json",
-   "yas_saat": 0.88,
+   "yas_saat": 0.81,
    "beklenen_saat": 1.5,
    "is_akisi": "live-log.yml",
    "bayat": false
@@ -227,10 +240,12 @@
  ],
  "kalite": {
   "qa.json": {
-   "alarm": false,
-   "zaman": "2026-11-19T04:00:41.609Z",
-   "hatalar": [],
-   "acilis_ms": 712
+   "alarm": true,
+   "zaman": "2026-11-19T10:30:30.751Z",
+   "hatalar": [
+    "yasak kelime: 1 yerde (canli: \"B•hisler\" (…İngiltere EFL Kupası Haftalık B•hisler 1 ☆ 12:48 Premier Lig 11. Haf…))"
+   ],
+   "acilis_ms": 1269
   },
   "qa_kapi.json": {
    "alarm": false,
