@@ -4254,12 +4254,16 @@ function nluPhraseAt(toks, ph){ const pw=ph.split(" ");   // eşleşen kelimeler
   const pk=pw.length>1?pw.map(w=>w.length<=3&&!w.endsWith("!")?w+"!":w):pw;   // çok kelimeli ifadede kısa kelimeler önekle eşleşir ("robot mu" → "musun")
   for(let i=0;i+pk.length<=toks.length;i++){ if(pk.every((w,j)=>nluFz(toks[i+j],w))) return pk.map((_,j)=>i+j); } return null; }
 function nluPhrase(toks, ph){ return !!nluPhraseAt(toks,ph); }
+// YH-85: lig ifadesi önce birebir (yalnız Türkçe ek payıyla) aranır; bulanık eşleşme ancak birebir yoksa ("slovenya kupası" → Slovakya Kupası, "ligden 2" → Ligue 2 olmasın)
+function nluFzExact(t,kw){ if(kw.endsWith("!")) return t.startsWith(kw.slice(0,-1)); return kw.length<=3?t===kw:(t===kw||t.startsWith(kw)); }
+function nluLgExact(toks){ try{ for(const [k,v] of Object.entries(BOT_LG)){ if(!LEAGUES[v]) continue; const pw=norm(k).split(" "), pk=pw.length>1?pw.map(w=>w.length<=3&&!w.endsWith("!")?w+"!":w):pw;
+    for(let i=0;i+pk.length<=toks.length;i++) if(pk.every((w,j)=>nluFzExact(toks[i+j],w))) return v; } }catch(e){} return null; }
 function botIntent(raw, ctx){
   const low=String(raw).toLocaleLowerCase("tr"), s=norm(String(raw).slice(0,240)), toks=s.split(" ").filter(Boolean), has=r=>r.test(" "+s+" ");
   const nm=/(?:ad[ıi]m|ismim)\s+([a-zçğıöşü]{2,15})/.exec(low)||/bana\s+([a-zçğıöşü]{2,15})\s+de(?:sene|r misin|)\b/.exec(low);
   if(nm&&!/öner|oner|kupon|maç|mac|bir|ne/.test(nm[1])) return {t:"ad",v:nm[1],conf:9};
   // varlıklar
-  let lg=null, cn=null; for(const [k,v] of Object.entries(BOT_LG)) if(LEAGUES[v]&&nluPhrase(toks,norm(k))){ lg=v; break; }
+  let lg=nluLgExact(toks), cn=null; if(!lg) for(const [k,v] of Object.entries(BOT_LG)) if(LEAGUES[v]&&nluPhrase(toks,norm(k))){ lg=v; break; }
   if(!lg){ const C=nluCountries(); for(const t of toks){ if(t.length<4) continue; for(const c of C) if((t.startsWith(c)||c.length>=5&&t.length>=5&&c.startsWith(nluStem(t)))&&!NLU_STOP.has(t)){ cn=c; break; } if(cn) break; } }
   const day=has(/ yarin/)?"yarin":has(/ bu ?aksam| bu gece| aksam| gece /)?"aksam":has(/ bugun/)?"bugun":has(/ hafta ?sonu/)?"hs":null;
   const WN={tek:1,tekli:1,ikili:2,iki:2,uclu:3,uc:3,dortlu:4,dort:4,besli:5,bes:5};
