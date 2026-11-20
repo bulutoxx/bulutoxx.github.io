@@ -1,6 +1,6 @@
 {
  "surum": "2026-10-28.1",
- "guncelleme": "2026-11-20 16:26",
+ "guncelleme": "2026-11-20 18:08",
  "aciklama": "Basket piyasa karnesi: kilitli model tahmini ile maç öncesi son piyasa oranı (marjı Shin ile ayrılmış) aynı maçlarda. Harman = Benter iki aşama (lig grubu, zaman sıralı ağırlık). Çapalı = model fark/toplamının handikap ve alt/üst çizgisine çekilmesi. GA: gün blokları bootstrap %95. Üretime yalnız OXXai kapısı + gölge sonrası girer.",
  "kurallar": {
   "kapi": "n ≥ 150, gün ≥ 20, ΔLL GA üst < 0, ΔBrier < 0, isabet düşmez",
@@ -471,12 +471,12 @@
   }
  },
  "agirlik": {
-  "avrupa": {
-   "a": 0.3414,
-   "b": 0.6719,
-   "w_m": 0.3626,
-   "w_t": 1.0,
-   "n_ogrenme": 102
+  "pro": {
+   "a": 0.2624,
+   "b": 0.7793,
+   "w_m": 0.9011,
+   "w_t": 0.9556,
+   "n_ogrenme": 242
   },
   "kolej": {
    "a": 0.1683,
@@ -485,12 +485,12 @@
    "w_t": 1.0,
    "n_ogrenme": 925
   },
-  "pro": {
-   "a": 0.2624,
-   "b": 0.7793,
-   "w_m": 0.9011,
-   "w_t": 0.9556,
-   "n_ogrenme": 242
+  "avrupa": {
+   "a": 0.3414,
+   "b": 0.6719,
+   "w_m": 0.3626,
+   "w_t": 1.0,
+   "n_ogrenme": 102
   }
  },
  "uretimde": {},
@@ -627,26 +627,27 @@
    "espn": 0
   },
   "ncaa": {
-   "kilitli": 1466,
+   "kilitli": 1467,
    "oranli": 860,
    "sonuclu_oranli": 804,
-   "iddaa_ms": 332,
+   "iddaa_ms": 333,
    "iddaa_hnd": 322,
-   "iddaa_au": 324,
+   "iddaa_au": 325,
    "espn": 858
   },
   "ncaaw": {
    "kilitli": 1454,
-   "oranli": 121,
+   "oranli": 122,
    "sonuclu_oranli": 121,
-   "iddaa_ms": 6,
+   "iddaa_ms": 7,
    "iddaa_hnd": 2,
-   "iddaa_au": 6,
+   "iddaa_au": 7,
    "espn": 115
   }
  },
  "sentetik_yarismalar": {
-  "ABD Kolej Basketbol Ligi": 9,
+  "ABD Kolej Basketbol Ligi": 18,
+  "G. Kore Güney Kore Kadın Basket Ligi": 2,
   "VTB Birleşik Ligi": 1,
   "İspanya LEB Oro": 4,
   "İngiltere SLB": 3,
@@ -667,17 +668,17 @@
   "Portekiz Basketbol Ligi": 2,
   "İtalya Serie A2": 7,
   "ABA Liga, Group B": 4,
-  "Çekya NBL": 1,
   "Polonya PLK": 5,
   "Ukrayna FBU Süperligi": 2,
   "Arjantin LNB": 3,
+  "Çekya NBL": 1,
   "İsveç Basketbol Ligi": 2,
   "Uruguay Basketbol Ligi": 1,
   "İspanya Liga ACB": 7,
   "İzlanda Urvalsdeild": 2,
+  "Türkiye Erkekler Basketbol 1. Ligi": 3,
   "Slovakya Extraliga": 1,
-  "İspanya Kadınlar Basketbol Ligi": 2,
-  "Türkiye Erkekler Basketbol 1. Ligi": 1
+  "İspanya Kadınlar Basketbol Ligi": 2
  },
  "gunluk": [
   {
