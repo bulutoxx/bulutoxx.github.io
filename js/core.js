@@ -4154,7 +4154,7 @@ function botLgName(lg){ return (LEAGUES[lg]||{n:lg}).n; }
 function botPre(o){ o=o||{}; const now=Date.now(), from=o.from||now, to=o.to||now+36*3600e3, out=[];
   const minO=o.minO||(BOT.st.risk==="cesur"?1.55:BOT.st.risk==="saglam"?1.12:1.2);
   for(const m of Pick.list()){
-    if(m.live||m.started) continue; const t=m.dt.getTime(); if(t<from||t>to) continue;
+    if(m.live||m.started) continue; const t=m.dt.getTime(); if(t<from||t>=to) continue;   // YH-89: yarı açık aralık [from, to) — bitiş anındaki (ertesi gün 00:00) maç dahil edilmez
     if(o.lg&&m.lg!==o.lg) continue;
     const f=m.src==="fx"?FIXTURES.find(x=>x.lg===m.lg&&x.h===m.h&&x.a===m.a):fxOdds(m); if(!f||!f.odds) continue;
     if(o.cn&&!norm((f.cn||f.ln||"")+" "+((LEAGUES[m.lg]||{}).n||"")).includes(o.cn)) continue;
