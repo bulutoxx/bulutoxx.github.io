@@ -2,7 +2,7 @@
  "v": 1,
  "sayac": {
   "futbol-2026": 82,
-  "basket-2026": 15
+  "basket-2026": 16
  },
  "kayitlar": [
   {
@@ -10843,9 +10843,72 @@
    "sure_sn": 0.3,
    "karar": "dondurulmus",
    "neden": "koruyucu geri alma aktif (data/rollback.json); gölgeye alınmadı"
+  },
+  {
+   "tarih": "2026-11-20",
+   "anahtar": "bk_piyasa:kolej",
+   "tur": "bk_piyasa",
+   "alan": "basket",
+   "aciklama": "basket NCAA erkek · kadın: model + piyasa harmanı log-kaybını -0.0837 düşürüyor → piyasa çapası üretime",
+   "sinyal": {
+    "n": 928,
+    "z": -5.13,
+    "fark_ll": -0.0837,
+    "ga": [
+     -0.1177,
+     -0.0537
+    ],
+    "kaynak": "data/bk_piyasa.json (kilitli basket tahmini × maç öncesi piyasa)"
+   },
+   "deger": true,
+   "uygulandi": false,
+   "kaynak": "surekli-deney",
+   "olcut": "log-kaybı iyileşmesi (model → model+piyasa harmanı)",
+   "alfa": 0.05,
+   "alfa_ham": 0.05,
+   "deneme_no": 16,
+   "test_yapildi": true,
+   "istatistik_gecti": true,
+   "secim": {
+    "gun": [
+     "2026-11-01",
+     "2026-11-14"
+    ],
+    "fark": 0.094,
+    "taban": {
+     "n": 640,
+     "ll": 0.4733
+    },
+    "aday": {
+     "n": 640,
+     "ll": 0.3793
+    }
+   },
+   "sinama": {
+    "gun": [
+     "2026-11-15",
+     "2026-11-21"
+    ],
+    "fark": 0.0608,
+    "alt_sinir": 0.0383,
+    "bootstrap_B": 2000,
+    "taban": {
+     "n": 288,
+     "ll": 0.4458
+    },
+    "aday": {
+     "n": 288,
+     "ll": 0.385
+    }
+   },
+   "koruma": {},
+   "servet_sonra": 0.46390827,
+   "sure_sn": 0.2,
+   "karar": "dondurulmus",
+   "neden": "koruyucu geri alma aktif (data/rollback.json); gölgeye alınmadı"
   }
  ],
- "guncelleme": "2026-11-20T17:24Z",
+ "guncelleme": "2026-11-20T20:18Z",
  "kurallar": {
   "gecelik_aday": 3,
   "secim_sinama": "günler 2/3 seçim, 1/3 sınama (ileriye dönük sanal oynatma, bu yılın maçları)",
@@ -10874,9 +10937,9 @@
    "kesif_kabul": 1
   },
   "bk_piyasa-2026": {
-   "servet": 0.41390827,
-   "test": 9,
-   "kesif_kabul": 8
+   "servet": 0.46390827,
+   "test": 10,
+   "kesif_kabul": 9
   }
  }
 }
