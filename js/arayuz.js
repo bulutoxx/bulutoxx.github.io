@@ -298,6 +298,9 @@
     }
     FAM=F2; return out; }
   function existing(p,cur){ const toks=p.split(" "); for(const [k,v] of cur){ if(!LEAGUES[v]) continue; try{ if(nluPhrase(toks,N(k))) return [N(k),v]; }catch(e){} } return null; }
+  function sameBig(p,e){ const c=ctryOf(p), kn=new Set((e[0]+" "+lgFix(N(botLgName(e[1])))+" "+N(botLgName(e[1]))).split(" "));
+    const ct=new Set(c?[c,...c.split(" "),...(CC[c]||"").split(" ")]:[]);
+    return p.split(" ").every(w=>!w||ct.has(w)||kn.has(w)||(GEN.has(w)&&!/^\d+$/.test(w))); }
   function hasUp(lg){ try{ const now=Date.now(); return Pick.list().some(m=>m.lg===lg&&!m.started&&m.dt.getTime()>now&&m.dt.getTime()<now+8*864e5); }catch(e){ return false; } }
   function ensure(){ try{
       const k=((typeof FIXTURES!=="undefined"&&FIXTURES.length)||0)+"|"+Object.keys(LEAGUES).length;
@@ -308,7 +311,9 @@
       const add=[];
       for(const [p,lg] of AUTO){ if(have.has(p)) continue;
         if(!CUPW.test(p)){ const e=existing(p,cur);   // büyük lig zaten doğru eşleşiyorsa (ör. "türkiye süper lig" → Süper Lig) dokunma
-          if(e&&e[1]!==lg&&BIG.has(e[1])&&(hasUp(e[1])||(FAM[e[1]]&&FAM[e[1]].has(lg)))){ const c=ctryOf(p); if(!c||BOT_LG[c]===e[1]||N(botLgName(e[1]))===p.slice(c.length).trim()) continue; } }
+          // v178 (YH-90): yalnız ifade büyük ligin kendisiyse atla; ayırt edici kelime taşıyan alt lig ("almanya amatör bölgesel lig kuzey",
+          // "zambiya süper lig grup a") büyük lige yutulmaz. Sayı (2 / 3) ayırt edici sayılır.
+          if(e&&e[1]!==lg&&BIG.has(e[1])&&(hasUp(e[1])||(FAM[e[1]]&&FAM[e[1]].has(lg)))){ const c=ctryOf(p); if((!c||BOT_LG[c]===e[1]||N(botLgName(e[1]))===p.slice(c.length).trim())&&sameBig(p,e)) continue; } }
         add.push([p,lg]); }
       for(const kk of Object.keys(BOT_LG)) delete BOT_LG[kk];
       AUTO_SET.clear(); for(const [p,lg] of add){ BOT_LG[p]=lg; AUTO_SET.add(p); }
