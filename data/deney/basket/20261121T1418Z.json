@@ -1,0 +1,80 @@
+{
+ "is": "basket",
+ "zaman": "20261121T1418Z",
+ "sure_sn": 0.6,
+ "denenen": [
+  {
+   "aday": {
+    "anahtar": "bk_piyasa:kolej",
+    "tur": "bk_piyasa",
+    "alan": "basket",
+    "yol": [
+     "bk_piyasa",
+     "kolej"
+    ],
+    "deger": true,
+    "stratejiler": [
+     "bk_en_olasi"
+    ],
+    "sinyal": {
+     "n": 983,
+     "z": -4.24,
+     "fark_ll": -0.0747,
+     "ga": [
+      -0.1105,
+      -0.0414
+     ],
+     "kaynak": "data/bk_piyasa.json (kilitli basket tahmini × maç öncesi piyasa)"
+    },
+    "aciklama": "basket NCAA erkek · kadın: model + piyasa harmanı log-kaybını -0.0747 düşürüyor → piyasa çapası üretime"
+   },
+   "m": 22,
+   "rap": {
+    "olcut": "log-kaybı iyileşmesi (model → model+piyasa harmanı)",
+    "alfa": 0.05,
+    "alfa_ham": 0.05,
+    "deneme_no": 22,
+    "test_yapildi": true,
+    "istatistik_gecti": true,
+    "secim": {
+     "gun": [
+      "2026-11-01",
+      "2026-11-14"
+     ],
+     "fark": 0.0939,
+     "taban": {
+      "n": 640,
+      "ll": 0.4733
+     },
+     "aday": {
+      "n": 640,
+      "ll": 0.3794
+     }
+    },
+    "sinama": {
+     "gun": [
+      "2026-11-15",
+      "2026-11-21"
+     ],
+     "fark": 0.0387,
+     "alt_sinir": 0.0028,
+     "bootstrap_B": 2000,
+     "taban": {
+      "n": 343,
+      "ll": 0.4524
+     },
+     "aday": {
+      "n": 343,
+      "ll": 0.4136
+     }
+    },
+    "koruma": {},
+    "karar": "kabul",
+    "neden": "tüm kapılar geçildi"
+   },
+   "sure_sn": 0.4
+  }
+ ],
+ "golge_olcum": [],
+ "bugun": "2026-11-21"
+}
