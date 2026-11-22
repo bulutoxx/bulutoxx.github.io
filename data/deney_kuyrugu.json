@@ -1,6 +1,33 @@
 {
  "adaylar": [
   {
+   "anahtar": "bk_piyasa:kolej",
+   "tur": "bk_piyasa",
+   "alan": "basket",
+   "yol": [
+    "bk_piyasa",
+    "kolej"
+   ],
+   "deger": true,
+   "stratejiler": [
+    "bk_en_olasi"
+   ],
+   "sinyal": {
+    "n": 1039,
+    "z": -4.23,
+    "fark_ll": -0.0718,
+    "ga": [
+     -0.106,
+     -0.0395
+    ],
+    "kaynak": "data/bk_piyasa.json (kilitli basket tahmini × maç öncesi piyasa)"
+   },
+   "aciklama": "basket NCAA erkek · kadın: model + piyasa harmanı log-kaybını -0.0718 düşürüyor → piyasa çapası üretime",
+   "eklenme": "2026-11-22",
+   "durum": "bekliyor",
+   "oncelik": 4.23
+  },
+  {
    "anahtar": "pazar:12",
    "tur": "pazar",
    "alan": "futbol",
@@ -442,35 +469,6 @@
    "oncelik": 4.52,
    "son_deneme": "2026-10-30",
    "sonuc": "ret"
-  },
-  {
-   "anahtar": "bk_piyasa:kolej",
-   "tur": "bk_piyasa",
-   "alan": "basket",
-   "yol": [
-    "bk_piyasa",
-    "kolej"
-   ],
-   "deger": true,
-   "stratejiler": [
-    "bk_en_olasi"
-   ],
-   "sinyal": {
-    "n": 1034,
-    "z": -4.24,
-    "fark_ll": -0.0721,
-    "ga": [
-     -0.1064,
-     -0.0398
-    ],
-    "kaynak": "data/bk_piyasa.json (kilitli basket tahmini × maç öncesi piyasa)"
-   },
-   "aciklama": "basket NCAA erkek · kadın: model + piyasa harmanı log-kaybını -0.0721 düşürüyor → piyasa çapası üretime",
-   "eklenme": "2026-11-22",
-   "durum": "denendi",
-   "oncelik": 4.24,
-   "son_deneme": "2026-11-22",
-   "sonuc": "dondurulmus"
   },
   {
    "anahtar": "pazar:1&KGY",
@@ -1968,6 +1966,6 @@
    "sonuc": "ret"
   }
  ],
- "guncelleme": "2026-11-22T03:57Z",
+ "guncelleme": "2026-11-22T15:50Z",
  "aciklama": "OXXai öğrenme döngüsünün deney adayları: kilitli kupon/tahmin günlüklerinde beklenti ile gerçek arasındaki sistematik farklardan (|z| ≥ 1,5; öncelik |z|) otomatik üretilir; her gece en fazla 3 aday sınanır."
 }
