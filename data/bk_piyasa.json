@@ -1,6 +1,6 @@
 {
  "surum": "2026-10-28.1",
- "guncelleme": "2026-11-22 12:59",
+ "guncelleme": "2026-11-22 13:57",
  "aciklama": "Basket piyasa karnesi: kilitli model tahmini ile maç öncesi son piyasa oranı (marjı Shin ile ayrılmış) aynı maçlarda. Harman = Benter iki aşama (lig grubu, zaman sıralı ağırlık). Çapalı = model fark/toplamının handikap ve alt/üst çizgisine çekilmesi. GA: gün blokları bootstrap %95. Üretime yalnız OXXai kapısı + gölge sonrası girer.",
  "kurallar": {
   "kapi": "n ≥ 150, gün ≥ 20, ΔLL GA üst < 0, ΔBrier < 0, isabet düşmez",
@@ -471,6 +471,13 @@
   }
  },
  "agirlik": {
+  "kolej": {
+   "a": 0.2143,
+   "b": 0.8839,
+   "w_m": 0.9965,
+   "w_t": 1.0,
+   "n_ogrenme": 1039
+  },
   "avrupa": {
    "a": 0.3526,
    "b": 0.6812,
@@ -484,13 +491,6 @@
    "w_m": 0.9045,
    "w_t": 1.0,
    "n_ogrenme": 261
-  },
-  "kolej": {
-   "a": 0.2143,
-   "b": 0.8839,
-   "w_m": 0.9965,
-   "w_t": 1.0,
-   "n_ogrenme": 1039
   }
  },
  "uretimde": {},
@@ -662,13 +662,12 @@
   "ABA Liga, Group B": 3,
   "İngiltere SLB": 2,
   "İtalya Serie A2": 5,
-  "VTB Birleşik Ligi": 2,
   "Fransa Kadınlar Basketbol Ligi": 5,
   "Meksika LNBP, Playofflar": 1,
   "İsveç Basketbol Ligi": 2,
   "Arjantin LNB": 1,
+  "VTB Birleşik Ligi": 1,
   "Çekya NBL": 1,
-  "Türkiye Basketbol Süper Ligi": 2,
   "Yunanistan A1": 1,
   "Fransa Pro B": 1,
   "Fransa Pro A": 1,
