@@ -2,9 +2,9 @@
  "aciklama": "YH-05 basket canlı kazanma olasılığı bayrağı (scripts/bk_canli.py; uygulama bkLivePred okur). kullan=true → Brown hareketi modeli (k, w, γ); false → eski formül. Kapı gece (basket.py): ≥300 sonuçlu anlık görüntü ve ≥40 maç, maç-blok bootstrap ΔLL GA üst < 0; 14 gün izleme, kötüleşirse geri alma. onbilgi: geçmiş çeyrek sonu skorlarından (lab/bk_canli_lab.py).",
  "kullan": false,
  "prm": {
-  "k": 1.0,
-  "w": 1.2,
-  "g": -0.1
+  "k": 1.05,
+  "w": 1.3,
+  "g": -0.05
  },
  "onbilgi": {
   "k": 1.2,
@@ -42,80 +42,80 @@
  },
  "karar": "kapı geçmedi → eski formül",
  "veri": {
-  "anlik": 16417,
-  "mac": 2074,
-  "gun": 24,
+  "anlik": 17740,
+  "mac": 2243,
+  "gun": 25,
   "esik": {
    "anlik": 300,
    "mac": 40
   }
  },
- "gece_tarih": "2026-11-21",
+ "gece_tarih": "2026-11-22",
  "sinama": {
-  "tarih": "2026-11-21",
+  "tarih": "2026-11-22",
   "tum": {
-   "n": 16417,
-   "mac": 2074,
-   "d_ll": -0.00044,
+   "n": 17740,
+   "mac": 2243,
+   "d_ll": -0.00041,
    "d_ll_ga": [
-    -0.00331,
-    0.00235
+    -0.00316,
+    0.00223
    ],
-   "d_brier": -0.00024,
+   "d_brier": -0.0002,
    "d_brier_ga": [
-    -0.0011,
-    0.00062
+    -0.00101,
+    0.00058
    ],
-   "d_isabet": 0.0003,
+   "d_isabet": 0.00028,
    "d_isabet_ga": [
-    -0.00199,
-    0.00254
+    -0.00171,
+    0.00234
    ]
   },
   "yari1": {
-   "n": 8664,
-   "mac": 1037,
-   "d_ll": -0.00062,
+   "n": 9327,
+   "mac": 1121,
+   "d_ll": -0.00134,
    "d_ll_ga": [
-    -0.00494,
-    0.00368
+    -0.0055,
+    0.00305
    ],
-   "d_brier": -0.00036,
+   "d_brier": -0.0006,
    "d_brier_ga": [
-    -0.0016,
-    0.00102
+    -0.00182,
+    0.00067
    ],
-   "d_isabet": 0.00127,
+   "d_isabet": 0.00118,
    "d_isabet_ga": [
-    -0.00179,
-    0.00446
+    -0.0016,
+    0.00456
    ]
   },
   "yari2": {
-   "n": 7753,
-   "mac": 1037,
-   "d_ll": -0.00024,
+   "n": 8413,
+   "mac": 1122,
+   "d_ll": 0.00061,
    "d_ll_ga": [
-    -0.00366,
-    0.00324
+    -0.00259,
+    0.00372
    ],
-   "d_brier": -0.0001,
+   "d_brier": 0.00024,
    "d_brier_ga": [
-    -0.0012,
-    0.00087
+    -0.00073,
+    0.0012
    ],
-   "d_isabet": -0.00077,
+   "d_isabet": -0.00071,
    "d_isabet_ga": [
-    -0.00369,
-    0.00199
+    -0.00348,
+    0.00217
    ]
   },
   "gecti": false,
-  "ll_eski": 0.257,
-  "ll_yeni": 0.2566,
-  "isabet_eski": 0.8773,
-  "isabet_yeni": 0.8776,
-  "brier_eski": 0.0829,
-  "brier_yeni": 0.0827
+  "ll_eski": 0.2593,
+  "ll_yeni": 0.2589,
+  "isabet_eski": 0.8762,
+  "isabet_yeni": 0.8764,
+  "brier_eski": 0.0837,
+  "brier_yeni": 0.0835
  }
 }
