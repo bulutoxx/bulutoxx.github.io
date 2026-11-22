@@ -1,6 +1,6 @@
 {
  "surum": "2026-10-28.1",
- "guncelleme": "2026-11-22 14:55",
+ "guncelleme": "2026-11-22 16:07",
  "aciklama": "Basket piyasa karnesi: kilitli model tahmini ile maç öncesi son piyasa oranı (marjı Shin ile ayrılmış) aynı maçlarda. Harman = Benter iki aşama (lig grubu, zaman sıralı ağırlık). Çapalı = model fark/toplamının handikap ve alt/üst çizgisine çekilmesi. GA: gün blokları bootstrap %95. Üretime yalnız OXXai kapısı + gölge sonrası girer.",
  "kurallar": {
   "kapi": "n ≥ 150, gün ≥ 20, ΔLL GA üst < 0, ΔBrier < 0, isabet düşmez",
@@ -471,12 +471,12 @@
   }
  },
  "agirlik": {
-  "avrupa": {
-   "a": 0.3526,
-   "b": 0.6812,
-   "w_m": 0.3757,
+  "kolej": {
+   "a": 0.2143,
+   "b": 0.8839,
+   "w_m": 0.9965,
    "w_t": 1.0,
-   "n_ogrenme": 105
+   "n_ogrenme": 1039
   },
   "pro": {
    "a": 0.2642,
@@ -485,12 +485,12 @@
    "w_t": 1.0,
    "n_ogrenme": 261
   },
-  "kolej": {
-   "a": 0.2143,
-   "b": 0.8839,
-   "w_m": 0.9965,
+  "avrupa": {
+   "a": 0.3526,
+   "b": 0.6812,
+   "w_m": 0.3757,
    "w_t": 1.0,
-   "n_ogrenme": 1039
+   "n_ogrenme": 105
   }
  },
  "uretimde": {},
@@ -637,21 +637,20 @@
   },
   "ncaaw": {
    "kilitli": 1588,
-   "oranli": 132,
+   "oranli": 140,
    "sonuclu_oranli": 132,
    "iddaa_ms": 8,
    "iddaa_hnd": 3,
    "iddaa_au": 8,
-   "espn": 124
+   "espn": 132
   }
  },
  "sentetik_yarismalar": {
-  "ABD Kolej Basketbol Ligi": 10,
+  "ABD Kolej Basketbol Ligi": 11,
   "Almanya BBL": 4,
   "İtalya Serie B": 13,
-  "Ukrayna FBU Süperligi": 2,
+  "Ukrayna FBU Süperligi": 1,
   "İtalya A1 Kadınlar": 1,
-  "İsveç Basketbol Ligi Kadınlar": 2,
   "Almanya Pro A": 1,
   "İtalya Serie A": 5,
   "İngiltere SLB": 2,
@@ -659,6 +658,7 @@
   "İtalya Serie A2": 5,
   "Fransa Kadınlar Basketbol Ligi": 5,
   "Meksika LNBP, Playofflar": 1,
+  "İsveç Basketbol Ligi Kadınlar": 1,
   "İsveç Basketbol Ligi": 2,
   "Arjantin LNB": 1,
   "İspanya LEB Oro": 1,
@@ -669,7 +669,6 @@
   "Çekya NBL": 1,
   "Fransa Pro B": 1,
   "Fransa Pro A": 1,
-  "Çin CBA Club Cup, Group D": 1,
   "Polonya PLK": 2
  },
  "gunluk": [
