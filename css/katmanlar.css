@@ -154,4 +154,12 @@ main.page{padding-bottom:max(calc(120px + env(safe-area-inset-bottom,0px)),calc(
 .sh-sp{width:16px;height:16px;border-radius:50%;border:2px solid rgba(255,255,255,.2);border-top-color:var(--cyan);animation:cekDon .8s linear infinite;flex:none}
 @media (min-width:760px){.sh-svg{max-height:440px}.sh-wrap{max-width:720px}}
 @media (prefers-reduced-motion:reduce){.sh-svg .pl{animation:none;opacity:.8}.sh-sp{animation:none}}
+/* v181 model simülasyonu */
+.sh-model .sh-mz{animation:shMz 2.4s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+.sh-model .sh-mb{fill:#fff;animation:shMb 1.6s ease-in-out infinite}
+@keyframes shMz{0%,100%{opacity:.75;transform:scale(1)}50%{opacity:1;transform:scale(1.15)}}
+@keyframes shMb{0%,100%{transform:translateX(-1.2px)}50%{transform:translateX(1.2px)}}
+.sh-mo{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;margin:8px 2px 12px;font-size:13px;color:var(--ink2)}
+.sh-mo b{color:var(--ink);font-size:14px}
+@media (prefers-reduced-motion:reduce){.sh-model .sh-mz,.sh-model .sh-mb{animation:none}}
 /* /id: saha-v180 */

@@ -794,6 +794,27 @@ try {
       case "yc": case "rc": g+=`<rect x="${(c.x-.8).toFixed(2)}" y="${(c.y-1.15).toFixed(2)}" width="1.6" height="2.3" rx=".3" class="${e.k} ${cl}"/>`; break;
       default: g+=`<circle cx="${x}" cy="${y}" r="1" class="f ${cl} dim"/>`; }
     return `<g class="sh-m${yeni?" yeni":""}" data-i="${i}" data-sd="${e.sd}" data-k="${e.k}" tabindex="0" role="button" aria-label="${E_(e.d+" "+e.l)}"><circle cx="${x}" cy="${y}" r="3.6" class="hit"/>${g}</g>`; }
+  function modelSim(m){
+    try{
+      const lv=(MS.live&&MS.live.sp===1)?MS.live:null; if(!lv||typeof idlPred!=="function") return "";
+      const Q=idlPred(lv); if(!Q||Q.nextH==null) return "";
+      const nH=Q.nextH, nA=Q.nextA, n0=Q.none, d=nH-nA;            // d>0 → ev sahibi (sağa hücum) baskın
+      const x=Math.max(14,Math.min(91,52.5+d*95)), r=7+Math.min(1,(1-n0))*9;
+      const hN=lv.h||m.h, aN=lv.a||m.a, sk=(lv.hs!=null?lv.hs:"?")+"-"+(lv.as!=null?lv.as:"?");
+      const dk=typeof idlClockTxt==="function"?idlClockTxt(lv):"";
+      const kim=Math.abs(d)<.06?"Dengeli":(d>0?kisa(hN):kisa(aN))+" baskın";
+      let svg=sahaSvg({T:{h:{n:hN},a:{n:aN}}},[]);
+      const ek=`<defs><radialGradient id="shMg"><stop offset="0" stop-color="${d>=0?"#4FD18B":"#5AA9FF"}" stop-opacity=".75"/><stop offset="1" stop-color="${d>=0?"#4FD18B":"#5AA9FF"}" stop-opacity="0"/></radialGradient></defs>
+        <circle class="sh-mz" cx="${x.toFixed(1)}" cy="34" r="${r.toFixed(1)}" fill="url(#shMg)"/><circle class="sh-mb" cx="${x.toFixed(1)}" cy="34" r="1.3"/>
+        <text x="52.5" y="66" text-anchor="middle" class="yn">${E_(sk)} · ${E_(dk)}</text>`;
+      svg=svg.replace("</svg>",ek+"</svg>");
+      const yz=v=>"%"+Math.round(v*100);
+      return `<p class="sh-bos" role="note">Bu ligde canlı saha verisi yayınlanmıyor. Aşağıdaki görünüm OXXai canlı modelinin <b>sıradaki gol</b> olasılığından üretilen bir simülasyondur.</p>
+        <figure class="sh-pitch sh-model">${svg}</figure>
+        <div class="sh-mo"><span class="sh-tag est">Model simülasyonu</span><b>${E_(kim)}</b>
+          <span>Sıradaki gol · ${E_(kisa(hN))} ${yz(nH)} · ${E_(kisa(aN))} ${yz(nA)} · Gol yok ${yz(n0)}</span></div>`;
+    }catch(e){ return ""; }
+  }
   function sahaSvg(P,L){
     const pa=16.5, pw=40.3*100/68, ga=5.5, gw=18.32*100/68, gl=7.32*100/68;
     const yy=v=>PY(50-v/2).toFixed(2), hh=v=>PY(v).toFixed(2);
@@ -826,6 +847,8 @@ try {
         :S.err==="gizli"?"Uygulama arka plandayken veri alınmıyor."
         :"Saha verisine şu an ulaşılamıyor."+(canliMi(m)?" 30 sn sonra yeniden denenecek.":"");
       const N=90, B=baskiIstat(S,N);
+      // v181: ESPN'de olmayan canlı maçlarda boş kalmasın → modelin canlı "sıradaki gol" olasılığından saha simülasyonu (açıkça etiketli)
+      if(S.err==="yok"&&canliMi(m)){ const ms=modelSim(m); if(ms) return h+ms+(B?`<div class="sh-bas"><div class="sh-bt"><h4>Baskı</h4><span class="sh-tag est">İstatistikten tahmini</span></div>${baskiSvg(B,N,B.son,null,"Şut, isabetli şut ve korner farklarının dakikalara dağıtılmış kaba tahmini.")}</div>`:"")+`</div>`; }
       return h+`<p class="sh-bos warn" role="note">${E_(why)}</p>${B?`<div class="sh-bas"><div class="sh-bt"><h4>Baskı</h4><span class="sh-tag est">İstatistikten tahmini</span></div>${baskiSvg(B,N,B.son,null,"Şut, isabetli şut ve korner farklarının dakikalara dağıtılmış kaba tahmini.")}</div>`:""}</div>`; }
     const N=dakSon(P), L=secilen(P,S), konVar=P.kon>=5;
     if(konVar){
