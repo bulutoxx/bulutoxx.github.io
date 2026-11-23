@@ -147,7 +147,9 @@
   const T3X=new Set(["fc","afc","cf","sc","ac","club","the","esw","frw"]);
   const t3=x=>N(x).split(" ").filter(w=>w.length>=3&&!T3X.has(w));
   // a: aranan takım (kanonik ad), b: bültendeki ad. a'nın kelimeleri b'de olmalı ("Flamengo" ⊂ "Flamengo RJ"); tersi yalnız b en az 2 kelimeyse
-  const same=(a,b)=>{ const A=t3(a), B=t3(b); if(!A.length||!B.length) return false; return A.every(w=>B.includes(w))||(B.length>=2&&B.every(w=>A.includes(w))); };
+  // YH-92: bülten adı tek ayırt edici kelimeyse ("Stuttgart") ve kanonik adda geçiyorsa ("VfB Stuttgart") da aynı takım
+  const one1=B=>B.length===1&&B[0].length>=5&&!(typeof TM_GEN!=="undefined"&&TM_GEN.has(B[0]));
+  const same=(a,b)=>{ const A=t3(a), B=t3(b); if(!A.length||!B.length) return false; return A.every(w=>B.includes(w))||(B.length>=2&&B.every(w=>A.includes(w)))||(one1(B)&&A.includes(B[0])); };
   const isGX=n=>GX.test(N(n)+" ")||/\((k|w|[a-z]{2}w|wsl)\)/i.test(String(n||""));
   let gxNote=null;   // son cevapta büyükler maçı olmadığı için kadın / genç takımı maçı seçildiyse
   const _teams=V.teams;
