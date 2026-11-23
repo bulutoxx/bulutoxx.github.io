@@ -214,7 +214,12 @@
     const p=sira(async()=>{
       if(gizli()){ const x=M.get(u); if(x&&!(x.ttl===KISA&&Date.now()-x.t>GZ)) return x; if(!x){ say.gizli++; throw new TypeError("istek-v124: sayfa gizli, ağ isteği yapılmadı"); } }
       say.ag++;
-      const r=await nf(u,{cache:"no-store"}); const b=await r.text();
+      // v179: bazı bağlantılarda site.api.espn.com "Access Denied" veriyor → aynı yolu site.web.api.espn.com'dan dene (yanıt biçimi aynı)
+      const alt=u.replace("https://site.api.espn.com/","https://site.web.api.espn.com/");
+      let r=null;
+      if(!W.__espnAlt){ try{ r=await nf(u,{cache:"no-store"}); if(r.status===403){ W.__espnAlt=true; r=null; } }catch(e){ W.__espnAlt=true; r=null; } }
+      if(!r) r=await nf(alt,{cache:"no-store"});
+      const b=await r.text();
       const x={t:Date.now(),s:r.status,st:r.statusText,ct:r.headers.get("content-type")||"application/json",b,ttl:r.ok?ttlOf(u,b):KISA};
       M.set(u,x); if(r.ok&&!ozetMi(u)) diskYaz(u,x);
       return x;

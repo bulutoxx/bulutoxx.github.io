@@ -582,3 +582,31 @@ try {
   sar("quickPred"); sar("fullPred");
 })();
 } catch (e) { if (typeof reportError === "function") reportError(e); else setTimeout(function () { throw e; }); } /* /id: kg-piyasa-v165 */
+
+/* id: ekran-acik-v179 */
+try {
+/* v179: OXXai açıkken ekran kararmasın (Ayarlar › "Ekran açık kalsın", varsayılan açık).
+   Screen Wake Lock API; desteklemeyen/reddeden cihazlarda sessiz, görünmez küçük video döngüsü (ilk dokunuşta başlar).
+   Uygulamadan çıkınca / arka plana alınınca kilit kendiliğinden bırakılır, geri dönünce yeniden alınır. */
+(function(){
+  const acik=()=>{ try{ return typeof PREFS==="undefined"||PREFS.awake!==false; }catch(e){ return true; } };
+  let kilit=null, vid=null;
+  async function al(){
+    if(!acik()||document.hidden) return;
+    if("wakeLock" in navigator){
+      if(kilit&&!kilit.released) return;
+      try{ kilit=await navigator.wakeLock.request("screen"); kilit.addEventListener("release",()=>{ kilit=null; }); return; }catch(e){ /* bazı ana ekran uygulamalarında reddedilir → video yöntemi */ }
+    }
+    try{ if(!vid){ vid=document.createElement("video"); vid.setAttribute("playsinline",""); vid.setAttribute("muted",""); vid.muted=true; vid.loop=true;
+        vid.setAttribute("aria-hidden","true"); vid.style.cssText="position:fixed;width:1px;height:1px;opacity:0;pointer-events:none;left:-10px;top:-10px";
+        vid.src="data:video/mp4;base64,AAAAIGZ0eXBpc29tAAACAGlzb21pc28yYXZjMW1wNDEAAAMpbW9vdgAAAGxtdmhkAAAAAAAAAAAAAAAAAAAD6AAAB9AAAQAAAQAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAlN0cmFrAAAAXHRraGQAAAADAAAAAAAAAAAAAAABAAAAAAAAB9AAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAABAAAAAABAAAAAQAAAAAAAkZWR0cwAAABxlbHN0AAAAAAAAAAEAAAfQAAAAAAABAAAAAAHLbWRpYQAAACBtZGhkAAAAAAAAAAAAAAAAAABAAAAAgABVxAAAAAAALWhkbHIAAAAAAAAAAHZpZGUAAAAAAAAAAAAAAABWaWRlb0hhbmRsZXIAAAABdm1pbmYAAAAUdm1oZAAAAAEAAAAAAAAAAAAAACRkaW5mAAAAHGRyZWYAAAAAAAAAAQAAAAx1cmwgAAAAAQAAATZzdGJsAAAAtnN0c2QAAAAAAAAAAQAAAKZhdmMxAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAABAAEABIAAAASAAAAAAAAAABFUxhdmM2MC4zMS4xMDIgbGlieDI2NAAAAAAAAAAAAAAAGP//AAAALGF2Y0MBQsAK/+EAFWdCwAraewEQAAADABAAAAMAIPEiagEABGjOD8gAAAAQcGFzcAAAAAEAAAABAAAAFGJ0cnQAAAAAAAAKMAAACjAAAAAYc3R0cwAAAAAAAAABAAAAAgAAQAAAAAAUc3RzcwAAAAAAAAABAAAAAQAAABxzdHNjAAAAAAAAAAEAAAABAAAAAgAAAAEAAAAcc3RzegAAAAAAAAAAAAAAAgAAAoMAAAAJAAAAFHN0Y28AAAAAAAAAAQAAA1kAAABidWR0YQAAAFptZXRhAAAAAAAAACFoZGxyAAAAAAAAAABtZGlyYXBwbAAAAAAAAAAAAAAAAC1pbHN0AAAAJal0b28AAAAdZGF0YQAAAAEAAAAATGF2ZjYwLjE2LjEwMAAAAAhmcmVlAAAClG1kYXQAAAJtBgX//2ncRem95tlIt5Ys2CDZI+7veDI2NCAtIGNvcmUgMTY0IHIzMTA4IDMxZTE5ZjkgLSBILjI2NC9NUEVHLTQgQVZDIGNvZGVjIC0gQ29weWxlZnQgMjAwMy0yMDIzIC0gaHR0cDovL3d3dy52aWRlb2xhbi5vcmcveDI2NC5odG1sIC0gb3B0aW9uczogY2FiYWM9MCByZWY9MSBkZWJsb2NrPTE6MDowIGFuYWx5c2U9MHgxOjB4MSBtZT1oZXggc3VibWU9MiBwc3k9MSBwc3lfcmQ9MS4wMDowLjAwIG1peGVkX3JlZj0wIG1lX3JhbmdlPTE2IGNocm9tYV9tZT0xIHRyZWxsaXM9MCA4eDhkY3Q9MCBjcW09MCBkZWFkem9uZT0yMSwxMSBmYXN0X3Bza2lwPTEgY2hyb21hX3FwX29mZnNldD0wIHRocmVhZHM9MSBsb29rYWhlYWRfdGhyZWFkcz0xIHNsaWNlZF90aHJlYWRzPTAgbnI9MCBkZWNpbWF0ZT0xIGludGVybGFjZWQ9MCBibHVyYXlfY29tcGF0PTAgY29uc3RyYWluZWRfaW50cmE9MCBiZnJhbWVzPTAgd2VpZ2h0cD0wIGtleWludD0yNTAga2V5aW50X21pbj0xIHNjZW5lY3V0PTQwIGludHJhX3JlZnJlc2g9MCByY19sb29rYWhlYWQ9MTAgcmM9Y3JmIG1idHJlZT0xIGNyZj0yMy4wIHFjb21wPTAuNjAgcXBtaW49MCBxcG1heD02OSBxcHN0ZXA9NCBpcF9yYXRpbz0xLjQwIGFxPTE6MS4wMACAAAAADmWIhAW///8PRQABT3+AAAAABUGaIBX1"; document.body.appendChild(vid); }
+      if(vid.paused) await vid.play(); }catch(e){}
+  }
+  function birak(){ try{ if(kilit){ kilit.release(); kilit=null; } }catch(e){} try{ if(vid&&!vid.paused) vid.pause(); }catch(e){} }
+  document.addEventListener("visibilitychange",()=>{ if(document.hidden) birak(); else al(); });
+  ["pointerdown","touchend","click"].forEach(ev=>document.addEventListener(ev,()=>{ if(acik()) al(); },{passive:true,capture:true}));
+  document.addEventListener("change",e=>{ const t=e.target; if(t&&t.id==="p-awake"){ if(t.checked){ al(); try{ toast("Ekran açık kalacak"); }catch(x){} } else birak(); } },true);
+  window.oxxEkran={al,birak,durum:()=>({api:"wakeLock" in navigator,kilit:!!(kilit&&!kilit.released),video:!!(vid&&!vid.paused),acik:acik()})};
+  al();
+})();
+} catch (e) { if (typeof reportError === "function") reportError(e); else setTimeout(function () { throw e; }); } /* /id: ekran-acik-v179 */

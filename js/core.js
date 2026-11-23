@@ -791,7 +791,7 @@ if("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch
 // OXXai v2: ayarlar, ses, sesli anlatım, canlı skor, gol uyarısı, paylaşım
 // =====================================================================
 const PREF_KEY="bulutoxx-prefs";
-const PREFS=Object.assign({sound:true, voice:false, voiceMenu:false, goals:true, vibrate:true, allLive:false,
+const PREFS=Object.assign({sound:true, voice:false, voiceMenu:false, goals:true, vibrate:true, allLive:false, awake:true,
   leagues:["tr1","en","es","it","de","fr","ucl","uel","uecl","nl","pt"]}, (()=>{ try{ return JSON.parse(localStorage.getItem(PREF_KEY)||"{}"); }catch(e){ return {}; } })());
 function savePrefs(){ try{ localStorage.setItem(PREF_KEY, JSON.stringify(PREFS)); }catch(e){} }
 const BK_NAMES={nba:"NBA",el:"EuroLeague",ec:"EuroCup",wnba:"WNBA",gl:"NBA G League",nbl:"NBL Avustralya",ncaa:"NCAA (Üniversite)",ncaaw:"NCAA Kadınlar"};
@@ -871,6 +871,7 @@ function openSettings(){
       ${cell("goals","goal","#34C759","Gol uyarısı","Takip ettiğin maçlarda tam ekran uyarı")}
       ${cell("allLive","all","#FF453A","Tüm canlı maçlar","Takip etmesen de seçili liglerdeki her gol")}
       ${cell("vibrate","vib","#0A84FF","Titreşim","Destekleyen telefonlarda")}
+      ${cell("awake","vib","#30B0C7","Ekran açık kalsın","OXXai açıkken telefon ekranı kararmaz")}
       <div class="cell"><span class="ic" style="background:#FF375F"><svg viewBox="0 0 24 24">${IC.bell}</svg></span><span class="tx"><b>Bildirim izni</b><small id="notifState">${notifText()}</small></span><button class="btn sm ghost" id="notifBtn">İzin ver</button></div>
     </div>
     <div class="lg-h"><h3>⚽ Takip edilen futbol ligleri</h3><button type="button" class="lg-all" data-k="leagues">${PREFS.leagues.length>=LV.length?"Tümünü kaldır":"Tümünü seç"}</button></div>
