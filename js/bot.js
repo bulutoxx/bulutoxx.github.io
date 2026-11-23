@@ -215,12 +215,16 @@
       <div class="bt-tot"><span>Birlikte tutma olasılığı <b>%${pc9(p)}</b></span></div><button type="button" class="bt-all" data-ba="all">+ Hepsini KUPO'ya ekle</button>
       ${p<.35?`<div class="bt-note">Dürüst not: ${sel.length} maç birlikte zor tutar (10 listeden ~${trEk(Math.max(1,Math.round(p*10)))}). 2 maçlık liste olasılığı belirgin artırır.</div>`:`<small class="v69-g">10 benzer listeden yaklaşık ${trEk(Math.round(p*10))} tutar; garanti değildir.</small>`}`,
       chips:["Neden bunlar?",`${sel.length>2?2:3} maçlık olsun`,"Hepsini ekle","Yarın için olsun"],pre:sel}; }
+  function nextPredOf(m0,side,E,flags){   // YH-91: tek takım sorusunda en yakın maçın tahmini yoksa aynı takımın sıradaki tahminli maçı
+    let L=[]; try{ const now=Date.now(); L=Pick.list().filter(x=>x!==m0&&!x.live&&!(x.started)&&(x.h===side||x.a===side)&&x.dt.getTime()>=now&&x.dt.getTime()<=now+8*DAYMS).sort((a,b)=>a.dt-b.dt).slice(0,3); }catch(e){}
+    for(const x of L){ const R=sMatch(x,E,flags); if(!R.noPred){ R.html=`ℹ️ <small>${esc(m0.h)} - ${esc(m0.a)} (${esc(when(m0))}) için tahmin verisi yok; ${esc(side)} takımının sıradaki tahminli maçı:</small><br>`+R.html; return R; } }
+    return null; }
   function htft1(r){ const H=r&&r.htft; if(!Array.isArray(H)) return null; const o={1:0,X:0,2:0}; for(const [k,v] of H){ const a=String(k).split("/")[0]; if(a in o) o[a]+=v; } const s=o[1]+o.X+o[2]; return s>.5?[o[1]/s,o.X/s,o[2]/s]:null; }
   function sMatch(m,E,flags){ const f=fxOf(m); let p=null; try{ p=quickPred(m,f); }catch(e){}
     if(!p||!(p.pm||p.p)){ try{ BT.cache.delete(m.lg+"|"+m.h+"|"+m.a+"|"+(MODEL&&MODEL.updated)); p=quickPred(m,f); }catch(e){} }   // veri geç geldiyse önbellekteki boş sonucu at, yeniden hesapla
     const head=`<b>${esc(m.h)} - ${esc(m.a)}</b><br><small>📅 ${esc(when(m))}${istDay(m.dt)!==today()?" · "+esc(ist(m.dt,{day:"numeric",month:"long"})):""} · ${esc(lgOf(m,f))}</small>`;
     if(m.live) return {html:`${head}<br>🔴 Maç şu an oynanıyor${m.hs!=null?`: <b>${m.hs}-${m.as}</b>`:""}. Canlı tahmin için "canlı" yaz ya da maçı aç.`,chips:["Canlı"],pre:[],match:m};
-    if(!p||!(p.pm||p.p)) return {html:`${head}<br>Bu maç için tahmin verisi şu an hazır değil (veriler yükleniyor olabilir) ya da yetersiz; tahmin uydurmam 🤷 Birkaç saniye sonra tekrar sor ya da maçı aç.`,chips:[`${m.h} ${m.a}`,"Sıradaki maçı öner"],pre:[],match:m};
+    if(!p||!(p.pm||p.p)) return {html:`${head}<br>Bu maç için tahmin verisi şu an hazır değil (veriler yükleniyor olabilir) ya da yetersiz; tahmin uydurmam 🤷 Birkaç saniye sonra tekrar sor ya da maçı aç.`,chips:[`${m.h} ${m.a}`,"Sıradaki maçı öner"],pre:[],match:m,noPred:true};
     const pm=p.pm||p.p, r=p.r||{}, L=[head];
     L.push(`📊 ${esc(m.h)} <b>%${pc9(pm[0])}</b> · Beraberlik <b>%${pc9(pm[1])}</b> · ${esc(m.a)} <b>%${pc9(pm[2])}</b>`);
     if(p.ft) L.push(`🎯 Tahmini skor <b>${esc(p.ft)}</b>`);
@@ -327,7 +331,7 @@
     if(RX.next.test(s)&&!E.day) return null;   // "sıradaki maç": eski motor saat sırasıyla verir
     let TM=V.teams(s); if(!TM&&RX.derbi.test(s)){ const m=sDerbi(); if(m) TM={m}; }
     const flags={win:RX.win.test(s),iy:RX.iy.test(s),gol:RX.gol.test(s)};
-    if(TM) return I("analiz",{m:TM.m,flags});
+    if(TM) return I("analiz",{m:TM.m,flags,side:TM.both?null:(TM.hs>=TM.as?TM.m.h:TM.m.a)});
     if(RX.canli.test(s)) return I("canli");
     if(ctx&&ctx.match&&(E.market||flags.win||flags.iy||flags.gol)&&!E.day&&!E.lg&&!E.cn) return I("analiz",{m:ctx.match,flags});
     if(RX.mode.test(s)&&!RX.safe.test(s)) return null;
@@ -355,7 +359,7 @@
       case "kuponum": R=sKuponum(s); break;
       case "karne": R=await sKarne(s); break;
       case "neden": R=sNeden(E,ctx); if(!R) return null; keep=1; break;
-      case "analiz": R=sMatch(I.m,E,I.flags); kind="analiz"; break;
+      case "analiz": R=sMatch(I.m,E,I.flags); if(R.noPred&&I.side){ const R2=nextPredOf(I.m,I.side,E,I.flags); if(R2) R=R2; } kind="analiz"; break;
       case "canli": { let pre="";
         if(/kac kac|skor/.test(s)){ const L=Pick.list().filter(m=>m.live).slice(0,8);
           pre=L.length?`🔴 Canlı skorlar:<ul class="bt-ul">${L.map(m=>`<li><b>${esc(m.h)} ${m.hs??"-"}-${m.as??"-"} ${esc(m.a)}</b>${m.clock?` · ${esc(m.clock)}`:""}</li>`).join("")}</ul>`:`Şu an skorunu gösterebileceğim canlı maç yok. `; }
