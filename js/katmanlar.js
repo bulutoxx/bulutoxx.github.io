@@ -610,3 +610,278 @@ try {
   al();
 })();
 } catch (e) { if (typeof reportError === "function") reportError(e); else setTimeout(function () { throw e; }); } /* /id: ekran-acik-v179 */
+/* id: saha-v180 */ try {
+// =====================================================================
+// v180 · CANLI MAÇ SAHA GRAFİĞİ (maç penceresi › "Saha" sekmesi; canlı ve biten futbol maçları)
+// • Kaynak: ESPN maç özeti (summary) → commentary[].play içinden YALNIZ olay türü, dakika, takım ve saha konumu
+//   (fieldPositionX/Y, şutlarda hedef fieldPosition2X/Y). Yorum metni (text) hiçbir yerde okunmaz, gösterilmez, saklanmaz;
+//   olay adları kendi Türkçe etiketlerimizdir. Ham yanıt bellekte bile tutulmaz (yalnız ayrıştırılmış küçük olay listesi).
+// • Konumlar olayı yapan takımın hücum yönüne göredir (X=100 rakip kale). Çizimde ev sahibi sağa hücum eder:
+//   deplasman konumları x'=100−x, y'=100−y ile çevrilir. Tek SVG, en çok 60 işaret; en yeni olay nabız animasyonlu.
+// • Baskı grafiği: dakika başına tehlike puanı (gol 5, isabetli şut 3, direk 3, engellenen/isabetsiz şut 2, korner 1,5,
+//   rakip yarı sahada faul kazanımı 0,5; X>66 bölgede ×1,3) ve 5 dk kayan ortalama; ev üstte, deplasman altta.
+//   Konum/olay vermeyen liglerde (ör. Süper Lig) istatistik geçmişinden (şut, isabetli şut, korner farkları; canli-gt
+//   deposu + bu katmanın kendi ölçümleri) dakika aralıklarına dağıtılmış kaba baskı — "İstatistikten tahmini" etiketiyle.
+// • Yenileme: sekme açıkken canlı maçta 30 sn'de bir; sayfa gizliyken istek yok (istek-v124 önbelleği zaten 20 sn).
+//   "Güncel tahmin" akışı değişmez (canli-gt kartı bu sekmede de üstte kalır).
+// • Bayrak: data/ozellik.json → "saha": true. Değilse (false / dosya yok) sekme hiç çizilmez.
+// =====================================================================
+(function(){
+  "use strict";
+  if(typeof msRender!=="function"||typeof MS==="undefined"||typeof ESPN==="undefined") return;
+  const W=window, FL={on:false,bilinen:false};
+  const E_=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  const kisa=n=>{ try{ return shortTeam(n); }catch(e){ return String(n||""); } };
+  const esit=(x,y)=>{ try{ return tmEq(x,y); }catch(e){ return String(x||"").toLowerCase()===String(y||"").toLowerCase(); } };
+  const sayi=v=>{ const x=typeof v==="number"?v:parseFloat(v); return isFinite(x)?x:null; };
+  try{ fetch("data/ozellik.json?t="+Date.now(),{cache:"no-store"}).then(r=>r&&r.ok?r.json():null)
+    .then(j=>{ FL.bilinen=true; FL.on=!!(j&&j.saha===true); if(FL.on&&MS.m){ try{ msRender(); }catch(e){} } }).catch(()=>{ FL.bilinen=true; }); }catch(e){}
+
+  // ---------- olay türleri (kendi etiketlerimiz) ----------
+  // k: iç anahtar · w: tehlike puanı · s: şut mu (hedef çizgisi)
+  function tur(t){ const s=String(t||"").toLowerCase().replace(/\s+/g,"-");
+    if(!s) return null;
+    if(/own-goal/.test(s)) return {k:"og",l:"Kendi kalesine gol",w:0};
+    if(/penalty.*(scored|goal)/.test(s)) return {k:"goal",l:"Penaltı golü",w:5,s:1};
+    if(/penalty.*(missed|saved)/.test(s)) return {k:"pmiss",l:"Kaçan penaltı",w:3,s:1};
+    if(/penalty.*(awarded|won|conceded)/.test(s)) return {k:"pen",l:"Penaltı kararı",w:2};
+    if(/^goal/.test(s)) return {k:"goal",l:"Gol",w:5,s:1};
+    if(/woodwork|hit-(the-)?(post|bar)/.test(s)) return {k:"wood",l:"Direkten döndü",w:3,s:1};
+    if(/blocked/.test(s)) return {k:"blk",l:"Engellenen şut",w:2,s:1};
+    if(/on-target|saved/.test(s)) return {k:"sot",l:"İsabetli şut",w:3,s:1};
+    if(/off-target|missed|wide/.test(s)) return {k:"off",l:"İsabetsiz şut",w:2,s:1};
+    if(/^shot|attempt/.test(s)) return {k:"off",l:"Şut",w:2,s:1};
+    if(/corner/.test(s)) return {k:"cor",l:"Korner",w:1.5};
+    if(/yellow-red|second-yellow/.test(s)) return {k:"rc",l:"İkinci sarıdan kırmızı",w:0};
+    if(/red-card/.test(s)) return {k:"rc",l:"Kırmızı kart",w:0};
+    if(/yellow/.test(s)) return {k:"yc",l:"Sarı kart",w:0};
+    if(/hand-?ball/.test(s)) return {k:"hand",l:"Elle oynama",w:0};
+    if(/^foul/.test(s)) return {k:"foul",l:"Faul",w:0};
+    if(/offside/.test(s)) return {k:"ofs",l:"Ofsayt",w:0};
+    if(/substitution/.test(s)) return {k:"sub",l:"Oyuncu değişikliği",w:0};
+    if(/free-kick/.test(s)) return {k:"fk",l:"Serbest vuruş",w:0};
+    return null; }
+  // ESPN saati "74'" · "45'+2'" · "90'+4'" → {d: gösterim, am: eksen dakikası}
+  function saat(c,pd){ const dv=String((c&&c.displayValue)||""), m=dv.match(/(\d+)\s*'?\s*(?:\+\s*(\d+))?/);
+    let b=m?+m[1]:null, a=m&&m[2]?+m[2]:0;
+    if(b==null){ const v=sayi(c&&c.value); if(v==null) return null; b=Math.floor(v/60)+1; a=0; }
+    const am=(pd===1||(b===45&&a>0&&pd!==2))?Math.min(45,b+a):b+a;
+    return {d:a?`${b}+${a}'`:`${b}'`,am:Math.max(0,am)}; }
+  // ---------- özet ayrıştırma (yalnız tür / dakika / takım / konum; text alanına DOKUNULMAZ) ----------
+  function ayir(j){
+    if(!j||typeof j!=="object") return null;
+    const comp=j.header&&j.header.competitions&&j.header.competitions[0], cs=(comp&&comp.competitors)||[];
+    const hc=cs.find(c=>c&&c.homeAway==="home"), ac=cs.find(c=>c&&c.homeAway==="away");
+    if(!hc||!ac||!hc.team||!ac.team) return null;
+    const T={h:{id:String(hc.team.id||""),n:hc.team.displayName||hc.team.name||""},a:{id:String(ac.team.id||""),n:ac.team.displayName||ac.team.name||""}};
+    const taraf=t=>{ if(!t) return null; const id=t.id!=null?String(t.id):""; if(id&&id===T.h.id) return "h"; if(id&&id===T.a.id) return "a";
+      const n=t.displayName||t.name||""; if(!n) return null; if(esit(n,T.h.n)) return "h"; if(esit(n,T.a.n)) return "a"; return null; };
+    const sts=(comp.status&&comp.status.type)||{}, durum=sts.state||"pre";
+    const ev=[], gor=new Set();
+    const ekle=(p,kay)=>{ if(!p||typeof p!=="object") return; const ty=tur(p.type&&p.type.type); if(!ty) return;
+      const sd=taraf(p.team); if(!sd) return; const pd=sayi(p.period&&p.period.number)||null, sa=saat(p.clock,pd); if(!sa) return;
+      const id=p.id!=null?String(p.id):[ty.k,sd,sa.d,p.fieldPositionX,p.fieldPositionY].join("|"); if(gor.has(id)) return; gor.add(id);
+      const x=sayi(p.fieldPositionX), y=sayi(p.fieldPositionY), x2=sayi(p.fieldPosition2X), y2=sayi(p.fieldPosition2Y);
+      const ok=v=>v!=null&&v>=0&&v<=100;
+      const kon=ok(x)&&ok(y)&&!(x===0&&y===0);
+      const sn=sayi(p.clock&&p.clock.value);
+      ev.push({k:ty.k,l:ty.l,w:ty.w,s:!!ty.s,sd,d:sa.d,am:sa.am,pd:pd||(sa.am>45?2:1),o:(pd||1)*1e5+(sn!=null?sn:sa.am*60),
+        x:kon?x:null,y:kon?y:null,x2:kon&&ok(x2)&&ok(y2)&&!(x2===0&&y2===0)?x2:null,y2:kon&&ok(x2)&&ok(y2)&&!(x2===0&&y2===0)?y2:null,kay}); };
+    for(const c of (Array.isArray(j.commentary)?j.commentary:[])) ekle(c&&c.play,"c");
+    if(!ev.some(e=>e.kay==="c")) for(const k of (Array.isArray(j.keyEvents)?j.keyEvents:[])) ekle(k,"k");
+    ev.sort((a,b)=>a.o-b.o);
+    // istatistik (yedek baskı için)
+    let st=null; try{ const H={},A={}; for(const t of ((j.boxscore&&j.boxscore.teams)||[])){ const sd=t.homeAway||taraf(t.team); const o=sd==="home"||sd==="h"?H:sd==="away"||sd==="a"?A:null; if(!o) continue;
+        for(const s of (t.statistics||[])) if(s&&s.name) o[s.name]=sayi(s.displayValue!=null?String(s.displayValue).replace("%",""):s.value); }
+      const pr=k=>H[k]!=null&&A[k]!=null?[Math.max(0,Math.round(H[k])),Math.max(0,Math.round(A[k]))]:null;
+      const o={sh:pr("totalShots"),sot:pr("shotsOnTarget"),co:pr("wonCorners")}; if(o.sh||o.sot||o.co) st=o; }catch(e){ st=null; }
+    let simdi=null; const sc=saat({displayValue:comp.status&&comp.status.displayClock},sayi(comp.status&&comp.status.period));
+    if(durum==="in"&&sc) simdi=sc.am; if(simdi==null&&ev.length) simdi=ev[ev.length-1].am; if(durum==="post") simdi=Math.max(90,simdi||0);
+    return {T,durum,simdi,ev,st,kon:ev.filter(e=>e.x!=null).length}; }
+
+  // ---------- veri deposu (maç başına, oturum belleği) ----------
+  const D=new Map(); let plAt=0;
+  const RK={pre:0,in:1,post:2};
+  function havuz(){ const o={}; try{ Object.assign(o,(typeof Pick!=="undefined"&&Pick.extra)||{}); }catch(e){} try{ const L=Live.events()||{}; for(const k in L){ const x=o[k]; if(!x||(RK[L[k].state]||0)>=(RK[x.state]||0)) o[k]=L[k]; } }catch(e){} return o; }
+  function tsOf(m){ if(!m) return NaN; if(m.sp) return +m.ts; const d=m.dt; return d&&d.getTime?d.getTime():Date.parse(d); }
+  function bul(m){ const P=havuz(); if(m.src==="espn"&&P[m.id]&&ESPN[P[m.id].lg]) return P[m.id];
+    const ts=tsOf(m); if(!isFinite(ts)) return null;
+    const c=Object.values(P).filter(e=>e&&ESPN[e.lg]&&Math.abs(Date.parse(e.date)-ts)<6*3600e3&&esit(e.h,m.h)&&esit(e.a,m.a));
+    return c.find(e=>e.state==="in")||c.find(e=>e.state==="post")||c[0]||null; }
+  const anahtar=m=>m?(m.sp?"i"+m.id:(m.src==="espn"?"e"+m.id:[m.lg,m.h,m.a].join("|"))):"";
+  function kayit(k){ let S=D.get(k); if(!S){ S={at:0,P:null,err:"",ev:null,hist:[],busy:null,secim:"son",sel:null}; D.set(k,S); } return S; }
+  function canliMi(m){ return !!((MS.live&&MS.live.sp===1)||(m&&m.live)); }
+  function uygun(m){ if(!FL.on||!m||m.sp===2) return false; if(canliMi(m)) return true;
+    const e=bul(m); if(e&&(e.state==="in"||e.state==="post")) return true;
+    const t=tsOf(m); return isFinite(t)&&t<Date.now()-60e3&&t>Date.now()-4*3600e3; }
+  async function yukle(zorla){
+    const m=MS.m; if(!m) return; const k=anahtar(m), S=kayit(k);
+    if(S.busy) return S.busy;
+    const taze=S.P&&S.P.durum==="post"?600e3:25e3;
+    if(!zorla&&S.at&&Date.now()-S.at<taze) return;
+    S.busy=(async()=>{
+      let ev=bul(m);
+      if(!ev&&Date.now()-plAt>90e3&&typeof Pick!=="undefined"&&typeof Pick.loadEspn==="function"){ plAt=Date.now(); try{ await Pick.loadEspn(); }catch(e){} ev=bul(m); }
+      S.at=Date.now();
+      if(!ev){ S.err="yok"; return; }
+      S.ev={id:ev.id,lg:ev.lg};
+      let P=null, j=null;
+      try{ const r=await fetch(`https://site.api.espn.com/apis/site/v2/sports/soccer/${ESPN[ev.lg]}/summary?event=${encodeURIComponent(ev.id)}`,{cache:"no-store"}); j=r&&r.ok?await r.json():null; }catch(e){ j=null; }
+      try{ P=ayir(j); }catch(e){ P=null; } j=null;                    // ham yanıt (yorum metni dahil) burada bırakılır
+      S.at=Date.now();
+      if(!P){ S.err=document.hidden?"gizli":"ag"; return; }
+      S.err=""; S.P=P;
+      if(P.st&&P.simdi!=null){ S.hist=S.hist.filter(h=>h.t<P.simdi-.5).concat([{t:P.simdi,sh:P.st.sh,sot:P.st.sot,co:P.st.co}]).slice(-40); }
+    })();
+    try{ await S.busy; } finally{ S.busy=null; } }
+
+  // ---------- baskı ----------
+  const dakSon=P=>Math.max(90,Math.ceil(Math.max(P&&P.simdi||0,...((P&&P.ev)||[]).map(e=>e.am)))+0);
+  function baskiOlay(P,N){ const h=new Array(N+1).fill(0), a=new Array(N+1).fill(0); let n=0;
+    for(const e of P.ev){ const i=Math.max(0,Math.min(N,Math.round(e.am)));
+      if(e.k==="foul"){ if(e.x==null||e.x>=50) continue; const w=.5*((100-e.x)>66?1.3:1); (e.sd==="h"?a:h)[i]+=w; continue; }
+      if(!e.w) continue; const w=e.w*(e.x!=null&&e.x>66?1.3:1); (e.sd==="h"?h:a)[i]+=w; if(e.w>=1.5) n++; }
+    return {h,a,n}; }
+  function baskiIstat(S,N){ const h=new Array(N+1).fill(0), a=new Array(N+1).fill(0);
+    const H=[]; try{ const lv=MS.live, C=W.CGT&&W.CGT.ST&&lv?CGT.ST.get(String(lv.id)):null; for(const x of ((C&&C.hist)||[])) if(x&&x.st) H.push({t:+x.t,sh:x.st.sh,sot:x.st.sot,co:x.st.co}); }catch(e){}
+    for(const x of S.hist) H.push(x);
+    const L=H.filter(x=>isFinite(x.t)&&(x.sh||x.sot||x.co)).sort((p,q)=>p.t-q.t);
+    if(!L.length) return null;
+    const pt=(x,i)=>{ const sot=x.sot?x.sot[i]:0, sh=x.sh?Math.max(x.sh[i],sot):sot, co=x.co?x.co[i]:0; return {sot,sh,co}; };
+    let prev={t:0,v:[{sot:0,sh:0,co:0},{sot:0,sh:0,co:0}]};
+    for(const x of L){ const v=[pt(x,0),pt(x,1)], t0=Math.max(0,Math.floor(prev.t)), t1=Math.max(t0+1,Math.min(N,Math.round(x.t)));
+      if(x.t<=prev.t) continue;
+      [0,1].forEach(i=>{ const d=v[i], p=prev.v[i]; const ds=Math.max(0,d.sot-p.sot), dsh=Math.max(0,(d.sh-d.sot)-(p.sh-p.sot)), dc=Math.max(0,d.co-p.co);
+        const tot=3*ds+2*dsh+1.5*dc, per=tot/(t1-t0); for(let m=t0+1;m<=t1;m++) (i?a:h)[m]+=per; });
+      prev={t:x.t,v}; }
+    return {h,a,son:Math.round(prev.t)}; }
+  const kayan=(v,k)=>v.map((_,i)=>{ let s=0,c=0; for(let j=Math.max(0,i-k+1);j<=i;j++){ s+=v[j]; c++; } return c?s/c:0; });
+  function baskiSvg(B,N,simdi,P,kaynak){
+    const h=kayan(B.h,5), a=kayan(B.a,5), son=Math.min(N,simdi==null?N:Math.round(simdi));
+    let mx=0; for(let i=0;i<=son;i++) mx=Math.max(mx,h[i],a[i]); if(!(mx>0)) return "";
+    const Wd=300, Hh=112, mid=56, amp=42, bw=Wd/(N+1), X=m=>m*bw;
+    let bars="";
+    for(let i=0;i<=son;i++){ const vh=h[i]/mx*amp, va=a[i]/mx*amp;
+      if(vh>.4) bars+=`<rect x="${X(i).toFixed(2)}" y="${(mid-vh).toFixed(2)}" width="${Math.max(.6,bw-.35).toFixed(2)}" height="${vh.toFixed(2)}" class="bh"/>`;
+      if(va>.4) bars+=`<rect x="${X(i).toFixed(2)}" y="${mid}" width="${Math.max(.6,bw-.35).toFixed(2)}" height="${va.toFixed(2)}" class="ba"/>`; }
+    let ek="";
+    for(const m of [15,30,45,60,75,90]) if(m<=N) ek+=`<line x1="${X(m)}" y1="10" x2="${X(m)}" y2="${Hh-10}" class="${m===45?"g45":"g"}"/><text x="${X(m)}" y="${Hh-1}" class="tx" text-anchor="${X(m)>Wd-8?"end":"middle"}">${m}'</text>`;
+    if(P) for(const e of P.ev) if(e.k==="goal"){ ek+=`<circle cx="${(X(e.am)+bw/2).toFixed(2)}" cy="${e.sd==="h"?mid-amp-4:mid+amp+4}" r="2.6" class="${e.sd==="h"?"gh":"ga"}"><title>${E_(e.d)} Gol</title></circle>`; }
+    if(simdi!=null&&simdi<N) ek+=`<line x1="${X(son)+bw}" y1="8" x2="${X(son)+bw}" y2="${Hh-12}" class="now"/>`;
+    let s10="";{ let x=0,y=0; for(let i=Math.max(0,son-9);i<=son;i++){ x+=B.h[i]; y+=B.a[i]; } if(x+y>0){ const p=Math.round(x/(x+y)*100); s10=`<p class="sh-s10"><span class="sw h"></span>${E_(kisa(P?P.T.h.n:MS.m.h))} %${p} <span class="sep">·</span> <span class="sw a"></span>${E_(kisa(P?P.T.a.n:MS.m.a))} %${100-p}<small>son 10 dk baskı payı</small></p>`; } }
+    return `<svg class="sh-bsvg" viewBox="0 0 ${Wd} ${Hh}" role="img" aria-label="Baskı grafiği: ev sahibi üstte, deplasman altta">
+      <line x1="0" y1="${mid}" x2="${Wd}" y2="${mid}" class="ax"/>${ek}${bars}
+      <text x="2" y="9" class="tl h">${E_(kisa(P?P.T.h.n:MS.m.h))}</text><text x="2" y="${Hh-13}" class="tl a">${E_(kisa(P?P.T.a.n:MS.m.a))}</text></svg>${s10}
+      <small class="sh-src">${kaynak}</small>`; }
+
+  // ---------- saha SVG ----------
+  const PX=x=>(x/100*105), PY=y=>(y/100*68);
+  function konum(e){ const f=e.sd==="a"; const t=v=>f?100-v:v; return {x:PX(t(e.x)),y:PY(t(e.y)),x2:e.x2!=null?PX(t(e.x2)):null,y2:e.y2!=null?PY(t(e.y2)):null}; }
+  const yildiz=(cx,cy,r)=>{ let p=""; for(let i=0;i<10;i++){ const R=i%2?r*.45:r, a=-Math.PI/2+i*Math.PI/5; p+=(cx+R*Math.cos(a)).toFixed(2)+","+(cy+R*Math.sin(a)).toFixed(2)+" "; } return p.trim(); };
+  function isaret(e,i,yeni){ const c=konum(e), cl=e.sd==="h"?"h":"a", x=c.x.toFixed(2), y=c.y.toFixed(2);
+    let g="";
+    if(e.s&&c.x2!=null) g+=`<line x1="${x}" y1="${y}" x2="${c.x2.toFixed(2)}" y2="${c.y2.toFixed(2)}" class="tr ${cl}"/>`;
+    if(yeni) g+=`<circle cx="${x}" cy="${y}" r="2.2" class="pl ${cl}"/>`;
+    switch(e.k){
+      case "goal": g+=`<polygon points="${yildiz(c.x,c.y,2.7)}" class="st ${cl}"/>`; break;
+      case "sot": case "pmiss": g+=`<circle cx="${x}" cy="${y}" r="1.45" class="f ${cl}"/>`; break;
+      case "wood": g+=`<circle cx="${x}" cy="${y}" r="1.5" class="f ${cl}"/><circle cx="${x}" cy="${y}" r="2.3" class="rg"/>`; break;
+      case "blk": g+=`<circle cx="${x}" cy="${y}" r="1.2" class="f ${cl} dim"/>`; break;
+      case "off": g+=`<circle cx="${x}" cy="${y}" r="1.35" class="o ${cl}"/>`; break;
+      case "cor": g+=`<polygon points="${(c.x-1.5).toFixed(2)},${(c.y+1.2).toFixed(2)} ${(c.x+1.5).toFixed(2)},${(c.y+1.2).toFixed(2)} ${x},${(c.y-1.4).toFixed(2)}" class="f ${cl}"/>`; break;
+      case "foul": case "hand": g+=`<path d="M${(c.x-1.1).toFixed(2)} ${(c.y-1.1).toFixed(2)}l2.2 2.2M${(c.x+1.1).toFixed(2)} ${(c.y-1.1).toFixed(2)}l-2.2 2.2" class="x ${cl}"/>`; break;
+      case "ofs": g+=`<rect x="${(c.x-1).toFixed(2)}" y="${(c.y-1).toFixed(2)}" width="2" height="2" transform="rotate(45 ${x} ${y})" class="o ${cl}"/>`; break;
+      case "yc": case "rc": g+=`<rect x="${(c.x-.8).toFixed(2)}" y="${(c.y-1.15).toFixed(2)}" width="1.6" height="2.3" rx=".3" class="${e.k} ${cl}"/>`; break;
+      default: g+=`<circle cx="${x}" cy="${y}" r="1" class="f ${cl} dim"/>`; }
+    return `<g class="sh-m${yeni?" yeni":""}" data-i="${i}" data-sd="${e.sd}" data-k="${e.k}" tabindex="0" role="button" aria-label="${E_(e.d+" "+e.l)}"><circle cx="${x}" cy="${y}" r="3.6" class="hit"/>${g}</g>`; }
+  function sahaSvg(P,L){
+    const pa=16.5, pw=40.3*100/68, ga=5.5, gw=18.32*100/68, gl=7.32*100/68;
+    const yy=v=>PY(50-v/2).toFixed(2), hh=v=>PY(v).toFixed(2);
+    let s="";
+    for(let i=0;i<10;i++) s+=`<rect x="${(i*10.5).toFixed(2)}" y="0" width="10.5" height="68" class="${i%2?"s2":"s1"}"/>`;
+    const ln=`<g class="ln"><rect x="0" y="0" width="105" height="68"/><line x1="52.5" y1="0" x2="52.5" y2="68"/><circle cx="52.5" cy="34" r="9.15"/><circle cx="52.5" cy="34" r=".5" class="dot"/>
+      <rect x="0" y="${yy(pw)}" width="${pa}" height="${hh(pw)}"/><rect x="${105-pa}" y="${yy(pw)}" width="${pa}" height="${hh(pw)}"/>
+      <rect x="0" y="${yy(gw)}" width="${ga}" height="${hh(gw)}"/><rect x="${105-ga}" y="${yy(gw)}" width="${ga}" height="${hh(gw)}"/>
+      <circle cx="11" cy="34" r=".5" class="dot"/><circle cx="94" cy="34" r=".5" class="dot"/>
+      <path d="M16.5 26.7A9.15 9.15 0 0 1 16.5 41.3M88.5 26.7A9.15 9.15 0 0 0 88.5 41.3"/>
+      <rect x="-1.6" y="${yy(gl)}" width="1.6" height="${hh(gl)}" class="gk"/><rect x="105" y="${yy(gl)}" width="1.6" height="${hh(gl)}" class="gk"/></g>`;
+    const yon=`<text x="3" y="4.6" class="yn a">◀ ${E_(kisa(P.T.a.n))}</text><text x="102" y="4.6" class="yn h" text-anchor="end">${E_(kisa(P.T.h.n))} ▶</text>`;
+    const son=L.length-1;
+    const ms=L.map((e,i)=>isaret(e,i,i===son)).join("");
+    return `<svg class="sh-svg" viewBox="-3 -2 111 72" role="img" aria-label="Saha: ev sahibi sağa hücum ediyor; son olayların konumları">${s}${ln}${yon}<g class="ms">${ms}</g></svg>`; }
+
+  // ---------- çizim ----------
+  const SAAT=t=>{ try{ return ist(new Date(t),{hour:"2-digit",minute:"2-digit",second:"2-digit"}); }catch(e){ return ""; } };
+  function secilen(P,S){ const pos=P.ev.filter(e=>e.x!=null);
+    let L=S.secim==="tum"?pos:pos.filter(e=>e.am>=(P.simdi!=null?P.simdi:dakSon(P))-15);
+    if(L.length>60) L=L.slice(-60); return L; }
+  function govde(m){
+    const k=anahtar(m), S=kayit(k), P=S.P;
+    const hN=P?P.T.h.n:m.h, aN=P?P.T.a.n:m.a;
+    let h=`<div class="sh-wrap" data-k="${E_(k)}">`;
+    const dur=P?(P.durum==="in"?`<span class="sh-cn">CANLI${P.simdi!=null?" "+Math.round(P.simdi)+"'":""}</span>`:P.durum==="post"?`<span class="sh-ms">MAÇ SONU</span>`:""):"";
+    h+=`<div class="sh-hd"><h4>Saha</h4>${dur}<span class="sh-at">${S.at&&P?"Güncelleme "+E_(SAAT(S.at)):""}</span></div>`;
+    if(!P){ if(S.busy||!S.at) return h+`<div class="sh-bos"><span class="sh-sp" aria-hidden="true"></span>Saha verisi yükleniyor…</div></div>`;
+      const why=S.err==="yok"?"Bu maç ESPN maç akışında bulunamadı; saha ve baskı grafiği çizilemiyor."
+        :S.err==="gizli"?"Uygulama arka plandayken veri alınmıyor."
+        :"Saha verisine şu an ulaşılamıyor."+(canliMi(m)?" 30 sn sonra yeniden denenecek.":"");
+      const N=90, B=baskiIstat(S,N);
+      return h+`<p class="sh-bos warn" role="note">${E_(why)}</p>${B?`<div class="sh-bas"><div class="sh-bt"><h4>Baskı</h4><span class="sh-tag est">İstatistikten tahmini</span></div>${baskiSvg(B,N,B.son,null,"Şut, isabetli şut ve korner farklarının dakikalara dağıtılmış kaba tahmini.")}</div>`:""}</div>`; }
+    const N=dakSon(P), L=secilen(P,S), konVar=P.kon>=5;
+    if(konVar){
+      h+=`<div class="sh-sec" role="group" aria-label="Zaman aralığı"><button type="button" data-s="son" aria-pressed="${S.secim!=="tum"}">Son 15 dk</button><button type="button" data-s="tum" aria-pressed="${S.secim==="tum"}">Tüm maç</button></div>`;
+      h+=`<figure class="sh-pitch">${sahaSvg(P,L)}${L.length?"":`<figcaption class="sh-yok">Bu aralıkta konumlu olay yok</figcaption>`}</figure>`;
+      h+=`<p class="sh-tip" aria-live="polite">Bir işarete dokun: dakika, olay ve takım</p>`;
+      h+=`<div class="sh-lej"><span><i class="lj f h"></i>${E_(kisa(hN))}</span><span><i class="lj f a"></i>${E_(kisa(aN))}</span><span><i class="lj st"></i>Gol</span><span><i class="lj f n"></i>İsabetli</span><span><i class="lj o n"></i>İsabetsiz</span><span><i class="lj c n"></i>Korner</span></div>`;
+    } else h+=`<p class="sh-bos" role="note">Bu lig için saha konum verisi yayınlanmıyor; aşağıdaki baskı grafiği ${P.ev.length>=5?"maç olaylarından":"maç istatistiklerinden"} hesaplandı.</p>`;
+    const son5=P.ev.slice(-5).reverse();
+    if(son5.length) h+=`<div class="sh-son"><h5>Son olaylar</h5><ol>${son5.map(e=>`<li><b>${E_(e.d)}</b><i class="sw ${e.sd}"></i><span>${E_(e.l)}</span><small>${E_(kisa(e.sd==="h"?hN:aN))}</small></li>`).join("")}</ol></div>`;
+    // baskı
+    const BO=baskiOlay(P,N); let bas="";
+    if(BO.n>=3) bas=`<div class="sh-bt"><h4>Baskı</h4><span class="sh-tag">Olaylardan · 5 dk ortalama</span></div>`+baskiSvg(BO,N,P.simdi,P,"Gol 5, isabetli şut ve direk 3, diğer şut 2, korner 1,5, rakip yarı sahada kazanılan faul 0,5 puan; rakip kaleye yakın bölgede ×1,3.");
+    else { const BI=baskiIstat(S,N); if(BI) bas=`<div class="sh-bt"><h4>Baskı</h4><span class="sh-tag est">İstatistikten tahmini</span></div>`+baskiSvg(BI,N,Math.min(P.simdi!=null?P.simdi:N,BI.son),P,"Şut, isabetli şut ve korner farklarının dakikalara dağıtılmış kaba tahmini; olay verisi gelmeyen liglerde kullanılır."); }
+    h+=bas?`<div class="sh-bas">${bas}</div>`:`<p class="sh-bos">Baskı grafiği için henüz yeterli veri yok.</p>`;
+    h+=`<p class="sh-not">Kaynak: ESPN maç akışı (yalnız olay türü, dakika ve saha konumu). Konumlar yaklaşıktır; olay adları OXXai'nindir.</p></div>`;
+    return h; }
+  function bagla(root,m){
+    const S=kayit(anahtar(m)), P=S.P;
+    root.querySelectorAll(".sh-sec button").forEach(b=>b.onclick=e=>{ e.stopPropagation(); S.secim=b.dataset.s; S.sel=null; try{ Sound.tap(); }catch(_){} ciz(); });
+    const tip=root.querySelector(".sh-tip"); if(!tip||!P) return;
+    const L=secilen(P,S);
+    const goster=g=>{ const e=L[+g.dataset.i]; if(!e) return; S.sel=e.o+"|"+e.sd; root.querySelectorAll(".sh-m.sec").forEach(x=>x.classList.remove("sec")); g.classList.add("sec");
+      const tk=kisa(e.sd==="h"?P.T.h.n:P.T.a.n);
+      const bolge=e.x>=83&&e.y>=20&&e.y<=80?"ceza sahası içi":e.x>=66?"rakip yarı, kaleye yakın":e.x>=50?"rakip yarı saha":"kendi yarı sahası";
+      tip.innerHTML=`<b>${E_(e.d)}</b> · ${E_(e.l)} · <span class="sw-t ${e.sd}">${E_(tk)}</span> <small>(${bolge})</small>`; };
+    root.querySelectorAll(".sh-m").forEach(g=>{ g.addEventListener("click",ev=>{ ev.stopPropagation(); goster(g); });
+      g.addEventListener("keydown",ev=>{ if(ev.key==="Enter"||ev.key===" "){ ev.preventDefault(); goster(g); } }); });
+    if(S.sel){ const i=L.findIndex(e=>e.o+"|"+e.sd===S.sel), g=i>=0?root.querySelector(`.sh-m[data-i="${i}"]`):null; if(g) goster(g); else S.sel=null; } }   // yeniden çizimde seçim korunur
+  function ciz(){ const el=$("msheet"); if(!el||el.hidden||!MS.m||MS.tab!=="saha") return; const body=el.querySelector(".ms-body"); if(!body) return;
+    let w=body.querySelector(".sh-wrap"); const html=govde(MS.m);
+    if(!w){ body.innerHTML=html; } else { const t=document.createElement("div"); t.innerHTML=html; w.replaceWith(t.firstElementChild); }
+    w=body.querySelector(".sh-wrap"); if(w) bagla(w,MS.m); }
+
+  // ---------- sekme ----------
+  let zam=null;
+  function zamanla(){ if(zam) return; zam=setInterval(()=>{
+      if(!MS.m||MS.tab!=="saha"||$("msheet").hidden){ clearInterval(zam); zam=null; return; }
+      if(document.hidden) return;
+      const S=kayit(anahtar(MS.m)); if(S.P&&S.P.durum==="post") return;
+      if(!canliMi(MS.m)&&!(S.P&&S.P.durum==="in")&&S.P) return;
+      yukle(true).then(ciz,ciz); },30e3); }
+  document.addEventListener("visibilitychange",()=>{ try{ if(!document.hidden&&MS.m&&MS.tab==="saha"){ const S=kayit(anahtar(MS.m)); if(Date.now()-S.at>30e3&&!(S.P&&S.P.durum==="post")) yukle(true).then(ciz,ciz); } }catch(e){} });
+  function sus(){ const el=$("msheet"), m=MS.m; if(!el||el.hidden||!m) return;
+    if(!uygun(m)){ if(MS.tab==="saha"){ MS.tab="tahmin"; setTimeout(()=>{ try{ msRender(); }catch(e){} },0); } return; }
+    const tb=el.querySelector(".ms-tabs"); if(!tb) return;
+    if(!tb.querySelector('[data-t="saha"]')){ tb.insertAdjacentHTML("beforeend",`<button type="button" role="tab" data-t="saha" aria-selected="${MS.tab==="saha"}">Saha</button>`); tb.classList.add("sh-4");
+      const b=tb.querySelector('[data-t="saha"]'); b.onclick=()=>{ MS.tab="saha"; try{ Sound.tap(); }catch(e){} msRender(); }; }
+    if(MS.tab!=="saha") return;
+    tb.querySelectorAll("button").forEach(b=>b.setAttribute("aria-selected",String(b.dataset.t==="saha")));
+    const body=el.querySelector(".ms-body"); if(body) body.innerHTML=govde(m);
+    const w=body&&body.querySelector(".sh-wrap"); if(w) bagla(w,m);
+    const S=kayit(anahtar(m)); if(!S.busy&&(!S.at||Date.now()-S.at>25e3)) yukle(false).then(ciz,ciz);
+    if(canliMi(m)||!(S.P&&S.P.durum==="post")) zamanla(); }
+  const _mr=msRender;
+  msRender=function(){ const r=_mr.apply(this,arguments); try{ sus(); }catch(e){ console.warn("saha-v180",e); } return r; };
+  W.sahaV180={ayir,tur,yukle,D,FL,durum:()=>{ const S=MS.m?D.get(anahtar(MS.m)):null; return S?{at:S.at,err:S.err,olay:S.P?S.P.ev.length:0,kon:S.P?S.P.kon:0,durum:S.P&&S.P.durum,simdi:S.P&&S.P.simdi,hist:S.hist.length}:null; }};
+})();
+} catch (e) { if (typeof reportError === "function") reportError(e); else setTimeout(function () { throw e; }); } /* /id: saha-v180 */
