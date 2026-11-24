@@ -1,64 +1,6 @@
 {
  "adaylar": [
   {
-   "anahtar": "pazar:IYA05",
-   "tur": "pazar",
-   "alan": "futbol",
-   "yol": [
-    "duzeltme",
-    "pazar",
-    "IYA05"
-   ],
-   "deger": null,
-   "stratejiler": [
-    "fb_altin",
-    "fb_70",
-    "fb_3lu",
-    "fb_deger",
-    "fb_guvenli"
-   ],
-   "sinyal": {
-    "n": 1091,
-    "tutan": 309.0,
-    "beklenen": 287.04,
-    "z": 1.51,
-    "kaynak": "pazar_karne.canli (kilitli predlog)"
-   },
-   "aciklama": "IYA05: OXXai olasılığı sistemli düşük → Platt düzeltmesi (seçim diliminde öğrenilir)",
-   "eklenme": "2026-11-23",
-   "durum": "bekliyor",
-   "oncelik": 1.51
-  },
-  {
-   "anahtar": "pazar:IYU05",
-   "tur": "pazar",
-   "alan": "futbol",
-   "yol": [
-    "duzeltme",
-    "pazar",
-    "IYU05"
-   ],
-   "deger": null,
-   "stratejiler": [
-    "fb_altin",
-    "fb_70",
-    "fb_3lu",
-    "fb_deger",
-    "fb_guvenli"
-   ],
-   "sinyal": {
-    "n": 1091,
-    "tutan": 782.0,
-    "beklenen": 803.96,
-    "z": -1.51,
-    "kaynak": "pazar_karne.canli (kilitli predlog)"
-   },
-   "aciklama": "IYU05: OXXai olasılığı sistemli yüksek → Platt düzeltmesi (seçim diliminde öğrenilir)",
-   "eklenme": "2026-11-23",
-   "durum": "bekliyor",
-   "oncelik": 1.51
-  },
-  {
    "anahtar": "pazar:1&U25",
    "tur": "pazar",
    "alan": "futbol",
@@ -1719,6 +1661,32 @@
    "sonuc": "ret"
   },
   {
+   "anahtar": "esik:fb_70:p_bacak:0.72",
+   "tur": "esik",
+   "alan": "futbol",
+   "yol": [
+    "fb_70",
+    "p_bacak"
+   ],
+   "deger": 0.72,
+   "stratejiler": [
+    "fb_70"
+   ],
+   "sinyal": {
+    "n": 31,
+    "tutan": 18,
+    "beklenen": 21.91,
+    "z": -1.54,
+    "kaynak": "oxx_karne (kilitli OXXai kuponları)"
+   },
+   "aciklama": "fb_70 beklentinin altında tuttu → p_bacak 0.7 → 0.72",
+   "eklenme": "2026-11-25",
+   "durum": "denendi",
+   "oncelik": 1.54,
+   "son_deneme": "2026-11-25",
+   "sonuc": "ret"
+  },
+  {
    "anahtar": "esik:fb_altin:p_min:0.8",
    "tur": "esik",
    "alan": "futbol",
@@ -1742,6 +1710,74 @@
    "durum": "denendi",
    "oncelik": 1.52,
    "son_deneme": "2026-11-24",
+   "sonuc": "ret"
+  },
+  {
+   "anahtar": "pazar:IYA05",
+   "tur": "pazar",
+   "alan": "futbol",
+   "yol": [
+    "duzeltme",
+    "pazar",
+    "IYA05"
+   ],
+   "deger": {
+    "a": 0.0488,
+    "b": 0.9872
+   },
+   "stratejiler": [
+    "fb_altin",
+    "fb_70",
+    "fb_3lu",
+    "fb_deger",
+    "fb_guvenli"
+   ],
+   "sinyal": {
+    "n": 1091,
+    "tutan": 309.0,
+    "beklenen": 287.04,
+    "z": 1.51,
+    "kaynak": "pazar_karne.canli (kilitli predlog)"
+   },
+   "aciklama": "IYA05: OXXai olasılığı sistemli düşük → Platt düzeltmesi (seçim diliminde öğrenilir)",
+   "eklenme": "2026-11-23",
+   "durum": "denendi",
+   "oncelik": 1.51,
+   "son_deneme": "2026-11-25",
+   "sonuc": "ret"
+  },
+  {
+   "anahtar": "pazar:IYU05",
+   "tur": "pazar",
+   "alan": "futbol",
+   "yol": [
+    "duzeltme",
+    "pazar",
+    "IYU05"
+   ],
+   "deger": {
+    "a": -0.0488,
+    "b": 0.9872
+   },
+   "stratejiler": [
+    "fb_altin",
+    "fb_70",
+    "fb_3lu",
+    "fb_deger",
+    "fb_guvenli"
+   ],
+   "sinyal": {
+    "n": 1091,
+    "tutan": 782.0,
+    "beklenen": 803.96,
+    "z": -1.51,
+    "kaynak": "pazar_karne.canli (kilitli predlog)"
+   },
+   "aciklama": "IYU05: OXXai olasılığı sistemli yüksek → Platt düzeltmesi (seçim diliminde öğrenilir)",
+   "eklenme": "2026-11-23",
+   "durum": "denendi",
+   "oncelik": 1.51,
+   "son_deneme": "2026-11-25",
    "sonuc": "ret"
   },
   {
@@ -1855,28 +1891,6 @@
    "sonuc": "ret"
   },
   {
-   "anahtar": "esik:fb_70:p_bacak:0.72",
-   "tur": "esik",
-   "alan": "futbol",
-   "yol": [
-    "fb_70",
-    "p_bacak"
-   ],
-   "deger": 0.72,
-   "stratejiler": [
-    "fb_70"
-   ],
-   "sinyal": {
-    "kaynak": "keşif (sinyal yok)"
-   },
-   "aciklama": "keşif: fb_70 p_bacak 0.7 → 0.72",
-   "eklenme": "2026-10-27",
-   "durum": "denendi",
-   "oncelik": 0.0,
-   "son_deneme": "2026-11-11",
-   "sonuc": "ret"
-  },
-  {
    "anahtar": "esik:fb_deger:p_min:0.38",
    "tur": "esik",
    "alan": "futbol",
@@ -1965,6 +1979,6 @@
    "sonuc": "ret"
   }
  ],
- "guncelleme": "2026-11-24T13:34Z",
+ "guncelleme": "2026-11-24T23:52Z",
  "aciklama": "OXXai öğrenme döngüsünün deney adayları: kilitli kupon/tahmin günlüklerinde beklenti ile gerçek arasındaki sistematik farklardan (|z| ≥ 1,5; öncelik |z|) otomatik üretilir; her gece en fazla 3 aday sınanır."
 }
