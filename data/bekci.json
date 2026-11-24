@@ -1,18 +1,21 @@
 {
- "zaman": "2026-11-24T06:13Z",
+ "zaman": "2026-11-24T18:03Z",
  "deneme": false,
  "isler": [
   {
    "is": "Futbol motoru",
-   "son_basari_saat": 3.78,
+   "son_basari_saat": 7.43,
    "calisan": 0,
    "durum": "hata → yeniden denendi"
   },
   {
    "is": "Canlı kayıt",
-   "son_basari_saat": 0.84,
+   "son_basari_saat": 2.05,
    "calisan": 0,
-   "durum": "sağlıklı"
+   "durum": "durmuştu → yeniden başlatıldı",
+   "saglik": [
+    "bayat dosya: data/health.json (2.05 sa > 1.5 sa)"
+   ]
   },
   {
    "is": "At yarışı canlı",
@@ -24,19 +27,19 @@
   },
   {
    "is": "Otonom ekip",
-   "son_basari_saat": 4.02,
+   "son_basari_saat": 4.43,
    "calisan": 0,
    "durum": "sağlıklı"
   },
   {
    "is": "Otomatik laboratuvar",
-   "son_basari_saat": 26.23,
+   "son_basari_saat": 4.72,
    "calisan": 0,
    "durum": "sağlıklı"
   },
   {
    "is": "Sürekli deney",
-   "son_basari_saat": 3.21,
+   "son_basari_saat": 2.92,
    "calisan": 0,
    "durum": "sağlıklı"
   }
@@ -45,10 +48,25 @@
   {
    "is": "Futbol motoru",
    "eylem": "hata veren çalışma yeniden denendi",
-   "run": 45337393597
+   "run": 45451690331
+  },
+  {
+   "is": "Canlı kayıt",
+   "eylem": "2.05 saattir başarı yok → yeniden başlatıldı"
   }
  ],
  "gecmis": [
+  {
+   "zaman": "2026-11-24T18:03Z",
+   "is": "Futbol motoru",
+   "eylem": "hata veren çalışma yeniden denendi",
+   "run": 45451690331
+  },
+  {
+   "zaman": "2026-11-24T18:03Z",
+   "is": "Canlı kayıt",
+   "eylem": "2.05 saattir başarı yok → yeniden başlatıldı"
+  },
   {
    "zaman": "2026-11-24T06:13Z",
    "is": "Futbol motoru",
@@ -279,22 +297,6 @@
    "eylem": "sağlık kaydında sorun → bir kez yeniden tetiklendi",
    "neden": [
     "adım başarısız: deney (çıkış 1, 1/1 tur)"
-   ]
-  },
-  {
-   "zaman": "2026-10-27T17:47Z",
-   "is": "Futbol motoru",
-   "eylem": "sağlık kaydında sorun → bir kez yeniden tetiklendi",
-   "neden": [
-    "adım başarısız: arsiv-yukle (çıkış 1, 1/1 tur)"
-   ]
-  },
-  {
-   "zaman": "2026-10-27T15:12Z",
-   "is": "At yarışı canlı",
-   "eylem": "sağlık kaydında sorun → bir kez yeniden tetiklendi",
-   "neden": [
-    "bayat dosya: data/at/canli/2026-10-27.json (1.61 sa > 1.5 sa)"
    ]
   }
  ],
