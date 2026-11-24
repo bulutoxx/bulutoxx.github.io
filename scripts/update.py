@@ -1491,6 +1491,25 @@ def iddaa_lig_hafiza(evs, cl, known, today, path=None, yaz=True):
     if n_h: print(f"iddaa lig hafızası: {n_h} yarışma bilinen lige bağlandı " + ", ".join(f"i{c}→{out[c]}" for c, v in kay.items() if v != "mac"), flush=True)
     return out, kay
 
+ORAN_ALAN = ("io", "iou", "ikg", "odds", "ou", "po")
+
+def son_bilinen_oran(path, simdi=None):
+    """YH-95: önceki fixtures.json'da iddaa MS oranı olan, henüz başlamamış maçların oran alanları → {iid: {alan: değer}}."""
+    from zoneinfo import ZoneInfo
+    UK = ZoneInfo("Europe/London"); simdi = simdi or datetime.now(timezone.utc)
+    try: L = json.load(open(path, encoding="utf-8"))
+    except Exception: return {}
+    out = {}
+    for f in L if isinstance(L, list) else []:
+        if not isinstance(f, dict) or not f.get("iid") or not f.get("io"): continue
+        try:
+            hh, mm = (f.get("t") or "00:00").split(":")[:2]
+            ko = datetime.fromisoformat(f["d"]).replace(hour=int(hh), minute=int(mm), tzinfo=UK)
+        except Exception: continue
+        if ko <= simdi: continue
+        out[str(f["iid"])] = {k: f[k] for k in ORAN_ALAN if k in f}
+    return out
+
 def merge_iddaa(fx, season, today):
     """Resmi iddaa bülteni: Bilyoner'deki maçların tamamı. Bizdeki maçlara iddaa oranı eklenir,
     bizde olmayanlar ayrı lig başlığıyla bültene girer. Her maç için piyasa gol beklentisi (lh, la) data/iddaa.json'a yazılır."""
@@ -1539,10 +1558,16 @@ def merge_iddaa(fx, season, today):
             if sh + sa > bs: best, bs = j, sh + sa
         if best is not None: used.add(best); matched[e["iid"]] = best
     out_fx = list(fx); extra = []; lam = {}
+    eski_io = son_bilinen_oran(os.path.join(DATA, "fixtures.json"))   # YH-95
     def add_io(f, e):
         mk = e["mk"]; f["iid"] = e["iid"]; f["cn"] = e["comp"]
         if not mk.get("ms"):                       # MS kapalı: oransız maç gibi (oran alanları yazılmaz)
             if e.get("mbc"): f["mbs"] = e["mbc"]
+            o = eski_io.get(str(e["iid"]))         # YH-95: önceki görüntüde oran vardıysa son bilinen oran taşınır (kilitli kayıtla tutarlı)
+            if o:
+                for k_ in ORAN_ALAN:
+                    if k_ in o: f[k_] = o[k_]
+                f["ioe"] = 1
             return
         f["io"] = mk["ms"]
         if e.get("mbc"): f["mbs"] = e["mbc"]
