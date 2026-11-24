@@ -1510,6 +1510,32 @@ def son_bilinen_oran(path, simdi=None):
         out[str(f["iid"])] = {k: f[k] for k in ORAN_ALAN if k in f}
     return out
 
+def arsiv_oran(arsiv_dizin=None, simdi=None):
+    """YH-96: kilitli arşiv (data/archive/<gün>.json) kaydında son bilinen MS oranı olan, henüz başlamamış maçlar → {iid: {alan: değer}}.
+    YH-95 zinciri koptuğunda (oran yayından önce kaybolduysa) son bilinen oran buradan gelir; değerler kilitli kayıtla birebir."""
+    import glob
+    simdi = simdi or datetime.now(timezone.utc); ts0 = simdi.timestamp()
+    ad = arsiv_dizin or os.path.join(DATA, "archive"); g0 = (simdi - timedelta(days=1)).date().isoformat()
+    out = {}
+    for p in sorted(glob.glob(os.path.join(ad, "????-??-??.json"))):
+        if os.path.basename(p)[:10] < g0: continue
+        try: D = json.load(open(p, encoding="utf-8"))
+        except Exception: continue
+        if not isinstance(D, dict): continue
+        for k, r in D.items():
+            if not isinstance(r, dict): continue
+            ms = r.get("ms")
+            try:
+                if not (isinstance(ms, list) and len(ms) == 3 and all(float(v) > 1.0 for v in ms)) or float(r.get("ts") or 0) <= ts0: continue
+            except Exception: continue
+            o = {"io": ms, "odds": ms}
+            po = {"1": ms[0], "X": ms[1], "2": ms[2]}
+            ou, kg = r.get("ou"), r.get("kgo")
+            if isinstance(ou, list) and len(ou) == 2: o["iou"] = ou; o["ou"] = ou; po.update({"U25": ou[0], "A25": ou[1]})
+            if isinstance(kg, list) and len(kg) == 2: o["ikg"] = kg; po.update({"KGV": kg[0], "KGY": kg[1]})
+            o["po"] = po; out[str(k)] = o
+    return out
+
 def merge_iddaa(fx, season, today):
     """Resmi iddaa bülteni: Bilyoner'deki maçların tamamı. Bizdeki maçlara iddaa oranı eklenir,
     bizde olmayanlar ayrı lig başlığıyla bültene girer. Her maç için piyasa gol beklentisi (lh, la) data/iddaa.json'a yazılır."""
@@ -1559,6 +1585,8 @@ def merge_iddaa(fx, season, today):
         if best is not None: used.add(best); matched[e["iid"]] = best
     out_fx = list(fx); extra = []; lam = {}
     eski_io = son_bilinen_oran(os.path.join(DATA, "fixtures.json"))   # YH-95
+    try: arsiv_io = arsiv_oran()                                       # YH-96
+    except Exception as ex: arsiv_io = {}; print("arşiv oranı atlandı:", ex.__class__.__name__, ex, flush=True)
     def add_io(f, e):
         mk = e["mk"]; f["iid"] = e["iid"]; f["cn"] = e["comp"]
         if not mk.get("ms"):                       # MS kapalı: oransız maç gibi (oran alanları yazılmaz)
@@ -1568,6 +1596,12 @@ def merge_iddaa(fx, season, today):
                 for k_ in ORAN_ALAN:
                     if k_ in o: f[k_] = o[k_]
                 f["ioe"] = 1
+                return
+            o = arsiv_io.get(str(e["iid"]))        # YH-96: zincir koptuysa kilitli arşivin son bilinen oranı
+            if o:
+                for k_ in ORAN_ALAN:
+                    if k_ in o and (k_ not in ("odds", "ou") or not f.get(k_)): f[k_] = o[k_]
+                f["ioe"] = 2
             return
         f["io"] = mk["ms"]
         if e.get("mbc"): f["mbs"] = e["mbc"]
