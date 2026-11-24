@@ -1,6 +1,47 @@
 {
- "adaylar": {},
- "guncelleme": "2026-11-23T15:09Z",
+ "adaylar": {
+  "bk_piyasa:kolej": {
+   "aday": {
+    "anahtar": "bk_piyasa:kolej",
+    "tur": "bk_piyasa",
+    "alan": "basket",
+    "yol": [
+     "bk_piyasa",
+     "kolej"
+    ],
+    "deger": true,
+    "stratejiler": [
+     "bk_en_olasi"
+    ],
+    "sinyal": {
+     "n": 1113,
+     "z": -4.44,
+     "fark_ll": -0.0739,
+     "ga": [
+      -0.1087,
+      -0.0434
+     ],
+     "kaynak": "data/bk_piyasa.json (kilitli basket tahmini × maç öncesi piyasa)"
+    },
+    "aciklama": "basket NCAA erkek · kadın: model + piyasa harmanı log-kaybını -0.0739 düşürüyor → piyasa çapası üretime"
+   },
+   "m": 37,
+   "alfa": 0.05,
+   "baslangic": "20261124T0259Z",
+   "baslangic_gun": "2026-11-24",
+   "ilk": {
+    "karar": "kabul",
+    "neden": "tüm kapılar geçildi",
+    "fark": 0.0472,
+    "alt_sinir": 0.0175,
+    "n_taban": 383,
+    "n_aday": 383,
+    "alfa": 0.05
+   },
+   "olcumler": []
+  }
+ },
+ "guncelleme": "2026-11-24T03:00Z",
  "kurallar": {
   "giris": "lab/oxx_ogren.sina kapısı (zaman sıralı seçim/sınama, gün bootstrap'ı, alfa yatırımı α_t, Altın/güçlü koruması)",
   "golge": "en az 3 gün ve 3 ölçüm; tam veride ret ya da gölge sonrası günlerde fark < 0 (n ≥ 10) → geri çekilir",
