@@ -3,7 +3,7 @@
 // Kullanım: node lab/bot_tek_takim_sonda.mjs <çıktı.json>   (BOT_COACH_TIME ile saat sabitlenir; kök = bu dosyanın deposu)
 import fs from "fs"; import path from "path"; import http from "http"; import { createRequire } from "module"; import { fileURLToPath } from "url";
 const require = createRequire(import.meta.url);
-const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const ROOT = process.env.SONDA_KOK || path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const OUT = process.argv[2] || "sonda.json";
 const NOW = new Date(process.env.BOT_COACH_TIME || Date.now());
 const { chromium } = require("playwright");
@@ -21,7 +21,7 @@ for (let i = 0; i < 45; i++) { const ok = await p.evaluate(() => { try { if (FIX
 try { await p.waitForLoadState("networkidle", { timeout: 20000 }); } catch (e) { }
 await p.waitForTimeout(2500); await p.evaluate(async () => { try { PL_RESET(); } catch (e) { } try { await (window.BOT70 && BOT70.ready); } catch (e) { } });
 const teams = await p.evaluate(() => { const now = Date.now(), S = new Set(); for (const m of Pick.list()) { const t = m.dt.getTime(); if (t < now || t > now + 8 * 864e5 || m.live) continue; S.add(m.h); S.add(m.a); } return [...S].sort(); });
-const KONTROL = ["real madrid", "atletico madrid", "manchester united", "manchester city", "inter", "milan", "sporting", "porto", "benfica", "real madrid maçı", "atletico madrid maçı", "manchester united maçı", "manchester city maçı", "inter maçı", "milan maçı", "sporting maçı", "porto maçı", "benfica maçı", "stuttgart", "stuttgart maçı", "sporting lizbon maçı"];
+const KONTROL = ["real madrid", "atletico madrid", "manchester united", "manchester city", "inter", "milan", "sporting", "porto", "benfica", "real madrid maçı", "atletico madrid maçı", "manchester united maçı", "manchester city maçı", "inter maçı", "milan maçı", "sporting maçı", "porto maçı", "benfica maçı", "stuttgart", "stuttgart maçı", "sporting lizbon maçı"].concat(process.env.EK_KONTROL ? process.env.EK_KONTROL.split("|") : []);
 const rows = [];
 const Q = teams.map(t => ({ t, q: t + " maçı" })).concat(KONTROL.map(q => ({ t: null, q })));
 for (const { t, q } of Q) {
