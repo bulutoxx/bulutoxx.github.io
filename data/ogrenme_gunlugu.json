@@ -2,7 +2,7 @@
  "v": 1,
  "sayac": {
   "futbol-2026": 92,
-  "basket-2026": 37
+  "basket-2026": 38
  },
  "kayitlar": [
   {
@@ -13398,9 +13398,91 @@
    "sure_sn": 0.4,
    "karar": "golge",
    "neden": "kapı geçildi → gölge ölçüme alındı (henüz uygulanmadı)"
+  },
+  {
+   "tarih": "2026-11-24",
+   "anahtar": "esik:bk_en_olasi:p_min:0.62",
+   "tur": "esik",
+   "alan": "basket",
+   "aciklama": "keşif: bk_en_olasi p_min 0.6 → 0.62",
+   "sinyal": {
+    "kaynak": "keşif (sinyal yok)"
+   },
+   "deger": 0.62,
+   "uygulandi": false,
+   "kaynak": "surekli-deney",
+   "olcut": "kupon isabet oranı farkı",
+   "alfa": 0.0038,
+   "alfa_ham": 0.0038467710000000006,
+   "deneme_no": 38,
+   "test_yapildi": true,
+   "istatistik_gecti": false,
+   "secim": {
+    "gun": [
+     "2026-01-01",
+     "2026-07-23"
+    ],
+    "fark": 0.0128,
+    "taban": {
+     "n": 160,
+     "tutan": 119,
+     "isabet": 0.7438,
+     "beklenen": 112.08,
+     "brier": 0.1638
+    },
+    "aday": {
+     "n": 152,
+     "tutan": 115,
+     "isabet": 0.7566,
+     "beklenen": 108.49,
+     "brier": 0.1584
+    }
+   },
+   "sinama": {
+    "gun": [
+     "2026-07-26",
+     "2026-11-24"
+    ],
+    "fark": 0.017,
+    "alt_sinir": -0.0102,
+    "bootstrap_B": 2000,
+    "taban": {
+     "n": 77,
+     "tutan": 58,
+     "isabet": 0.7532,
+     "beklenen": 50.21,
+     "brier": 0.1673
+    },
+    "aday": {
+     "n": 74,
+     "tutan": 57,
+     "isabet": 0.7703,
+     "beklenen": 48.9,
+     "brier": 0.1633
+    },
+    "bacak_taban": {
+     "n": 194,
+     "tutan": 171,
+     "isabet": 0.8814,
+     "beklenen": 161.98,
+     "brier": 0.1011
+    },
+    "bacak_aday": {
+     "n": 188,
+     "tutan": 168,
+     "isabet": 0.8936,
+     "beklenen": 157.99,
+     "brier": 0.0945
+    }
+   },
+   "koruma": {},
+   "servet_sonra": 0.07307379,
+   "sure_sn": 4.1,
+   "karar": "ret",
+   "neden": "sınama alt sınırı ≤ 0 (α=0.0038)"
   }
  ],
- "guncelleme": "2026-11-24T13:34Z",
+ "guncelleme": "2026-11-24T15:07Z",
  "kurallar": {
   "gecelik_aday": 3,
   "secim_sinama": "günler 2/3 seçim, 1/3 sınama (ileriye dönük sanal oynatma, bu yılın maçları)",
@@ -13424,8 +13506,8 @@
    "kesif_kabul": 0
   },
   "basket-2026": {
-   "servet": 0.07693542,
-   "test": 5,
+   "servet": 0.07307379,
+   "test": 6,
    "kesif_kabul": 1
   },
   "bk_piyasa-2026": {
