@@ -124,7 +124,7 @@ jobs:
     timeout-minutes: 30
     environment:
       name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+      url: ${{ steps.deployment.outputs.page_url || steps.deployment_t.outputs.page_url }}
     env:
       ADIM_ALT: yayin            # sağlık kaydı: data/saglik/update-yayin.json
     steps:
@@ -190,13 +190,27 @@ jobs:
         with:
           path: ${{ runner.temp }}/_site
           name: github-pages-${{ github.run_attempt }}
+      # YH-99: deploy-pages bazen paketi göremiyor ("Found 0 artifact(s)") ya da "Deployment failed, try again later" ile
+      # düşüyor (GitHub tarafı geçici). İlk deneme düşerse 30 sn bekleyip aynı paketle bir kez daha denenir; ikisi de
+      # düşerse iş en sonda yine başarısız olur (kurtarıcı görür). Başarılı turda ikinci deneme atlanır.
       - id: deployment
+        continue-on-error: true
+        uses: actions/deploy-pages@v4
+        with:
+          artifact_name: github-pages-${{ github.run_attempt }}
+      - name: ⏳ Yayın ilk denemede düştü → 30 sn bekle (YH-99)
+        if: steps.deployment.outcome == 'failure'
+        run: |
+          echo "::warning title=Yayın tekrar::deploy-pages ilk denemede düştü; 30 sn sonra aynı paketle yeniden deneniyor"
+          sleep 30
+      - id: deployment_t
+        if: steps.deployment.outcome == 'failure'
         uses: actions/deploy-pages@v4
         with:
           artifact_name: github-pages-${{ github.run_attempt }}
       - name: 🔎 Yayın sonrası duman testi (canlı adres; yalnız yeni uygulama yayınlandıysa)
         id: canli
-        if: steps.karar.outputs.karar == 'test' && steps.kapi.outcome == 'success'
+        if: steps.karar.outputs.karar == 'test' && steps.kapi.outcome == 'success' && (steps.deployment.outcome == 'success' || steps.deployment_t.outcome == 'success')
         continue-on-error: true
         run: |
           python3 lab/yayin_kapisi.py bekle --canli "${{ steps.pages.outputs.base_url }}" --ozet "${{ steps.karar.outputs.ozet }}" --sn 300 || true
@@ -236,3 +250,8 @@ jobs:
           if [ -s "$RUNNER_TEMP/qa_kapi.json" ]; then cp "$RUNNER_TEMP/qa_kapi.json" data/qa_kapi.json; YOLLAR="$YOLLAR data/qa_kapi.json"; fi
           if [ -s data/qa_yayin.json ]; then YOLLAR="$YOLLAR data/qa_yayin.json"; fi
           python3 lab/gonder.py -m "Yayın kapısı kaydı $(date -u +%FT%H:%M) [skip ci]" $YOLLAR || echo "::warning::kapı kaydı gönderilemedi"
+      - name: ❌ Yayın iki denemede de düştü → iş başarısız (YH-99)
+        if: steps.deployment.outcome == 'failure' && steps.deployment_t.outcome != 'success'
+        run: |
+          echo "::error title=Yayın::deploy-pages iki denemede de düştü; site bir sonraki başarılı yayına kadar önceki sürümde"
+          exit 1
