@@ -1,6 +1,6 @@
 {
  "surum": "2026-10-28.1",
- "guncelleme": "2026-11-25 13:32",
+ "guncelleme": "2026-11-25 15:57",
  "aciklama": "Basket piyasa karnesi: kilitli model tahmini ile maç öncesi son piyasa oranı (marjı Shin ile ayrılmış) aynı maçlarda. Harman = Benter iki aşama (lig grubu, zaman sıralı ağırlık). Çapalı = model fark/toplamının handikap ve alt/üst çizgisine çekilmesi. GA: gün blokları bootstrap %95. Üretime yalnız OXXai kapısı + gölge sonrası girer.",
  "kurallar": {
   "kapi": "n ≥ 150, gün ≥ 20, ΔLL GA üst < 0, ΔBrier < 0, isabet düşmez",
@@ -471,6 +471,13 @@
   }
  },
  "agirlik": {
+  "kolej": {
+   "a": 0.2065,
+   "b": 0.8578,
+   "w_m": 0.9854,
+   "w_t": 0.9591,
+   "n_ogrenme": 1217
+  },
   "pro": {
    "a": 0.2557,
    "b": 0.7556,
@@ -484,13 +491,6 @@
    "w_m": 0.432,
    "w_t": 1.0,
    "n_ogrenme": 110
-  },
-  "kolej": {
-   "a": 0.2065,
-   "b": 0.8578,
-   "w_m": 0.9854,
-   "w_t": 0.9591,
-   "n_ogrenme": 1217
   }
  },
  "uretimde": {},
@@ -630,10 +630,10 @@
    "kilitli": 1775,
    "oranli": 1123,
    "sonuclu_oranli": 1057,
-   "iddaa_ms": 462,
+   "iddaa_ms": 463,
    "iddaa_hnd": 449,
-   "iddaa_au": 453,
-   "espn": 1121
+   "iddaa_au": 454,
+   "espn": 1120
   },
   "ncaaw": {
    "kilitli": 1711,
@@ -647,10 +647,13 @@
  },
  "sentetik_yarismalar": {
   "Euroleague Kadınlar": 4,
-  "FIBA Dünya Kup.Avr.Eleme GrupI": 2,
-  "ABD Kolej Basketbol Ligi": 19,
+  "ABD Kolej Basketbol Ligi": 24,
   "FIBA Dünya Kup.Avr.Eleme GrupJ": 3,
-  "Eurocup, Kadınlar": 4
+  "FIBA Dünya Kup.Avr.Eleme GrupI": 2,
+  "Eurocup, Kadınlar": 5,
+  "EuroBasket, Pre-Qualifiers, 2n": 1,
+  "FIBA Dünya Kup.Amr.Eleme GrupF": 1,
+  "Avrp Basket Şmp ÖnEle 2T Grp E": 1
  },
  "gunluk": [
   {
