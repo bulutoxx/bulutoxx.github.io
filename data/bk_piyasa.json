@@ -1,6 +1,6 @@
 {
  "surum": "2026-10-28.1",
- "guncelleme": "2026-11-25 21:22",
+ "guncelleme": "2026-11-25 21:26",
  "aciklama": "Basket piyasa karnesi: kilitli model tahmini ile maç öncesi son piyasa oranı (marjı Shin ile ayrılmış) aynı maçlarda. Harman = Benter iki aşama (lig grubu, zaman sıralı ağırlık). Çapalı = model fark/toplamının handikap ve alt/üst çizgisine çekilmesi. GA: gün blokları bootstrap %95. Üretime yalnız OXXai kapısı + gölge sonrası girer.",
  "kurallar": {
   "kapi": "n ≥ 150, gün ≥ 20, ΔLL GA üst < 0, ΔBrier < 0, isabet düşmez",
@@ -471,6 +471,13 @@
   }
  },
  "agirlik": {
+  "kolej": {
+   "a": 0.2023,
+   "b": 0.8607,
+   "w_m": 0.9857,
+   "w_t": 0.9597,
+   "n_ogrenme": 1220
+  },
   "avrupa": {
    "a": 0.318,
    "b": 0.67,
@@ -484,13 +491,6 @@
    "w_m": 0.8752,
    "w_t": 1.0,
    "n_ogrenme": 281
-  },
-  "kolej": {
-   "a": 0.2023,
-   "b": 0.8607,
-   "w_m": 0.9857,
-   "w_t": 0.9597,
-   "n_ogrenme": 1220
   }
  },
  "uretimde": {},
