@@ -11,6 +11,7 @@ on:
   workflow_dispatch:
 permissions:
   contents: write
+  actions: write     # YH-98: yalnız yedek kurtarıcı çağrısı (kurtarici.yml workflow_dispatch)
 concurrency:
   group: live-log
   cancel-in-progress: false
@@ -41,6 +42,8 @@ jobs:
             fi
             python3 lab/adim.py canli-kayit -- timeout 240 python scripts/collector.py live
             python3 lab/adim.py bekci --onem bilgi -- timeout 60 python lab/watchdog.py
+            # YH-98: zamanlayıcı kurtarıcıyı seyreltirse (son tur > 40 dk) bir kez elle başlat; karar yine kurtarici.py'de
+            GH_TOKEN="${{ github.token }}" GH_REPO="${{ github.repository }}" timeout 60 python3 lab/yedek_kurtarici.py || true
             if [ "$i" -lt "$TUR" ]; then
               s=$(( t0 + ARALIK_SN - $(date +%s) ))
               if [ "$s" -gt 0 ]; then sleep "$s"; fi
