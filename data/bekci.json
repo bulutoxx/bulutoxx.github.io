@@ -1,18 +1,21 @@
 {
- "zaman": "2026-11-25T10:24Z",
+ "zaman": "2026-11-25T18:56Z",
  "deneme": false,
  "isler": [
   {
    "is": "Futbol motoru",
-   "son_basari_saat": 0.04,
-   "calisan": 1,
+   "son_basari_saat": 0.5,
+   "calisan": 0,
    "durum": "sağlıklı"
   },
   {
    "is": "Canlı kayıt",
-   "son_basari_saat": 1.26,
+   "son_basari_saat": 8.13,
    "calisan": 1,
-   "durum": "sağlıklı"
+   "durum": "sağlık sorunu",
+   "saglik": [
+    "bayat dosya: data/health.json (8.13 sa > 1.5 sa)"
+   ]
   },
   {
    "is": "At yarışı canlı",
@@ -24,25 +27,35 @@
   },
   {
    "is": "Otonom ekip",
-   "son_basari_saat": 10.48,
+   "son_basari_saat": 6.18,
    "calisan": 0,
    "durum": "sağlıklı"
   },
   {
    "is": "Otomatik laboratuvar",
-   "son_basari_saat": 21.07,
+   "son_basari_saat": 6.85,
    "calisan": 0,
    "durum": "sağlıklı"
   },
   {
    "is": "Sürekli deney",
-   "son_basari_saat": 0.24,
+   "son_basari_saat": 8.79,
    "calisan": 0,
-   "durum": "sağlıklı"
+   "durum": "durmuştu → yeniden başlatıldı"
   }
  ],
- "eylem": [],
+ "eylem": [
+  {
+   "is": "Sürekli deney",
+   "eylem": "8.79 saattir başarı yok → yeniden başlatıldı"
+  }
+ ],
  "gecmis": [
+  {
+   "zaman": "2026-11-25T18:56Z",
+   "is": "Sürekli deney",
+   "eylem": "8.79 saattir başarı yok → yeniden başlatıldı"
+  },
   {
    "zaman": "2026-11-25T02:20Z",
    "is": "Canlı kayıt",
@@ -273,14 +286,6 @@
    "eylem": "sağlık kaydında sorun → bir kez yeniden tetiklendi",
    "neden": [
     "adım başarısız: arsiv-yukle (çıkış 1, 1/1 tur)"
-   ]
-  },
-  {
-   "zaman": "2026-10-27T20:00Z",
-   "is": "At yarışı canlı",
-   "eylem": "sağlık kaydında sorun → bir kez yeniden tetiklendi",
-   "neden": [
-    "bayat dosya: data/at/canli/2026-10-27.json (1.89 sa > 1.5 sa)"
    ]
   }
  ],
