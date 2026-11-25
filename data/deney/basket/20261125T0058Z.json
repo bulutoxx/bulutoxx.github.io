@@ -1,0 +1,118 @@
+{
+ "is": "basket",
+ "zaman": "20261125T0058Z",
+ "sure_sn": 4.7,
+ "denenen": [
+  {
+   "aday": {
+    "anahtar": "esik:bk_en_olasi:p_min:0.58",
+    "tur": "esik",
+    "alan": "basket",
+    "yol": [
+     "bk_en_olasi",
+     "p_min"
+    ],
+    "deger": 0.58,
+    "stratejiler": [
+     "bk_en_olasi"
+    ],
+    "sinyal": {
+     "kaynak": "keşif (sinyal yok)"
+    },
+    "aciklama": "keşif: bk_en_olasi p_min 0.6 → 0.58"
+   },
+   "m": 39,
+   "rap": {
+    "olcut": "kupon isabet oranı farkı",
+    "alfa": 0.0037,
+    "alfa_ham": 0.0036536895,
+    "deneme_no": 39,
+    "test_yapildi": true,
+    "istatistik_gecti": false,
+    "secim": {
+     "gun": [
+      "2026-01-01",
+      "2026-07-23"
+     ],
+     "fark": -0.0278,
+     "taban": {
+      "n": 160,
+      "tutan": 119,
+      "isabet": 0.7438,
+      "beklenen": 112.09,
+      "brier": 0.1638
+     },
+     "aday": {
+      "n": 169,
+      "tutan": 121,
+      "isabet": 0.716,
+      "beklenen": 115.94,
+      "brier": 0.1675
+     }
+    },
+    "sinama": {
+     "gun": [
+      "2026-07-26",
+      "2026-11-24"
+     ],
+     "fark": -0.0372,
+     "alt_sinir": -0.098,
+     "bootstrap_B": 2000,
+     "taban": {
+      "n": 77,
+      "tutan": 58,
+      "isabet": 0.7532,
+      "beklenen": 50.21,
+      "brier": 0.1673
+     },
+     "aday": {
+      "n": 81,
+      "tutan": 58,
+      "isabet": 0.716,
+      "beklenen": 51.99,
+      "brier": 0.1689
+     },
+     "bacak_taban": {
+      "n": 194,
+      "tutan": 171,
+      "isabet": 0.8814,
+      "beklenen": 161.98,
+      "brier": 0.1011
+     },
+     "bacak_aday": {
+      "n": 202,
+      "tutan": 174,
+      "isabet": 0.8614,
+      "beklenen": 167.35,
+      "brier": 0.1086
+     }
+    },
+    "koruma": {},
+    "karar": "ret",
+    "neden": "seçim diliminde iyileşme yok; sınama alt sınırı ≤ 0 (α=0.0037)"
+   },
+   "sure_sn": 4.1
+  }
+ ],
+ "golge_olcum": [
+  {
+   "anahtar": "bk_piyasa:kolej",
+   "tam": {
+    "karar": "kabul",
+    "neden": "tüm kapılar geçildi",
+    "fark": 0.0464,
+    "alt_sinir": 0.0166,
+    "n_taban": 399,
+    "n_aday": 399,
+    "alfa": 0.05
+   },
+   "yeni_gun_sayisi": 1,
+   "yeni": {
+    "fark": null,
+    "n": 30,
+    "aday_n": 30
+   }
+  }
+ ],
+ "bugun": "2026-11-25"
+}
