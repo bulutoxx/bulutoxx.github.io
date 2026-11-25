@@ -1,20 +1,25 @@
 {
- "zaman": "2026-11-24T18:03Z",
+ "zaman": "2026-11-25T02:20Z",
  "deneme": false,
  "isler": [
   {
    "is": "Futbol motoru",
-   "son_basari_saat": 7.43,
-   "calisan": 0,
-   "durum": "hata → yeniden denendi"
+   "son_basari_saat": 8.02,
+   "calisan": 1,
+   "durum": "sağlık sorunu",
+   "saglik": [
+    "bayat dosya: data/fixtures.json (8.03 sa > 4.0 sa)",
+    "bayat dosya: data/model.json (8.06 sa > 4.0 sa)",
+    "bayat dosya: data/daily.json (8.06 sa > 4.0 sa)"
+   ]
   },
   {
    "is": "Canlı kayıt",
-   "son_basari_saat": 2.05,
+   "son_basari_saat": 1.84,
    "calisan": 0,
    "durum": "durmuştu → yeniden başlatıldı",
    "saglik": [
-    "bayat dosya: data/health.json (2.05 sa > 1.5 sa)"
+    "bayat dosya: data/health.json (1.86 sa > 1.5 sa)"
    ]
   },
   {
@@ -27,35 +32,35 @@
   },
   {
    "is": "Otonom ekip",
-   "son_basari_saat": 4.43,
+   "son_basari_saat": 2.42,
    "calisan": 0,
    "durum": "sağlıklı"
   },
   {
    "is": "Otomatik laboratuvar",
-   "son_basari_saat": 4.72,
+   "son_basari_saat": 13.01,
    "calisan": 0,
    "durum": "sağlıklı"
   },
   {
    "is": "Sürekli deney",
-   "son_basari_saat": 2.92,
+   "son_basari_saat": 1.35,
    "calisan": 0,
    "durum": "sağlıklı"
   }
  ],
  "eylem": [
   {
-   "is": "Futbol motoru",
-   "eylem": "hata veren çalışma yeniden denendi",
-   "run": 45451690331
-  },
-  {
    "is": "Canlı kayıt",
-   "eylem": "2.05 saattir başarı yok → yeniden başlatıldı"
+   "eylem": "1.84 saattir başarı yok → yeniden başlatıldı"
   }
  ],
  "gecmis": [
+  {
+   "zaman": "2026-11-25T02:20Z",
+   "is": "Canlı kayıt",
+   "eylem": "1.84 saattir başarı yok → yeniden başlatıldı"
+  },
   {
    "zaman": "2026-11-24T18:03Z",
    "is": "Futbol motoru",
@@ -289,14 +294,6 @@
    "eylem": "sağlık kaydında sorun → bir kez yeniden tetiklendi",
    "neden": [
     "bayat dosya: data/at/canli/2026-10-27.json (1.89 sa > 1.5 sa)"
-   ]
-  },
-  {
-   "zaman": "2026-10-27T17:47Z",
-   "is": "Sürekli deney",
-   "eylem": "sağlık kaydında sorun → bir kez yeniden tetiklendi",
-   "neden": [
-    "adım başarısız: deney (çıkış 1, 1/1 tur)"
    ]
   }
  ],
