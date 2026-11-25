@@ -21,6 +21,20 @@ concurrency:
   group: surekli-deney
   cancel-in-progress: false
 jobs:
+  yedek:
+    # YH-98: GitHub zamanlayıcısı kurtarıcıyı seyreltirse (son tur > 40 dk) bir kez elle başlat; karar yine lab/kurtarici.py'de
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    permissions:
+      contents: read
+      actions: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: 🛟 Yedek kurtarıcı çağrısı
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: timeout 60 python3 lab/yedek_kurtarici.py || true
   deney:
     runs-on: ubuntu-latest
     timeout-minutes: 30
