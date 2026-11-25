@@ -33,9 +33,13 @@
     lizbon:"lisbon",napoli:"napoli",juventus:"juventus",leverkuzen:"leverkusen",dortmunt:"dortmund",bayernmunih:"bayern"};
   const SL_SUF=["","in","un","nin","nun","e","a","ye","ya","de","da","den","dan","te","ta","ten","tan","i","u","yi","yu","li","lu","ci","cu","la","le","yla","yle","nda","nde","ndan","nden"];
   const PH=[[/\bman\s+utd\b|\bman\s+united\b/g,"manchester united"],[/\bman\s+city\b/g,"manchester city"],[/\bel\s*clasico\b|\bel\s*klasiko\b|\belclasico\b/g,"barcelona real madrid"],[/\bbayern\s+munih\b/g,"bayern"],[/\bsari\s+kirmizi\w*/g,"galatasaray"],[/\bsari\s+lacivert\w*|\bsari\s+kanarya\w*/g,"fenerbahce"],[/\bkara\s+kartal\w*|\bsiyah\s+beyaz\w*/g,"besiktas"],[/\bbordo\s+mavi\w*/g,"trabzonspor"]];
+  // YH-93: bültendeki Türkçe yazım ("Marsilya", "Sporting Lizbon") argo sözlüğünün İngilizce hedefiyle ezilmesin
+  const _bw={k:"",S:null};
+  const bW=()=>{ try{ const L=Pick.list(), k=L.length+"|"+(L[0]&&L[0].h); if(_bw.k!==k){ const S=new Set(); for(const m of L) for(const x of [m.h,m.a]) for(const t of N(x).split(" ")) if(t.length>=4) S.add(t); _bw.k=k; _bw.S=S; } return _bw.S; }catch(e){ return null; } };
+  const keepTR=(k,to)=>{ const S=bW(); return !!(S&&k.length>=4&&S.has(k)&&!N(to).split(" ").some(t=>t.length>=4&&S.has(t))); };
   V.rewrite=function(raw){ let out=String(raw||"").split(/(\s+)/).map(w=>{ if(!w.trim()) return w; const n=N(w); if(!n||n.includes(" ")) return w;
-      if(SL[n]) return SL[n];
-      for(const k in SL){ if(k.length>=3&&n.startsWith(k)&&SL_SUF.includes(n.slice(k.length))&&!/\d/.test(k)) return SL[k]; }
+      if(SL[n]) return keepTR(n,SL[n])?w:SL[n];
+      for(const k in SL){ if(k.length>=3&&n.startsWith(k)&&SL_SUF.includes(n.slice(k.length))&&!/\d/.test(k)) return keepTR(k,SL[k])?w:SL[k]; }
       return w; }).join("");
     let s=N(out); for(const [re,to] of PH) s=s.replace(re,to);
     return {raw:out, s}; };
