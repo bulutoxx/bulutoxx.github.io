@@ -1,8 +1,42 @@
 {
  "v": 1,
- "surum": "varsayilan",
+ "surum": "2026-11-27.1",
  "aciklama": "OXXai kupon stratejilerinin öğrenilmiş ayarları (yalnız varsayılandan farklı olanlar). Yazar: lab/oxx_ogren.py. Okur: scripts/oxx_kupon.py. Motorun model.json ayarlarına dokunulmaz.",
- "params": {},
- "izlenen": [],
- "gecmis": []
+ "params": {
+  "bk_piyasa": {
+   "kolej": true
+  }
+ },
+ "izlenen": [
+  {
+   "anahtar": "bk_piyasa:kolej",
+   "anahtar_yol": [
+    "bk_piyasa",
+    "kolej"
+   ],
+   "onceki": "__yok__",
+   "yeni": true,
+   "stratejiler": [
+    "bk_en_olasi"
+   ],
+   "alan": "basket",
+   "tur": "bk_piyasa",
+   "kabul_tarihi": "2026-11-27",
+   "yeniden_sinama": "2026-12-11",
+   "kaynak": "surekli-deney"
+  }
+ ],
+ "gecmis": [
+  {
+   "tarih": "2026-11-27",
+   "olay": "kabul",
+   "anahtar": "bk_piyasa:kolej",
+   "yol": [
+    "bk_piyasa",
+    "kolej"
+   ],
+   "onceki": "__yok__",
+   "yeni": true
+  }
+ ]
 }
