@@ -1,6 +1,6 @@
 {
  "surum": "2026-10-28.1",
- "guncelleme": "2026-11-26 16:03",
+ "guncelleme": "2026-11-26 18:17",
  "aciklama": "Basket piyasa karnesi: kilitli model tahmini ile maç öncesi son piyasa oranı (marjı Shin ile ayrılmış) aynı maçlarda. Harman = Benter iki aşama (lig grubu, zaman sıralı ağırlık). Çapalı = model fark/toplamının handikap ve alt/üst çizgisine çekilmesi. GA: gün blokları bootstrap %95. Üretime yalnız OXXai kapısı + gölge sonrası girer.",
  "kurallar": {
   "kapi": "n ≥ 150, gün ≥ 20, ΔLL GA üst < 0, ΔBrier < 0, isabet düşmez",
@@ -471,6 +471,13 @@
   }
  },
  "agirlik": {
+  "avrupa": {
+   "a": 0.3269,
+   "b": 0.6766,
+   "w_m": 0.3978,
+   "w_t": 1.0,
+   "n_ogrenme": 114
+  },
   "kolej": {
    "a": 0.2037,
    "b": 0.8608,
@@ -484,13 +491,6 @@
    "w_m": 0.8748,
    "w_t": 1.0,
    "n_ogrenme": 290
-  },
-  "avrupa": {
-   "a": 0.3269,
-   "b": 0.6766,
-   "w_m": 0.3978,
-   "w_t": 1.0,
-   "n_ogrenme": 114
   }
  },
  "uretimde": {},
@@ -646,17 +646,18 @@
   }
  },
  "sentetik_yarismalar": {
+  "FIBA Dünya Kup.Avr.Eleme GrupK": 2,
   "FIBA Dünya Kup.Amr.Eleme GrupF": 2,
+  "FIBA DünyaKup.Asya&Oky.El.GrpF": 2,
   "ABD Kolej Basketbol Ligi": 7,
   "Avrp Basket Şmp ÖnEle 2T Grp E": 1,
-  "FIBA DünyaKup.Asya&Oky.El.GrpF": 2,
   "G. Kore Güney Kore Kadın Basket Ligi": 1,
   "FIBA Dünya Kup.Avr.Eleme GrupL": 2,
-  "FIBA Dünya Kup.Avr.Eleme GrupJ": 3,
   "FIBA Dünya Kup.Avr.Eleme GrupI": 1,
+  "FIBA Dünya Kup.Avr.Eleme GrupJ": 3,
   "Japonya B2.Ligi": 7,
   "İtalya Serie A2": 6,
-  "FIBA Dünya Kup.Avr.Eleme GrupK": 2
+  "İsveç Basketbol Ligi Kadınlar": 1
  },
  "gunluk": [
   {
