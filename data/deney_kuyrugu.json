@@ -1,6 +1,55 @@
 {
  "adaylar": [
   {
+   "anahtar": "lig:ecu",
+   "tur": "lig",
+   "alan": "futbol",
+   "yol": [
+    "lig_dis"
+   ],
+   "deger": [
+    "ecu"
+   ],
+   "stratejiler": [
+    "fb_altin",
+    "fb_70",
+    "fb_3lu",
+    "fb_deger",
+    "fb_guvenli"
+   ],
+   "sinyal": {
+    "n": 40,
+    "tutan": 11,
+    "beklenen": 19.16,
+    "z": -2.61,
+    "kaynak": "predlog (kilitli maç öncesi tahmin)"
+   },
+   "aciklama": "ecu: en olası sonuç beklentinin belirgin altında → OXXai KUPO'larından çıkar",
+   "eklenme": "2026-11-26",
+   "durum": "bekliyor",
+   "oncelik": 2.61
+  },
+  {
+   "anahtar": "esik:fb_3lu:p_min:0.56",
+   "tur": "esik",
+   "alan": "futbol",
+   "yol": [
+    "fb_3lu",
+    "p_min"
+   ],
+   "deger": 0.56,
+   "stratejiler": [
+    "fb_3lu"
+   ],
+   "sinyal": {
+    "kaynak": "keşif (sinyal yok)"
+   },
+   "aciklama": "keşif: fb_3lu p_min 0.58 → 0.56",
+   "eklenme": "2026-11-26",
+   "durum": "bekliyor",
+   "oncelik": 0.0
+  },
+  {
    "anahtar": "pazar:12",
    "tur": "pazar",
    "alan": "futbol",
@@ -1848,28 +1897,6 @@
    "sonuc": "ret"
   },
   {
-   "anahtar": "esik:fb_3lu:p_min:0.56",
-   "tur": "esik",
-   "alan": "futbol",
-   "yol": [
-    "fb_3lu",
-    "p_min"
-   ],
-   "deger": 0.56,
-   "stratejiler": [
-    "fb_3lu"
-   ],
-   "sinyal": {
-    "kaynak": "keşif (sinyal yok)"
-   },
-   "aciklama": "keşif: fb_3lu p_min 0.58 → 0.56",
-   "eklenme": "2026-10-28",
-   "durum": "denendi",
-   "oncelik": 0.0,
-   "son_deneme": "2026-11-12",
-   "sonuc": "ret"
-  },
-  {
    "anahtar": "esik:bk_en_olasi:p_min:0.58",
    "tur": "esik",
    "alan": "basket",
@@ -1980,6 +2007,6 @@
    "sonuc": "ret"
   }
  ],
- "guncelleme": "2026-11-25T23:35Z",
+ "guncelleme": "2026-11-26T12:17Z",
  "aciklama": "OXXai öğrenme döngüsünün deney adayları: kilitli kupon/tahmin günlüklerinde beklenti ile gerçek arasındaki sistematik farklardan (|z| ≥ 1,5; öncelik |z|) otomatik üretilir; her gece en fazla 3 aday sınanır."
 }
