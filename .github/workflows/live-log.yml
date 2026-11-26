@@ -63,3 +63,9 @@ jobs:
           if [ -d data/archive/bk_live ]; then
             python3 lab/adim.py bk-canli-gonder --onem bilgi -- python3 lab/gonder.py -m "Basket canlı anlık görüntü $(date -u +%FT%H:%M) [skip ci]" data/archive/bk_live
           fi
+      - name: 🔗 Sonraki turu başlat (YH-100; zamanlayıcı hiç iş başlatmazsa döngü kopmasın)
+        if: success()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: timeout 60 python3 lab/canli_zincir.py || true
