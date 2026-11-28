@@ -1,8 +1,9 @@
 {
- "zaman": "2026-11-28T09:05Z",
+ "zaman": "2026-11-28T10:26Z",
  "alarm": false,
  "sorunlar": [],
  "kalici_alarm": [],
+ "tekrar_alarm": [],
  "adimlar": {
   "acik-lab.yml": {
    "acik-lab.json": {
@@ -92,16 +93,16 @@
   },
   "kurtarici.yml": {
    "kurtarici.json": {
-    "run": "46119444425",
-    "guncelleme": "2026-11-28T07:03:56Z",
+    "run": "46132021559",
+    "guncelleme": "2026-11-28T09:46:34Z",
     "basarisiz": [],
     "bilgi_hata": []
    }
   },
   "live-log.yml": {
    "live-log.json": {
-    "run": "46125702426",
-    "guncelleme": "2026-11-28T08:50:14Z",
+    "run": "46131606555",
+    "guncelleme": "2026-11-28T10:06:17Z",
     "basarisiz": [],
     "bilgi_hata": []
    }
@@ -176,8 +177,8 @@
     "bilgi_hata": []
    },
    "update.json": {
-    "run": "46116374255",
-    "guncelleme": "2026-11-28T06:28:34Z",
+    "run": "46134462811",
+    "guncelleme": "2026-11-28T10:23:19Z",
     "basarisiz": [],
     "bilgi_hata": []
    }
@@ -187,7 +188,7 @@
   {
    "ad": "Fikstür ve oranlar",
    "dosya": "data/fixtures.json",
-   "yas_saat": 2.62,
+   "yas_saat": 0.06,
    "beklenen_saat": 4.0,
    "is_akisi": "update.yml",
    "bayat": false
@@ -195,7 +196,7 @@
   {
    "ad": "Futbol modeli",
    "dosya": "data/model.json",
-   "yas_saat": 2.66,
+   "yas_saat": 0.08,
    "beklenen_saat": 4.0,
    "is_akisi": "update.yml",
    "bayat": false
@@ -203,7 +204,7 @@
   {
    "ad": "Günlük karne (toplayıcı)",
    "dosya": "data/daily.json",
-   "yas_saat": 2.66,
+   "yas_saat": 0.08,
    "beklenen_saat": 4.0,
    "is_akisi": "update.yml",
    "bayat": false
@@ -211,7 +212,7 @@
   {
    "ad": "Kilitli tahmin günlüğü (predlog)",
    "dosya": "data/predlog.json",
-   "yas_saat": 2.62,
+   "yas_saat": 1.25,
    "beklenen_saat": 12.0,
    "is_akisi": "update.yml",
    "bayat": false
@@ -219,7 +220,7 @@
   {
    "ad": "Canlı kayıt nabzı",
    "dosya": "data/health.json",
-   "yas_saat": 0.26,
+   "yas_saat": 0.35,
    "beklenen_saat": 1.5,
    "is_akisi": "live-log.yml",
    "bayat": false
@@ -245,5 +246,5 @@
    "acilis_ms": 1478
   }
  },
- "aciklama": "Sağlık özeti (lab/kurtarici.py): adım çıkış kodları (data/saglik/*.json, lab/adim.py), ana dosyaların tazeliği, kalite alarmları. Geçici sorunda ilgili iş akışı bir kez yeniden tetiklenir; kalici_alarm (aynı adım 24 saatte ≥3 hata) yalnız raporlanır, yeniden tetiklenmez. Issue/mail/bildirim açılmaz."
+ "aciklama": "Sağlık özeti (lab/kurtarici.py): adım çıkış kodları (data/saglik/*.json, lab/adim.py), ana dosyaların tazeliği, kalite alarmları. Geçici sorunda ilgili iş akışı bir kez yeniden tetiklenir; kalici_alarm (aynı adım 24 saatte ≥3 hata) yalnız raporlanır, yeniden tetiklenmez; tekrar_alarm (son çalışmada başarısız, son 7 günde ≥3 farklı günde hata) yalnız raporlanır. Issue/mail/bildirim açılmaz."
 }
