@@ -12,6 +12,9 @@ Kurallar (döngüye girmemesi için sınırlı):
   5) GEÇİCİ / KALICI: aynı adım imzası (<iş akışı>/<adım>) 24 saatte ≥3 kez hata verdiyse (lab/adim.py hata_24s) hata KALICI
      sayılır: yeniden tetikleme döngüsüne SOKULMAZ (aynı hatayı tekrar üretir, dakika harcar), yalnız data/saglik.json
      "kalici_alarm" listesinde raporlanır. Geçici hatalar kural 4'teki gibi bir kez yeniden tetiklenir.
+  6) TEKRARLAYAN (YH-102): günde bir çalışan işte 24 saatlik kural hiç tetiklenmez. Son çalışmada hâlâ başarısız ve son 7 günde
+     ≥3 farklı günde hata vermiş adım (lab/adim.py hata_gun) "tekrar_alarm" listesinde raporlanır. Yalnız rapor: sinif ve yeniden
+     tetikleme kararları değişmez.
   KURTARICI_DENEME=1 ile yalnız rapor eder, hiçbir şey yapmaz ve dosya yazmaz."""
 import glob, json, os, subprocess, sys
 from datetime import datetime, timedelta, timezone
@@ -23,6 +26,7 @@ SAGLIK_DIZIN = os.path.join(ROOT, "data", "saglik")
 DENEME = os.environ.get("KURTARICI_DENEME") == "1"
 SAGLIK_TEKRAR_SAAT = 6.0
 KALICI_ESIK, KALICI_SAAT = 3, 24
+TEKRAR_GUN, TEKRAR_ESIK = 7, 3
 
 # dosya: (görünen ad, en fazla kaç saat başarısız kalabilir, yalnız bu UTC saatlerinde bekle)
 ISLER = {
@@ -145,6 +149,14 @@ def hata_24(a, simdi):
     return n
 
 
+def hata_gun_say(a, simdi):
+    """YH-102: son TEKRAR_GUN gündeki farklı hata günü sayısı (hata_gun yoksa hata_24s tarihleri)."""
+    sinir = (simdi - timedelta(days=TEKRAR_GUN - 1)).strftime("%Y-%m-%d")
+    G = a.get("hata_gun")
+    if G is None: G = [t[:10] for t in (a.get("hata_24s") or []) if isinstance(t, str)]
+    return len(set(g for g in G if isinstance(g, str) and sinir <= g[:10] <= simdi.strftime("%Y-%m-%d")))
+
+
 def adim_kayitlari(simdi=None):
     """data/saglik/*.json → {iş akışı: {dosya: özet}}; yalnız o dosyadaki son çalışmanın adımları değerlendirilir.
     Her başarısız adım: sinif = kalici (24 saatte ≥KALICI_ESIK hata) | gecici."""
@@ -158,9 +170,11 @@ def adim_kayitlari(simdi=None):
         for ad, a in (D.get("adimlar") or {}).items():
             if a.get("run") != run or a.get("rc") == 0: continue
             n24 = hata_24(a, simdi)
+            ng = hata_gun_say(a, simdi)
             kayit = {"adim": ad, "rc": a.get("rc"), "hata_tur": f"{a.get('hata', 1)}/{a.get('tur', 1)}", "hata_24s": n24,
                      "sinif": "kalici" if n24 >= KALICI_ESIK else "gecici", "imza": a.get("imza") or f"{wf}/{ad}",
-                     "onem": a.get("onem", "onemli"), "bitis": a.get("bitis")}
+                     "onem": a.get("onem", "onemli"), "bitis": a.get("bitis"),
+                     "hata_gun7": ng, "tekrar": n24 < KALICI_ESIK and ng >= TEKRAR_ESIK}
             (bilgi if a.get("onem") == "bilgi" else bas).append(kayit)
         out.setdefault(wf, {})[os.path.basename(p)] = {"run": run, "guncelleme": D.get("guncelleme"), "basarisiz": bas, "bilgi_hata": bilgi}
     return out
@@ -256,6 +270,7 @@ def main():
     kalite = kalite_alarmlari()
     sorun_is = {}
     kalici_alarm = []           # 5) kalıcı hatalar: yalnız rapor, yeniden tetikleme yok
+    tekrar_alarm = []           # 6) YH-102 çok günlük tekrarlayan hatalar: yalnız rapor
     for wf, dosyalar in adimlar.items():
         if atk and wf in AT_ISLER: continue   # at bölümü kapalı: eski at adım kayıtları sorun sayılmaz
         for f, oz in dosyalar.items():
@@ -263,6 +278,9 @@ def main():
                 if b["sinif"] == "kalici":
                     kalici_alarm.append({"imza": b["imza"], "is_akisi": wf, "dosya": f, "adim": b["adim"], "rc": b["rc"],
                                          "hata_24s": b["hata_24s"], "onem": b["onem"], "son": b["bitis"]})
+                elif b.get("tekrar"):
+                    tekrar_alarm.append({"imza": b["imza"], "is_akisi": wf, "dosya": f, "adim": b["adim"], "rc": b["rc"],
+                                         "hata_gun7": b["hata_gun7"], "onem": b["onem"], "son": b["bitis"]})
             for b in oz["basarisiz"]:
                 if b["sinif"] == "kalici": continue
                 sorun_is.setdefault(wf, []).append(f"adım başarısız: {b['adim']} (çıkış {b['rc']}, {b['hata_tur']} tur)")
@@ -296,13 +314,16 @@ def main():
     sorunlar = [f"{ISLER.get(wf, (wf,))[0]}: {s}" for wf, L in sorun_is.items() for s in L]
     sorunlar += [f"KALICI hata ({k['imza']}): 24 saatte {k['hata_24s']} kez, çıkış {k['rc']} — yeniden tetiklenmez, elle düzeltme gerekir"
                  for k in kalici_alarm if k["onem"] != "bilgi"]
+    sorunlar += [f"TEKRARLAYAN hata ({k['imza']}): son {TEKRAR_GUN} günde {k['hata_gun7']} farklı günde, çıkış {k['rc']} — elle bakılmalı"
+                 for k in tekrar_alarm if k["onem"] != "bilgi"]
     sorunlar += [f"kalite alarmı ({k}): {', '.join(v['hatalar'][:3]) or 'alarm'}" for k, v in kalite.items() if v["alarm"]]
     sorunlar += kaynak_alarmlari()   # yalnız rapor (kaynak yayınlayınca at-canli kendiliğinden toparlar)
     saglik = {"zaman": simdi.strftime("%Y-%m-%dT%H:%MZ"), "alarm": bool(sorunlar), "sorunlar": sorunlar,
-              "kalici_alarm": kalici_alarm, "adimlar": adimlar, "tazelik": taze, "kalite": kalite,
+              "kalici_alarm": kalici_alarm, "tekrar_alarm": tekrar_alarm, "adimlar": adimlar, "tazelik": taze, "kalite": kalite,
               "aciklama": "Sağlık özeti (lab/kurtarici.py): adım çıkış kodları (data/saglik/*.json, lab/adim.py), ana dosyaların tazeliği, "
                           "kalite alarmları. Geçici sorunda ilgili iş akışı bir kez yeniden tetiklenir; kalici_alarm (aynı adım 24 saatte ≥3 hata) "
-                          "yalnız raporlanır, yeniden tetiklenmez. Issue/mail/bildirim açılmaz."}
+                          "yalnız raporlanır, yeniden tetiklenmez; tekrar_alarm (son çalışmada başarısız, son 7 günde ≥3 farklı günde hata) "
+                          "yalnız raporlanır. Issue/mail/bildirim açılmaz."}
 
     gecmis = (eski.get("gecmis") or [])
     if eylem:
@@ -322,7 +343,8 @@ def main():
         s_yas = (simdi - zaman(s_eski.get("zaman", "2000-01-01T00:00Z"))).total_seconds() / 3600
     except Exception:
         s_yas = 99
-    if s_eski.get("sorunlar") != saglik["sorunlar"] or s_eski.get("kalici_alarm") != saglik["kalici_alarm"] or s_yas > 3:
+    if s_eski.get("sorunlar") != saglik["sorunlar"] or s_eski.get("kalici_alarm") != saglik["kalici_alarm"] \
+            or s_eski.get("tekrar_alarm") != saglik["tekrar_alarm"] or s_yas > 3:
         json.dump(saglik, open(SAGLIK, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     return 0
 

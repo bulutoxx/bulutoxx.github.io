@@ -21,6 +21,7 @@ from datetime import datetime, timedelta, timezone
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DIZIN = os.path.join(ROOT, "data", "saglik")
 KALICI_ESIK, KALICI_SAAT = 3, 24
+TEKRAR_GUN, TEKRAR_ESIK = 7, 3     # YH-102: son 7 günde ≥3 farklı günde hata → tekrarlayan (yalnız rapor)
 
 
 def is_akisi():
@@ -59,6 +60,16 @@ def hata_gecmisi(onceki, rc, an):
     return L[-20:]
 
 
+def hata_gunleri(onceki, h24_onceki, rc, an):
+    """YH-102: son TEKRAR_GUN gündeki hata günleri (UTC tarih, tekil, sıralı). Eski kayıtta alan yoksa hata_24s'ten tohumlanır."""
+    sinir = (an - timedelta(days=TEKRAR_GUN - 1)).strftime("%Y-%m-%d")
+    G = set(g for g in (onceki or []) if isinstance(g, str) and len(g) == 10)
+    if onceki is None:
+        G |= set(t[:10] for t in (h24_onceki or []) if isinstance(t, str))
+    if rc != 0: G.add(an.strftime("%Y-%m-%d"))
+    return sorted(g for g in G if g >= sinir)
+
+
 def kaydet(wf, ad, rc, sn, onem):
     p = dosya_yolu(wf)
     try:
@@ -73,14 +84,17 @@ def kaydet(wf, ad, rc, sn, onem):
     eski = A.get(ad) if (A.get(ad) or {}).get("run") == run else None
     tur = (eski or {}).get("tur", 0) + 1
     hata = (eski or {}).get("hata", 0) + (1 if rc != 0 else 0)
-    h24 = hata_gecmisi((A.get(ad) or {}).get("hata_24s"), rc, datetime.now(timezone.utc))
+    an = datetime.now(timezone.utc)
+    h24 = hata_gecmisi((A.get(ad) or {}).get("hata_24s"), rc, an)
+    hg = hata_gunleri((A.get(ad) or {}).get("hata_gun"), (A.get(ad) or {}).get("hata_24s"), rc, an)
     sinif = None if rc == 0 else ("kalici" if len(h24) >= KALICI_ESIK else "gecici")
     A[ad] = {"rc": rc, "sn": round(sn, 1), "bitis": simdi(), "run": run, "onem": onem, "tur": tur, "hata": hata,
-             "hata_24s": h24, "sinif": sinif, "imza": f"{os.path.basename(wf)}/{ad}"}
+             "hata_24s": h24, "hata_gun": hg, "sinif": sinif, "imza": f"{os.path.basename(wf)}/{ad}"}
     D["guncelleme"] = simdi()
     D["imza"] = imza(D)
     D["aciklama"] = ("Adım çıkış kodları (lab/adim.py). rc≠0 = adım başarısız; onem=bilgi olanlar yeniden tetikleme sebebi sayılmaz. "
-                     f"sinif: gecici / kalici (aynı adım 24 saatte ≥{KALICI_ESIK} hata; kurtarıcı yalnız raporlar, yeniden tetiklemez).")
+                     f"sinif: gecici / kalici (aynı adım 24 saatte ≥{KALICI_ESIK} hata; kurtarıcı yalnız raporlar, yeniden tetiklemez). "
+                     f"hata_gun: son {TEKRAR_GUN} gündeki hata günleri (≥{TEKRAR_ESIK} gün → tekrar_alarm, yalnız rapor).")
     os.makedirs(DIZIN, exist_ok=True)
     tmp = p + ".tmp"
     with open(tmp, "w", encoding="utf-8") as f:
