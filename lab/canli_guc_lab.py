@@ -192,6 +192,62 @@ def fit(X, base, nb=True):
     return unpack(v, base), val
 
 
+# ---------------------------------------------------------------- YH-101 · gün başına uyum önbelleği
+# Sınama günü D'nin uyumu yalnız D başlamadan sonucu kesin maçlarla yapılır; geçmiş günlerin girdisi değişmez → aynı girdi
+# (X dizileri + taban parametreler, SHA-1) için önceki uyum birebir yeniden kullanılır (girdi değişirse yeniden uyumlanır, sonuç aynı).
+# Gerekçe (2026-11-28): genişleyen pencerede her gün sıfırdan Nelder–Mead → süre gün sayısıyla karesel büyüdü; auto-lab'da
+# canli-guc (600 sn) ve canli-piyasa (900 sn) 2026-11-23'ten beri her gün zaman aşımına (rc 124) düşüyor, canli_guc.json 11-22'de kaldı.
+# Anahtar canli_altin_lab ile aynı → onun önbelleği (data/canli_altin_cg.json) yalnız okunur ikinci kaynak.
+OB_YOL = os.path.join(DATA, "canli_guc_ob.json")
+OB_ALTIN = os.path.join(DATA, "canli_altin_cg.json")
+
+
+def ob_oku(yol=OB_YOL):
+    try: return json.load(open(yol, encoding="utf-8")).get("gunler") or {}
+    except Exception: return {}
+
+
+def ob_yaz(OB, days=None):
+    if days is not None: OB = {k: v for k, v in OB.items() if k.split("|")[0] in set(days)}
+    try:
+        tmp = OB_YOL + ".tmp"
+        json.dump({"aciklama": "lab/canli_guc_lab.py + canli_piyasa_lab.py gün başına CG uyumu önbelleği (girdi SHA-1 eşleşirse yeniden kullanılır)",
+                   "gunler": OB}, open(tmp, "w", encoding="utf-8"), ensure_ascii=False, indent=0, sort_keys=True)
+        os.replace(tmp, OB_YOL)
+    except Exception as ex: print("önbellek yazılamadı:", ex)
+
+
+def ob_anahtar(X, base):
+    import hashlib
+    h = hashlib.sha1(json.dumps(base, sort_keys=True, default=str).encode())
+    ks = sorted(X); M = np.column_stack([np.asarray(X[k], dtype=np.float64) for k in ks]) if ks else np.zeros((0, 0))
+    if len(M): M = np.nan_to_num(M, nan=-9e9); M = M[np.lexsort(M.T[::-1])]      # satır sırası (küme sırası) süreçten sürece değişir
+    h.update(",".join(ks).encode()); h.update(np.ascontiguousarray(M).tobytes())
+    return h.hexdigest()
+
+
+_OB_ALTIN = None
+
+
+def fit_gun(OB, D, X, base):
+    """1. aşama uyumu (fit) önbellekli. Yeni uyum hemen diske yazılır: zaman aşımında da ilerleme korunur."""
+    global _OB_ALTIN
+    key = ob_anahtar(X, base); e = OB.get(D)
+    if isinstance(e, dict) and e.get("k") == key and isinstance(e.get("P"), dict): return dict(e["P"])
+    if _OB_ALTIN is None: _OB_ALTIN = ob_oku(OB_ALTIN)
+    a = _OB_ALTIN.get(D)
+    if isinstance(a, dict) and a.get("k") == key and isinstance(a.get("P"), dict): P = dict(a["P"])
+    else: P, _ = fit(X, base)
+    OB[D] = {"k": key, "P": P}; ob_yaz(OB); return dict(P)
+
+
+def fit_gec_gun(OB, D, X, P):
+    """2. aşama (geç dakika) uyumu önbellekli; anahtar = 1. aşama anahtarı + P."""
+    key = ob_anahtar(X, P); k = D + "|gec"; e = OB.get(k)
+    if isinstance(e, dict) and e.get("k") == key and isinstance(e.get("P"), dict): return dict(e["P"])
+    Pg = fit_gec(X, P); OB[k] = {"k": key, "P": Pg}; ob_yaz(OB); return dict(Pg)
+
+
 # ---------------------------------------------------------------- v136 · son dakika (geç) parametreleri — 2. aşama
 # Ölçüm (v135): eski canlı modelde 75. dk sonrası %97,9 denilen seçimler %81,6 tuttu. CG'de geç dakikalar için ayrı serbest parametre
 # yoktu (uzatma e2=3 ve taban rmin=1 sabit). 2. aşama: 1. aşama parametreleri sabitken yalnız GEC öğrenilir (nötr Gauss önsel).
@@ -307,8 +363,11 @@ def platt_fit(ps, ys):
 def day_start(d): return datetime.combine(date.fromisoformat(d), datetime.min.time(), TR).timestamp()
 
 
-def evaluate(fin, snaps, h1, verbose=True):
+def evaluate(fin, snaps, h1, verbose=True, OB=None):
+    """h1: eski (uygulamadaki) yolun parametresi (model.json). CG uyumunun önseli / başlangıcı sabit CG.DEF (YH-101: bugünkü model
+    geçmiş günlere sızmaz, önbellek anahtarı motor turundan turuna değişmez)."""
     days = sorted({r["d"] for r in snaps}); res = {"gunler": [], "satir": {}}
+    if OB is None: OB = ob_oku()
     acc = collections.defaultdict(list); ids_all = []; dayflag = []
     for D in days[1:]:
         t0 = day_start(D)
@@ -317,9 +376,9 @@ def evaluate(fin, snaps, h1, verbose=True):
         tr_live = {r["id"] for r in snaps if r["id"] in tr_ids}
         if len(tr_live) < 30 or not te_ids: continue
         Xtr = rows_of(snaps, fin, tr_ids, extra=True)
-        base = dict(CG.DEF, h1=h1)
-        P, val = fit(Xtr, base, nb=True)
-        Pg = fit_gec(Xtr, P)
+        base = dict(CG.DEF)
+        P = fit_gun(OB, D, Xtr, base)
+        Pg = fit_gec_gun(OB, D, Xtr, P)
         Xte = rows_of(snaps, fin, te_ids, extra=False)
         # seçim Platt'ları (yalnız eğitim maçlarının kayıtlı seçimleri)
         pr_tr = pick_rows(snaps, tr_ids)
@@ -429,7 +488,8 @@ def main(argv):
     except Exception: h1 = .4428
     fin, snaps = load()
     print(f"sonuçlu maç {len(fin)} · sonuçlu canlı anlık görüntü {len(snaps)} / {len({r['id'] for r in snaps})} maç", flush=True)
-    E = evaluate(fin, snaps, h1)
+    OB = ob_oku()
+    E = evaluate(fin, snaps, h1, OB=OB)
     now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%MZ")
     out = {"v": 1, "kullan": False, "zaman": now, "model": "CG: Gamma-Poisson (NB) kalan gol + skor durumu + kırmızı kart + uzatmalı kalan süre"}
     if not E:
@@ -473,6 +533,7 @@ def main(argv):
     if E: print(json.dumps({k: out["sinama"][k] for k in ("n", "mac", "tablo", "karsilastirma", "secim", "kazanilan_gun", "gun_sayisi")}, ensure_ascii=False, indent=1))
     if E: print(json.dumps(out.get("gec"), ensure_ascii=False, indent=1))
     if E: print(json.dumps({k: v for k, v in (out.get("kart") or {}).items() if k != "gunler"}, ensure_ascii=False, indent=1))
+    ob_yaz(OB, sorted({r["d"] for r in snaps}))
     if "--uygula" in argv:
         json.dump(out, open(os.path.join(DATA, "canli_guc.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
         print("yazıldı: data/canli_guc.json")

@@ -74,6 +74,24 @@ def ogren(S_by_dilim):
     return W
 
 
+def ogren_gun(OB, D, fkey, tr, P):
+    """YH-101: gün başına harman ağırlıkları önbellekli. Anahtar = CG uyum anahtarı + eğitim (piyasalı) satırlarının içeriği;
+    ikisi aynıysa satır kümesi ve W birebir aynıdır."""
+    import hashlib
+    h = hashlib.sha1(fkey.encode())
+    for x in sorted(json.dumps([r["id"], r["t"], r["hs"], r["as"], r["fh"], r["fa"], r["lam"], r["rc"], r["pd_"], r["mk"]], sort_keys=True, default=str)
+                    for r in tr):
+        h.update(x.encode()); h.update(b"\n")
+    key = h.hexdigest(); k = D + "|piyasa"; e = OB.get(k)
+    if isinstance(e, dict) and e.get("k") == key and isinstance(e.get("W"), dict):
+        return {m: {d: tuple(v) for d, v in e["W"][m].items()} for m in e["W"]}
+    Sd = collections.defaultdict(list)
+    for r in tr:
+        s = satir(r, P)
+        if s: Sd[CG.dilim(r["t"])].append(s)
+    W = ogren(Sd); OB[k] = {"k": key, "W": wj(W)}; CGL.ob_yaz(OB); return W
+
+
 def wj(W): return {m: {d: list(v) for d, v in W[m].items()} for m in W}
 
 
@@ -90,7 +108,7 @@ def blok_boot(d, blk, B=2000, seed=11):
 # ---------------------------------------------------------------- sınama
 def sinama(fin, snaps, h1, verbose=True):
     mk_snaps = [r for r in snaps if r.get("mk")]
-    days = sorted({r["d"] for r in mk_snaps}); R = []; gunler = []
+    days = sorted({r["d"] for r in mk_snaps}); R = []; gunler = []; OB = CGL.ob_oku()
     for D in days:
         t0 = CGL.day_start(D)
         tr_ids = {k for k, M in fin.items() if M["ts"] + 2.5 * 3600 < t0}
@@ -98,12 +116,9 @@ def sinama(fin, snaps, h1, verbose=True):
         te = [r for r in mk_snaps if r["d"] == D]
         tr = [r for r in mk_snaps if r["id"] in tr_ids]
         if len(tr_live) < 30 or not te or not tr: continue
-        P, _ = CGL.fit(CGL.rows_of(snaps, fin, tr_ids, extra=True), dict(CG.DEF, h1=h1))
-        Sd = collections.defaultdict(list)
-        for r in tr:
-            s = satir(r, P)
-            if s: Sd[CG.dilim(r["t"])].append(s)
-        W = ogren(Sd)
+        Xtr = CGL.rows_of(snaps, fin, tr_ids, extra=True)
+        P = CGL.fit_gun(OB, D, Xtr, dict(CG.DEF))      # YH-101: önbellekli, önsel CG.DEF
+        W = ogren_gun(OB, D, CGL.ob_anahtar(Xtr, dict(CG.DEF)), tr, P)
         for r in te:
             s = satir(r, P)
             if not s: continue
