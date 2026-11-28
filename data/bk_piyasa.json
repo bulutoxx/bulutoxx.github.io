@@ -1,6 +1,6 @@
 {
  "surum": "2026-10-28.1",
- "guncelleme": "2026-11-28 19:13",
+ "guncelleme": "2026-11-28 21:22",
  "aciklama": "Basket piyasa karnesi: kilitli model tahmini ile maç öncesi son piyasa oranı (marjı Shin ile ayrılmış) aynı maçlarda. Harman = Benter iki aşama (lig grubu, zaman sıralı ağırlık). Çapalı = model fark/toplamının handikap ve alt/üst çizgisine çekilmesi. GA: gün blokları bootstrap %95. Üretime yalnız OXXai kapısı + gölge sonrası girer.",
  "kurallar": {
   "kapi": "n ≥ 150, gün ≥ 20, ΔLL GA üst < 0, ΔBrier < 0, isabet düşmez",
@@ -39,7 +39,7 @@
   },
   "harman": {
    "n": 1774,
-   "ll": 0.4791,
+   "ll": 0.4792,
    "brier": 0.1609,
    "isabet": 0.7418
   },
@@ -52,7 +52,7 @@
   "uretim": {
    "n": 1774,
    "ll": 0.4848,
-   "brier": 0.1627,
+   "brier": 0.1626,
    "isabet": 0.7469
   }
  },
@@ -265,7 +265,7 @@
     "isabet": 0.0228
    },
    "fark_capali_model": {
-    "ll": -0.0684,
+    "ll": -0.0683,
     "ll_ga": [
      -0.0991,
      -0.0417
@@ -293,14 +293,14 @@
    "skor": {
     "fark_mse": {
      "model": 261.9531,
-     "piyasa": 172.5077,
-     "capali": 178.0542,
+     "piyasa": 172.5078,
+     "capali": 178.0543,
      "n": 1359,
      "capali_eksi_model": [
-      -83.899,
+      -83.8988,
       [
-       -132.6294,
-       -44.9835
+       -132.6295,
+       -44.983
       ]
      ]
     },
@@ -320,7 +320,7 @@
    },
    "agirlik": {
     "a": 0.1903,
-    "b": 0.8469,
+    "b": 0.8468,
     "w_m": 0.9771,
     "w_t": 0.9558,
     "n_ogrenme": 1359
@@ -471,6 +471,13 @@
   }
  },
  "agirlik": {
+  "kolej": {
+   "a": 0.1903,
+   "b": 0.8468,
+   "w_m": 0.9771,
+   "w_t": 0.9558,
+   "n_ogrenme": 1359
+  },
   "avrupa": {
    "a": 0.3269,
    "b": 0.6766,
@@ -484,13 +491,6 @@
    "w_m": 0.882,
    "w_t": 1.0,
    "n_ogrenme": 301
-  },
-  "kolej": {
-   "a": 0.1903,
-   "b": 0.8469,
-   "w_m": 0.9771,
-   "w_t": 0.9558,
-   "n_ogrenme": 1359
   }
  },
  "uretimde": {
@@ -606,9 +606,9 @@
    "kilitli": 313,
    "oranli": 273,
    "sonuclu_oranli": 264,
-   "iddaa_ms": 209,
-   "iddaa_hnd": 189,
-   "iddaa_au": 209,
+   "iddaa_ms": 208,
+   "iddaa_hnd": 188,
+   "iddaa_au": 208,
    "espn": 273
   },
   "el": {
@@ -653,35 +653,35 @@
    "sonuclu_oranli": 1185,
    "iddaa_ms": 539,
    "iddaa_hnd": 520,
-   "iddaa_au": 530,
+   "iddaa_au": 529,
    "espn": 1250
   },
   "ncaaw": {
    "kilitli": 1869,
-   "oranli": 179,
+   "oranli": 182,
    "sonuclu_oranli": 174,
    "iddaa_ms": 16,
    "iddaa_hnd": 6,
    "iddaa_au": 16,
-   "espn": 163
+   "espn": 166
   }
  },
  "sentetik_yarismalar": {
-  "İtalya Serie B": 15,
-  "ABD Kolej Basketbol Ligi": 30,
+  "İtalya Serie A2": 7,
+  "İtalya Serie B": 14,
+  "ABD Kolej Basketbol Ligi": 26,
   "Avrp Basket Şmp ÖnEle 2T Grp F": 1,
   "FIBA Dünya Kup.Avr.Eleme GrupK": 1,
   "Japonya B2.Ligi": 7,
   "İtalya A1 Kadınlar": 2,
   "FIBA DünyaKup.Asya&Oky.El.GrpF": 2,
-  "İtalya Serie A2": 6,
   "Fransa Kadınlar Basketbol Ligi": 4,
   "FIBA Americup Ön Eleme, Grup B": 1,
+  "FIBA Dünya Kup.Avr.Eleme GrupL": 2,
   "İspanya Kadınlar Basketbol Ligi": 3,
   "FIBA Dünya Kup.Avr.Eleme GrupJ": 1,
+  "FIBA Dünya Kup.Amr.Eleme GrupF": 3,
   "G. Kore Güney Kore Kadın Basket Ligi": 1,
-  "FIBA Dünya Kup.Avr.Eleme GrupL": 2,
-  "FIBA Dünya Kup.Amr.Eleme GrupF": 1,
   "FIBA DünyaKup.Asya&Oky.El.GrpE": 1,
   "Avrp Basket Şmp ÖnEle 2T Grp D": 1,
   "EuroBasket, Pre-Qualifiers, 2n": 1,
@@ -755,7 +755,7 @@
    "gun": "2026-11-02",
    "n": 18,
    "ll_model": 0.6074,
-   "ll_piyasa": 0.563,
+   "ll_piyasa": 0.5629,
    "ll_harman": 0.5493
   },
   {
@@ -796,7 +796,7 @@
   {
    "gun": "2026-11-08",
    "n": 68,
-   "ll_model": 0.5471,
+   "ll_model": 0.547,
    "ll_piyasa": 0.4931,
    "ll_harman": 0.4962
   },
@@ -804,7 +804,7 @@
    "gun": "2026-11-09",
    "n": 21,
    "ll_model": 0.6378,
-   "ll_piyasa": 0.4787,
+   "ll_piyasa": 0.4786,
    "ll_harman": 0.4878
   },
   {
@@ -847,7 +847,7 @@
    "n": 81,
    "ll_model": 0.5243,
    "ll_piyasa": 0.5022,
-   "ll_harman": 0.4951
+   "ll_harman": 0.495
   },
   {
    "gun": "2026-11-16",
@@ -894,9 +894,9 @@
   {
    "gun": "2026-11-22",
    "n": 63,
-   "ll_model": 0.6581,
-   "ll_piyasa": 0.6313,
-   "ll_harman": 0.6388
+   "ll_model": 0.6582,
+   "ll_piyasa": 0.6314,
+   "ll_harman": 0.6389
   },
   {
    "gun": "2026-11-23",
@@ -908,7 +908,7 @@
   {
    "gun": "2026-11-24",
    "n": 61,
-   "ll_model": 0.6629,
+   "ll_model": 0.663,
    "ll_piyasa": 0.632,
    "ll_harman": 0.6403
   },
@@ -929,16 +929,16 @@
   {
    "gun": "2026-11-27",
    "n": 34,
-   "ll_model": 0.6757,
-   "ll_piyasa": 0.6409,
-   "ll_harman": 0.6414
+   "ll_model": 0.6758,
+   "ll_piyasa": 0.641,
+   "ll_harman": 0.6415
   },
   {
    "gun": "2026-11-28",
    "n": 49,
    "ll_model": 0.5709,
-   "ll_piyasa": 0.567,
-   "ll_harman": 0.5664
+   "ll_piyasa": 0.5671,
+   "ll_harman": 0.5665
   }
  ]
 }
